@@ -45,3 +45,35 @@ def parse_row(row: dict) -> dict:
 def build_cards(rows: list) -> list:
     """Tutte le righe -> lista di carte."""
     return [parse_row(r) for r in rows]
+
+
+def build_dataset(rows: list, source_url: str = "") -> dict:
+    """Righe CSV -> dataset completo (cards + indici + meta).
+
+    Gli indici contengono id interi che puntano a `cards`, così i dati non sono duplicati.
+    """
+    cards = build_cards(rows)
+    for i, card in enumerate(cards):
+        card["id"] = i
+
+    by_team_season: dict = {}
+    by_player: dict = {}
+    for card in cards:
+        ts_key = f"{card['team']}|{card['season']}"
+        by_team_season.setdefault(ts_key, []).append(card["id"])
+        by_player.setdefault(card["player_id"], []).append(card["id"])
+
+    # ordina: roster per OVR desc (poi nome); versioni giocatore per stagione
+    for ids in by_team_season.values():
+        ids.sort(key=lambda i: (-cards[i]["ovr"], cards[i]["name"]))
+    for ids in by_player.values():
+        ids.sort(key=lambda i: cards[i]["season"])
+
+    seasons = sorted({c["season"] for c in cards})
+    meta = {
+        "source_url": source_url,
+        "seasons": seasons,
+        "n_cards": len(cards),
+        "n_players": len(by_player),
+    }
+    return {"meta": meta, "cards": cards, "byTeamSeason": by_team_season, "byPlayer": by_player}
