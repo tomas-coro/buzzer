@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  ─────────────────────────────────────────────────────────────────────────────
+  SCOCCA FISSA, CONTENUTO VARIABILE.
+  La skill sostituisce SOLO il contenuto di <div id="panels"> con i 3/4 pannelli
+  reali. Ogni direzione è un <section class="dir-panel" data-name data-mood data-why>
+  che contiene SOLO il design di anteprima: la barra-titolo (nome+mood) e la riga
+  "perché" sono disegnate automaticamente dallo script qui sotto.
+  I chip in #chips sono generati automaticamente, uno per pannello.
+  NON modificare la scocca o lo script: cambia solo #panels (e <title>).
+-->
+<title>web game NBA · 5 direzioni & 5 nomi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:52ch}
+
+  /* chip bar */
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  /* palco */
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+
+  /* ───────── stili di esempio dei pannelli (la skill li sostituisce) ───────── */
+  .demo-nav{display:flex;gap:8px;align-items:center;font-size:.7rem;color:var(--bone-dim);margin-bottom:14px}
+  .demo-dot{width:8px;height:8px;border-radius:99px;background:var(--line)}
+  .demo-h{margin:0 0 8px;line-height:1.05}
+  .demo-p{margin:0 0 16px;font-size:.86rem;color:var(--bone-dim)}
+  .demo-btn{font:inherit;font-weight:700;font-size:.82rem;border:0;border-radius:9px;padding:11px 16px;min-height:44px;cursor:pointer;transition:transform .12s ease, filter .12s ease}
+  .demo-btn:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  .t-edit .demo-h{font-family:"Bodoni Moda",serif;font-weight:500;font-size:1.7rem;color:#f1ece1}
+  .t-edit .demo-btn{background:#e9e4d8;color:#181818}
+  .t-retro{background:linear-gradient(180deg,#241a12,#1b1f28);margin:-20px -18px;padding:20px 18px;border-radius:0}
+  .t-retro .demo-h{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:500;font-size:1.7rem;color:#f0c98a}
+  .t-retro .demo-btn{background:#d98b3f;color:#1a1206}
+  .t-tech .demo-h{font-family:"Hanken Grotesk";font-weight:700;letter-spacing:-.02em;font-size:1.6rem;color:#dfe7f2}
+  .t-tech .demo-btn{background:#5b7fb0;color:#0c1118}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto · e il nome</div>
+    <h1 id="mockTitle">5 direzioni — e 5 nomi da provare</h1>
+    <p class="lead">Tocca un nome in alto per cambiare direzione. Ogni tile mostra l'estetica, la <b>stessa</b> interazione (scegli il PG dalla squadra uscita) e porta un <b>nome-candidato</b> diverso (THE RUN · RINGZ · STREAK · DYNASTY · CHALK) — i nomi sono mescolabili con qualsiasi look.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <style>
+        /* ===== font delle direzioni (import scoped, fuori dalla scocca) ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@500;600;700&family=Doto:wght@500;700;900&family=Spline+Sans+Mono:wght@400;600&family=Bungee&family=Archivo:wght@500;700;800;900&family=Saira+Condensed:wght@500;600;700;800&family=Spectral:ital,wght@0,400;0,600;0,700;1,500&family=Gloock&family=Jost:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&display=swap');
+
+        .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+        .m-fill{margin:-20px -18px;padding:22px 18px}
+        fieldset.m-opts{border:0;margin:0;padding:0;min-width:0}
+
+        /* ════════════ D1 · TABELLONE — wordmark THE RUN ════════════ */
+        .s1-fill{background:linear-gradient(180deg,#10151e 0,#0b0e13 100%);color:#e7ecf4;border-radius:0;position:relative}
+        .s1-fill::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+          background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
+        .s1-fill>*{position:relative;z-index:1}
+        .s1-bezel{border:2px solid #232c3c;border-radius:14px;background:#0d121b;
+          box-shadow:inset 0 0 0 1px #05070b, inset 0 2px 20px rgba(0,0,0,.55);padding:14px 14px 16px}
+        .s1-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .s1-wordmark{font-family:"Teko",sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:.2em;color:#ffb627;text-transform:uppercase}
+        .s1-clock{display:inline-flex;align-items:center;gap:6px;font-family:"Doto",monospace;font-weight:700;font-size:1rem;color:#ffb627;border:1px solid #2a3342;border-radius:7px;padding:3px 8px}
+        .s1-clock svg{display:block}
+        .s1-board{text-align:center;border-top:1px solid #1c2433;border-bottom:1px solid #1c2433;padding:5px 0 3px;margin-bottom:12px}
+        .s1-boardlab{font-family:"Teko",sans-serif;font-weight:600;font-size:.95rem;letter-spacing:.34em;color:#8a97ac;text-transform:uppercase}
+        .s1-mark{font-family:"Doto",monospace;font-weight:900;font-size:clamp(3.4rem,17vw,5rem);line-height:.82;color:#ffb627;letter-spacing:.02em;text-shadow:0 0 22px rgba(255,182,39,.28);margin:.04em 0 .08em}
+        .s1-mark .s1-dash{color:#52617a;margin:0 .04em}
+        .s1-slotline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+        .s1-slot{font-family:"Teko",sans-serif;font-weight:700;font-size:1.7rem;line-height:1;color:#e7ecf4;background:#19212e;border:1px solid #2a3342;border-radius:7px;padding:2px 11px}
+        .s1-sep{font-family:"Spline Sans Mono",monospace;font-size:.72rem;color:#6f7d92;letter-spacing:.04em}
+        .s1-live{margin-left:auto;font-family:"Spline Sans Mono",monospace;font-size:.7rem;letter-spacing:.06em;color:#ffb627;border:1px dashed #5a4a1e;border-radius:99px;padding:5px 10px;text-transform:uppercase}
+        .s1-opts{display:flex;flex-direction:column;gap:8px}
+        .s1-opt{display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 12px;border:1px solid #232c3c;border-radius:11px;background:#141b25;cursor:pointer;transition:border-color .15s ease,background .15s ease}
+        .s1-opt:hover{border-color:#3a4763}
+        .s1-opt:focus-within{outline:2px solid #ffb627;outline-offset:2px}
+        .s1-optname{font-family:"Teko",sans-serif;font-weight:600;font-size:1.45rem;line-height:1;letter-spacing:.01em}
+        .s1-pos{font-family:"Spline Sans Mono",monospace;font-size:.62rem;color:#7e8ba0;border:1px solid #2a3342;border-radius:5px;padding:2px 6px}
+        .s1-ovr{margin-left:auto;font-family:"Doto",monospace;font-weight:700;font-size:1.5rem;color:#9aa7bc;min-width:2.2ch;text-align:right}
+        .s1-opt:has(input:checked){border-color:#ffb627;background:#1d2330}
+        .s1-opt:has(input:checked) .s1-ovr{color:#38d39a}
+        .s1-opt .s1-picked{display:none;font-family:"Spline Sans Mono",monospace;font-size:.6rem;letter-spacing:.12em;color:#0b0e13;background:#38d39a;border-radius:99px;padding:3px 8px;text-transform:uppercase}
+        .s1-opt:has(input:checked) .s1-picked{display:inline-block}
+        .s1-score{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid #1c2433}
+        .s1-scorelab{font-family:"Teko",sans-serif;font-weight:600;letter-spacing:.2em;font-size:.95rem;color:#6f7d92;text-transform:uppercase}
+        .s1-wl{font-family:"Doto",monospace;font-weight:700;font-size:1.35rem;color:#e7ecf4}
+        .s1-wl b{color:#38d39a}
+        .s1-pips{margin-left:auto;display:flex;gap:5px}
+        .s1-pip{width:13px;height:13px;border-radius:4px;border:1px solid #2a3342;background:#141b25}
+        .s1-pip.on{background:#ffb627;border-color:#ffb627}
+
+        /* ════════════ D2 · ASFALTO — wordmark RINGZ ════════════ */
+        .bk-fill{background:#d7d4c8;color:#1e2420;border-radius:0;position:relative;overflow:hidden}
+        .bk-fill::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+          background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E")}
+        .bk-top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+        .bk-wordmark{font-family:"Bungee",sans-serif;font-size:1.05rem;color:#1e2420;text-transform:uppercase;letter-spacing:.02em}
+        .bk-wordmark span{color:#ff5a1f}
+        .bk-where{font-family:"Archivo",sans-serif;font-weight:800;font-size:.6rem;letter-spacing:.16em;color:#c9a227;text-transform:uppercase;background:#1e2420;padding:4px 8px;border-radius:4px}
+        .bk-court{position:relative;z-index:1;border:3px solid #c9a227;border-top:0;border-radius:0 0 4px 4px;padding:18px 14px 18px;margin-top:6px}
+        .bk-court::before{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:120px;height:58px;border:3px solid #c9a227;border-top:0;border-radius:0 0 120px 120px}
+        .bk-eye{display:inline-block;font-family:"Archivo",sans-serif;font-weight:900;font-size:.66rem;letter-spacing:.22em;color:#2e7d72;text-transform:uppercase;margin-bottom:2px}
+        .bk-mark{font-family:"Bungee",sans-serif;font-size:clamp(2.6rem,14vw,3.9rem);line-height:.92;color:#1e2420;letter-spacing:.01em;text-shadow:2px 2px 0 rgba(201,162,39,.45)}
+        .bk-mark span{color:#ff5a1f}
+        .bk-slotline{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:10px 0 14px}
+        .bk-num{font-family:"Bungee",sans-serif;font-size:1.5rem;color:#fff;background:#1e2420;width:40px;height:40px;display:grid;place-items:center;border-radius:6px;box-shadow:3px 3px 0 #c9a227}
+        .bk-slotline .bk-role{font-family:"Archivo",sans-serif;font-weight:700;font-size:.82rem;color:#444b44}
+        .bk-tag{margin-left:auto;font-family:"Archivo",sans-serif;font-weight:800;font-size:.66rem;letter-spacing:.06em;text-transform:uppercase;color:#1e2420;background:#f4f2ea;border:2px dashed #ff5a1f;border-radius:99px;padding:5px 11px}
+        .bk-opts{display:flex;flex-direction:column;gap:9px}
+        .bk-opt{display:flex;align-items:center;gap:11px;min-height:50px;padding:7px 12px;background:#f4f2ea;border:2px solid #1e2420;border-radius:8px;cursor:pointer;box-shadow:3px 3px 0 rgba(30,36,32,.18);transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
+        .bk-opt:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(30,36,32,.22)}
+        .bk-opt:focus-within{outline:3px solid #ff5a1f;outline-offset:2px}
+        .bk-jersey{font-family:"Bungee",sans-serif;font-size:1.05rem;color:#1e2420;background:#dad7cc;border:2px solid #1e2420;border-radius:6px;width:38px;height:38px;display:grid;place-items:center;flex:none}
+        .bk-optname{font-family:"Archivo",sans-serif;font-weight:800;font-size:1.02rem;line-height:1.05}
+        .bk-pos{font-family:"Archivo",sans-serif;font-weight:700;font-size:.6rem;color:#6a7268;text-transform:uppercase;letter-spacing:.08em}
+        .bk-chosen{margin-left:auto;display:none;font-family:"Archivo",sans-serif;font-weight:900;font-size:.62rem;letter-spacing:.1em;color:#fff;background:#ff5a1f;border-radius:5px;padding:4px 8px;text-transform:uppercase}
+        .bk-opt:has(input:checked){background:#fff;border-color:#ff5a1f;box-shadow:4px 4px 0 rgba(255,90,31,.35)}
+        .bk-opt:has(input:checked) .bk-jersey{background:#ff5a1f;color:#fff;border-color:#ff5a1f}
+        .bk-opt:has(input:checked) .bk-chosen{display:inline-block}
+        .bk-tally{display:flex;align-items:center;gap:8px;margin-top:15px;font-family:"Archivo",sans-serif;font-weight:700;font-size:.74rem;color:#4a514a}
+        .bk-marks{display:flex;gap:7px}
+        .bk-m{width:3px;height:20px;background:#9a9c8e;border-radius:2px}
+        .bk-m.on{background:#ff5a1f}
+
+        /* ════════════ D3 · EDITORIALE — wordmark STREAK ════════════ */
+        .ed-fill{background:#efe9dc;color:#1a1714;border-radius:0;position:relative}
+        .ed-fill::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+          background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E")}
+        .ed-fill>*{position:relative;z-index:1}
+        .ed-masthead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:3px solid #1a1714;padding-bottom:5px}
+        .ed-name{font-family:"Saira Condensed",sans-serif;font-weight:800;font-size:2rem;letter-spacing:.01em;text-transform:uppercase;line-height:.85}
+        .ed-edition{font-family:"Spectral",serif;font-style:italic;font-size:.72rem;color:#8a2a20;white-space:nowrap}
+        .ed-rule2{height:3px;border-top:1px solid #1a1714;border-bottom:1px solid #1a1714;margin:3px 0 13px}
+        .ed-kicker{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:#8a2a20}
+        .ed-head{font-family:"Spectral",serif;font-weight:700;font-size:1.55rem;line-height:1.06;margin:3px 0 5px}
+        .ed-dek{font-family:"Spectral",serif;font-style:italic;font-size:.84rem;color:#4a443c;margin:0 0 14px;max-width:34ch}
+        .ed-dek b{font-style:normal;font-weight:700;color:#1a1714}
+        .ed-opts{display:flex;flex-direction:column;border-top:1px solid #cabfa8}
+        .ed-opt{display:grid;grid-template-columns:2.2rem 1fr auto auto;align-items:center;gap:10px;min-height:48px;padding:7px 4px;border-bottom:1px solid #cfc4ad;cursor:pointer;transition:background .12s ease}
+        .ed-opt:hover{background:rgba(138,42,32,.05)}
+        .ed-opt:focus-within{outline:2px solid #8a2a20;outline-offset:-2px}
+        .ed-pos{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:.66rem;letter-spacing:.06em;color:#8a857a;text-transform:uppercase;border:1px solid #b9b1a0;border-radius:4px;padding:3px 4px;text-align:center}
+        .ed-pname{font-family:"Spectral",serif;font-weight:600;font-size:1.04rem;line-height:1.05}
+        .ed-pick{display:none;font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#efe9dc;background:#8a2a20;border-radius:3px;padding:3px 7px}
+        .ed-ovr{font-family:"Saira Condensed",sans-serif;font-weight:800;font-size:1.35rem;color:#1a1714;min-width:2.4ch;text-align:right;font-variant-numeric:tabular-nums}
+        .ed-opt:has(input:checked){background:rgba(138,42,32,.08)}
+        .ed-opt:has(input:checked) .ed-pname{font-style:italic}
+        .ed-opt:has(input:checked) .ed-pick{display:inline-block}
+        .ed-opt:has(input:checked) .ed-ovr{color:#8a2a20}
+        .ed-foot{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:11px;border-top:3px double #1a1714}
+        .ed-byline{font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:#4a443c}
+        .ed-byline b{color:#1a1714}
+        .ed-pips{margin-left:auto;display:flex;gap:5px}
+        .ed-pip{width:10px;height:14px;border:1px solid #1a1714;border-radius:1px;background:transparent}
+        .ed-pip.on{background:#8a2a20;border-color:#8a2a20}
+
+        /* ════════════ D4 · DINASTIA — wordmark DYNASTY ════════════ */
+        .lx-fill{background:radial-gradient(120% 90% at 50% -20%,#161310 0,#0a0908 70%);color:#e8e2d4;border-radius:0;text-align:center}
+        .lx-top{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:18px}
+        .lx-rule{height:1px;width:34px;background:linear-gradient(90deg,transparent,#c9a86a)}
+        .lx-rule.r{background:linear-gradient(90deg,#c9a86a,transparent)}
+        .lx-wordmark{font-family:"Gloock",serif;font-size:1.4rem;letter-spacing:.06em;color:#c9a86a;line-height:1}
+        .lx-herolab{font-family:"Jost",sans-serif;font-weight:300;font-size:.66rem;letter-spacing:.46em;text-transform:uppercase;color:#8c8470;margin-bottom:2px}
+        .lx-mark{font-family:"Gloock",serif;font-size:clamp(3.6rem,18vw,5.4rem);line-height:.92;color:#efe7d6;letter-spacing:.02em}
+        .lx-mark span{color:#c9a86a;margin:0 .03em}
+        .lx-slot{display:inline-flex;align-items:center;gap:10px;margin:6px 0 18px;font-family:"Jost",sans-serif;font-weight:400;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#a59c86}
+        .lx-slot b{color:#c9a86a;font-weight:500}
+        .lx-slot i{width:4px;height:4px;border-radius:99px;background:#5a5446;display:inline-block}
+        .lx-opts{display:flex;flex-direction:column;gap:0;text-align:left;border-top:1px solid rgba(201,168,106,.22)}
+        .lx-opt{display:flex;align-items:center;gap:12px;min-height:48px;padding:10px 4px;border-bottom:1px solid rgba(201,168,106,.22);cursor:pointer;transition:padding-left .18s ease}
+        .lx-opt:hover{padding-left:10px}
+        .lx-opt:focus-within{outline:1px solid #c9a86a;outline-offset:2px}
+        .lx-dot{width:7px;height:7px;border-radius:99px;border:1px solid #6c6453;flex:none;transition:background .18s ease,border-color .18s ease}
+        .lx-pname{font-family:"Gloock",serif;font-size:1.1rem;line-height:1;color:#e8e2d4}
+        .lx-pos{font-family:"Jost",sans-serif;font-weight:400;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:#8c8470}
+        .lx-ovr{margin-left:auto;font-family:"Jost",sans-serif;font-weight:500;font-size:1.05rem;color:#a59c86;font-variant-numeric:tabular-nums}
+        .lx-opt:has(input:checked) .lx-dot{background:#c9a86a;border-color:#c9a86a;box-shadow:0 0 8px rgba(201,168,106,.6)}
+        .lx-opt:has(input:checked) .lx-pname{color:#fff}
+        .lx-opt:has(input:checked) .lx-ovr{color:#c9a86a}
+        .lx-foot{font-family:"Jost",sans-serif;font-weight:300;font-style:italic;font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:#8c8470;margin-top:18px}
+
+        /* ════════════ D5 · WAR ROOM — wordmark CHALK ════════════ */
+        .wr-fill{background:#0c1418;color:#cdd8d6;border-radius:0;font-family:"IBM Plex Mono",monospace}
+        .wr-bar{display:flex;align-items:center;gap:10px;border-bottom:1px solid #1c2c30;padding-bottom:9px;margin-bottom:10px}
+        .wr-tab{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:#0c1418;background:#35d6b0;padding:4px 9px;border-radius:3px}
+        .wr-chalk{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:.92rem;letter-spacing:.2em;text-transform:uppercase;color:#cdd8d6}
+        .wr-live{margin-left:auto;font-size:.62rem;letter-spacing:.1em;color:#35d6b0;text-transform:uppercase}
+        .wr-status{font-size:.66rem;letter-spacing:.04em;color:#6f8a86;background:#0f1c20;border:1px solid #1c2c30;border-radius:5px;padding:7px 9px;margin-bottom:12px;line-height:1.5;word-spacing:.1em}
+        .wr-status b{color:#35d6b0}
+        .wr-table{border:1px solid #1c2c30;border-radius:6px;overflow:hidden}
+        .wr-h{display:grid;grid-template-columns:1fr 2.4rem 2.6rem 2.4rem;gap:8px;padding:7px 11px;background:#0f1c20;border-bottom:1px solid #1c2c30;
+          font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:#5f7a76}
+        .wr-h span:nth-child(n+2){text-align:right}
+        .wr-row{position:relative;display:grid;grid-template-columns:1fr 2.4rem 2.6rem 2.4rem;gap:8px;align-items:center;min-height:46px;padding:8px 11px;border-bottom:1px solid #14242a;cursor:pointer;transition:background .12s ease}
+        .wr-row:last-child{border-bottom:0}
+        .wr-row:hover{background:#0f1c20}
+        .wr-row:focus-within{outline:2px solid #35d6b0;outline-offset:-2px}
+        .wr-pn{font-weight:500;font-size:.92rem;color:#e3ecea}
+        .wr-pos,.wr-ovr,.wr-fit{text-align:right;font-size:.82rem}
+        .wr-pos{color:#6f8a86}
+        .wr-ovr{color:#cdd8d6;font-weight:600}
+        .wr-fit{color:#8aa39f}
+        .wr-lock{display:none;position:absolute;top:6px;right:9px;font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:.54rem;letter-spacing:.12em;color:#0c1418;background:#35d6b0;border-radius:3px;padding:2px 6px}
+        .wr-row:has(input:checked){background:#11262a}
+        .wr-row:has(input:checked) .wr-pn{color:#fff}
+        .wr-row:has(input:checked) .wr-fit{color:#35d6b0}
+        .wr-row:has(input:checked) .wr-lock{display:block}
+        .wr-proj{display:grid;grid-template-columns:auto auto 1fr auto;align-items:center;gap:9px;margin-top:13px;padding-top:11px;border-top:1px solid #1c2c30;font-size:.66rem;letter-spacing:.04em;color:#6f8a86;text-transform:uppercase}
+        .wr-proj b{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:700;font-size:1rem;letter-spacing:.04em;color:#35d6b0}
+        .wr-prob{height:7px;border-radius:99px;background:#13252a;border:1px solid #1c2c30;overflow:hidden}
+        .wr-prob i{display:block;height:100%;background:#35d6b0}
+      </style>
+
+      <!-- ════════════════════ D1 · TABELLONE ════════════════════ -->
+      <section class="dir-panel" data-name="Tabellone" data-mood="THE RUN · arena scoreboard, cifre a LED" data-why="Cifre a LED dentro un bezel da arena: il record perfetto è l'eroe della pagina e ogni scelta si legge come una riga di tabellone." data-role="Variante +">
+        <div class="s1-fill m-fill">
+          <div class="s1-bezel">
+            <div class="s1-top">
+              <span class="s1-wordmark">The Run</span>
+              <span class="s1-clock" aria-label="shot clock">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffb627" stroke-width="2.4"><circle cx="12" cy="13" r="8"/><path d="M12 13V8M9 2h6"/></svg>24
+              </span>
+            </div>
+            <div class="s1-board">
+              <span class="s1-boardlab">Perfect Run</span>
+              <div class="s1-mark">16<span class="s1-dash">–</span>0</div>
+            </div>
+            <div class="s1-slotline">
+              <span class="s1-slot">PG</span>
+              <span class="s1-sep">slot 3 / 6</span>
+              <span class="s1-live">on the clock · Golden State</span>
+            </div>
+            <fieldset class="s1-opts m-opts">
+              <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+              <label class="s1-opt"><input class="sr-only" type="radio" name="s1pick"><span class="s1-optname">Stephen Curry</span><span class="s1-pos">PG</span><span class="s1-picked">in squadra</span><span class="s1-ovr">96</span></label>
+              <label class="s1-opt"><input class="sr-only" type="radio" name="s1pick"><span class="s1-optname">Chris Paul</span><span class="s1-pos">PG</span><span class="s1-picked">in squadra</span><span class="s1-ovr">84</span></label>
+              <label class="s1-opt"><input class="sr-only" type="radio" name="s1pick"><span class="s1-optname">B. Podziemski</span><span class="s1-pos">SG</span><span class="s1-picked">in squadra</span><span class="s1-ovr">78</span></label>
+            </fieldset>
+            <div class="s1-score">
+              <span class="s1-scorelab">Il tuo run</span>
+              <span class="s1-wl"><b>00</b> W · 00 L</span>
+              <span class="s1-pips" aria-hidden="true"><i class="s1-pip on"></i><i class="s1-pip on"></i><i class="s1-pip"></i><i class="s1-pip"></i><i class="s1-pip"></i><i class="s1-pip"></i></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════ D2 · ASFALTO ════════════════════ -->
+      <section class="dir-panel" data-name="Asfalto" data-mood="RINGZ · playground, segnaletica e stencil-spray" data-why="Cemento, segnaletica gialla e numeri a stencil: l'identità da campetto rende il draft ruvido e vero, agli antipodi del patinato." data-role="Variante +" hidden>
+        <div class="bk-fill m-fill">
+          <div class="bk-top">
+            <span class="bk-wordmark">RING<span>Z</span></span>
+            <span class="bk-where">blacktop · run</span>
+          </div>
+          <div class="bk-court">
+            <span class="bk-eye">Playground Rules</span>
+            <div class="bk-mark">16<span>-</span>0</div>
+            <div class="bk-slotline">
+              <span class="bk-num">3</span>
+              <span class="bk-role">di 6 · ruolo PG</span>
+              <span class="bk-tag">esce: Golden State</span>
+            </div>
+            <fieldset class="bk-opts m-opts">
+              <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+              <label class="bk-opt"><input class="sr-only" type="radio" name="bkpick"><span class="bk-jersey">30</span><span><span class="bk-optname">Stephen Curry</span><br><span class="bk-pos">Point Guard</span></span><span class="bk-chosen">presa</span></label>
+              <label class="bk-opt"><input class="sr-only" type="radio" name="bkpick"><span class="bk-jersey">3</span><span><span class="bk-optname">Chris Paul</span><br><span class="bk-pos">Point Guard</span></span><span class="bk-chosen">presa</span></label>
+              <label class="bk-opt"><input class="sr-only" type="radio" name="bkpick"><span class="bk-jersey">2</span><span><span class="bk-optname">B. Podziemski</span><br><span class="bk-pos">Shooting Guard</span></span><span class="bk-chosen">presa</span></label>
+            </fieldset>
+            <div class="bk-tally">
+              <span>presi 2 / 6</span>
+              <span class="bk-marks" aria-hidden="true"><i class="bk-m on"></i><i class="bk-m on"></i><i class="bk-m"></i><i class="bk-m"></i><i class="bk-m"></i><i class="bk-m"></i></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════ D3 · EDITORIALE ════════════════════ -->
+      <section class="dir-panel" data-name="Editoriale" data-mood="STREAK · prima pagina sportiva, alla The Athletic" data-why="La tua corsa raccontata come prima pagina: testate condensed e serif danno autorità da quotidiano sportivo, e il pick è una riga di box-score." data-role="" hidden>
+        <div class="ed-fill m-fill">
+          <div class="ed-masthead">
+            <span class="ed-name">Streak</span>
+            <span class="ed-edition">ed. playoff · vol. I</span>
+          </div>
+          <div class="ed-rule2"></div>
+          <span class="ed-kicker">On the clock — Golden State · slot 3 / 6</span>
+          <h3 class="ed-head">Chi prende in mano il quintetto?</h3>
+          <p class="ed-dek">Un solo playmaker entra nella rosa perfetta. La corsa è ancora aperta: <b>16–0</b> è là in fondo.</p>
+          <fieldset class="ed-opts m-opts">
+            <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+            <label class="ed-opt"><input class="sr-only" type="radio" name="edpick"><span class="ed-pos">PG</span><span class="ed-pname">Stephen Curry</span><span class="ed-pick">in lineup</span><span class="ed-ovr">96</span></label>
+            <label class="ed-opt"><input class="sr-only" type="radio" name="edpick"><span class="ed-pos">PG</span><span class="ed-pname">Chris Paul</span><span class="ed-pick">in lineup</span><span class="ed-ovr">84</span></label>
+            <label class="ed-opt"><input class="sr-only" type="radio" name="edpick"><span class="ed-pos">SG</span><span class="ed-pname">B. Podziemski</span><span class="ed-pick">in lineup</span><span class="ed-ovr">78</span></label>
+          </fieldset>
+          <div class="ed-foot">
+            <span class="ed-byline">La tua corsa · record <b>0–0</b></span>
+            <span class="ed-pips" aria-hidden="true"><i class="ed-pip on"></i><i class="ed-pip on"></i><i class="ed-pip"></i><i class="ed-pip"></i><i class="ed-pip"></i><i class="ed-pip"></i></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════ D4 · DINASTIA ════════════════════ -->
+      <section class="dir-panel" data-name="Dinastia" data-mood="DYNASTY · lusso silenzioso, alla Jordan Brand" data-why="Nero e oro champagne, tantissimo respiro: l'anello si guadagna — lusso silenzioso, niente fronzoli, ogni pick è un gesto sobrio." data-role="" hidden>
+        <div class="lx-fill m-fill">
+          <div class="lx-top">
+            <span class="lx-rule"></span>
+            <span class="lx-wordmark">Dynasty</span>
+            <span class="lx-rule r"></span>
+          </div>
+          <span class="lx-herolab">la corsa perfetta</span>
+          <div class="lx-mark">16<span>–</span>0</div>
+          <div class="lx-slot"><span>slot 3 / 6</span><i></i><span><b>PG</b> · Golden State</span></div>
+          <fieldset class="lx-opts m-opts">
+            <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+            <label class="lx-opt"><input class="sr-only" type="radio" name="lxpick"><span class="lx-dot"></span><span class="lx-pname">Stephen Curry</span><span class="lx-pos">PG</span><span class="lx-ovr">96</span></label>
+            <label class="lx-opt"><input class="sr-only" type="radio" name="lxpick"><span class="lx-dot"></span><span class="lx-pname">Chris Paul</span><span class="lx-pos">PG</span><span class="lx-ovr">84</span></label>
+            <label class="lx-opt"><input class="sr-only" type="radio" name="lxpick"><span class="lx-dot"></span><span class="lx-pname">B. Podziemski</span><span class="lx-pos">SG</span><span class="lx-ovr">78</span></label>
+          </fieldset>
+          <div class="lx-foot">l'anello si guadagna</div>
+        </div>
+      </section>
+
+      <!-- ════════════════════ D5 · WAR ROOM ════════════════════ -->
+      <section class="dir-panel" data-name="War Room" data-mood="CHALK · draft board da front office, alla Bloomberg" data-why="Draft board da front office: tabella densa, FIT e win-prob in mono — scegli come un GM, freddo e analitico, ogni numero ha un perché." data-role="" hidden>
+        <div class="wr-fill m-fill">
+          <div class="wr-bar">
+            <span class="wr-tab">Draft Board</span>
+            <span class="wr-chalk">Chalk</span>
+            <span class="wr-live">● live</span>
+          </div>
+          <div class="wr-status">SLOT <b>3/6</b> · TARGET <b>PG</b> · POOL <b>GSW</b> · GOAL <b>16-0</b></div>
+          <div class="wr-table" role="group" aria-label="Scegli il playmaker dai Golden State">
+            <div class="wr-h"><span>Player</span><span>Pos</span><span>Ovr</span><span>Fit</span></div>
+            <label class="wr-row"><input class="sr-only" type="radio" name="wrpick"><span class="wr-pn">S. Curry</span><span class="wr-pos">PG</span><span class="wr-ovr">96</span><span class="wr-fit">A+</span><span class="wr-lock">locked</span></label>
+            <label class="wr-row"><input class="sr-only" type="radio" name="wrpick"><span class="wr-pn">C. Paul</span><span class="wr-pos">PG</span><span class="wr-ovr">84</span><span class="wr-fit">B+</span><span class="wr-lock">locked</span></label>
+            <label class="wr-row"><input class="sr-only" type="radio" name="wrpick"><span class="wr-pn">B. Podziemski</span><span class="wr-pos">SG</span><span class="wr-ovr">78</span><span class="wr-fit">C+</span><span class="wr-lock">locked</span></label>
+          </div>
+          <div class="wr-proj">
+            <span>proj record</span><b>16–0</b>
+            <span class="wr-prob" aria-hidden="true"><i style="width:62%"></i></span>
+            <span>win 62%</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  // Disegna la chrome (barra nome+mood, riga "perché") dentro ogni pannello dai data-*
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+
+  // Esempio di interazione "viva ma leggera" con dato finto in localStorage.
+  // (La skill può riusare lo stesso pattern data-save nei pannelli reali.)
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest('[data-save]');
+    if(!btn) return;
+    const on = btn.dataset.on === '1';
+    btn.dataset.on = on ? '0':'1';
+    btn.textContent = on ? 'Salva' : 'Salvato ✓';
+    try{ localStorage.setItem('mockup-demo-saved', on ? '0':'1'); }catch(_){}
+  });
+})();
+</script>
+</body>
+</html>

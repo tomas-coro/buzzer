@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA, CONTENUTO VARIABILE. Cambia solo #panels (e <title>).
+-->
+<title>Vetrina draft · Facile / Normale / Difficile · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:56ch}
+
+  /* chip bar */
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  /* palco */
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Livelli a confronto</div>
+    <h1 id="mockTitle">Vetrina draft — rosa protagonista · i 3 livelli</h1>
+    <p class="lead">La Vetrina scelta, espansa: la card in scelta si <b>rimpicciolisce</b>, la tua <b>rosa diventa protagonista</b> e cliccabile (tocca un giocatore → la sua scheda piena, sfondo fermo). I 3 chip = i 3 <b>livelli di difficoltà</b>: cambia quanto <b>vedi</b> nel draft (info-ladder bloccato). Solo telefono.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ═══════════════ stile scoped Cabina 90s (BUZZER) ═══════════════ -->
+      <style>
+      @import url("https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@500;700;900&display=swap");
+
+      .bz{
+        --bg:#15163a; --bg2:#0d0e29; --panel:#1d1e4a;
+        --orange:#ff5b1e; --yellow:#ffcf33; --cream:#f4eee0;
+        --green:#5ccf8e; --red:#ff5038; --dim:#8a8bc0;
+        --duo:grayscale(1) sepia(1) saturate(3) hue-rotate(330deg) brightness(.92) contrast(1.05);
+        color:var(--cream); font-family:"Hanken Grotesk",sans-serif;
+      }
+      .bz *{box-sizing:border-box}
+      .bz .stagewrap{display:flex;justify-content:center}
+
+      .bz .phone{width:300px;max-width:100%;border:9px solid #05030f;border-radius:30px;background:#05030f;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+      .bz .screen{position:relative;overflow:hidden;background:radial-gradient(120% 80% at 50% -10%, #20206a 0, var(--bg) 55%, var(--bg2) 100%);border-radius:21px;padding:13px 13px 15px}
+
+      /* ---- header app ---- */
+      .bz .apphd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+      .bz .wm{font-family:"Bungee",sans-serif;font-size:.86rem;letter-spacing:.02em;color:var(--yellow);line-height:1}
+      .bz .wm b{color:var(--orange)}
+      .bz .mode{font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700;text-align:right}
+      .bz .mode em{color:var(--cream);font-style:normal}
+      .bz .mode .lv{display:inline-block;margin-top:2px;color:var(--yellow)}
+
+      /* ---- sezione "in scelta" ---- */
+      .bz .seclab{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+      .bz .seclab span{font-size:.58rem;letter-spacing:.17em;text-transform:uppercase;color:var(--dim);font-weight:700}
+      .bz .seclab .pk{font-family:"Doto",monospace;font-weight:900;color:var(--yellow);letter-spacing:.04em}
+      .bz .seclab .pk i{color:var(--dim);font-style:normal}
+
+      /* ---- carta candidato COMPATTA (hero rimpicciolito) ---- */
+      .bz .vw{position:relative}
+      .bz .heroes .hero{display:none}
+      .bz .vw input:nth-of-type(1):checked ~ .heroes .h1,
+      .bz .vw input:nth-of-type(2):checked ~ .heroes .h2,
+      .bz .vw input:nth-of-type(3):checked ~ .heroes .h3,
+      .bz .vw input:nth-of-type(4):checked ~ .heroes .h4,
+      .bz .vw input:nth-of-type(5):checked ~ .heroes .h5{display:block}
+      .bz input.k{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+
+      .bz .hero{background:linear-gradient(180deg,#241a3e,#141538);border:1px solid #3a2a66;border-radius:13px;padding:11px}
+      .bz .hero-row{display:flex;gap:11px;align-items:flex-start}
+      .bz .hface{width:74px;height:74px;border-radius:11px;overflow:hidden;flex:none;background:#2a1810;position:relative}
+      .bz .hface img{width:100%;height:100%;object-fit:cover;object-position:50% 14%;filter:var(--duo)}
+      .bz .hid{flex:1 1 auto;min-width:0}
+      .bz .hname{font-family:"Bungee",sans-serif;font-size:.96rem;line-height:1;color:var(--cream)}
+      .bz .hmeta{display:flex;align-items:center;gap:7px;margin-top:6px;flex-wrap:wrap}
+      .bz .role{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700}
+      .bz .spec{font-size:.64rem;color:var(--cream);font-weight:600;margin-top:6px}
+      .bz .hovr{text-align:center;flex:none}
+      .bz .hovr .cv{font-family:"Doto",monospace;font-weight:900;font-size:1.7rem;line-height:.8;color:var(--yellow);text-shadow:0 2px 0 #b8901f}
+      .bz .hovr .cv.q{color:var(--dim);text-shadow:none}
+      .bz .hovr small{display:block;font-size:.46rem;letter-spacing:.2em;color:var(--dim);font-weight:700;margin-top:3px}
+
+      .bz .cover{display:inline-flex;align-items:center;gap:4px;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:#0c2417;background:var(--green);padding:3px 7px;border-radius:99px}
+      .bz .cover svg{width:9px;height:9px;fill:#0c2417}
+      .bz .dup{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--dim);background:rgba(255,255,255,.07);padding:3px 8px;border-radius:99px}
+
+      /* set di stat più ricco (6) compatto, 2 colonne */
+      .bz .hstats{display:grid;grid-template-columns:1fr 1fr;gap:8px 11px;margin-top:11px}
+      .bz .hst b{display:block;font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:3px}
+      .bz .track{display:block;height:6px;border-radius:99px;background:#23246a;overflow:hidden}
+      .bz .fill{display:block;height:100%;border-radius:99px}
+      .bz .fill.hi{background:var(--green)} .bz .fill.md{background:var(--yellow)} .bz .fill.lo{background:var(--red)}
+
+      /* thumbnails per sfogliare i 5 */
+      .bz .thumbs{display:flex;gap:6px;margin-top:10px}
+      .bz .thumb{flex:1 1 0;border-radius:9px;overflow:hidden;position:relative;cursor:pointer;border:2px solid transparent;background:#2a1810;aspect-ratio:1}
+      .bz .thumb img{width:100%;height:100%;object-fit:cover;object-position:50% 16%;filter:var(--duo)}
+      .bz .thumb .tov{position:absolute;bottom:2px;right:3px;font-family:"Doto",monospace;font-weight:900;font-size:.6rem;color:var(--yellow);text-shadow:0 1px 2px #000}
+      .bz .thumb .tcov{position:absolute;top:3px;left:3px;width:8px;height:8px;border-radius:99px;background:var(--green);border:1px solid #0c2417}
+      .bz .vw input:nth-of-type(1):checked ~ .thumbs label:nth-child(1),
+      .bz .vw input:nth-of-type(2):checked ~ .thumbs label:nth-child(2),
+      .bz .vw input:nth-of-type(3):checked ~ .thumbs label:nth-child(3),
+      .bz .vw input:nth-of-type(4):checked ~ .thumbs label:nth-child(4),
+      .bz .vw input:nth-of-type(5):checked ~ .thumbs label:nth-child(5){border-color:var(--yellow);transform:translateY(-2px)}
+
+      /* ---- sussurro "cosa manca" (Normale/Difficile) ---- */
+      .bz .miss{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:11px;font-size:.64rem}
+      .bz .miss-lab{letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:700}
+      .bz .miss-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:99px;background:rgba(255,80,56,.12);border:1px solid rgba(255,80,56,.4);color:#ffb0a6;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+      .bz .miss-chip::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--red);flex:none}
+
+      /* ---- checklist esplicita (solo Facile) ---- */
+      .bz .checklist{margin-top:11px;background:rgba(255,255,255,.03);border:1px solid #2c2d70;border-radius:10px;padding:9px 10px}
+      .bz .ck-lab{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:7px}
+      .bz .ck-row{display:flex;gap:6px;flex-wrap:wrap}
+      .bz .ck{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:700;padding:4px 8px;border-radius:8px;letter-spacing:.03em}
+      .bz .ck svg{width:11px;height:11px}
+      .bz .ck.yes{color:#bdeccd;background:rgba(92,207,142,.13);border:1px solid rgba(92,207,142,.4)}
+      .bz .ck.yes svg{fill:var(--green)}
+      .bz .ck.no{color:#ffb0a6;background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.4)}
+      .bz .ck.no svg{fill:var(--red)}
+
+      /* ---- re-roll (per livello) ---- */
+      .bz .reroll{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:44px;margin-top:10px;background:transparent;border:1.5px solid #34356f;border-radius:10px;color:var(--cream);font:inherit;font-weight:700;font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:border-color .12s ease, background .12s ease}
+      .bz .reroll:hover{border-color:var(--yellow)}
+      .bz .reroll svg{width:15px;height:15px;fill:none;stroke:var(--yellow);stroke-width:2}
+      .bz .reroll .rc{font-family:"Doto",monospace;font-weight:900;color:var(--yellow);background:rgba(255,207,51,.13);padding:1px 8px;border-radius:99px;letter-spacing:.04em}
+      .bz .reroll.off{opacity:.5;cursor:default;border-style:dashed}
+      .bz .reroll.off:hover{border-color:#34356f}
+      .bz .reroll.off svg{stroke:var(--dim)}
+      .bz .reroll.off .rc{color:var(--dim);background:rgba(255,255,255,.05)}
+
+      /* ---- CTA aggiungi ---- */
+      .bz .cta{display:block;width:100%;text-align:center;font-family:"Bungee",sans-serif;font-size:.78rem;letter-spacing:.02em;color:#1a1206;background:var(--yellow);border:0;border-radius:10px;padding:13px 12px;min-height:46px;cursor:pointer;margin-top:10px;box-shadow:0 4px 0 #b8901f;transition:transform .1s ease, box-shadow .1s ease}
+      .bz .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+      .bz .cta .l-on{display:none}
+      .bz .take:checked ~ .cta{background:var(--green);color:#0c2417;box-shadow:0 4px 0 #2f7a52}
+      .bz .take:checked ~ .cta .l-off{display:none}
+      .bz .take:checked ~ .cta .l-on{display:inline}
+
+      /* ---- divisore ---- */
+      .bz .div{height:1px;background:#2c2d70;margin:15px -2px 13px;position:relative}
+      .bz .div::after{content:"";position:absolute;left:0;top:0;width:38px;height:1px;background:var(--orange)}
+
+      /* ════════════ ROSA PROTAGONISTA · cliccabile ════════════ */
+      .bz .ros{position:static}
+      .bz .rost-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+      .bz .rost-head .rl{font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:700}
+      .bz .rost-head .rl em{color:var(--cream);font-style:normal}
+      .bz .rost-head .rc2{font-family:"Doto",monospace;font-weight:900;font-size:1rem;color:var(--yellow);letter-spacing:.04em}
+      .bz .rost-head .rc2 i{color:var(--dim);font-style:normal}
+      .bz .rgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+      .bz .rtile{display:block;background:#191a44;border:1.5px solid #2c2d70;border-radius:11px;padding:7px 7px 8px;cursor:pointer;text-align:center;min-height:44px;transition:border-color .12s ease, transform .12s ease, background .12s ease}
+      .bz .rtile:hover{border-color:#4a4ba0;transform:translateY(-2px)}
+      .bz .rtile:active{transform:translateY(0)}
+      .bz .rface{width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#2a1810;margin-bottom:6px;position:relative}
+      .bz .rface img{width:100%;height:100%;object-fit:cover;object-position:50% 13%;filter:var(--duo)}
+      .bz .rface .rovr{position:absolute;bottom:3px;right:4px;font-family:"Doto",monospace;font-weight:900;font-size:.72rem;color:var(--yellow);text-shadow:0 1px 3px #000}
+      .bz .rface .rovr.q{color:#c9c7ee}
+      .bz .rnm{font-family:"Bungee",sans-serif;font-size:.56rem;line-height:1.05;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .bz .rrole{font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:2px}
+      .bz .rtap{margin-top:9px;font-size:.58rem;color:var(--dim);text-align:center}
+      .bz .rtap b{color:#ffb0a6;font-weight:700}
+
+      /* ════════════ OVERLAY scheda giocatore (sfondo fermo) ════════════ */
+      .bz .ovwrap{display:none;position:absolute;inset:0;z-index:30;align-items:center;justify-content:center;padding:12px}
+      .bz .ros input:nth-of-type(2):checked ~ .ovwrap,
+      .bz .ros input:nth-of-type(3):checked ~ .ovwrap,
+      .bz .ros input:nth-of-type(4):checked ~ .ovwrap,
+      .bz .ros input:nth-of-type(5):checked ~ .ovwrap,
+      .bz .ros input:nth-of-type(6):checked ~ .ovwrap,
+      .bz .ros input:nth-of-type(7):checked ~ .ovwrap{display:flex}
+      .bz .ovscrim{position:absolute;inset:0;background:rgba(5,3,15,.8);cursor:pointer;backdrop-filter:saturate(.7) brightness(.7)}
+      .bz .ovstack{position:relative;z-index:2;width:100%;max-height:100%;overflow:auto}
+      .bz .ovstack .ovcard{display:none}
+      .bz .ros input:nth-of-type(2):checked ~ .ovwrap .ovstack .ovcard:nth-child(1),
+      .bz .ros input:nth-of-type(3):checked ~ .ovwrap .ovstack .ovcard:nth-child(2),
+      .bz .ros input:nth-of-type(4):checked ~ .ovwrap .ovstack .ovcard:nth-child(3),
+      .bz .ros input:nth-of-type(5):checked ~ .ovwrap .ovstack .ovcard:nth-child(4),
+      .bz .ros input:nth-of-type(6):checked ~ .ovwrap .ovstack .ovcard:nth-child(5),
+      .bz .ros input:nth-of-type(7):checked ~ .ovwrap .ovstack .ovcard:nth-child(6){display:block}
+
+      .bz .ovcard{background:linear-gradient(180deg,#211a3c,#12132f);border:1.5px solid #4a3a7a;border-radius:15px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.6)}
+      .bz .ovtop{position:relative;height:118px;background:#2a1810;overflow:hidden}
+      .bz .ovtop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 16%;filter:var(--duo)}
+      .bz .ovtop::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 35%,rgba(13,14,41,.95))}
+      .bz .ovx{position:absolute;top:8px;right:8px;z-index:3;width:30px;height:30px;border-radius:99px;background:rgba(5,3,15,.6);border:1px solid #4a3a7a;display:flex;align-items:center;justify-content:center;cursor:pointer}
+      .bz .ovx svg{width:13px;height:13px;stroke:var(--cream);stroke-width:2.4;fill:none}
+      .bz .ovbadge{position:absolute;top:9px;left:10px;z-index:3}
+      .bz .ovhead{position:absolute;left:11px;right:11px;bottom:9px;z-index:3;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+      .bz .ovname{font-family:"Bungee",sans-serif;font-size:1.05rem;line-height:1;color:var(--cream)}
+      .bz .ovrole{font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:5px}
+      .bz .ovr-big{font-family:"Doto",monospace;font-weight:900;font-size:2rem;line-height:.8;color:var(--yellow);text-shadow:0 2px 0 #b8901f;text-align:center}
+      .bz .ovr-big.q{color:var(--dim);text-shadow:none}
+      .bz .ovr-big small{display:block;font-size:.42rem;letter-spacing:.2em;color:var(--dim);font-weight:700;margin-top:3px;text-shadow:none}
+      .bz .ovbody{padding:12px 13px 14px}
+
+      .bz .traits{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
+      .bz .trait{display:inline-flex;align-items:center;gap:5px;font-size:.6rem;font-weight:700;color:var(--yellow);background:rgba(255,207,51,.1);border:1px solid rgba(255,207,51,.35);padding:4px 9px;border-radius:99px;letter-spacing:.01em}
+      .bz .trait::before{content:"";width:5px;height:5px;border-radius:99px;background:var(--orange);flex:none}
+
+      .bz .ovstats-lab{font-size:.55rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:8px}
+      .bz .ovstats-lab::after{content:"";flex:1;height:1px;background:#2c2d70}
+      .bz .ovstats{display:grid;grid-template-columns:1fr;gap:8px}
+      .bz .ost{display:grid;grid-template-columns:78px 1fr 26px;gap:9px;align-items:center}
+      .bz .ost b{font-size:.58rem;letter-spacing:.04em;color:var(--dim);font-weight:700;text-transform:uppercase}
+      .bz .ost .num{font-family:"Doto",monospace;font-weight:700;font-size:.72rem;color:var(--cream);text-align:right}
+      .bz .ost .num.q{color:var(--dim)}
+      </style>
+
+      <!-- ═══════════════ ① FACILE ═══════════════ -->
+      <section class="dir-panel" data-name="Facile" data-mood="stat+OVR pieni · checklist ✓/✗ · 2 re-roll" data-why="Il livello che INSEGNA: vedi tutto e una checklist ti dice quali buchi riempire, con 2 rigenerate per scappare da una brutta mano." data-role="Guidato">
+        <div class="bz"><div class="stagewrap"><div class="phone"><div class="screen">
+
+          <div class="apphd">
+            <div class="wm">BU<b>ZZ</b>ER</div>
+            <div class="mode">L'Imbattuto<br><span class="lv">Facile</span></div>
+          </div>
+
+          <div class="seclab"><span>In scelta · 7ª</span><span class="pk">PICK 7<i>/10</i></span></div>
+
+          <div class="vw">
+            <input class="k" type="radio" name="vetF" id="fv1" checked>
+            <input class="k" type="radio" name="vetF" id="fv2">
+            <input class="k" type="radio" name="vetF" id="fv3">
+            <input class="k" type="radio" name="vetF" id="fv4">
+            <input class="k" type="radio" name="vetF" id="fv5">
+
+            <div class="heroes">
+              <article class="hero h1">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Wembanyama</div><div class="hmeta"><span class="cover"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Copre il buco</span></div><div class="role" style="margin-top:6px">Centro · SAS</div><div class="spec">Protegge il ferro</div></div>
+                  <div class="hovr"><span class="cv">97</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:62%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill hi" style="width:96%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill hi" style="width:90%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill lo" style="width:34%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:88%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:84%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h2">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Embiid</div><div class="hmeta"><span class="cover"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Copre il buco</span></div><div class="role" style="margin-top:6px">Centro · PHI</div><div class="spec">Domina l'area</div></div>
+                  <div class="hovr"><span class="cv">96</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:70%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill hi" style="width:92%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill hi" style="width:88%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:55%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill md" style="width:70%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h3">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Edwards</div><div class="hmeta"><span class="dup">Doppione</span></div><div class="role" style="margin-top:6px">Guardia · MIN</div><div class="spec">Esplosivo</div></div>
+                  <div class="hovr"><span class="cv">93</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:84%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:30%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:26%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:60%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill md" style="width:66%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:95%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h4">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Tatum</div><div class="hmeta"><span class="dup">Perimetro</span></div><div class="role" style="margin-top:6px">Ala · BOS</div><div class="spec">Tiro &amp; taglio</div></div>
+                  <div class="hovr"><span class="cv">94</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:86%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:38%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill md" style="width:58%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:62%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:80%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h5">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Haliburton</div><div class="hmeta"><span class="dup">Doppione</span></div><div class="role" style="margin-top:6px">Play · IND</div><div class="spec">Regia pura</div></div>
+                  <div class="hovr"><span class="cv">90</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:24%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:28%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill hi" style="width:94%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill md" style="width:56%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill md" style="width:64%"></span></span></div>
+                </div>
+              </article>
+            </div>
+
+            <div class="thumbs">
+              <label class="thumb" for="fv1"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" onerror="this.style.display='none'"><span class="tcov"></span><span class="tov">97</span></label>
+              <label class="thumb" for="fv2"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png" alt="Embiid" onerror="this.style.display='none'"><span class="tcov"></span><span class="tov">96</span></label>
+              <label class="thumb" for="fv3"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" onerror="this.style.display='none'"><span class="tov">93</span></label>
+              <label class="thumb" for="fv4"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" onerror="this.style.display='none'"><span class="tov">94</span></label>
+              <label class="thumb" for="fv5"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton" onerror="this.style.display='none'"><span class="tov">90</span></label>
+            </div>
+          </div>
+
+          <div class="checklist">
+            <div class="ck-lab">Cosa copre la tua rosa</div>
+            <div class="ck-row">
+              <span class="ck yes"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>Tiro</span>
+              <span class="ck yes"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>Regia</span>
+              <span class="ck yes"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>Difesa</span>
+              <span class="ck no"><svg viewBox="0 0 24 24"><path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6z"/></svg>Ferro</span>
+              <span class="ck no"><svg viewBox="0 0 24 24"><path d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12 19 6.4 17.6 5 12 10.6z"/></svg>Rimbalzo</span>
+            </div>
+          </div>
+
+          <button class="reroll" type="button"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg> Rigenera le 5 <span class="rc">2</span></button>
+
+          <input class="k take" type="checkbox" id="ftake">
+          <label class="cta" for="ftake"><span class="l-off">Prendi questo</span><span class="l-on">Preso ✓</span></label>
+
+          <div class="div"></div>
+
+          <div class="ros">
+            <input class="k" type="radio" name="rosF" id="fr0" checked>
+            <input class="k" type="radio" name="rosF" id="fr1">
+            <input class="k" type="radio" name="rosF" id="fr2">
+            <input class="k" type="radio" name="rosF" id="fr3">
+            <input class="k" type="radio" name="rosF" id="fr4">
+            <input class="k" type="radio" name="rosF" id="fr5">
+            <input class="k" type="radio" name="rosF" id="fr6">
+
+            <div class="rost-head"><span class="rl">La tua <em>rosa</em></span><span class="rc2">6<i>/10</i></span></div>
+            <div class="rgrid">
+              <label class="rtile" for="fr1"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">96</span></div><div class="rnm">Gilgeous</div><div class="rrole">G · OKC</div></label>
+              <label class="rtile" for="fr2"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">90</span></div><div class="rnm">Mitchell</div><div class="rrole">G · CLE</div></label>
+              <label class="rtile" for="fr3"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">89</span></div><div class="rnm">Booker</div><div class="rrole">G · PHX</div></label>
+              <label class="rtile" for="fr4"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">88</span></div><div class="rnm">Brunson</div><div class="rrole">P · NYK</div></label>
+              <label class="rtile" for="fr5"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">95</span></div><div class="rnm">Curry</div><div class="rrole">P · GSW</div></label>
+              <label class="rtile" for="fr6"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">96</span></div><div class="rnm">Doncic</div><div class="rrole">P · DAL</div></label>
+            </div>
+            <div class="rtap">Tocca un giocatore per la scheda · <b>6 esterni, 0 lunghi</b> · +3 da pescare</div>
+
+            <div class="ovwrap">
+              <label class="ovscrim" for="fr0"></label>
+              <div class="ovstack">
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="fr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Gilgeous-A.</div><div class="ovrole">Guardia · OKC</div></div><div class="ovr-big">96<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Maestro del mid-range</span><span class="trait">Ladro di palloni</span><span class="trait">Va in lunetta</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:94%"></span></span><span class="num">94</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:38%"></span></span><span class="num">38</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:30%"></span></span><span class="num">30</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill hi" style="width:80%"></span></span><span class="num">80</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="fr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Mitchell</div><div class="ovrole">Guardia · CLE</div></div><div class="ovr-big">90<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Bombardiere</span><span class="trait">Esplosivo</span><span class="trait">Sangue freddo</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:34%"></span></span><span class="num">34</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:22%"></span></span><span class="num">22</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:58%"></span></span><span class="num">58</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="fr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Booker</div><div class="ovrole">Guardia · PHX</div></div><div class="ovr-big">89<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Tiro puro</span><span class="trait">Mid-range mortale</span><span class="trait">Letale dai gomiti</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:85%"></span></span><span class="num">85</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:90%"></span></span><span class="num">90</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:72%"></span></span><span class="num">72</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:36%"></span></span><span class="num">36</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:24%"></span></span><span class="num">24</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:55%"></span></span><span class="num">55</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:66%"></span></span><span class="num">66</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="fr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Brunson</div><div class="ovrole">Playmaker · NYK</div></div><div class="ovr-big">88<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Iso-killer</span><span class="trait">Mani sicure</span><span class="trait">Cuore clutch</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:74%"></span></span><span class="num">74</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:78%"></span></span><span class="num">78</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:30%"></span></span><span class="num">30</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:18%"></span></span><span class="num">18</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill lo" style="width:46%"></span></span><span class="num">46</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:58%"></span></span><span class="num">58</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="fr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Curry</div><div class="ovrole">Playmaker · GSW</div></div><div class="ovr-big">95<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Gravità da 3</span><span class="trait">Range illimitato</span><span class="trait">Splash</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:99%"></span></span><span class="num">99</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:34%"></span></span><span class="num">34</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:16%"></span></span><span class="num">16</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:52%"></span></span><span class="num">52</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="fr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Doncic</div><div class="ovrole">Playmaker · DAL</div></div><div class="ovr-big">96<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Step-back letale</span><span class="trait">Visione di gioco</span><span class="trait">Tripla doppia</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:28%"></span></span><span class="num">28</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:96%"></span></span><span class="num">96</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill lo" style="width:44%"></span></span><span class="num">44</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:56%"></span></span><span class="num">56</span></div></div></div></article>
+              </div>
+            </div>
+          </div>
+
+        </div></div></div></div>
+      </section>
+
+      <!-- ═══════════════ ② NORMALE ═══════════════ -->
+      <section class="dir-panel" data-name="Normale" data-mood="stat+OVR pieni · solo il sussurro · 1 re-roll" data-why="Vedi gli stessi numeri, ma la checklist sparisce: i buchi li deduci tu dal sussurro «ti manca…». Una sola rigenerata per scappare da una brutta mano." data-role="In chiaro">
+        <div class="bz"><div class="stagewrap"><div class="phone"><div class="screen">
+
+          <div class="apphd">
+            <div class="wm">BU<b>ZZ</b>ER</div>
+            <div class="mode">L'Imbattuto<br><span class="lv">Normale</span></div>
+          </div>
+
+          <div class="seclab"><span>In scelta · 7ª</span><span class="pk">PICK 7<i>/10</i></span></div>
+
+          <div class="vw">
+            <input class="k" type="radio" name="vetN" id="nv1" checked>
+            <input class="k" type="radio" name="vetN" id="nv2">
+            <input class="k" type="radio" name="vetN" id="nv3">
+            <input class="k" type="radio" name="vetN" id="nv4">
+            <input class="k" type="radio" name="vetN" id="nv5">
+
+            <div class="heroes">
+              <article class="hero h1">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Wembanyama</div><div class="hmeta"><span class="cover"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Copre il buco</span></div><div class="role" style="margin-top:6px">Centro · SAS</div><div class="spec">Protegge il ferro</div></div>
+                  <div class="hovr"><span class="cv">97</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:62%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill hi" style="width:96%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill hi" style="width:90%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill lo" style="width:34%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:88%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:84%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h2">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Embiid</div><div class="hmeta"><span class="cover"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Copre il buco</span></div><div class="role" style="margin-top:6px">Centro · PHI</div><div class="spec">Domina l'area</div></div>
+                  <div class="hovr"><span class="cv">96</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:70%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill hi" style="width:92%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill hi" style="width:88%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:55%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill md" style="width:70%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h3">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Edwards</div><div class="hmeta"><span class="dup">Doppione</span></div><div class="role" style="margin-top:6px">Guardia · MIN</div><div class="spec">Esplosivo</div></div>
+                  <div class="hovr"><span class="cv">93</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:84%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:30%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:26%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:60%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill md" style="width:66%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:95%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h4">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Tatum</div><div class="hmeta"><span class="dup">Perimetro</span></div><div class="role" style="margin-top:6px">Ala · BOS</div><div class="spec">Tiro &amp; taglio</div></div>
+                  <div class="hovr"><span class="cv">94</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:86%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:38%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill md" style="width:58%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:62%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:80%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h5">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Haliburton</div><div class="hmeta"><span class="dup">Doppione</span></div><div class="role" style="margin-top:6px">Play · IND</div><div class="spec">Regia pura</div></div>
+                  <div class="hovr"><span class="cv">90</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:24%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:28%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill hi" style="width:94%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill md" style="width:56%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill md" style="width:64%"></span></span></div>
+                </div>
+              </article>
+            </div>
+
+            <div class="thumbs">
+              <label class="thumb" for="nv1"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" onerror="this.style.display='none'"><span class="tcov"></span><span class="tov">97</span></label>
+              <label class="thumb" for="nv2"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png" alt="Embiid" onerror="this.style.display='none'"><span class="tcov"></span><span class="tov">96</span></label>
+              <label class="thumb" for="nv3"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" onerror="this.style.display='none'"><span class="tov">93</span></label>
+              <label class="thumb" for="nv4"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" onerror="this.style.display='none'"><span class="tov">94</span></label>
+              <label class="thumb" for="nv5"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton" onerror="this.style.display='none'"><span class="tov">90</span></label>
+            </div>
+          </div>
+
+          <div class="miss">
+            <span class="miss-lab">Ti manca</span>
+            <span class="miss-chip">Ferro</span><span class="miss-chip">Rimbalzo</span>
+          </div>
+
+          <button class="reroll" type="button"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg> Rigenera le 5 <span class="rc">1</span></button>
+
+          <input class="k take" type="checkbox" id="ntake">
+          <label class="cta" for="ntake"><span class="l-off">Prendi questo</span><span class="l-on">Preso ✓</span></label>
+
+          <div class="div"></div>
+
+          <div class="ros">
+            <input class="k" type="radio" name="rosN" id="nr0" checked>
+            <input class="k" type="radio" name="rosN" id="nr1">
+            <input class="k" type="radio" name="rosN" id="nr2">
+            <input class="k" type="radio" name="rosN" id="nr3">
+            <input class="k" type="radio" name="rosN" id="nr4">
+            <input class="k" type="radio" name="rosN" id="nr5">
+            <input class="k" type="radio" name="rosN" id="nr6">
+
+            <div class="rost-head"><span class="rl">La tua <em>rosa</em></span><span class="rc2">6<i>/10</i></span></div>
+            <div class="rgrid">
+              <label class="rtile" for="nr1"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">96</span></div><div class="rnm">Gilgeous</div><div class="rrole">G · OKC</div></label>
+              <label class="rtile" for="nr2"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">90</span></div><div class="rnm">Mitchell</div><div class="rrole">G · CLE</div></label>
+              <label class="rtile" for="nr3"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">89</span></div><div class="rnm">Booker</div><div class="rrole">G · PHX</div></label>
+              <label class="rtile" for="nr4"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">88</span></div><div class="rnm">Brunson</div><div class="rrole">P · NYK</div></label>
+              <label class="rtile" for="nr5"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">95</span></div><div class="rnm">Curry</div><div class="rrole">P · GSW</div></label>
+              <label class="rtile" for="nr6"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr">96</span></div><div class="rnm">Doncic</div><div class="rrole">P · DAL</div></label>
+            </div>
+            <div class="rtap">Tocca un giocatore per la scheda · <b>6 esterni, 0 lunghi</b> · +3 da pescare</div>
+
+            <div class="ovwrap">
+              <label class="ovscrim" for="nr0"></label>
+              <div class="ovstack">
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="nr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Gilgeous-A.</div><div class="ovrole">Guardia · OKC</div></div><div class="ovr-big">96<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Maestro del mid-range</span><span class="trait">Ladro di palloni</span><span class="trait">Va in lunetta</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:94%"></span></span><span class="num">94</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:38%"></span></span><span class="num">38</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:30%"></span></span><span class="num">30</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill hi" style="width:80%"></span></span><span class="num">80</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="nr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Mitchell</div><div class="ovrole">Guardia · CLE</div></div><div class="ovr-big">90<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Bombardiere</span><span class="trait">Esplosivo</span><span class="trait">Sangue freddo</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:34%"></span></span><span class="num">34</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:22%"></span></span><span class="num">22</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:58%"></span></span><span class="num">58</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="nr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Booker</div><div class="ovrole">Guardia · PHX</div></div><div class="ovr-big">89<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Tiro puro</span><span class="trait">Mid-range mortale</span><span class="trait">Letale dai gomiti</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:85%"></span></span><span class="num">85</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:90%"></span></span><span class="num">90</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:72%"></span></span><span class="num">72</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:36%"></span></span><span class="num">36</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:24%"></span></span><span class="num">24</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:55%"></span></span><span class="num">55</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:66%"></span></span><span class="num">66</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="nr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Brunson</div><div class="ovrole">Playmaker · NYK</div></div><div class="ovr-big">88<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Iso-killer</span><span class="trait">Mani sicure</span><span class="trait">Cuore clutch</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:74%"></span></span><span class="num">74</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:78%"></span></span><span class="num">78</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:30%"></span></span><span class="num">30</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:18%"></span></span><span class="num">18</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill lo" style="width:46%"></span></span><span class="num">46</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:58%"></span></span><span class="num">58</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="nr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Curry</div><div class="ovrole">Playmaker · GSW</div></div><div class="ovr-big">95<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Gravità da 3</span><span class="trait">Range illimitato</span><span class="trait">Splash</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:99%"></span></span><span class="num">99</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:34%"></span></span><span class="num">34</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:16%"></span></span><span class="num">16</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:52%"></span></span><span class="num">52</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="nr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Doncic</div><div class="ovrole">Playmaker · DAL</div></div><div class="ovr-big">96<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Step-back letale</span><span class="trait">Visione di gioco</span><span class="trait">Tripla doppia</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:28%"></span></span><span class="num">28</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:96%"></span></span><span class="num">96</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill lo" style="width:44%"></span></span><span class="num">44</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:56%"></span></span><span class="num">56</span></div></div></div></article>
+              </div>
+            </div>
+          </div>
+
+        </div></div></div></div>
+      </section>
+
+      <!-- ═══════════════ ③ DIFFICILE ═══════════════ -->
+      <section class="dir-panel" data-name="Difficile" data-mood="stat sì · OVR nascosto «?» · 0 re-roll" data-why="La nebbia entra: niente OVR, giudichi solo dalle statistiche granulari, nessuna rigenerata. La bravura conta di più (anche la rosa già presa nasconde l'OVR)." data-role="Nebbia">
+        <div class="bz"><div class="stagewrap"><div class="phone"><div class="screen">
+
+          <div class="apphd">
+            <div class="wm">BU<b>ZZ</b>ER</div>
+            <div class="mode">L'Imbattuto<br><span class="lv">Difficile</span></div>
+          </div>
+
+          <div class="seclab"><span>In scelta · 7ª</span><span class="pk">PICK 7<i>/10</i></span></div>
+
+          <div class="vw">
+            <input class="k" type="radio" name="vetD" id="dv1" checked>
+            <input class="k" type="radio" name="vetD" id="dv2">
+            <input class="k" type="radio" name="vetD" id="dv3">
+            <input class="k" type="radio" name="vetD" id="dv4">
+            <input class="k" type="radio" name="vetD" id="dv5">
+
+            <div class="heroes">
+              <article class="hero h1">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Wembanyama</div><div class="hmeta"><span class="cover"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Copre il buco</span></div><div class="role" style="margin-top:6px">Centro · SAS</div><div class="spec">Protegge il ferro</div></div>
+                  <div class="hovr"><span class="cv q">?</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:62%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill hi" style="width:96%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill hi" style="width:90%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill lo" style="width:34%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:88%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:84%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h2">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Embiid</div><div class="hmeta"><span class="cover"><svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Copre il buco</span></div><div class="role" style="margin-top:6px">Centro · PHI</div><div class="spec">Domina l'area</div></div>
+                  <div class="hovr"><span class="cv q">?</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:70%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill hi" style="width:92%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill hi" style="width:88%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:55%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill md" style="width:70%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h3">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Edwards</div><div class="hmeta"><span class="dup">Doppione</span></div><div class="role" style="margin-top:6px">Guardia · MIN</div><div class="spec">Esplosivo</div></div>
+                  <div class="hovr"><span class="cv q">?</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:84%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:30%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:26%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:60%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill md" style="width:66%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:95%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h4">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Tatum</div><div class="hmeta"><span class="dup">Perimetro</span></div><div class="role" style="margin-top:6px">Ala · BOS</div><div class="spec">Tiro &amp; taglio</div></div>
+                  <div class="hovr"><span class="cv q">?</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:86%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:38%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill md" style="width:58%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill md" style="width:62%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill hi" style="width:80%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                </div>
+              </article>
+              <article class="hero h5">
+                <div class="hero-row">
+                  <span class="hface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="" onerror="this.parentNode.style.background='#3a2418'"></span>
+                  <div class="hid"><div class="hname">Haliburton</div><div class="hmeta"><span class="dup">Doppione</span></div><div class="role" style="margin-top:6px">Play · IND</div><div class="spec">Regia pura</div></div>
+                  <div class="hovr"><span class="cv q">?</span><small>OVR</small></div>
+                </div>
+                <div class="hstats">
+                  <div class="hst"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:82%"></span></span></div>
+                  <div class="hst"><b>Ferro</b><span class="track"><span class="fill lo" style="width:24%"></span></span></div>
+                  <div class="hst"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:28%"></span></span></div>
+                  <div class="hst"><b>Regia</b><span class="track"><span class="fill hi" style="width:94%"></span></span></div>
+                  <div class="hst"><b>Difesa</b><span class="track"><span class="fill md" style="width:56%"></span></span></div>
+                  <div class="hst"><b>Atletismo</b><span class="track"><span class="fill md" style="width:64%"></span></span></div>
+                </div>
+              </article>
+            </div>
+
+            <div class="thumbs">
+              <label class="thumb" for="dv1"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" onerror="this.style.display='none'"><span class="tcov"></span><span class="tov">?</span></label>
+              <label class="thumb" for="dv2"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png" alt="Embiid" onerror="this.style.display='none'"><span class="tcov"></span><span class="tov">?</span></label>
+              <label class="thumb" for="dv3"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" onerror="this.style.display='none'"><span class="tov">?</span></label>
+              <label class="thumb" for="dv4"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" onerror="this.style.display='none'"><span class="tov">?</span></label>
+              <label class="thumb" for="dv5"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton" onerror="this.style.display='none'"><span class="tov">?</span></label>
+            </div>
+          </div>
+
+          <div class="miss">
+            <span class="miss-lab">Ti manca</span>
+            <span class="miss-chip">Ferro</span><span class="miss-chip">Rimbalzo</span>
+          </div>
+
+          <button class="reroll off" type="button"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg> Niente re-roll <span class="rc">0</span></button>
+
+          <input class="k take" type="checkbox" id="dtake">
+          <label class="cta" for="dtake"><span class="l-off">Prendi questo</span><span class="l-on">Preso ✓</span></label>
+
+          <div class="div"></div>
+
+          <div class="ros">
+            <input class="k" type="radio" name="rosD" id="dr0" checked>
+            <input class="k" type="radio" name="rosD" id="dr1">
+            <input class="k" type="radio" name="rosD" id="dr2">
+            <input class="k" type="radio" name="rosD" id="dr3">
+            <input class="k" type="radio" name="rosD" id="dr4">
+            <input class="k" type="radio" name="rosD" id="dr5">
+            <input class="k" type="radio" name="rosD" id="dr6">
+
+            <div class="rost-head"><span class="rl">La tua <em>rosa</em></span><span class="rc2">6<i>/10</i></span></div>
+            <div class="rgrid">
+              <label class="rtile" for="dr1"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr q">?</span></div><div class="rnm">Gilgeous</div><div class="rrole">G · OKC</div></label>
+              <label class="rtile" for="dr2"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr q">?</span></div><div class="rnm">Mitchell</div><div class="rrole">G · CLE</div></label>
+              <label class="rtile" for="dr3"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr q">?</span></div><div class="rnm">Booker</div><div class="rrole">G · PHX</div></label>
+              <label class="rtile" for="dr4"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr q">?</span></div><div class="rnm">Brunson</div><div class="rrole">P · NYK</div></label>
+              <label class="rtile" for="dr5"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr q">?</span></div><div class="rnm">Curry</div><div class="rrole">P · GSW</div></label>
+              <label class="rtile" for="dr6"><div class="rface"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><span class="rovr q">?</span></div><div class="rnm">Doncic</div><div class="rrole">P · DAL</div></label>
+            </div>
+            <div class="rtap">Tocca un giocatore per la scheda · <b>OVR nascosto</b> · giudichi dalle stat</div>
+
+            <div class="ovwrap">
+              <label class="ovscrim" for="dr0"></label>
+              <div class="ovstack">
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="dr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Gilgeous-A.</div><div class="ovrole">Guardia · OKC</div></div><div class="ovr-big q">?<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Maestro del mid-range</span><span class="trait">Ladro di palloni</span><span class="trait">Va in lunetta</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:94%"></span></span><span class="num">94</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:38%"></span></span><span class="num">38</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:30%"></span></span><span class="num">30</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill hi" style="width:80%"></span></span><span class="num">80</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="dr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Mitchell</div><div class="ovrole">Guardia · CLE</div></div><div class="ovr-big q">?<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Bombardiere</span><span class="trait">Esplosivo</span><span class="trait">Sangue freddo</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:34%"></span></span><span class="num">34</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:22%"></span></span><span class="num">22</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:58%"></span></span><span class="num">58</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="dr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Booker</div><div class="ovrole">Guardia · PHX</div></div><div class="ovr-big q">?<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Tiro puro</span><span class="trait">Mid-range mortale</span><span class="trait">Letale dai gomiti</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:85%"></span></span><span class="num">85</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:90%"></span></span><span class="num">90</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:72%"></span></span><span class="num">72</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:36%"></span></span><span class="num">36</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:24%"></span></span><span class="num">24</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:55%"></span></span><span class="num">55</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:66%"></span></span><span class="num">66</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="dr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Brunson</div><div class="ovrole">Playmaker · NYK</div></div><div class="ovr-big q">?<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Iso-killer</span><span class="trait">Mani sicure</span><span class="trait">Cuore clutch</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill md" style="width:74%"></span></span><span class="num">74</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:78%"></span></span><span class="num">78</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:30%"></span></span><span class="num">30</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:18%"></span></span><span class="num">18</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill lo" style="width:46%"></span></span><span class="num">46</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:58%"></span></span><span class="num">58</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="dr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Curry</div><div class="ovrole">Playmaker · GSW</div></div><div class="ovr-big q">?<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Gravità da 3</span><span class="trait">Range illimitato</span><span class="trait">Splash</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:99%"></span></span><span class="num">99</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill md" style="width:70%"></span></span><span class="num">70</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill lo" style="width:34%"></span></span><span class="num">34</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:16%"></span></span><span class="num">16</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:86%"></span></span><span class="num">86</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill md" style="width:52%"></span></span><span class="num">52</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div></div></div></article>
+                <article class="ovcard"><div class="ovtop"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" onerror="this.parentNode.style.background='#3a2418'"><label class="ovx" for="dr0"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></label><div class="ovbadge"><span class="dup">In rosa</span></div><div class="ovhead"><div><div class="ovname">Doncic</div><div class="ovrole">Playmaker · DAL</div></div><div class="ovr-big q">?<small>OVR</small></div></div></div><div class="ovbody"><div class="traits"><span class="trait">Step-back letale</span><span class="trait">Visione di gioco</span><span class="trait">Tripla doppia</span></div><div class="ovstats-lab">Statistiche</div><div class="ovstats"><div class="ost"><b>Tiro 3</b><span class="track"><span class="fill hi" style="width:84%"></span></span><span class="num">84</span></div><div class="ost"><b>Tiro medio</b><span class="track"><span class="fill hi" style="width:88%"></span></span><span class="num">88</span></div><div class="ost"><b>Finitura</b><span class="track"><span class="fill hi" style="width:82%"></span></span><span class="num">82</span></div><div class="ost"><b>Rimbalzo</b><span class="track"><span class="fill md" style="width:64%"></span></span><span class="num">64</span></div><div class="ost"><b>Protez. ferro</b><span class="track"><span class="fill lo" style="width:28%"></span></span><span class="num">28</span></div><div class="ost"><b>Regia</b><span class="track"><span class="fill hi" style="width:96%"></span></span><span class="num">96</span></div><div class="ost"><b>Difesa per.</b><span class="track"><span class="fill lo" style="width:44%"></span></span><span class="num">44</span></div><div class="ost"><b>Atletismo</b><span class="track"><span class="fill md" style="width:56%"></span></span><span class="num">56</span></div></div></div></article>
+              </div>
+            </div>
+          </div>
+
+        </div></div></div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest('[data-save]');
+    if(!btn) return;
+    const on = btn.dataset.on === '1';
+    btn.dataset.on = on ? '0':'1';
+    btn.textContent = on ? 'Salva' : 'Salvato ✓';
+    try{ localStorage.setItem('mockup-demo-saved', on ? '0':'1'); }catch(_){}
+  });
+})();
+</script>
+</body>
+</html>

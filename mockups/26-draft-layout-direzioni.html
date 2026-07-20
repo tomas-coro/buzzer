@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA, CONTENUTO VARIABILE — sostituito SOLO #panels e i titoli.
+  Pass 1 del nuovo draft (stile FUT): 3 TELAI a difficolta' Normale.
+-->
+<title>Draft FUT · 3 telai a confronto (Normale) · BUZZER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:54ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Pass 1 · telai a confronto</div>
+    <h1 id="mockTitle">Draft nuovo · 3 telai della schermata</h1>
+    <p class="lead">I 3 nomi in alto sono <b>telai</b> diversi della stessa schermata: 5 carte da tutta la lega, ruoli misti, difficolta' <b>Normale</b> (fasce). Cambia <b>come leggi e scegli</b>, non l'informazione. Scegline uno, poi lo rifinisco nei 4 livelli.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Telai"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <style>
+        /* ─── stili scoped BUZZER · Cabina 90s (NBA Jam) — vivono dentro #panels ─── */
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@500;700;900&display=swap');
+
+        .bzph{
+          width:344px; max-width:100%; margin:2px auto 0;
+          background:linear-gradient(180deg,#15163a 0%,#0d0e29 100%);
+          border:3px solid #000; border-radius:30px; padding:16px 14px;
+          box-shadow:7px 7px 0 #000; color:#fff; position:relative; overflow:hidden;
+          font-family:"Hanken Grotesk",sans-serif;
+        }
+        .bzph::before{ /* retino arena sottile */
+          content:""; position:absolute; inset:0; pointer-events:none; opacity:.06;
+          background-image:radial-gradient(circle, #6b6cc0 1px, transparent 1px);
+          background-size:14px 14px;
+        }
+        .bzph > *{ position:relative; z-index:1 }
+
+        /* ── context bar (comune) ── */
+        .ctx{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:11px }
+        .ctx-l{ font-family:"Bungee"; font-size:.86rem; color:#ffcf33; line-height:1; letter-spacing:.3px }
+        .ctx-l small{ display:block; font-family:"Hanken Grotesk"; font-weight:700; font-size:.56rem;
+          color:#7c7bbf; letter-spacing:.16em; text-transform:uppercase; margin-top:6px }
+        .ctx-pick{ font-family:"Bungee"; font-size:.56rem; color:#0d0e29; background:#ff5b1e;
+          border:2px solid #000; border-radius:9px; padding:6px 9px; box-shadow:2px 2px 0 #000;
+          white-space:nowrap; letter-spacing:.5px }
+
+        /* ── roster strip (comune): la deduzione del Normale ── */
+        .ros{ background:#10112e; border:2px solid #2c2d63; border-radius:13px; padding:9px 10px 10px; margin-bottom:12px }
+        .ros-h{ display:flex; justify-content:space-between; align-items:center; font-size:.56rem;
+          letter-spacing:.16em; text-transform:uppercase; color:#9594d0; font-weight:700; margin-bottom:8px }
+        .ros-h b{ font-family:"Bungee"; font-size:.62rem; color:#ffcf33; letter-spacing:0 }
+        .ros-slots{ display:flex; gap:5px }
+        .rslot{ flex:1; height:30px; border-radius:7px; border:2px dashed #3a3b78; background:#0d0e29;
+          display:flex; align-items:center; justify-content:center;
+          font-family:"Bungee"; font-size:.5rem; color:#54559a; letter-spacing:.3px }
+        .rslot.fill{ border-style:solid; border-color:#000; background:#3a3b78; color:#cfcdf0; box-shadow:1px 1px 0 #000 }
+        .ros-read{ margin-top:8px; font-size:.62rem; color:#ff8a4d; letter-spacing:.02em; display:flex; align-items:center; gap:6px }
+        .ros-read svg{ width:12px; height:12px; flex:none }
+        .ros-read b{ color:#ffcf33 }
+
+        /* ── colori fasce ── */
+        .f-hi{ color:#5ccf8e } .f-md{ color:#ffcf33 } .f-lo{ color:#ff7a6a }
+
+        /* photo duotone brace (comune) */
+        .ph-img{ background:#3a2418; overflow:hidden; border:2px solid #000; position:relative;
+          display:flex; align-items:center; justify-content:center; flex:none }
+        .ph-img img{ width:100%; height:100%; object-fit:cover; display:block;
+          filter:grayscale(1) sepia(1) saturate(2.4) hue-rotate(-18deg) contrast(1.05) }
+
+        /* tap target helper */
+        .pick-dot{ position:absolute; top:-9px; right:-9px; width:26px; height:26px; background:#ffcf33;
+          border:2px solid #000; border-radius:99px; display:flex; align-items:center; justify-content:center;
+          opacity:0; transform:scale(.4); transition:opacity .15s ease, transform .15s ease; z-index:4 }
+        .conf{ font-family:"Bungee"; font-size:.74rem; letter-spacing:.5px; text-align:center;
+          margin-top:12px; padding:13px; min-height:48px; border:3px solid #000; border-radius:12px;
+          background:#2a2b59; color:#6f6eb0; box-shadow:4px 4px 0 #000; transition:background .15s, color .15s }
+
+        /* ══════════ TELAIO A · VENTAGLIO ══════════ */
+        .fanwrap{ position:relative; height:296px; margin:4px 0 2px }
+        .fcard{ position:absolute; bottom:0; left:50%; width:118px; margin-left:-59px;
+          background:#1b1c46; border:2px solid #3a3b78; border-radius:14px; padding:8px 8px 9px;
+          transform-origin:bottom center; cursor:pointer; overflow:hidden;
+          transition:transform .2s ease, opacity .2s ease, box-shadow .2s ease; }
+        .fcard input{ position:absolute; opacity:0; width:0; height:0; pointer-events:none }
+        .fcard:nth-child(1){ transform:rotate(-17deg) translateX(-104px) translateY(20px); z-index:1 }
+        .fcard:nth-child(2){ transform:rotate(-8.5deg) translateX(-53px) translateY(4px); z-index:2 }
+        .fcard:nth-child(3){ transform:rotate(0deg) translateX(0) translateY(-2px); z-index:3 }
+        .fcard:nth-child(4){ transform:rotate(8.5deg) translateX(53px) translateY(4px); z-index:2 }
+        .fcard:nth-child(5){ transform:rotate(17deg) translateX(104px) translateY(20px); z-index:1 }
+        .fanwrap:has(input:checked) .fcard:not(:has(input:checked)){ opacity:.42 }
+        .fcard:has(input:checked){ opacity:1; transform:rotate(0deg) translateX(0) translateY(-14px) scale(1.07);
+          z-index:9; border-color:#ffcf33; box-shadow:4px 6px 0 #000 }
+        .fc-photo{ width:100%; height:84px; border-radius:9px }
+        .fc-name{ font-family:"Bungee"; font-size:.62rem; margin-top:7px; line-height:1; letter-spacing:.2px }
+        .fc-role{ font-size:.55rem; color:#b3b1e6; margin-top:4px; text-transform:uppercase; letter-spacing:.1em }
+        .fc-tags{ display:flex; flex-wrap:wrap; gap:3px; margin-top:7px }
+        .ftag{ font-size:.5rem; font-weight:700; letter-spacing:.04em; padding:3px 5px; border-radius:5px;
+          background:#0d0e29; border:1px solid #4a4b8c; color:#cfcdf0; white-space:nowrap }
+        .fc-fasce{ margin-top:8px; display:none; gap:3px }
+        .fcard:has(input:checked) .fc-fasce{ display:grid }
+        .fc-fasce .row{ display:flex; justify-content:space-between; font-size:.52rem; letter-spacing:.02em }
+        .fc-fasce .row span:first-child{ color:#9594d0; text-transform:uppercase }
+        .fc-fasce .row b{ font-family:"Bungee"; font-size:.48rem; letter-spacing:.3px }
+        .fcard:has(input:checked) .pick-dot{ opacity:1; transform:scale(1) }
+        .fanwrap:has(input:checked) ~ .conf{ background:#ffcf33; color:#0d0e29 }
+        .fan-tip{ text-align:center; font-size:.6rem; color:#7c7bbf; letter-spacing:.04em; margin-top:2px }
+
+        /* ══════════ TELAIO B · SCOUT A COLONNA ══════════ */
+        .scout-tabs{ display:flex; gap:5px; margin-bottom:11px }
+        .stab{ flex:1; cursor:pointer; text-align:center; font-family:"Bungee"; font-size:.56rem; letter-spacing:.3px;
+          padding:9px 0; min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+          border:2px solid #3a3b78; border-radius:9px; background:#10112e; color:#7c7bbf;
+          transition:border-color .15s, color .15s, background .15s }
+        .stab small{ font-family:"Hanken Grotesk"; font-weight:700; font-size:.46rem; color:#54559a; letter-spacing:.08em }
+        .scoutsel{ position:absolute; opacity:0; width:0; height:0; pointer-events:none }
+        .scard{ display:none }
+        #sc1:checked ~ .scards .sc1, #sc2:checked ~ .scards .sc2, #sc3:checked ~ .scards .sc3,
+        #sc4:checked ~ .scards .sc4, #sc5:checked ~ .scards .sc5{ display:block }
+        #sc1:checked ~ .scout-tabs label[for=sc1], #sc2:checked ~ .scout-tabs label[for=sc2],
+        #sc3:checked ~ .scout-tabs label[for=sc3], #sc4:checked ~ .scout-tabs label[for=sc4],
+        #sc5:checked ~ .scout-tabs label[for=sc5]{ border-color:#ffcf33; color:#0d0e29; background:#ffcf33 }
+        .sc-big{ display:flex; gap:12px; align-items:center }
+        .sc-photo{ width:78px; height:78px; border-radius:13px }
+        .sc-name{ font-family:"Bungee"; font-size:1.02rem; line-height:1; letter-spacing:.3px }
+        .sc-role{ font-size:.64rem; color:#b3b1e6; margin-top:7px; text-transform:uppercase; letter-spacing:.12em }
+        .sc-ovr{ font-family:"Bungee"; font-size:.62rem; color:#54559a; margin-top:8px }
+        .sc-fasce{ margin-top:13px; display:grid; gap:8px }
+        .sc-row{ display:grid; grid-template-columns:78px 1fr 44px; align-items:center; gap:9px }
+        .sc-row .lab{ font-size:.62rem; color:#cfcdf0; text-transform:uppercase; letter-spacing:.05em }
+        .pips{ display:flex; gap:5px }
+        .pip{ width:14px; height:14px; border-radius:99px; background:#0d0e29; border:2px solid #4a4b8c }
+        .pip.on{ background:#ffcf33; border-color:#ffcf33 }
+        .sc-row .fascia{ font-family:"Bungee"; font-size:.5rem; text-align:right; letter-spacing:.3px }
+        .sc-counter{ text-align:center; font-size:.58rem; color:#7c7bbf; letter-spacing:.12em; text-transform:uppercase; margin-top:11px }
+
+        /* ══════════ TELAIO C · TABELLONE ══════════ */
+        .board{ background:#0a0b22; border:2px solid #2c2d63; border-radius:13px; padding:10px 9px;
+          box-shadow:inset 0 0 0 2px #000 }
+        .bhead{ display:grid; grid-template-columns:118px repeat(5,1fr); align-items:end; gap:0; margin-bottom:6px; padding:0 4px }
+        .bhead .bh-l{ font-size:.52rem; letter-spacing:.14em; text-transform:uppercase; color:#7c7bbf; font-weight:700 }
+        .bhead .bh-c{ font-family:"Doto"; font-weight:900; font-size:.62rem; text-align:center; color:#ffcf33; letter-spacing:.5px }
+        .brow{ display:grid; grid-template-columns:118px repeat(5,1fr); align-items:center; gap:0;
+          cursor:pointer; position:relative; padding:6px 4px; border-radius:8px;
+          border:2px solid transparent; transition:background .14s, border-color .14s }
+        .brow + .brow{ margin-top:3px }
+        .brow:hover{ background:#15163a }
+        .brow input{ position:absolute; opacity:0; width:0; height:0; pointer-events:none }
+        .brow:has(input:checked){ background:#1b1c46; border-color:#ffcf33 }
+        .b-id{ display:flex; align-items:center; gap:7px; min-width:0 }
+        .b-role{ font-family:"Bungee"; font-size:.5rem; color:#0d0e29; background:#6b6cc0; border:1px solid #000;
+          border-radius:5px; padding:3px 4px; letter-spacing:.2px; flex:none }
+        .b-photo{ width:26px; height:26px; border-radius:7px }
+        .b-name{ font-family:"Bungee"; font-size:.56rem; letter-spacing:.1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+        .dot{ width:13px; height:13px; border-radius:99px; margin:0 auto; border:2px solid #000 }
+        .d-hi{ background:#5ccf8e } .d-md{ background:#ffcf33 } .d-lo{ background:#ff5b50 }
+        .b-check{ position:absolute; top:-7px; left:-7px; width:22px; height:22px; background:#ffcf33;
+          border:2px solid #000; border-radius:99px; display:flex; align-items:center; justify-content:center;
+          opacity:0; transform:scale(.4); transition:opacity .15s, transform .15s; z-index:4 }
+        .brow:has(input:checked) .b-check{ opacity:1; transform:scale(1) }
+        .board-legend{ display:flex; gap:11px; justify-content:center; margin-top:9px; font-size:.54rem; color:#9594d0 }
+        .board-legend span{ display:inline-flex; align-items:center; gap:4px }
+        .lg{ width:9px; height:9px; border-radius:99px; border:1px solid #000 }
+        .bz-cards:has(.brow input:checked) ~ .conf{ background:#ffcf33; color:#0d0e29 }
+
+        @media (prefers-reduced-motion:reduce){ .fcard,.pick-dot,.brow,.b-check,.conf,.stab{ transition:none!important } }
+      </style>
+
+      <!-- ════════════════ TELAIO A · VENTAGLIO ════════════════ -->
+      <section class="dir-panel" data-name="Ventaglio" data-mood="mano di carte · come a UNO" data-why="Le 5 carte ti sono date in mano: scegli d'istinto su volto e ruolo, tocchi per aprire i dettagli. Gioco, non foglio Excel.">
+        <div class="bzph">
+          <div class="ctx">
+            <div class="ctx-l">PESCA<small>6&ordf; carta &middot; turno 1</small></div>
+            <div class="ctx-pick">PICK 6/10</div>
+          </div>
+
+          <div class="ros">
+            <div class="ros-h"><span>La tua rosa</span><b>5/10</b></div>
+            <div class="ros-slots">
+              <span class="rslot fill">PG</span><span class="rslot fill">SG</span><span class="rslot fill">SG</span>
+              <span class="rslot fill">SF</span><span class="rslot fill">PG</span>
+              <span class="rslot"></span><span class="rslot"></span><span class="rslot"></span><span class="rslot"></span><span class="rslot"></span>
+            </div>
+            <div class="ros-read">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+              <span>5 esterni &middot; <b>0 lunghi sotto canestro</b></span>
+            </div>
+          </div>
+
+          <div class="fanwrap">
+            <!-- 1 Curry -->
+            <label class="fcard">
+              <input type="radio" name="fanPick">
+              <span class="pick-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <div class="ph-img fc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="Curry" loading="lazy"></div>
+              <div class="fc-name">CURRY</div><div class="fc-role">PG &middot; GSW</div>
+              <div class="fc-tags"><span class="ftag">TIRO</span><span class="ftag">REGIA</span></div>
+              <div class="fc-fasce">
+                <div class="row"><span>Tiro</span><b class="f-hi">ALTO</b></div>
+                <div class="row"><span>Difesa</span><b class="f-md">MEDIO</b></div>
+                <div class="row"><span>Ferro</span><b class="f-lo">BASSO</b></div>
+                <div class="row"><span>Rimbalzo</span><b class="f-lo">BASSO</b></div>
+              </div>
+            </label>
+            <!-- 2 Edwards -->
+            <label class="fcard">
+              <input type="radio" name="fanPick">
+              <span class="pick-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <div class="ph-img fc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" loading="lazy"></div>
+              <div class="fc-name">EDWARDS</div><div class="fc-role">SG &middot; MIN</div>
+              <div class="fc-tags"><span class="ftag">TIRO</span><span class="ftag">ATLETA</span></div>
+              <div class="fc-fasce">
+                <div class="row"><span>Tiro</span><b class="f-hi">ALTO</b></div>
+                <div class="row"><span>Difesa</span><b class="f-md">MEDIO</b></div>
+                <div class="row"><span>Ferro</span><b class="f-md">MEDIO</b></div>
+                <div class="row"><span>Rimbalzo</span><b class="f-md">MEDIO</b></div>
+              </div>
+            </label>
+            <!-- 3 Tatum -->
+            <label class="fcard">
+              <input type="radio" name="fanPick">
+              <span class="pick-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <div class="ph-img fc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" loading="lazy"></div>
+              <div class="fc-name">TATUM</div><div class="fc-role">SF &middot; BOS</div>
+              <div class="fc-tags"><span class="ftag">TIRO</span><span class="ftag">DIFESA</span></div>
+              <div class="fc-fasce">
+                <div class="row"><span>Tiro</span><b class="f-hi">ALTO</b></div>
+                <div class="row"><span>Difesa</span><b class="f-md">MEDIO</b></div>
+                <div class="row"><span>Ferro</span><b class="f-lo">BASSO</b></div>
+                <div class="row"><span>Rimbalzo</span><b class="f-md">MEDIO</b></div>
+              </div>
+            </label>
+            <!-- 4 Giannis -->
+            <label class="fcard">
+              <input type="radio" name="fanPick">
+              <span class="pick-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <div class="ph-img fc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="Antetokounmpo" loading="lazy"></div>
+              <div class="fc-name">GIANNIS</div><div class="fc-role">PF &middot; MIL</div>
+              <div class="fc-tags"><span class="ftag">FERRO</span><span class="ftag">RIMBALZO</span></div>
+              <div class="fc-fasce">
+                <div class="row"><span>Tiro</span><b class="f-lo">BASSO</b></div>
+                <div class="row"><span>Difesa</span><b class="f-hi">ALTO</b></div>
+                <div class="row"><span>Ferro</span><b class="f-hi">ALTO</b></div>
+                <div class="row"><span>Rimbalzo</span><b class="f-hi">ALTO</b></div>
+              </div>
+            </label>
+            <!-- 5 Wembanyama -->
+            <label class="fcard">
+              <input type="radio" name="fanPick">
+              <span class="pick-dot"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <div class="ph-img fc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" loading="lazy"></div>
+              <div class="fc-name">WEMBY</div><div class="fc-role">C &middot; SAS</div>
+              <div class="fc-tags"><span class="ftag">FERRO</span><span class="ftag">STOPPATE</span></div>
+              <div class="fc-fasce">
+                <div class="row"><span>Tiro</span><b class="f-md">MEDIO</b></div>
+                <div class="row"><span>Difesa</span><b class="f-hi">ALTO</b></div>
+                <div class="row"><span>Ferro</span><b class="f-hi">ALTO</b></div>
+                <div class="row"><span>Rimbalzo</span><b class="f-hi">ALTO</b></div>
+              </div>
+            </label>
+          </div>
+          <div class="conf">TOCCA UNA CARTA</div>
+          <div class="fan-tip">le carte aperte mostrano le fasce &middot; scegli quella che ti manca</div>
+        </div>
+      </section>
+
+      <!-- ════════════════ TELAIO B · SCOUT A COLONNA ════════════════ -->
+      <section class="dir-panel" data-name="Scout a colonna" data-mood="una scheda alla volta · pollice solo" data-why="Scorri le 5 schede a tutta larghezza, ognuna letta a fondo. Il piu' comodo su telefono, niente carte minuscole." hidden>
+        <div class="bzph">
+          <div class="ctx">
+            <div class="ctx-l">SCOUT<small>6&ordf; carta &middot; turno 1</small></div>
+            <div class="ctx-pick">PICK 6/10</div>
+          </div>
+
+          <div class="ros">
+            <div class="ros-h"><span>La tua rosa</span><b>5/10</b></div>
+            <div class="ros-slots">
+              <span class="rslot fill">PG</span><span class="rslot fill">SG</span><span class="rslot fill">SG</span>
+              <span class="rslot fill">SF</span><span class="rslot fill">PG</span>
+              <span class="rslot"></span><span class="rslot"></span><span class="rslot"></span><span class="rslot"></span><span class="rslot"></span>
+            </div>
+            <div class="ros-read">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+              <span>5 esterni &middot; <b>0 lunghi sotto canestro</b></span>
+            </div>
+          </div>
+
+          <input class="scoutsel" type="radio" name="scout" id="sc1" checked>
+          <input class="scoutsel" type="radio" name="scout" id="sc2">
+          <input class="scoutsel" type="radio" name="scout" id="sc3">
+          <input class="scoutsel" type="radio" name="scout" id="sc4">
+          <input class="scoutsel" type="radio" name="scout" id="sc5">
+
+          <div class="scout-tabs">
+            <label class="stab" for="sc1">PG<small>1</small></label>
+            <label class="stab" for="sc2">SG<small>2</small></label>
+            <label class="stab" for="sc3">SF<small>3</small></label>
+            <label class="stab" for="sc4">PF<small>4</small></label>
+            <label class="stab" for="sc5">C<small>5</small></label>
+          </div>
+
+          <div class="scards">
+            <!-- 1 Curry -->
+            <div class="scard sc1">
+              <div class="sc-big">
+                <div class="ph-img sc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="Curry" loading="lazy"></div>
+                <div><div class="sc-name">S. CURRY</div><div class="sc-role">PG &middot; Golden State</div><div class="sc-ovr">OVR ?</div></div>
+              </div>
+              <div class="sc-fasce">
+                <div class="sc-row"><span class="lab">Tiro da 3</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Regia</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Difesa</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Ferro</span><span class="pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span><span class="fascia f-lo">BASSO</span></div>
+                <div class="sc-row"><span class="lab">Rimbalzo</span><span class="pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span><span class="fascia f-lo">BASSO</span></div>
+              </div>
+            </div>
+            <!-- 2 Edwards -->
+            <div class="scard sc2">
+              <div class="sc-big">
+                <div class="ph-img sc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" loading="lazy"></div>
+                <div><div class="sc-name">A. EDWARDS</div><div class="sc-role">SG &middot; Minnesota</div><div class="sc-ovr">OVR ?</div></div>
+              </div>
+              <div class="sc-fasce">
+                <div class="sc-row"><span class="lab">Tiro da 3</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Regia</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Difesa</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Ferro</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Rimbalzo</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+              </div>
+            </div>
+            <!-- 3 Tatum -->
+            <div class="scard sc3">
+              <div class="sc-big">
+                <div class="ph-img sc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" loading="lazy"></div>
+                <div><div class="sc-name">J. TATUM</div><div class="sc-role">SF &middot; Boston</div><div class="sc-ovr">OVR ?</div></div>
+              </div>
+              <div class="sc-fasce">
+                <div class="sc-row"><span class="lab">Tiro da 3</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Regia</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Difesa</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Ferro</span><span class="pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span><span class="fascia f-lo">BASSO</span></div>
+                <div class="sc-row"><span class="lab">Rimbalzo</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+              </div>
+            </div>
+            <!-- 4 Giannis -->
+            <div class="scard sc4">
+              <div class="sc-big">
+                <div class="ph-img sc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="Antetokounmpo" loading="lazy"></div>
+                <div><div class="sc-name">G. ANTETOKOUNMPO</div><div class="sc-role">PF &middot; Milwaukee</div><div class="sc-ovr">OVR ?</div></div>
+              </div>
+              <div class="sc-fasce">
+                <div class="sc-row"><span class="lab">Tiro da 3</span><span class="pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span><span class="fascia f-lo">BASSO</span></div>
+                <div class="sc-row"><span class="lab">Regia</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Difesa</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Ferro</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Rimbalzo</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+              </div>
+            </div>
+            <!-- 5 Wemby -->
+            <div class="scard sc5">
+              <div class="sc-big">
+                <div class="ph-img sc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" loading="lazy"></div>
+                <div><div class="sc-name">V. WEMBANYAMA</div><div class="sc-role">C &middot; San Antonio</div><div class="sc-ovr">OVR ?</div></div>
+              </div>
+              <div class="sc-fasce">
+                <div class="sc-row"><span class="lab">Tiro da 3</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip"></i></span><span class="fascia f-md">MEDIO</span></div>
+                <div class="sc-row"><span class="lab">Regia</span><span class="pips"><i class="pip on"></i><i class="pip"></i><i class="pip"></i></span><span class="fascia f-lo">BASSO</span></div>
+                <div class="sc-row"><span class="lab">Difesa</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Ferro</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+                <div class="sc-row"><span class="lab">Rimbalzo</span><span class="pips"><i class="pip on"></i><i class="pip on"></i><i class="pip on"></i></span><span class="fascia f-hi">ALTO</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="conf" style="background:#ff5b1e;color:#0d0e29">SCEGLI QUESTO</div>
+          <div class="sc-counter">scheda 1 di 5 &middot; tocca i tab per scorrere</div>
+        </div>
+      </section>
+
+      <!-- ════════════════ TELAIO C · TABELLONE ════════════════ -->
+      <section class="dir-panel" data-name="Tabellone" data-mood="matrice LED · confronta al volo" data-why="Tutte e 5 in una griglia: i punti verdi/gialli/rossi fanno vedere a colpo d'occhio chi copre il tuo buco. Identita' da arena." hidden>
+        <div class="bzph">
+          <div class="ctx">
+            <div class="ctx-l">DRAFT BOARD<small>6&ordf; carta &middot; turno 1</small></div>
+            <div class="ctx-pick">PICK 6/10</div>
+          </div>
+
+          <div class="ros">
+            <div class="ros-h"><span>Quintetto in costruzione</span><b>5/10</b></div>
+            <div class="ros-slots">
+              <span class="rslot fill">PG</span><span class="rslot fill">SG</span><span class="rslot fill">SG</span>
+              <span class="rslot fill">SF</span><span class="rslot fill">PG</span>
+              <span class="rslot"></span><span class="rslot"></span><span class="rslot"></span><span class="rslot"></span><span class="rslot"></span>
+            </div>
+            <div class="ros-read">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+              <span>5 esterni &middot; <b>0 lunghi sotto canestro</b></span>
+            </div>
+          </div>
+
+          <div class="bz-cards">
+            <div class="board">
+              <div class="bhead">
+                <span class="bh-l">Giocatore</span>
+                <span class="bh-c">TIR</span><span class="bh-c">REG</span><span class="bh-c">DIF</span><span class="bh-c">FER</span><span class="bh-c">RIM</span>
+              </div>
+              <!-- Curry -->
+              <label class="brow">
+                <input type="radio" name="boardPick">
+                <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M5 13l4 4L19 7"/></svg></span>
+                <span class="b-id"><span class="b-role">PG</span><span class="ph-img b-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="Curry" loading="lazy"></span><span class="b-name">CURRY</span></span>
+                <span class="dot d-hi"></span><span class="dot d-hi"></span><span class="dot d-md"></span><span class="dot d-lo"></span><span class="dot d-lo"></span>
+              </label>
+              <!-- Edwards -->
+              <label class="brow">
+                <input type="radio" name="boardPick">
+                <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M5 13l4 4L19 7"/></svg></span>
+                <span class="b-id"><span class="b-role">SG</span><span class="ph-img b-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" loading="lazy"></span><span class="b-name">EDWARDS</span></span>
+                <span class="dot d-hi"></span><span class="dot d-md"></span><span class="dot d-md"></span><span class="dot d-md"></span><span class="dot d-md"></span>
+              </label>
+              <!-- Tatum -->
+              <label class="brow">
+                <input type="radio" name="boardPick">
+                <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M5 13l4 4L19 7"/></svg></span>
+                <span class="b-id"><span class="b-role">SF</span><span class="ph-img b-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" loading="lazy"></span><span class="b-name">TATUM</span></span>
+                <span class="dot d-hi"></span><span class="dot d-md"></span><span class="dot d-md"></span><span class="dot d-lo"></span><span class="dot d-md"></span>
+              </label>
+              <!-- Giannis -->
+              <label class="brow">
+                <input type="radio" name="boardPick">
+                <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M5 13l4 4L19 7"/></svg></span>
+                <span class="b-id"><span class="b-role">PF</span><span class="ph-img b-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="Antetokounmpo" loading="lazy"></span><span class="b-name">GIANNIS</span></span>
+                <span class="dot d-lo"></span><span class="dot d-md"></span><span class="dot d-hi"></span><span class="dot d-hi"></span><span class="dot d-hi"></span>
+              </label>
+              <!-- Wemby -->
+              <label class="brow">
+                <input type="radio" name="boardPick">
+                <span class="b-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="11" height="11"><path d="M5 13l4 4L19 7"/></svg></span>
+                <span class="b-id"><span class="b-role">C</span><span class="ph-img b-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" loading="lazy"></span><span class="b-name">WEMBY</span></span>
+                <span class="dot d-md"></span><span class="dot d-lo"></span><span class="dot d-hi"></span><span class="dot d-hi"></span><span class="dot d-hi"></span>
+              </label>
+
+              <div class="board-legend">
+                <span><i class="lg d-hi"></i>Alto</span><span><i class="lg d-md"></i>Medio</span><span><i class="lg d-lo"></i>Basso</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="conf">TOCCA UNA RIGA</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Telaio</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

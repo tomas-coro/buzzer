@@ -3,3 +3,6 @@ __pycache__/
 .pytest_cache/
 data/raw/
 .playwright-mcp/
+
+# Screenshot temporanei delle verifiche visive (nella root)
+/*.png

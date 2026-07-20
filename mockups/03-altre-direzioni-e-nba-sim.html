@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA, CONTENUTO VARIABILE. Cambia solo #panels e i titoli.
+-->
+<title>web game NBA · altre direzioni + confronto nba-sim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:52ch}
+
+  /* chip bar */
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  /* palco */
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-tag[data-role="Riferimento"]{background:rgba(200,80,62,.14);color:#e08a7c;border-color:#8a4338}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Altre direzioni · + confronto nba-sim</div>
+    <h1 id="mockTitle">Altre 3 direzioni — e il look nba-sim a confronto</h1>
+    <p class="lead">Tocca un nome in alto. Le prime tre sono <b>rotte nuove</b>; l'ultima (rosso "Riferimento") è lo stile reale di <b>nba-sim</b>, messo qui solo per giudicarlo a fianco. Interazione identica ovunque: scegli il PG dalla squadra uscita.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <style>
+        /* ===== font delle direzioni (import scoped) ===== */
+        @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Rozha+One&family=Jost:wght@300;400;500;600&family=Darker+Grotesque:wght@600;700;800;900&family=Spline+Sans+Mono:wght@400;600&family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+        .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+        .m-fill{margin:-20px -18px;padding:22px 18px}
+        fieldset.m-opts{border:0;margin:0;padding:0;min-width:0}
+
+        /* ════════════ D1 · BROADCAST (telecronaca TV) ════════════ */
+        .bc-fill{background:linear-gradient(180deg,#0c1322 0,#070b14 100%);color:#eef3fb;border-radius:0;position:relative;overflow:hidden;font-family:"Hanken Grotesk",sans-serif}
+        .bc-fill::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px)}
+        .bc-fill>*{position:relative;z-index:1}
+        .bc-bug{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+        .bc-net{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1.05rem;letter-spacing:.06em;color:#2e8bff;text-transform:uppercase}
+        .bc-live{display:inline-flex;align-items:center;gap:5px;font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.14em;color:#ff3b46;text-transform:uppercase}
+        .bc-live i{width:7px;height:7px;border-radius:99px;background:#ff3b46;box-shadow:0 0 8px #ff3b46}
+        .bc-q{margin-left:auto;font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.1em;color:#8aa0c2;text-transform:uppercase}
+        .bc-lower{border-left:4px solid #2e8bff;padding:5px 0 5px 12px;margin-bottom:14px}
+        .bc-lab{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.18em;color:#8aa0c2;text-transform:uppercase}
+        .bc-mark{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:clamp(3rem,16vw,4.6rem);line-height:.84;letter-spacing:.01em;color:#fff}
+        .bc-mark span{color:#2e8bff}
+        .bc-slot{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+        .bc-slot .k{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:1rem;letter-spacing:.1em;color:#2e8bff;background:#0e1830;border:1px solid #1d3357;border-radius:5px;padding:2px 10px;text-transform:uppercase}
+        .bc-slot .v{font-family:"Big Shoulders Display",sans-serif;font-weight:600;font-size:1rem;letter-spacing:.06em;color:#aab9d2;text-transform:uppercase}
+        .bc-opts{display:flex;flex-direction:column;gap:7px}
+        .bc-opt{display:flex;align-items:center;gap:11px;min-height:50px;padding:8px 12px;background:#0e1626;border:1px solid #1b2740;border-left:3px solid #2a3b5c;border-radius:8px;cursor:pointer;transition:border-color .15s ease,background .15s ease}
+        .bc-opt:hover{border-left-color:#2e8bff}
+        .bc-opt:focus-within{outline:2px solid #2e8bff;outline-offset:2px}
+        .bc-rank{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1.35rem;color:#5e7299;min-width:1.4ch;text-align:center}
+        .bc-nw{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}
+        .bc-name{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:1.35rem;letter-spacing:.01em;text-transform:uppercase;line-height:1}
+        .bc-pos{font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.6rem;letter-spacing:.1em;color:#7c8eae;text-transform:uppercase}
+        .bc-in{display:none;font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:.74rem;letter-spacing:.1em;color:#06122a;background:#2e8bff;border-radius:4px;padding:3px 8px;text-transform:uppercase}
+        .bc-ovr{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1.5rem;color:#cdd8ea;min-width:2.2ch;text-align:right}
+        .bc-opt:has(input:checked){background:#10203b;border-color:#2e8bff;border-left-color:#2e8bff}
+        .bc-opt:has(input:checked) .bc-ovr{color:#5fd0ff}
+        .bc-opt:has(input:checked) .bc-in{display:inline-block}
+        .bc-ticker{margin-top:14px;padding-top:11px;border-top:1px solid #1b2740;display:flex;align-items:center;gap:10px}
+        .bc-ticker .tk{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.12em;color:#2e8bff;background:#0e1830;padding:3px 9px;border-radius:4px;text-transform:uppercase}
+        .bc-ticker .rec{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:.04em;color:#eef3fb}
+        .bc-ticker .rec b{color:#5dd07a}
+
+        /* ════════════ D2 · THROWBACK ABA '70 ════════════ */
+        .tw-fill{background:#f3e7cf;color:#25201a;border-radius:0;position:relative;overflow:hidden;font-family:"Jost",sans-serif}
+        .tw-fill::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.45;mix-blend-mode:multiply;
+          background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23c)'/%3E%3C/svg%3E")}
+        .tw-fill>*{position:relative;z-index:1}
+        .tw-top{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+        .tw-ball{width:26px;height:26px;border-radius:99px;background:conic-gradient(#c0392b 0 33%,#f3e7cf 33% 66%,#244a9c 66% 100%);border:2px solid #25201a;flex:none}
+        .tw-net{font-family:"Jost",sans-serif;font-weight:600;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;color:#244a9c}
+        .tw-stripes{margin-left:auto;display:flex;gap:3px}
+        .tw-stripes i{width:16px;height:8px;border-radius:2px}
+        .tw-stripes i:nth-child(1){background:#c0392b}.tw-stripes i:nth-child(2){background:#d6a32d}.tw-stripes i:nth-child(3){background:#244a9c}
+        .tw-lab{font-family:"Jost",sans-serif;font-weight:500;font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:#8a6d3a;margin-top:6px}
+        .tw-mark{font-family:"Rozha One",serif;font-size:clamp(3.2rem,16vw,4.8rem);line-height:.9;color:#25201a}
+        .tw-mark span{color:#c0392b}
+        .tw-rule{height:6px;display:flex;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+        .tw-rule i{flex:1}.tw-rule i:nth-child(1){background:#c0392b}.tw-rule i:nth-child(2){background:#d6a32d}.tw-rule i:nth-child(3){background:#244a9c}
+        .tw-slot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:13px;font-family:"Jost",sans-serif;font-weight:500;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:#5b5346}
+        .tw-slot b{color:#c0392b;font-weight:600}
+        .tw-opts{display:flex;flex-direction:column;gap:9px}
+        .tw-opt{display:flex;align-items:center;gap:12px;min-height:50px;padding:8px 12px;background:#f9f1e0;border:2px solid #25201a;border-radius:12px;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease,background .12s ease}
+        .tw-opt:hover{transform:translateY(-1px);box-shadow:0 4px 0 rgba(37,32,26,.2)}
+        .tw-opt:focus-within{outline:3px solid #d6a32d;outline-offset:2px}
+        .tw-circ{width:38px;height:38px;border-radius:99px;border:2px solid #25201a;background:#f3e7cf;display:grid;place-items:center;font-family:"Rozha One",serif;font-size:1.05rem;flex:none}
+        .tw-nw{flex:1;min-width:0;display:flex;flex-direction:column}
+        .tw-name{font-family:"Rozha One",serif;font-size:1.12rem;line-height:1.05}
+        .tw-pos{font-family:"Jost",sans-serif;font-weight:500;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#8a7a5e}
+        .tw-pk{display:none;font-family:"Jost",sans-serif;font-weight:600;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#c0392b;border-radius:99px;padding:4px 9px}
+        .tw-ovr{font-family:"Rozha One",serif;font-size:1.4rem;color:#244a9c;min-width:2.2ch;text-align:right}
+        .tw-opt:has(input:checked){background:#fff;border-color:#c0392b}
+        .tw-opt:has(input:checked) .tw-circ{background:#c0392b;color:#fff;border-color:#c0392b}
+        .tw-opt:has(input:checked) .tw-ovr{color:#c0392b}
+        .tw-opt:has(input:checked) .tw-pk{display:inline-block}
+        .tw-tally{display:flex;align-items:center;gap:9px;margin-top:14px;font-family:"Jost",sans-serif;font-weight:500;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:#5b5346}
+        .tw-dots{display:flex;gap:6px}
+        .tw-dots i{width:11px;height:11px;border-radius:99px;border:1.5px solid #25201a;background:transparent}
+        .tw-dots i.on{background:#244a9c;border-color:#244a9c}
+
+        /* ════════════ D3 · RISO-ZINE (fanzine duotone) ════════════ */
+        .rz-fill{background:#ece7dd;color:#1a1a1a;border-radius:0;position:relative;overflow:hidden;font-family:"Spline Sans Mono",monospace}
+        .rz-fill::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.13;
+          background-image:radial-gradient(#2b3df0 1px,transparent 1.4px);background-size:6px 6px}
+        .rz-fill>*{position:relative;z-index:1}
+        .rz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+        .rz-net{font-family:"Spline Sans Mono",monospace;font-weight:600;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:#2b3df0}
+        .rz-iss{font-family:"Spline Sans Mono",monospace;font-weight:400;font-size:.62rem;letter-spacing:.04em;color:#7a756c}
+        .rz-mark{font-family:"Darker Grotesque",sans-serif;font-weight:900;font-size:clamp(3.6rem,18vw,5.4rem);line-height:.8;letter-spacing:-.01em;color:#ff4d2e;text-shadow:2px 2px 0 #2b3df0}
+        .rz-mark span{color:#1a1a1a;text-shadow:none}
+        .rz-lab{font-family:"Spline Sans Mono",monospace;font-weight:600;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:#1a1a1a;background:#ffd9cf;display:inline-block;padding:3px 7px;margin:8px 0 13px;border:1.5px solid #1a1a1a}
+        .rz-opts{display:flex;flex-direction:column;gap:8px}
+        .rz-opt{display:flex;align-items:center;gap:11px;min-height:48px;padding:8px 11px;background:#f4efe6;border:1.5px solid #1a1a1a;border-radius:3px;cursor:pointer;transition:transform .1s ease,box-shadow .12s ease,background .12s ease}
+        .rz-opt:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 #2b3df0}
+        .rz-opt:focus-within{outline:2px solid #ff4d2e;outline-offset:2px}
+        .rz-idx{font-family:"Darker Grotesque",sans-serif;font-weight:900;font-size:1.6rem;color:#2b3df0;min-width:1.3ch;line-height:1;text-align:center}
+        .rz-nw{flex:1;min-width:0;display:flex;flex-direction:column}
+        .rz-name{font-family:"Darker Grotesque",sans-serif;font-weight:800;font-size:1.45rem;line-height:.95}
+        .rz-pos{font-family:"Spline Sans Mono",monospace;font-weight:400;font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:#7a756c}
+        .rz-pk{display:none;font-family:"Spline Sans Mono",monospace;font-weight:600;font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:#ece7dd;background:#ff4d2e;padding:3px 7px;border-radius:2px}
+        .rz-ovr{font-family:"Spline Sans Mono",monospace;font-weight:600;font-size:1rem;color:#1a1a1a;min-width:2.4ch;text-align:right}
+        .rz-opt:has(input:checked){background:#fff;border-color:#ff4d2e}
+        .rz-opt:has(input:checked) .rz-idx{color:#ff4d2e}
+        .rz-opt:has(input:checked) .rz-ovr{color:#ff4d2e}
+        .rz-opt:has(input:checked) .rz-pk{display:inline-block}
+        .rz-foot{margin-top:13px;padding-top:10px;border-top:1.5px dashed #1a1a1a;display:flex;align-items:center;gap:8px;font-family:"Spline Sans Mono",monospace;font-weight:600;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;color:#1a1a1a}
+        .rz-foot b{color:#2b3df0}
+
+        /* ════════════ D4 · HARDWOOD — stile reale di nba-sim ════════════ */
+        .hw-fill{background:#15110c;color:#f2e9d8;border-radius:0;position:relative;overflow:hidden;font-family:"IBM Plex Sans",sans-serif}
+        .hw-fill::before{content:"";position:absolute;inset:0;pointer-events:none;
+          background:radial-gradient(140% 90% at 50% -20%,rgba(216,106,44,.06),transparent 55%),repeating-linear-gradient(92deg,rgba(255,255,255,.012) 0 2px,transparent 2px 6px)}
+        .hw-fill>*{position:relative;z-index:1}
+        .hw-top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #382e24;padding-bottom:9px;margin-bottom:13px}
+        .hw-kick{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:.84rem;letter-spacing:.22em;text-transform:uppercase;color:#c9a24b}
+        .hw-rec{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:1.1rem;color:#f2e9d8;font-variant-numeric:tabular-nums}
+        .hw-rec b{color:#c9a24b}
+        .hw-panel{background:#1e1813;border:1px solid #382e24;border-radius:13px;overflow:hidden;box-shadow:0 18px 50px -28px rgba(0,0,0,.8)}
+        .hw-phead{display:flex;align-items:center;gap:9px;background:linear-gradient(180deg,#271f17,#1e1813);border-bottom:1px solid #382e24;padding:10px 13px}
+        .hw-sq{width:8px;height:8px;background:#c9a24b;border-radius:2px;flex:none}
+        .hw-ptitle{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:.86rem;letter-spacing:.16em;text-transform:uppercase;color:#f2e9d8}
+        .hw-pslot{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:.7rem;color:#80735d}
+        .hw-rows{padding:6px}
+        .hw-row{display:flex;align-items:center;gap:11px;min-height:50px;padding:9px 10px;border-bottom:1px dashed #2c241b;cursor:pointer;border-radius:8px;transition:background .12s ease}
+        .hw-row:last-child{border-bottom:0}
+        .hw-row:hover{background:rgba(255,255,255,.027)}
+        .hw-row:focus-within{outline:2px solid #c9a24b;outline-offset:-2px}
+        .hw-nw{flex:1;min-width:0;display:flex;flex-direction:column}
+        .hw-nm{font-family:"IBM Plex Sans",sans-serif;font-weight:600;font-size:1rem;color:#f2e9d8;line-height:1.1}
+        .hw-me{font-family:"IBM Plex Mono",monospace;font-size:.64rem;letter-spacing:.04em;color:#80735d;text-transform:uppercase;margin-top:1px}
+        .hw-pk{display:none;font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:#1a0f06;background:#c9a24b;border-radius:4px;padding:3px 7px}
+        .hw-ovrp{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:.95rem;min-width:34px;height:26px;display:grid;place-items:center;border-radius:7px;background:#221b14;border:1px solid #382e24;color:#b6a88e}
+        .hw-ovrp.elite{background:linear-gradient(180deg,#e7c977,#c9a24b);color:#1a0f06;border-color:#c9a24b}
+        .hw-row:has(input:checked){background:linear-gradient(90deg,rgba(201,162,75,.14),transparent)}
+        .hw-row:has(input:checked) .hw-pk{display:inline-block}
+        .hw-foot{display:flex;align-items:center;gap:10px;margin-top:14px;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:.84rem;letter-spacing:.14em;text-transform:uppercase;color:#80735d}
+        .hw-foot .wl{color:#f2e9d8}
+        .hw-foot .wl b{color:#6fa45c}
+        .hw-foot .av{margin-left:auto;font-family:"Saira Condensed",sans-serif;font-weight:800;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:#1a130a;background:linear-gradient(180deg,#e7c977,#c9a24b);border-radius:10px;padding:9px 15px;box-shadow:0 8px 22px -10px rgba(201,162,75,.7)}
+      </style>
+
+      <!-- ════════════════════ D1 · BROADCAST ════════════════════ -->
+      <section class="dir-panel" data-name="Broadcast" data-mood="grafica da telecronaca, alla ESPN/TNT" data-why="La grafica della diretta nazionale: bug del punteggio, lower-third e LIVE rendono ogni scelta un momento da prima serata — e la card finale sembra un fermo-immagine TV." data-role="">
+        <div class="bc-fill m-fill">
+          <div class="bc-bug">
+            <span class="bc-net">Hardwood TV</span>
+            <span class="bc-live"><i></i>live</span>
+            <span class="bc-q">slot 3 / 6</span>
+          </div>
+          <div class="bc-lower">
+            <div class="bc-lab">Perfect Run</div>
+            <div class="bc-mark">16<span>–</span>0</div>
+          </div>
+          <div class="bc-slot"><span class="k">PG</span><span class="v">on the clock — Golden State</span></div>
+          <fieldset class="bc-opts m-opts">
+            <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+            <label class="bc-opt"><input class="sr-only" type="radio" name="bcpick"><span class="bc-rank">1</span><span class="bc-nw"><span class="bc-name">Curry</span><span class="bc-pos">PG</span></span><span class="bc-in">in</span><span class="bc-ovr">96</span></label>
+            <label class="bc-opt"><input class="sr-only" type="radio" name="bcpick"><span class="bc-rank">2</span><span class="bc-nw"><span class="bc-name">Paul</span><span class="bc-pos">PG</span></span><span class="bc-in">in</span><span class="bc-ovr">84</span></label>
+            <label class="bc-opt"><input class="sr-only" type="radio" name="bcpick"><span class="bc-rank">3</span><span class="bc-nw"><span class="bc-name">Podziemski</span><span class="bc-pos">SG</span></span><span class="bc-in">in</span><span class="bc-ovr">78</span></label>
+          </fieldset>
+          <div class="bc-ticker"><span class="tk">la tua corsa</span><span class="rec"><b>0</b> W · 0 L</span></div>
+        </div>
+      </section>
+
+      <!-- ════════════════════ D2 · THROWBACK ABA ════════════════════ -->
+      <section class="dir-panel" data-name="Throwback ABA" data-mood="retro anni 70, pallone tricolore ABA" data-why="Poster funk anni 70 su carta crema e tricolore ABA: caldo e nostalgico, dà personalità immediata senza sembrare l'ennesima app moderna piatta." data-role="" hidden>
+        <div class="tw-fill m-fill">
+          <div class="tw-top">
+            <span class="tw-ball" aria-hidden="true"></span>
+            <span class="tw-net">Throwback Nite</span>
+            <span class="tw-stripes" aria-hidden="true"><i></i><i></i><i></i></span>
+          </div>
+          <div class="tw-lab">la corsa perfetta</div>
+          <div class="tw-mark">16<span>–</span>0</div>
+          <div class="tw-rule" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="tw-slot"><span>slot 3 / 6 · ruolo <b>PG</b></span><span>· esce: Golden State</span></div>
+          <fieldset class="tw-opts m-opts">
+            <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+            <label class="tw-opt"><input class="sr-only" type="radio" name="twpick"><span class="tw-circ">30</span><span class="tw-nw"><span class="tw-name">Stephen Curry</span><span class="tw-pos">Point Guard</span></span><span class="tw-pk">presa</span><span class="tw-ovr">96</span></label>
+            <label class="tw-opt"><input class="sr-only" type="radio" name="twpick"><span class="tw-circ">3</span><span class="tw-nw"><span class="tw-name">Chris Paul</span><span class="tw-pos">Point Guard</span></span><span class="tw-pk">presa</span><span class="tw-ovr">84</span></label>
+            <label class="tw-opt"><input class="sr-only" type="radio" name="twpick"><span class="tw-circ">2</span><span class="tw-nw"><span class="tw-name">B. Podziemski</span><span class="tw-pos">Shooting Guard</span></span><span class="tw-pk">presa</span><span class="tw-ovr">78</span></label>
+          </fieldset>
+          <div class="tw-tally">
+            <span>presi 2 / 6</span>
+            <span class="tw-dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════ D3 · RISO-ZINE ════════════════════ -->
+      <section class="dir-panel" data-name="Riso-Zine" data-mood="fanzine sportiva, stampa risograph a 2 colori" data-why="Stampa risograph a due inchiostri, retino e fuori-registro: taglio indie da designer, distintivo e tutto suo, agli antipodi del look AI generico." data-role="" hidden>
+        <div class="rz-fill m-fill">
+          <div class="rz-top">
+            <span class="rz-net">Court Press</span>
+            <span class="rz-iss">issue #01 · playoff</span>
+          </div>
+          <div class="rz-mark">16<span>–</span>0</div>
+          <span class="rz-lab">on the clock — Golden State · PG</span>
+          <fieldset class="rz-opts m-opts">
+            <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+            <label class="rz-opt"><input class="sr-only" type="radio" name="rzpick"><span class="rz-idx">1</span><span class="rz-nw"><span class="rz-name">Stephen Curry</span><span class="rz-pos">PG</span></span><span class="rz-pk">presa</span><span class="rz-ovr">96</span></label>
+            <label class="rz-opt"><input class="sr-only" type="radio" name="rzpick"><span class="rz-idx">2</span><span class="rz-nw"><span class="rz-name">Chris Paul</span><span class="rz-pos">PG</span></span><span class="rz-pk">presa</span><span class="rz-ovr">84</span></label>
+            <label class="rz-opt"><input class="sr-only" type="radio" name="rzpick"><span class="rz-idx">3</span><span class="rz-nw"><span class="rz-name">B. Podziemski</span><span class="rz-pos">SG</span></span><span class="rz-pk">presa</span><span class="rz-ovr">78</span></label>
+          </fieldset>
+          <div class="rz-foot">la tua corsa · record <b>0–0</b></div>
+        </div>
+      </section>
+
+      <!-- ════════════════════ D4 · HARDWOOD (nba-sim) ════════════════════ -->
+      <section class="dir-panel" data-name="Hardwood (nba-sim)" data-mood="il look attuale di nba-sim — legno &amp; ottone" data-why="È lo stile reale di nba-sim (scuro caldo legno/cuoio, ottone, Saira+Plex, zero serif): coerente e già pronto, ma riusarlo fa sembrare i due progetti la stessa cosa — qui solo per confronto." data-role="Riferimento" hidden>
+        <div class="hw-fill m-fill">
+          <div class="hw-top">
+            <span class="hw-kick">Perfect Run</span>
+            <span class="hw-rec">16<b>–</b>0</span>
+          </div>
+          <div class="hw-panel">
+            <div class="hw-phead">
+              <span class="hw-sq" aria-hidden="true"></span>
+              <span class="hw-ptitle">On the clock — Golden State</span>
+              <span class="hw-pslot">PG · 3/6</span>
+            </div>
+            <fieldset class="hw-rows m-opts">
+              <legend class="sr-only">Scegli il playmaker dai Golden State</legend>
+              <label class="hw-row"><input class="sr-only" type="radio" name="hwpick"><span class="hw-nw"><span class="hw-nm">Stephen Curry</span><span class="hw-me">PG · Golden State</span></span><span class="hw-pk">in rosa</span><span class="hw-ovrp elite">96</span></label>
+              <label class="hw-row"><input class="sr-only" type="radio" name="hwpick"><span class="hw-nw"><span class="hw-nm">Chris Paul</span><span class="hw-me">PG · Golden State</span></span><span class="hw-pk">in rosa</span><span class="hw-ovrp">84</span></label>
+              <label class="hw-row"><input class="sr-only" type="radio" name="hwpick"><span class="hw-nw"><span class="hw-nm">B. Podziemski</span><span class="hw-me">SG · Golden State</span></span><span class="hw-pk">in rosa</span><span class="hw-ovrp">78</span></label>
+            </fieldset>
+          </div>
+          <div class="hw-foot">
+            <span class="wl"><b>00</b> W · 00 L</span>
+            <span class="av">Avanza</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest('[data-save]');
+    if(!btn) return;
+    const on = btn.dataset.on === '1';
+    btn.dataset.on = on ? '0':'1';
+    btn.textContent = on ? 'Salva' : 'Salvato ✓';
+    try{ localStorage.setItem('mockup-demo-saved', on ? '0':'1'); }catch(_){}
+  });
+})();
+</script>
+</body>
+</html>

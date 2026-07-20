@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA, CONTENUTO VARIABILE. Cambia solo #panels (e <title>/#mockTitle).
+  Pelle CABINA 90s in tutte le tile. Novità: foto vere, info-ladder 4 livelli,
+  formazione cliccabile → scheda giocatore (sheet, sfondo bloccato).
+-->
+<title>Draft · foto + ladder + formazione · Cabina 90s · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:60ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Draft · foto · info-ladder · formazione cliccabile</div>
+    <h1 id="mockTitle">Draft ricco — foto, livelli, rosa cliccabile</h1>
+    <p class="lead">Pelle <b>Cabina 90s</b>. Prova i <b>4 livelli</b> dentro al telefono (Facile→Clutch): cambiano cosa vedi del candidato. Tocca un <b>giocatore in formazione</b> → si apre la sua scheda (sfondo bloccato). 3 strutture a confronto. Solo telefono.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ════════════ PELLE + COMPONENTI CONDIVISI (Cabina 90s) ════════════ -->
+      <style>
+      @import url("https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@500;700;900&display=swap");
+      .cab{
+        --bg:#15163a; --bg2:#0d0e29; --panel:#1d1e4a; --panel2:#241a3e;
+        --orange:#ff5b1e; --yellow:#ffcf33; --cream:#f4eee0;
+        --green:#5ccf8e; --red:#ff5038; --dim:#8a8bc0; --hair:#2c2a63;
+        color:var(--cream); font-family:"Hanken Grotesk",sans-serif;
+      }
+      .cab *{box-sizing:border-box}
+      .cab .stagewrap{display:flex;justify-content:center}
+      .cab .phone{width:316px;max-width:100%;border:9px solid #05030f;border-radius:32px;background:#05030f;box-shadow:0 18px 44px rgba(0,0,0,.55)}
+      .cab .screen{position:relative;overflow:hidden;border-radius:23px;padding:13px;background:radial-gradient(120% 80% at 50% -10%,#20206a 0,var(--bg) 55%,var(--bg2) 100%)}
+
+      /* header app */
+      .cab .apphd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+      .cab .wm{font-family:"Bungee";font-size:.86rem;color:var(--yellow);line-height:1}
+      .cab .wm b{color:var(--orange)}
+      .cab .pick{font-size:.54rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700;text-align:right}
+      .cab .pick em{color:var(--yellow);font-style:normal}
+
+      /* foto giocatore (NBA headshot) con tinta brand leggera */
+      .cab .face{position:relative;border-radius:11px;overflow:hidden;flex:none;background:linear-gradient(160deg,#2a1d4d,#161240)}
+      .cab .face img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;display:block}
+      .cab .face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(40,20,80,.05) 40%,rgba(255,91,30,.16));pointer-events:none}
+
+      /* OVR */
+      .cab .ovr{display:inline-flex;flex-direction:column;align-items:center;line-height:.8}
+      .cab .ovr b{font-family:"Doto";font-weight:900;color:var(--yellow);text-shadow:0 2px 0 #b8901f}
+      .cab .ovr small{font-size:.42rem;letter-spacing:.18em;color:var(--dim);font-weight:700;margin-top:3px}
+      .cab .ovrq{display:none;flex-direction:column;align-items:center;line-height:.8}
+      .cab .ovrq b{font-family:"Doto";font-weight:900;color:#4a4880}
+      .cab .ovrq small{font-size:.4rem;letter-spacing:.12em;color:#4a4880;font-weight:700;margin-top:3px}
+
+      /* info-ladder (segmented control) */
+      .cab .ladder{display:flex;gap:4px;background:#141238;border:1px solid var(--hair);border-radius:12px;padding:4px;margin-bottom:11px}
+      .cab .ladder .lv{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+      .cab .ladder label{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+            min-height:44px;border-radius:9px;cursor:pointer;
+            font-family:"Bungee";font-size:.56rem;letter-spacing:.01em;color:var(--dim);transition:background .15s,color .15s}
+      .cab .ladder label small{font-family:"Hanken Grotesk";font-weight:700;font-size:.42rem;letter-spacing:.02em;text-transform:uppercase;color:#5a5a93}
+      .cab .ladder .lv:checked + label{background:var(--yellow);color:#1a1206;box-shadow:0 2px 0 #b8901f}
+      .cab .ladder .lv:checked + label small{color:#6b4d08}
+      .cab .ladder .lv.clu:checked + label{background:var(--red);color:#fff;box-shadow:0 2px 0 #a82b1d}
+      .cab .ladder .lv.clu:checked + label small{color:#ffd6cf}
+
+      /* statistiche (barra + numero) */
+      .cab .stats{display:grid;grid-template-columns:1fr 1fr;gap:9px 13px}
+      .cab .st .stl{display:flex;justify-content:space-between;align-items:baseline;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-bottom:4px}
+      .cab .st .stnum{font-family:"Doto";font-weight:900;font-size:.72rem;color:var(--cream)}
+      .cab .trk{height:7px;border-radius:99px;background:#211f55;overflow:hidden}
+      .cab .fil{display:block;height:100%;border-radius:99px;background:var(--green)}
+      .cab .fil.md{background:var(--yellow)} .cab .fil.lo{background:var(--red)}
+      .cab .blindmsg{display:none;align-items:center;gap:8px;background:rgba(255,80,56,.1);border:1px solid rgba(255,80,56,.35);border-radius:11px;padding:11px;font-size:.66rem;color:#ffc2b8;font-weight:600}
+      .cab .blindmsg svg{width:18px;height:18px;fill:var(--red);flex:none}
+
+      /* LOGICA LADDER (una sola volta, via :has + classi) */
+      .cab:has(.lv.dif:checked) .ladderscope .stnum{visibility:hidden}
+      .cab:has(.lv.clu:checked) .ladderscope .stats{display:none}
+      .cab:has(.lv.clu:checked) .ladderscope .blindmsg{display:flex}
+      .cab:has(.lv.clu:checked) .ladderscope .ovr{display:none}
+      .cab:has(.lv.clu:checked) .ladderscope .ovrq{display:inline-flex}
+      .cab:has(.lv.clu:checked) .ladderscope .candface{filter:grayscale(.7) brightness(.8)}
+
+      /* CTA */
+      .cab .cta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;cursor:pointer;
+            font-family:"Bungee";font-size:.76rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:14px;min-height:48px;box-shadow:0 4px 0 #b8901f;transition:transform .1s,box-shadow .1s;border:0}
+      .cab .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+      .cab .cta svg{width:16px;height:16px;fill:currentColor}
+
+      /* needs */
+      .cab .needs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.6rem}
+      .cab .needs .l{letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700}
+      .cab .nchip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:99px;background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.4);color:#ffb0a6;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+      .cab .nchip::before{content:"";width:5px;height:5px;border-radius:99px;background:var(--red)}
+
+      /* etichette sezione */
+      .cab .seclab{display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px}
+      .cab .seclab span{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:700}
+      .cab .seclab em{font-size:.54rem;color:var(--green);font-style:normal;font-weight:700}
+
+      /* badge ruolo/ovr sulle foto formazione */
+      .cab .fbadge{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:3px 5px;
+            background:linear-gradient(180deg,transparent,rgba(5,3,15,.85));font-size:.5rem;font-weight:800}
+      .cab .fbadge .r{color:var(--cream);letter-spacing:.04em}
+      .cab .fbadge .o{font-family:"Doto";font-weight:900;color:var(--yellow)}
+      .cab:has(.lv.clu:checked) .fbadge .o{visibility:hidden}
+
+      /* ───── SHEET scheda giocatore (sfondo bloccato) ───── */
+      .cab .sheetk{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+      .cab .scrim{position:absolute;inset:0;z-index:5;background:rgba(5,3,15,.62);opacity:0;pointer-events:none;transition:opacity .22s;border-radius:23px;cursor:pointer}
+      .cab .sheet{position:absolute;left:0;right:0;bottom:0;z-index:6;transform:translateY(112%);transition:transform .28s cubic-bezier(.2,.8,.2,1);
+            background:linear-gradient(180deg,#2a1d4d,#15163a);border-top:2px solid var(--orange);border-radius:20px 20px 23px 23px;padding:8px 14px 16px;box-shadow:0 -12px 30px rgba(0,0,0,.5)}
+      .cab .handle{display:block;width:42px;height:5px;border-radius:99px;background:#4a4880;margin:4px auto 12px;cursor:pointer}
+      .cab:has(.sheetk:checked) .scrim{opacity:1;pointer-events:auto}
+      .cab:has(.sheetk:checked) .sheet{transform:translateY(0)}
+      .cab .sheet-top{display:flex;gap:12px;align-items:center;margin-bottom:13px}
+      .cab .sheet-top .face{width:64px;height:64px}
+      .cab .sheet-top .nm{font-family:"Bungee";font-size:1rem;line-height:1}
+      .cab .sheet-top .pos{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:6px}
+      .cab .sheet-top .ovr b{font-size:1.7rem}
+      .cab .sheet .own{display:inline-flex;align-items:center;gap:4px;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;font-weight:800;color:#bdeccd;background:rgba(92,207,142,.14);border:1px solid rgba(92,207,142,.45);padding:2px 7px;border-radius:99px;margin-top:7px}
+
+      .cab a{color:inherit}
+      </style>
+
+      <!-- ═══════════════ ① VETRINA ALTA (Variante +) ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Vetrina alta"
+        data-mood="Cabina 90s · candidato grande + ladder in cima"
+        data-why="Il candidato con foto domina lo schermo e i 4 livelli sono subito sotto le dita: leggi tutto in un colpo. La formazione resta a portata, cliccabile."
+        data-role="Variante +">
+        <div class="cab v1"><div class="stagewrap"><div class="phone"><div class="screen">
+
+          <input class="sheetk" type="checkbox" id="v1-sheet">
+
+          <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div><div class="pick">L'imbattuto · <em>pick 4</em></div></div>
+
+          <div class="ladder">
+            <input class="lv fac" type="radio" name="lvV1" id="v1-fac" checked><label for="v1-fac">FAC<small>numeri</small></label>
+            <input class="lv nor" type="radio" name="lvV1" id="v1-nor"><label for="v1-nor">NOR<small>numeri</small></label>
+            <input class="lv dif" type="radio" name="lvV1" id="v1-dif"><label for="v1-dif">DIF<small>no num</small></label>
+            <input class="lv clu" type="radio" name="lvV1" id="v1-clu"><label for="v1-clu">CLU<small>al buio</small></label>
+          </div>
+
+          <div class="ladderscope">
+            <div class="cand1">
+              <div class="c1-top">
+                <div class="face candface" style="width:96px;height:112px">
+                  <img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png">
+                </div>
+                <div class="c1-id">
+                  <div class="nm">Antetokounmpo</div>
+                  <div class="pos">Ala grande · 211 cm · Grecia</div>
+                  <div class="c1-ovr">
+                    <span class="ovr"><b>96</b><small>OVR</small></span>
+                    <span class="ovrq"><b>??</b><small>celato</small></span>
+                    <span class="tagline">Motore di squadra · transizione devastante</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stats" style="margin-top:13px">
+                <div class="st"><div class="stl"><span>Atletismo</span><span class="stnum">98</span></div><div class="trk"><i class="fil" style="width:98%"></i></div></div>
+                <div class="st"><div class="stl"><span>Difesa</span><span class="stnum">93</span></div><div class="trk"><i class="fil" style="width:93%"></i></div></div>
+                <div class="st"><div class="stl"><span>Rimbalzi</span><span class="stnum">90</span></div><div class="trk"><i class="fil" style="width:90%"></i></div></div>
+                <div class="st"><div class="stl"><span>Tiro da 3</span><span class="stnum">60</span></div><div class="trk"><i class="fil lo" style="width:60%"></i></div></div>
+              </div>
+              <div class="blindmsg"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9zm0-7a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg> Clutch: scegli al buio. Solo foto, nome e ruolo — fidati dell'istinto.</div>
+            </div>
+          </div>
+
+          <label class="cta" for="v1-add" style="margin-top:13px">
+            <input type="checkbox" id="v1-add" hidden>
+            <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Aggiungi alla rosa
+          </label>
+          <div class="needs" style="margin-top:11px"><span class="l">Ti manca:</span><span class="nchip">tiro da 3</span><span class="nchip">play di riserva</span></div>
+
+          <div class="seclab"><span>La tua formazione</span><em>tocca per la scheda</em></div>
+          <div class="f1-row">
+            <label class="f1-cell" for="v1-sheet"><span class="face"><img loading="lazy" alt="Haliburton" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"><span class="fbadge"><span class="r">PG</span><span class="o">90</span></span></span></label>
+            <label class="f1-cell" for="v1-sheet"><span class="face"><img loading="lazy" alt="Edwards" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"><span class="fbadge"><span class="r">SG</span><span class="o">94</span></span></span></label>
+            <label class="f1-cell" for="v1-sheet"><span class="face"><img loading="lazy" alt="Tatum" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"><span class="fbadge"><span class="r">SF</span><span class="o">95</span></span></span></label>
+            <span class="f1-cell empty"><span class="face ph"><span class="phplus">+</span><span class="fbadge"><span class="r">PF</span><span class="o">—</span></span></span></span>
+            <label class="f1-cell" for="v1-sheet"><span class="face"><img loading="lazy" alt="Embiid" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"><span class="fbadge"><span class="r">C</span><span class="o">96</span></span></span></label>
+          </div>
+
+          <!-- SHEET -->
+          <label class="scrim" for="v1-sheet" aria-label="Chiudi scheda"></label>
+          <aside class="sheet" role="dialog" aria-label="Scheda giocatore">
+            <label class="handle" for="v1-sheet"></label>
+            <div class="sheet-top">
+              <div class="face"><img loading="lazy" alt="Edwards" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"></div>
+              <div style="flex:1">
+                <div class="nm">A. Edwards</div>
+                <div class="pos">Guardia tiratrice · 193 cm</div>
+                <span class="own"><svg width="9" height="9" viewBox="0 0 24 24" fill="#5ccf8e"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> in rosa · info piena</span>
+              </div>
+              <span class="ovr"><b>94</b><small>OVR</small></span>
+            </div>
+            <div class="stats">
+              <div class="st"><div class="stl"><span>Tiro da 3</span><span class="stnum">90</span></div><div class="trk"><i class="fil" style="width:90%"></i></div></div>
+              <div class="st"><div class="stl"><span>Atletismo</span><span class="stnum">95</span></div><div class="trk"><i class="fil" style="width:95%"></i></div></div>
+              <div class="st"><div class="stl"><span>Palleggio</span><span class="stnum">86</span></div><div class="trk"><i class="fil" style="width:86%"></i></div></div>
+              <div class="st"><div class="stl"><span>Difesa</span><span class="stnum">72</span></div><div class="trk"><i class="fil md" style="width:72%"></i></div></div>
+            </div>
+          </aside>
+
+        </div></div></div></div>
+        <style>
+        .v1 .c1-top{display:flex;gap:13px;align-items:flex-start}
+        .v1 .c1-id{flex:1;min-width:0;padding-top:2px}
+        .v1 .nm{font-family:"Bungee";font-size:1.12rem;line-height:1}
+        .v1 .pos{font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:7px}
+        .v1 .c1-ovr{display:flex;align-items:center;gap:11px;margin-top:11px}
+        .v1 .c1-ovr .ovr b,.v1 .c1-ovr .ovrq b{font-size:2.1rem}
+        .v1 .tagline{font-size:.62rem;color:#b7b6e6;line-height:1.25}
+        .v1 .f1-row{display:flex;gap:6px}
+        .v1 .f1-cell{flex:1;cursor:pointer}
+        .v1 .f1-cell .face{width:100%;aspect-ratio:3/4}
+        .v1 .f1-cell.empty .face.ph{display:flex;align-items:center;justify-content:center;border:1.5px dashed #ffcf3355;background:#171544}
+        .v1 .phplus{font-family:"Bungee";font-size:1.2rem;color:#5b5a8f}
+        </style>
+      </section>
+
+      <!-- ═══════════════ ② WAR ROOM A COLONNE ═══════════════ -->
+      <section class="dir-panel"
+        data-name="War Room a colonne"
+        data-mood="Cabina 90s · clock + lineup verticale"
+        data-why="Il timer dà tensione, il candidato è compatto e la formazione è una lista a ruoli ben leggibile: tanta informazione ordinata, ogni riga è cliccabile."
+        data-role="">
+        <div class="cab v2"><div class="stagewrap"><div class="phone"><div class="screen">
+
+          <input class="sheetk" type="checkbox" id="v2-sheet">
+
+          <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div><div class="pick">L'imbattuto · <em>pick 4</em></div></div>
+
+          <div class="clock">
+            <div class="ring"><b>0:18</b></div>
+            <div class="clk-t"><div class="big">SEI TU SUL CLOCK</div><div class="sm">scegli prima che scada</div></div>
+          </div>
+
+          <div class="ladder">
+            <input class="lv fac" type="radio" name="lvV2" id="v2-fac" checked><label for="v2-fac">FAC<small>numeri</small></label>
+            <input class="lv nor" type="radio" name="lvV2" id="v2-nor"><label for="v2-nor">NOR<small>numeri</small></label>
+            <input class="lv dif" type="radio" name="lvV2" id="v2-dif"><label for="v2-dif">DIF<small>no num</small></label>
+            <input class="lv clu" type="radio" name="lvV2" id="v2-clu"><label for="v2-clu">CLU<small>al buio</small></label>
+          </div>
+
+          <div class="ladderscope">
+            <div class="cand2">
+              <div class="face candface" style="width:66px;height:78px">
+                <img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png">
+              </div>
+              <div class="c2-id">
+                <div class="nm">Antetokounmpo</div>
+                <div class="pos">PF · 211 · Grecia</div>
+                <div class="stats c2-stats">
+                  <div class="st"><div class="stl"><span>Atl</span><span class="stnum">98</span></div><div class="trk"><i class="fil" style="width:98%"></i></div></div>
+                  <div class="st"><div class="stl"><span>Dif</span><span class="stnum">93</span></div><div class="trk"><i class="fil" style="width:93%"></i></div></div>
+                </div>
+                <div class="blindmsg" style="margin-top:8px"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg> Al buio</div>
+              </div>
+              <div class="c2-ovr">
+                <span class="ovr"><b>96</b><small>OVR</small></span>
+                <span class="ovrq"><b>??</b><small>celato</small></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="c2-acts">
+            <label class="cta" for="v2-add"><input type="checkbox" id="v2-add" hidden>
+              <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> SCEGLI</label>
+          </div>
+
+          <div class="seclab"><span>Quintetto · 4/5</span><em>tocca una riga</em></div>
+          <div class="v2-list">
+            <label class="lrow" for="v2-sheet"><span class="rl">PG</span><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"></span><span class="ln">Haliburton</span><span class="lo">90</span></label>
+            <label class="lrow" for="v2-sheet"><span class="rl">SG</span><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"></span><span class="ln">Edwards</span><span class="lo">94</span></label>
+            <label class="lrow" for="v2-sheet"><span class="rl">SF</span><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"></span><span class="ln">Tatum</span><span class="lo">95</span></label>
+            <span class="lrow empty"><span class="rl">PF</span><span class="face ph">+</span><span class="ln">libero — pick 4</span><span class="lo">—</span></span>
+            <label class="lrow" for="v2-sheet"><span class="rl">C</span><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"></span><span class="ln">Embiid</span><span class="lo">96</span></label>
+          </div>
+
+          <!-- SHEET -->
+          <label class="scrim" for="v2-sheet" aria-label="Chiudi scheda"></label>
+          <aside class="sheet" role="dialog" aria-label="Scheda giocatore">
+            <label class="handle" for="v2-sheet"></label>
+            <div class="sheet-top">
+              <div class="face"><img loading="lazy" alt="Tatum" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"></div>
+              <div style="flex:1">
+                <div class="nm">J. Tatum</div>
+                <div class="pos">Ala piccola · 203 cm</div>
+                <span class="own"><svg width="9" height="9" viewBox="0 0 24 24" fill="#5ccf8e"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> in rosa · info piena</span>
+              </div>
+              <span class="ovr"><b>95</b><small>OVR</small></span>
+            </div>
+            <div class="stats">
+              <div class="st"><div class="stl"><span>Tiro da 3</span><span class="stnum">88</span></div><div class="trk"><i class="fil" style="width:88%"></i></div></div>
+              <div class="st"><div class="stl"><span>Difesa</span><span class="stnum">85</span></div><div class="trk"><i class="fil" style="width:85%"></i></div></div>
+              <div class="st"><div class="stl"><span>Rimbalzi</span><span class="stnum">80</span></div><div class="trk"><i class="fil" style="width:80%"></i></div></div>
+              <div class="st"><div class="stl"><span>Atletismo</span><span class="stnum">87</span></div><div class="trk"><i class="fil" style="width:87%"></i></div></div>
+            </div>
+          </aside>
+
+        </div></div></div></div>
+        <style>
+        .v2 .clock{display:flex;align-items:center;gap:10px;background:linear-gradient(100deg,#2a1158,#191347);border:1px solid #4a2a8a;border-radius:13px;padding:9px 11px;margin-bottom:11px}
+        .v2 .ring{width:44px;height:44px;border-radius:99px;flex:none;display:grid;place-items:center;position:relative;background:conic-gradient(var(--yellow) 0 72%,#2c2a63 0)}
+        .v2 .ring::after{content:"";position:absolute;inset:4px;border-radius:99px;background:#191347}
+        .v2 .ring b{position:relative;font-family:"Doto";font-weight:900;font-size:.84rem;color:var(--yellow)}
+        .v2 .clk-t .big{font-family:"Bungee";font-size:.78rem;color:var(--cream);line-height:1}
+        .v2 .clk-t .sm{font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:4px}
+        .v2 .cand2{display:flex;gap:11px;align-items:flex-start;background:linear-gradient(180deg,var(--panel2),#141538);border:1px solid #3a2a66;border-radius:13px;padding:11px}
+        .v2 .c2-id{flex:1;min-width:0}
+        .v2 .nm{font-family:"Bungee";font-size:.92rem;line-height:1}
+        .v2 .pos{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:5px}
+        .v2 .c2-stats{margin-top:9px;gap:7px 10px}
+        .v2 .c2-ovr .ovr b,.v2 .c2-ovr .ovrq b{font-size:1.6rem}
+        .v2 .c2-acts{margin-top:10px}
+        .v2 .v2-list{display:flex;flex-direction:column;gap:5px}
+        .v2 .lrow{display:flex;align-items:center;gap:9px;background:#171544;border:1px solid var(--hair);border-radius:10px;padding:6px 9px;cursor:pointer;transition:border-color .12s}
+        .v2 .lrow:hover{border-color:#4a4880}
+        .v2 .lrow .rl{font-family:"Bungee";font-size:.56rem;color:var(--yellow);width:22px;flex:none}
+        .v2 .lrow .face{width:30px;height:30px;border-radius:8px}
+        .v2 .lrow .ln{flex:1;font-weight:700;font-size:.78rem}
+        .v2 .lrow .lo{font-family:"Doto";font-weight:900;font-size:.86rem;color:var(--yellow)}
+        .v2 .lrow.empty{border-style:dashed}
+        .v2 .lrow.empty .ln{color:#5b5a8f;font-style:italic;font-weight:600}
+        .v2 .lrow.empty .lo{color:#4a4880}
+        .v2 .lrow.empty .face.ph{display:flex;align-items:center;justify-content:center;background:#211f55;color:#5b5a8f;font-family:"Bungee";font-size:.9rem}
+        .v2:has(.lv.clu:checked) .lrow .lo{visibility:hidden}
+        </style>
+      </section>
+
+      <!-- ═══════════════ ③ LINEUP-FIRST (campo) ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Lineup-first"
+        data-mood="Cabina 90s · il quintetto come palco"
+        data-why="La tua squadra è la protagonista, grande e fotografica; il candidato entra come la tessera che manca. Più emotivo: 'sto costruendo QUESTA squadra'."
+        data-role="">
+        <div class="cab v3"><div class="stagewrap"><div class="phone"><div class="screen">
+
+          <input class="sheetk" type="checkbox" id="v3-sheet">
+
+          <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div><div class="pick">L'imbattuto · <em>pick 4</em></div></div>
+
+          <div class="seclab" style="margin-top:2px"><span>Il tuo quintetto</span><em>tocca un volto</em></div>
+          <div class="court">
+            <label class="cc" for="v3-sheet"><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"><span class="fbadge"><span class="r">PG</span><span class="o">90</span></span></span></label>
+            <label class="cc" for="v3-sheet"><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"><span class="fbadge"><span class="r">SG</span><span class="o">94</span></span></span></label>
+            <span class="cc target"><span class="face ph"><span class="phplus">+</span><span class="fbadge"><span class="r">PF</span><span class="o">?</span></span></span></span>
+            <label class="cc" for="v3-sheet"><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"><span class="fbadge"><span class="r">SF</span><span class="o">95</span></span></span></label>
+            <label class="cc" for="v3-sheet"><span class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"><span class="fbadge"><span class="r">C</span><span class="o">96</span></span></span></label>
+          </div>
+
+          <div class="incoming">
+            <div class="inhd"><span class="inlab">Tessera mancante · pick 4</span><span class="needs"><span class="nchip">tiro da 3</span></span></div>
+
+            <div class="ladder">
+              <input class="lv fac" type="radio" name="lvV3" id="v3-fac" checked><label for="v3-fac">FAC<small>numeri</small></label>
+              <input class="lv nor" type="radio" name="lvV3" id="v3-nor"><label for="v3-nor">NOR<small>numeri</small></label>
+              <input class="lv dif" type="radio" name="lvV3" id="v3-dif"><label for="v3-dif">DIF<small>no num</small></label>
+              <input class="lv clu" type="radio" name="lvV3" id="v3-clu"><label for="v3-clu">CLU<small>al buio</small></label>
+            </div>
+
+            <div class="ladderscope">
+              <div class="cand3">
+                <div class="face candface" style="width:72px;height:84px"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png"></div>
+                <div class="c3-id">
+                  <div class="topline"><div><div class="nm">Antetokounmpo</div><div class="pos">PF · 211</div></div>
+                    <span class="ovr"><b>96</b><small>OVR</small></span><span class="ovrq"><b>??</b><small>celato</small></span></div>
+                  <div class="stats c3-stats">
+                    <div class="st"><div class="stl"><span>Atl</span><span class="stnum">98</span></div><div class="trk"><i class="fil" style="width:98%"></i></div></div>
+                    <div class="st"><div class="stl"><span>Dif</span><span class="stnum">93</span></div><div class="trk"><i class="fil" style="width:93%"></i></div></div>
+                    <div class="st"><div class="stl"><span>Rim</span><span class="stnum">90</span></div><div class="trk"><i class="fil" style="width:90%"></i></div></div>
+                    <div class="st"><div class="stl"><span>3pt</span><span class="stnum">60</span></div><div class="trk"><i class="fil lo" style="width:60%"></i></div></div>
+                  </div>
+                  <div class="blindmsg"><svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z"/></svg> Al buio: solo foto e ruolo.</div>
+                </div>
+              </div>
+            </div>
+
+            <label class="cta" for="v3-add" style="margin-top:11px"><input type="checkbox" id="v3-add" hidden>
+              <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti nel quintetto</label>
+          </div>
+
+          <!-- SHEET -->
+          <label class="scrim" for="v3-sheet" aria-label="Chiudi scheda"></label>
+          <aside class="sheet" role="dialog" aria-label="Scheda giocatore">
+            <label class="handle" for="v3-sheet"></label>
+            <div class="sheet-top">
+              <div class="face"><img loading="lazy" alt="Embiid" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"></div>
+              <div style="flex:1">
+                <div class="nm">J. Embiid</div>
+                <div class="pos">Centro · 213 cm</div>
+                <span class="own"><svg width="9" height="9" viewBox="0 0 24 24" fill="#5ccf8e"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> in rosa · info piena</span>
+              </div>
+              <span class="ovr"><b>96</b><small>OVR</small></span>
+            </div>
+            <div class="stats">
+              <div class="st"><div class="stl"><span>Tiro</span><span class="stnum">88</span></div><div class="trk"><i class="fil" style="width:88%"></i></div></div>
+              <div class="st"><div class="stl"><span>Difesa</span><span class="stnum">90</span></div><div class="trk"><i class="fil" style="width:90%"></i></div></div>
+              <div class="st"><div class="stl"><span>Rimbalzi</span><span class="stnum">92</span></div><div class="trk"><i class="fil" style="width:92%"></i></div></div>
+              <div class="st"><div class="stl"><span>Forza</span><span class="stnum">95</span></div><div class="trk"><i class="fil" style="width:95%"></i></div></div>
+            </div>
+          </aside>
+
+        </div></div></div></div>
+        <style>
+        .v3 .court{display:flex;gap:5px;background:linear-gradient(180deg,#1a1640,#120f33);border:1px solid var(--hair);border-radius:14px;padding:9px;
+              background-image:radial-gradient(120% 90% at 50% 0,rgba(255,91,30,.1),transparent 60%)}
+        .v3 .cc{flex:1;cursor:pointer}
+        .v3 .cc .face{width:100%;aspect-ratio:3/4}
+        .v3 .cc.target .face.ph{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--orange);background:#211435}
+        .v3 .cc.target .phplus{font-family:"Bungee";font-size:1.4rem;color:var(--orange)}
+        .v3 .incoming{margin-top:13px;background:linear-gradient(180deg,var(--panel2),#141538);border:1px solid #3a2a66;border-radius:14px;padding:12px}
+        .v3 .inhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .v3 .inlab{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+        .v3 .cand3{display:flex;gap:11px;align-items:flex-start}
+        .v3 .c3-id{flex:1;min-width:0}
+        .v3 .topline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+        .v3 .nm{font-family:"Bungee";font-size:.92rem;line-height:1}
+        .v3 .pos{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:5px}
+        .v3 .topline .ovr b,.v3 .topline .ovrq b{font-size:1.5rem}
+        .v3 .c3-stats{margin-top:10px;gap:7px 10px}
+        </style>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

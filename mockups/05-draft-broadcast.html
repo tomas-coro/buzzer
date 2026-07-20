@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THE RUN — Draft · regìa primetime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ════════════════════════════════════════════════════════════════
+     THE RUN · schermata DRAFT — direzione "Broadcast primetime"
+     Regìa TV notturna (NBA Finals): midnight navy + oro campionato.
+     Ruoli colore — ORO = la corsa/azione/selezione · ROSSO = solo LIVE ·
+     VERDE = solo le W. Nessun blu elettrico (trappola AI evitata).
+     ════════════════════════════════════════════════════════════════ */
+  :root{
+    --bg:#0a1020; --bg-deep:#070b16;
+    --panel:#101a2e; --panel-2:#16233c; --slot:#0e1727;
+    --line:#243450; --line-soft:#1a2740;
+    --ink:#eef3fb; --ink-dim:#aebbd2; --ink-faint:#7385a3;
+    --gold:#f6b43c; --gold-hi:#ffd27a; --gold-deep:#d18f25; --gold-ink:#170f02;
+    --live:#ff4d4d; --win:#54d08a;
+    --r:14px;
+    --ease:cubic-bezier(.16,1,.3,1);
+    /* z-scale semantico */
+    --z-bug:50; --z-cta:20;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5; min-height:100vh;
+  }
+  /* scena: vignettatura + bagliore parquet sotto i riflettori + scanline finissime */
+  .scene{position:relative; min-height:100vh; isolation:isolate}
+  .scene::before{
+    content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+    background:
+      radial-gradient(120% 80% at 50% 118%, rgba(246,180,60,.10), transparent 55%),
+      radial-gradient(100% 70% at 50% -20%, rgba(80,120,200,.10), transparent 60%),
+      linear-gradient(180deg, var(--bg) 0, var(--bg-deep) 100%);
+  }
+  .scene::after{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; opacity:.5;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.014) 0 1px, transparent 1px 3px);
+    mask-image:radial-gradient(120% 100% at 50% 40%, #000 60%, transparent 100%);
+  }
+
+  /* ───────── helpers ───────── */
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  .disp{font-family:"Big Shoulders Display",sans-serif;text-transform:uppercase;line-height:.92}
+  .tnum{font-variant-numeric:tabular-nums}
+
+  /* ════════════ SCOREBUG (header sticky) ════════════ */
+  .bug{
+    position:sticky; top:0; z-index:var(--z-bug);
+    display:flex; align-items:stretch; gap:0;
+    background:rgba(9,14,26,.82); backdrop-filter:blur(10px) saturate(1.1);
+    border-bottom:1px solid var(--line);
+    animation:bug-in .55s var(--ease) both;
+  }
+  .bug__cell{display:flex; align-items:center; gap:10px; padding:11px 14px}
+  .bug__cell + .bug__cell{border-left:1px solid var(--line-soft)}
+  .bug__brand{gap:9px}
+  .bug__logo{
+    font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.32rem;
+    letter-spacing:.01em; text-transform:uppercase; color:var(--ink); line-height:.85;
+  }
+  .bug__logo b{color:var(--gold)}
+  .bug__wip{
+    font-size:.5rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-faint); border:1px solid var(--line); border-radius:4px; padding:2px 5px; white-space:nowrap;
+  }
+  .bug__mode{display:none}
+  .bug__mode .k{font-size:.62rem; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint)}
+  .bug__mode .v{font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:1rem; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-dim)}
+  .bug__rec{margin-left:auto; gap:12px}
+  .rec{display:flex; flex-direction:column; align-items:center; line-height:1}
+  .rec .n{font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.5rem}
+  .rec .n.now{color:var(--ink)} .rec .n.now b{color:var(--win)}
+  .rec .n.goal{color:var(--gold)}
+  .rec .lab{font-size:.5rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-faint); margin-top:3px}
+  .rec__arrow{color:var(--ink-faint); font-size:1rem; align-self:flex-start; margin-top:4px}
+  .bug__live{gap:7px}
+  .live{display:inline-flex; align-items:center; gap:6px; font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:var(--live)}
+  .live i{width:8px; height:8px; border-radius:99px; background:var(--live); box-shadow:0 0 0 0 rgba(255,77,77,.6); animation:pulse 2s var(--ease) infinite}
+
+  /* ════════════ STAGE ════════════ */
+  .stage{max-width:1120px; margin:0 auto; padding:22px 16px 40px; display:grid; gap:18px}
+
+  /* ── ON THE CLOCK (hero / thesis) ── */
+  .clock{
+    position:relative; background:linear-gradient(180deg, var(--panel-2), var(--panel));
+    border:1px solid var(--line); border-radius:var(--r); padding:18px 16px 16px; overflow:hidden;
+    animation:rise .6s var(--ease) both; animation-delay:.06s;
+  }
+  .clock::before{ /* angolo regìa: taglio luminoso in alto a sx */
+    content:""; position:absolute; top:0; left:0; width:64px; height:4px; background:var(--gold);
+    box-shadow:0 0 18px 1px rgba(246,180,60,.5);
+  }
+  .clock__call{display:flex; align-items:center; gap:9px; margin-bottom:14px}
+  .clock__call .tag{
+    font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.02rem; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--gold-ink); background:var(--gold); padding:4px 11px; border-radius:6px;
+  }
+  .clock__call .slot{font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:1.06rem; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-dim)}
+  .clock__call .slot b{color:var(--ink)}
+
+  .team{display:flex; align-items:center; gap:12px; padding:11px 12px; background:rgba(0,0,0,.22); border:1px solid var(--line-soft); border-radius:11px; margin-bottom:16px}
+  .team__crest{
+    width:46px; height:46px; flex:none; border-radius:10px; display:grid; place-items:center;
+    background:linear-gradient(150deg,#1d3a6e,#0b2350); border:1px solid #2b4a82;
+    font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.1rem; letter-spacing:.02em; color:#cfe0ff;
+  }
+  .team__meta{display:flex; flex-direction:column; min-width:0}
+  .team__name{font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:1.32rem; letter-spacing:.01em; text-transform:uppercase; color:var(--ink); line-height:1}
+  .team__sub{font-size:.74rem; color:var(--ink-faint); margin-top:3px}
+  .team__sub b{color:var(--gold); font-weight:600}
+  .team__shot{margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:5px}
+  .clockface{position:relative; width:34px; height:34px}
+  .clockface svg{transform:rotate(-90deg)}
+  .clockface .sec{font-family:"Big Shoulders Display",sans-serif; position:absolute; inset:0; display:grid; place-items:center; font-weight:700; font-size:.84rem; color:var(--gold)}
+
+  /* opzioni pick — niente side-stripe: rank guida + bordo pieno + fill su stato */
+  .picks{border:0; margin:0; padding:0; min-width:0; display:flex; flex-direction:column; gap:9px}
+  .pick{
+    position:relative; display:flex; align-items:center; gap:13px; min-height:66px;
+    padding:10px 13px; background:var(--slot); border:1px solid var(--line); border-radius:12px;
+    cursor:pointer; transition:transform .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease);
+    animation:rise .5s var(--ease) both; animation-delay:calc(.18s + var(--i,0)*.07s);
+  }
+  .pick:hover{transform:translateY(-2px); border-color:#33476c}
+  .pick:focus-within{outline:2px solid var(--gold); outline-offset:2px}
+  .pick__rank{font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:1.05rem; color:var(--ink-faint); width:1.1ch; text-align:center}
+  .pick__face{
+    width:46px; height:46px; flex:none; border-radius:10px; overflow:hidden;
+    background:radial-gradient(120% 120% at 50% 0, #243a5e, #12203a); display:grid; place-items:end center;
+    border:1px solid var(--line);
+  }
+  .pick__face svg{width:38px; height:38px; opacity:.65}
+  .pick__id{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px}
+  .pick__name{font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:1.34rem; letter-spacing:.01em; text-transform:uppercase; color:var(--ink); line-height:.95}
+  .pick__row{display:flex; align-items:center; gap:7px}
+  .pos{font-size:.6rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-dim); background:rgba(255,255,255,.06); border:1px solid var(--line); border-radius:5px; padding:2px 6px}
+  .pick__hint{font-size:.7rem; color:var(--ink-faint)}
+  .pick__state{
+    display:none; font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:.74rem; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--gold-ink); background:var(--gold); border-radius:5px; padding:4px 9px;
+  }
+  .pick__ovr{font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.7rem; color:var(--ink); min-width:2.3ch; text-align:right}
+  .pick__ovr small{display:block; font-family:"Hanken Grotesk",sans-serif; font-weight:700; font-size:.46rem; letter-spacing:.18em; color:var(--ink-faint); margin-top:-2px}
+  .pick:has(input:checked){background:linear-gradient(180deg, rgba(246,180,60,.16), rgba(246,180,60,.05)); border-color:var(--gold)}
+  .pick:has(input:checked) .pick__rank{color:var(--gold)}
+  .pick:has(input:checked) .pick__ovr{color:var(--gold-hi)}
+  .pick:has(input:checked) .pick__state{display:inline-block; animation:popin .3s var(--ease) both}
+  .pick:has(input:checked) .pick__hint{display:none}
+
+  /* barra azione: progresso + CTA */
+  .actbar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-top:16px; padding-top:15px; border-top:1px solid var(--line-soft)}
+  .prog{display:flex; flex-direction:column; gap:7px; min-width:148px}
+  .prog__lab{font-size:.66rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint)}
+  .prog__lab b{color:var(--ink); font-family:"Big Shoulders Display",sans-serif; font-size:.92rem; letter-spacing:.04em}
+  .meter{display:flex; gap:3px}
+  .meter i{height:7px; flex:1; border-radius:2px; background:var(--line); transition:background .3s var(--ease)}
+  .meter i.on{background:var(--gold)}
+  .meter i.live{background:var(--gold-hi); animation:breathe 1.8s var(--ease) infinite}
+  .cta{
+    position:relative; z-index:var(--z-cta); margin-left:auto; overflow:hidden;
+    font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.04rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--gold-ink); background:linear-gradient(180deg,var(--gold-hi),var(--gold)); border:0; border-radius:11px;
+    padding:0 22px; min-height:52px; cursor:pointer; box-shadow:0 12px 28px -12px rgba(246,180,60,.7);
+    transition:transform .16s var(--ease), filter .16s var(--ease), opacity .2s var(--ease);
+    display:inline-flex; align-items:center; gap:9px;
+  }
+  .cta:hover{transform:translateY(-2px); filter:brightness(1.05)}
+  .cta:active{transform:translateY(0)}
+  .cta:disabled{opacity:.4; cursor:not-allowed; box-shadow:none; filter:saturate(.4)}
+  .cta::after{ /* sheen da regìa */
+    content:""; position:absolute; top:0; left:-60%; width:38%; height:100%; transform:skewX(-18deg);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+  }
+  .cta:not(:disabled):hover::after{animation:sheen 1s var(--ease) forwards}
+  .cta svg{width:17px;height:17px}
+
+  /* ── ROSTER / LA TUA ROSA (broadcast lineup) ── */
+  .roster{
+    background:linear-gradient(180deg, var(--panel), #0d1525); border:1px solid var(--line); border-radius:var(--r);
+    overflow:hidden; animation:rise .6s var(--ease) both; animation-delay:.12s; align-self:start;
+  }
+  .roster__head{display:flex; align-items:center; gap:10px; padding:14px 15px; background:linear-gradient(180deg, var(--panel-2), transparent); border-bottom:1px solid var(--line-soft)}
+  .roster__title{font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.08rem; letter-spacing:.07em; text-transform:uppercase; color:var(--ink)}
+  .roster__count{margin-left:auto; font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:.92rem; letter-spacing:.04em; color:var(--ink-dim)}
+  .roster__count b{color:var(--gold)}
+  .group{padding:8px 10px}
+  .group__lab{display:flex; align-items:center; gap:8px; padding:6px 5px 8px; font-size:.6rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint)}
+  .group__lab::after{content:""; flex:1; height:1px; background:var(--line-soft)}
+  .lineup{display:flex; flex-direction:column; gap:6px}
+
+  .slot{display:flex; align-items:center; gap:11px; min-height:56px; padding:8px 11px; border:1px solid var(--line-soft); border-radius:10px; background:var(--slot); animation:popin .45s var(--ease) both; animation-delay:calc(.2s + var(--i,0)*.05s)}
+  .slot__pos{width:34px; flex:none; text-align:center; font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:.92rem; letter-spacing:.02em; color:var(--ink-dim); border:1px solid var(--line); border-radius:7px; padding:5px 0}
+  .slot__face{width:38px; height:38px; flex:none; border-radius:9px; overflow:hidden; background:radial-gradient(120% 120% at 50% 0,#243a5e,#12203a); display:grid; place-items:end center; border:1px solid var(--line)}
+  .slot__face svg{width:30px;height:30px;opacity:.7}
+  .slot__id{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+  .slot__name{font-family:"Big Shoulders Display",sans-serif; font-weight:700; font-size:1.04rem; letter-spacing:.01em; text-transform:uppercase; color:var(--ink); line-height:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .slot__src{font-size:.66rem; color:var(--ink-faint)}
+  .slot__ovr{font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.32rem; color:var(--ink); min-width:2.2ch; text-align:right}
+
+  /* casella VUOTA: progettata, non un buco — glifo canotta + righe-area appena accennate */
+  .slot.is-empty{background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.012) 0 7px, transparent 7px 14px),
+      var(--bg-deep);
+    border-style:dashed; border-color:var(--line)}
+  .slot.is-empty .slot__pos{color:var(--ink-faint); border-color:var(--line-soft)}
+  .slot.is-empty .slot__name{color:var(--ink-faint); font-weight:600; letter-spacing:.04em}
+  .slot__ghost{width:38px; height:38px; flex:none; border-radius:9px; display:grid; place-items:center; border:1px dashed var(--line); color:var(--ink-faint)}
+  .slot__ghost svg{width:20px;height:20px;opacity:.7}
+  /* casella in corso: la PG che stai scegliendo ora */
+  .slot.is-pending{border-style:solid; border-color:var(--gold); background:linear-gradient(180deg, rgba(246,180,60,.12), transparent)}
+  .slot.is-pending .slot__pos{color:var(--gold-ink); background:var(--gold); border-color:var(--gold)}
+  .slot.is-pending .slot__name{color:var(--gold-hi); font-weight:700}
+  .slot.is-pending .slot__live{font-size:.58rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); border:1px solid var(--gold-deep); border-radius:99px; padding:3px 8px}
+
+  .foot{padding:11px 15px 15px; font-size:.72rem; color:var(--ink-faint); border-top:1px solid var(--line-soft)}
+  .foot b{color:var(--ink-dim); font-weight:600}
+
+  /* ════════════ DESKTOP ════════════ */
+  @media (min-width:560px){ .bug__mode{display:flex; flex-direction:column; gap:2px} }
+  @media (min-width:900px){
+    .stage{grid-template-columns:1.35fr .9fr; align-items:start; padding-top:26px; gap:20px}
+    .clock{padding:24px 22px 20px}
+    .pick__face{width:52px;height:52px}
+  }
+
+  /* ════════════ MOTION ════════════ */
+  @keyframes bug-in{from{transform:translateY(-100%)}to{transform:none}}
+  @keyframes rise{from{opacity:0; transform:translateY(18px)}to{opacity:1; transform:none}}
+  @keyframes popin{from{opacity:0; transform:scale(.94)}to{opacity:1; transform:none}}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,77,.55)}70%{box-shadow:0 0 0 8px rgba(255,77,77,0)}100%{box-shadow:0 0 0 0 rgba(255,77,77,0)}}
+  @keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+  @keyframes sheen{from{left:-60%}to{left:130%}}
+  @keyframes flash{0%{box-shadow:0 0 0 0 rgba(246,180,60,.6)}100%{box-shadow:0 0 0 16px rgba(246,180,60,0)}}
+  .just-picked{animation:flash .6s var(--ease)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important; transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="scene">
+
+  <!-- ══════════ SCOREBUG ══════════ -->
+  <header class="bug">
+    <div class="bug__cell bug__brand">
+      <span class="bug__logo">THE&nbsp;<b>RUN</b></span>
+      <span class="bug__wip">nome provvisorio</span>
+    </div>
+    <div class="bug__cell bug__mode">
+      <span class="k">Modalità</span>
+      <span class="v">Corsa all'anello</span>
+    </div>
+    <div class="bug__cell bug__rec" aria-label="Record: 0 vittorie 0 sconfitte, obiettivo 16-0">
+      <span class="rec"><span class="n now tnum"><b>0</b>–0</span><span class="lab">Ora</span></span>
+      <span class="rec__arrow disp">→</span>
+      <span class="rec"><span class="n goal tnum">16–0</span><span class="lab">Il graal</span></span>
+    </div>
+    <div class="bug__cell bug__live"><span class="live"><i></i>Live draft</span></div>
+  </header>
+
+  <main class="stage">
+
+    <!-- ══════════ ON THE CLOCK ══════════ -->
+    <section class="clock" aria-labelledby="clk">
+      <h1 id="clk" class="clock__call">
+        <span class="tag">On the clock</span>
+        <span class="slot">Slot <b>3</b> di 10 · Titolare <b>PG</b></span>
+      </h1>
+
+      <div class="team">
+        <span class="team__crest" aria-hidden="true">GSW</span>
+        <span class="team__meta">
+          <span class="team__name">Golden State Warriors</span>
+          <span class="team__sub">Franchigia <b>uscita a sorte</b> · scegli un playmaker dalla rosa</span>
+        </span>
+        <span class="team__shot" aria-hidden="true">
+          <span class="clockface">
+            <svg width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="#243450" stroke-width="3"/><circle cx="17" cy="17" r="15" fill="none" stroke="#f6b43c" stroke-width="3" stroke-linecap="round" stroke-dasharray="94" stroke-dashoffset="30"/></svg>
+            <span class="sec disp">:18</span>
+          </span>
+        </span>
+      </div>
+
+      <fieldset class="picks">
+        <legend class="sr-only">Scegli il playmaker dai Golden State Warriors</legend>
+
+        <label class="pick" style="--i:0">
+          <input class="sr-only" type="radio" name="pg" value="Stephen Curry" data-ovr="96" data-pos="PG">
+          <span class="pick__rank disp">1</span>
+          <span class="pick__face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#9fc0ff" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-5 4-7 8-7s8 2 8 7"/></svg></span>
+          <span class="pick__id">
+            <span class="pick__name">Stephen Curry</span>
+            <span class="pick__row"><span class="pos">PG</span><span class="pick__hint">Tiro · creazione · il motore</span><span class="pick__state">In rosa</span></span>
+          </span>
+          <span class="pick__ovr disp tnum">96<small>OVR</small></span>
+        </label>
+
+        <label class="pick" style="--i:1">
+          <input class="sr-only" type="radio" name="pg" value="Chris Paul" data-ovr="84" data-pos="PG">
+          <span class="pick__rank disp">2</span>
+          <span class="pick__face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#9fc0ff" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-5 4-7 8-7s8 2 8 7"/></svg></span>
+          <span class="pick__id">
+            <span class="pick__name">Chris Paul</span>
+            <span class="pick__row"><span class="pos">PG</span><span class="pick__hint">Regìa · QI cestistico · assist</span><span class="pick__state">In rosa</span></span>
+          </span>
+          <span class="pick__ovr disp tnum">84<small>OVR</small></span>
+        </label>
+
+        <label class="pick" style="--i:2">
+          <input class="sr-only" type="radio" name="pg" value="Brandin Podziemski" data-ovr="78" data-pos="SG/PG">
+          <span class="pick__rank disp">3</span>
+          <span class="pick__face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#9fc0ff" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-5 4-7 8-7s8 2 8 7"/></svg></span>
+          <span class="pick__id">
+            <span class="pick__name">Brandin Podziemski</span>
+            <span class="pick__row"><span class="pos">SG/PG</span><span class="pick__hint">Giovane · energia · rimbalzi</span><span class="pick__state">In rosa</span></span>
+          </span>
+          <span class="pick__ovr disp tnum">78<small>OVR</small></span>
+        </label>
+      </fieldset>
+
+      <div class="actbar">
+        <div class="prog">
+          <span class="prog__lab">Rosa · <b id="ctn">2</b>/10 presi</span>
+          <span class="meter" id="meter" aria-hidden="true"></span>
+        </div>
+        <button class="cta" id="cta" disabled>
+          Conferma e avanza
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ LA TUA ROSA ══════════ -->
+    <aside class="roster" aria-label="La tua rosa">
+      <div class="roster__head">
+        <span class="roster__title">La tua rosa</span>
+        <span class="roster__count"><b id="ctn2">2</b> / 10</span>
+      </div>
+
+      <div class="group">
+        <div class="group__lab">Quintetto</div>
+        <div class="lineup">
+          <div class="slot is-pending" id="slotPG" style="--i:0">
+            <span class="slot__pos">PG</span>
+            <span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span>
+            <span class="slot__id"><span class="slot__name">Stai scegliendo…</span><span class="slot__src">dai Golden State Warriors</span></span>
+            <span class="slot__live">On clock</span>
+          </div>
+          <div class="slot is-empty" style="--i:1">
+            <span class="slot__pos">SG</span>
+            <span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span>
+            <span class="slot__id"><span class="slot__name">Da assegnare</span><span class="slot__src">slot libero</span></span>
+          </div>
+          <div class="slot" style="--i:2">
+            <span class="slot__pos">SF</span>
+            <span class="slot__face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#9fc0ff" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-5 4-7 8-7s8 2 8 7"/></svg></span>
+            <span class="slot__id"><span class="slot__name">Jayson Tatum</span><span class="slot__src">dai Boston Celtics</span></span>
+            <span class="slot__ovr disp tnum">94</span>
+          </div>
+          <div class="slot is-empty" style="--i:3">
+            <span class="slot__pos">PF</span>
+            <span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span>
+            <span class="slot__id"><span class="slot__name">Da assegnare</span><span class="slot__src">slot libero</span></span>
+          </div>
+          <div class="slot" style="--i:4">
+            <span class="slot__pos">C</span>
+            <span class="slot__face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#9fc0ff" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-5 4-7 8-7s8 2 8 7"/></svg></span>
+            <span class="slot__id"><span class="slot__name">Nikola Jokić</span><span class="slot__src">dai Denver Nuggets</span></span>
+            <span class="slot__ovr disp tnum">98</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group__lab">Panchina</div>
+        <div class="lineup">
+          <div class="slot is-empty" style="--i:5"><span class="slot__pos">G</span><span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span><span class="slot__id"><span class="slot__name">Da assegnare</span><span class="slot__src">slot libero</span></span></div>
+          <div class="slot is-empty" style="--i:6"><span class="slot__pos">G/F</span><span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span><span class="slot__id"><span class="slot__name">Da assegnare</span><span class="slot__src">slot libero</span></span></div>
+          <div class="slot is-empty" style="--i:7"><span class="slot__pos">F</span><span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span><span class="slot__id"><span class="slot__name">Da assegnare</span><span class="slot__src">slot libero</span></span></div>
+          <div class="slot is-empty" style="--i:8"><span class="slot__pos">F/C</span><span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span><span class="slot__id"><span class="slot__name">Da assegnare</span><span class="slot__src">slot libero</span></span></div>
+          <div class="slot is-empty" style="--i:9"><span class="slot__pos">Jolly</span><span class="slot__ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v18M5 8l7-5 7 5M5 8v9l7 4 7-4V8"/></svg></span><span class="slot__id"><span class="slot__name">Da assegnare</span><span class="slot__src">slot libero</span></span></div>
+        </div>
+      </div>
+
+      <p class="foot">Ogni slot pesca una <b>franchigia diversa a sorte</b>. Riempi i 10 e parte la corsa: <b>16 vittorie di fila</b> per l'anello perfetto.</p>
+    </aside>
+
+  </main>
+</div>
+
+<script>
+// ── Mockup: dati finti + localStorage, zero backend ──
+(function(){
+  const cta   = document.getElementById('cta');
+  const slotPG= document.getElementById('slotPG');
+  const meter = document.getElementById('meter');
+  const ctn   = document.getElementById('ctn');
+  const ctn2  = document.getElementById('ctn2');
+  let taken = 2;            // titolari già presi (Tatum, Jokić)
+  let chosen = null;
+
+  // meter: 10 segmenti — 2 presi, lo slot PG "live", 7 vuoti
+  for(let i=0;i<10;i++){
+    const seg=document.createElement('i');
+    if(i<taken) seg.className='on';
+    else if(i===taken) seg.className='live';
+    meter.appendChild(seg);
+  }
+
+  // selezione playmaker → anteprima viva nello slot PG + CTA attivo
+  document.querySelectorAll('input[name="pg"]').forEach(inp=>{
+    inp.addEventListener('change', ()=>{
+      chosen = {name:inp.value, ovr:inp.dataset.ovr, pos:inp.dataset.pos};
+      slotPG.classList.remove('is-empty');
+      slotPG.classList.add('is-pending');
+      slotPG.innerHTML =
+        '<span class="slot__pos">PG</span>'+
+        '<span class="slot__face" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#ffd27a" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 22c0-5 4-7 8-7s8 2 8 7"/></svg></span>'+
+        '<span class="slot__id"><span class="slot__name">'+chosen.name+'</span><span class="slot__src">in arrivo · conferma per bloccare</span></span>'+
+        '<span class="slot__ovr disp tnum">'+chosen.ovr+'</span>';
+      cta.disabled = false;
+      try{ localStorage.setItem('therun-draft-pg', chosen.name); }catch(_){}
+    });
+  });
+
+  // conferma → blocca lo slot, avanza il contatore, flash da regìa
+  cta.addEventListener('click', ()=>{
+    if(!chosen) return;
+    slotPG.classList.remove('is-pending');
+    slotPG.querySelector('.slot__src').textContent = 'dai Golden State Warriors';
+    slotPG.classList.add('just-picked');
+    taken = 3;
+    ctn.textContent = taken; ctn2.textContent = taken;
+    [...meter.children].forEach((s,i)=>{ s.className = i<taken?'on':(i===taken?'live':''); });
+    cta.disabled = true;
+    cta.querySelector('svg').previousSibling.textContent = 'Slot 4 · prossima franchigia ';
+  });
+})();
+</script>
+</body>
+</html>

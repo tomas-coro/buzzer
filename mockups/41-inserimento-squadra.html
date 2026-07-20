@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inserimento in squadra · animazione · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%,#1d2230 0,transparent 60%),#14171e;
+    color:#e9e4d8;font-family:"Hanken Grotesk",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:24px 18px 64px;text-align:center}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:#e0a96d;font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.3rem,4vw,1.9rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:#a39e93;font-size:.88rem;margin:.45rem auto 0;max-width:52ch}
+  .lead b{color:#ffcf33;font-weight:600}
+  .replay{display:inline-flex;align-items:center;gap:8px;margin:18px auto 0;cursor:pointer;border:0;
+    font-family:"Bungee";font-size:.7rem;color:#1a1206;background:#ffcf33;border-radius:11px;padding:12px 18px;box-shadow:0 4px 0 #b8901f;transition:transform .1s,box-shadow .1s}
+  .replay:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .replay svg{width:14px;height:14px;fill:currentColor}
+
+  /* ───────── CABINA 90s (estratto dal 39) ───────── */
+  .cab{--bg:#15163a;--bg2:#0d0e29;--panel2:#241a3e;
+    --orange:#ff5b1e;--yellow:#ffcf33;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;--dim:#8a8bc0;--hair:#2c2a63;
+    color:var(--cream);font-family:"Hanken Grotesk",sans-serif;text-align:left}
+  .cab *{box-sizing:border-box}
+  .stagewrap{display:flex;justify-content:center;margin-top:22px}
+  .phone{width:322px;max-width:100%;border:9px solid #05030f;border-radius:34px;background:#05030f;box-shadow:0 22px 50px rgba(0,0,0,.55)}
+  .screen{position:relative;overflow:hidden;border-radius:25px;padding:14px;background:radial-gradient(120% 80% at 50% -10%,#20206a 0,var(--bg) 55%,var(--bg2) 100%)}
+
+  .apphd{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+  .wm{font-family:"Bungee";font-size:.86rem;color:var(--yellow);line-height:1}
+  .wm b{color:var(--orange)}
+  .flame{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:9px;padding:4px 9px}
+  .flame svg{width:13px;height:13px;flex:none;opacity:.85}
+  .flame .ico1{fill:var(--orange)} .flame .ico2{fill:var(--yellow)}
+  .flame .fn{font-family:"Doto";font-weight:700;font-size:.76rem;color:var(--cream);line-height:1;letter-spacing:.04em}
+  .flame .fn i{font-style:normal;color:var(--dim);margin:0 .06em}
+  .flame .fs{font-size:.42rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:800;line-height:1}
+
+  .face{position:relative;border-radius:11px;overflow:hidden;flex:none;background:linear-gradient(160deg,#2a1d4d,#161240);display:block}
+  .face img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;display:block}
+  .face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(40,20,80,.05) 40%,rgba(255,91,30,.16));pointer-events:none}
+  .fbadge{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:3px 5px;background:linear-gradient(180deg,transparent,rgba(5,3,15,.85));font-size:.5rem;font-weight:800}
+  .fbadge .r{color:var(--cream);letter-spacing:.04em}
+  .fbadge .o{font-family:"Doto";font-weight:900;color:var(--yellow)}
+
+  .seclab{display:flex;align-items:center;justify-content:space-between;margin:2px 0 9px}
+  .seclab span{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .seclab .cafter{display:none}
+  .cab.drafted .seclab .cbefore{display:none}
+  .cab.drafted .seclab .cafter{display:inline;color:var(--green)}
+
+  .court{display:flex;gap:5px;background:linear-gradient(180deg,#1a1640,#120f33);border:1px solid var(--hair);border-radius:14px;padding:9px;background-image:radial-gradient(120% 90% at 50% 0,rgba(255,91,30,.1),transparent 60%)}
+  .cc{flex:1;display:block}
+  .cc .face{width:100%;aspect-ratio:3/4}
+  .cc.target .face.ph{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--orange);background:#211435;aspect-ratio:3/4}
+  .cc.target .phplus{font-family:"Bungee";font-size:1.4rem;color:var(--orange)}
+  /* slot: il volto reale è nascosto finché non lo draftiamo */
+  .cc.target .face.real{display:none}
+  @keyframes slotPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,91,30,0)}50%{box-shadow:0 0 0 3px rgba(255,91,30,.22)}}
+  .cab:not(.drafted) .cc.target .face.ph{animation:slotPulse 2.4s ease-in-out 1s infinite}
+
+  .ladder{display:flex;gap:4px;background:#141238;border:1px solid var(--hair);border-radius:12px;padding:4px;margin:14px 0 12px}
+  .ladder label{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:44px;border-radius:9px;
+    font-family:"Bungee";font-size:.54rem;color:var(--dim)}
+  .ladder label small{font-family:"Hanken Grotesk";font-weight:700;font-size:.4rem;letter-spacing:.02em;text-transform:uppercase;color:#5a5a93}
+  .ladder label.on{background:var(--yellow);color:#1a1206;box-shadow:0 2px 0 #b8901f}
+  .ladder label.on small{color:#6b4d08}
+
+  /* la card del candidato collassa quando viene draftato */
+  .candscope{max-height:340px;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1),opacity .35s ease,transform .45s ease}
+  .cab.drafted .candscope{max-height:0;opacity:0;transform:translateY(10px)}
+  .incoming{background:linear-gradient(180deg,var(--panel2),#141538);border:1px solid #3a2a66;border-radius:14px;padding:13px}
+  .inhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .inlab{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+  .needs{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.58rem}
+  .nchip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:99px;background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.4);color:#ffb0a6;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .nchip::before{content:"";width:5px;height:5px;border-radius:99px;background:var(--red)}
+  .cand{display:flex;flex-direction:column;gap:10px}
+  .cand-top{min-width:0}
+  .cand-main{display:flex;gap:12px;align-items:flex-start}
+  .cand-main .face{width:86px;height:104px}
+  .cand-main .stats{flex:1;min-width:0;margin-top:2px}
+  .nm{font-family:"Bungee";font-size:.9rem;line-height:1.05}
+  .cand .nm{display:block;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .candface .fbadge{justify-content:flex-end}
+  .candface .o{font-family:"Doto";font-weight:900;color:var(--yellow);font-size:.66rem}
+  .pos{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:5px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px;margin-top:2px}
+  .st{display:block;min-width:0}
+  .st .stl{display:flex;justify-content:space-between;align-items:baseline;font-size:.48rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-bottom:3px}
+  .st .stnum{font-family:"Doto";font-weight:900;font-size:.7rem;color:var(--cream)}
+  .trk{display:block;height:7px;border-radius:99px;background:#211f55;overflow:hidden}
+  .fil{display:block;height:100%;border-radius:99px;background:var(--green)}
+  .fil.md{background:var(--yellow)} .fil.lo{background:var(--red)}
+
+  /* CTA: "Metti nel quintetto" → "Inizia la partita" */
+  .cta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;cursor:pointer;margin-top:13px;
+    font-family:"Bungee";font-size:.78rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:14px;min-height:48px;box-shadow:0 4px 0 #b8901f;transition:transform .1s,box-shadow .1s,background .25s;border:0}
+  .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .cta svg{width:16px;height:16px;fill:currentColor}
+  .cta .cta-after{display:none}
+  .cab.drafted .cta{background:var(--green);box-shadow:0 4px 0 #2f9c64}
+  .cab.drafted .cta .cta-before{display:none}
+  .cab.drafted .cta .cta-after{display:inline-flex;align-items:center;gap:7px}
+
+  /* ════════════ ANIMAZIONE INSERIMENTO ════════════ */
+  /* quando draftiamo: il "+" sparisce, entra il volto reale con pop + anello di luce */
+  @keyframes popInSlot{0%{opacity:0;transform:scale(.55)}62%{opacity:1;transform:scale(1.08)}100%{transform:scale(1)}}
+  @keyframes ringFlash{0%{box-shadow:0 0 0 0 rgba(92,207,142,.0),0 0 0 0 rgba(255,207,51,.0)}
+    30%{box-shadow:0 0 0 4px rgba(92,207,142,.55),0 0 22px 4px rgba(255,207,51,.45)}
+    100%{box-shadow:0 0 0 0 rgba(92,207,142,0),0 0 0 0 rgba(255,207,51,0)}}
+  .cab.drafted .cc.target .face.ph{display:none}
+  .cab.drafted .cc.target .face.real{display:block;animation:popInSlot .5s cubic-bezier(.34,1.56,.64,1) both,ringFlash .8s ease-out .05s both}
+
+  @media (prefers-reduced-motion:reduce){.cab *{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Movimento · drafti il candidato</div>
+  <h1>L'inserimento in squadra</h1>
+  <p class="lead">Tocchi <b>Metti nel quintetto</b>: la card del candidato si chiude, il suo volto <b>riempie lo slot vuoto</b> con un lampo, il contatore passa a <b>5/5</b> e il tasto diventa "Inizia la partita". Premi ▶ per rivederlo.</p>
+
+  <button class="replay" type="button" id="replayBtn">
+    <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg> Rivedi inserimento
+  </button>
+
+  <div class="cab"><div class="stagewrap"><div class="phone"><div class="screen">
+
+    <div class="apphd">
+      <div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="flame">
+        <svg viewBox="0 0 24 24"><path class="ico1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="ico2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>
+        <span class="fn">16<i>–</i>0</span><span class="fs">imbattuto</span>
+      </div>
+    </div>
+
+    <div class="seclab"><span>Il tuo quintetto · <span class="cbefore">4/5</span><span class="cafter">5/5</span></span></div>
+    <div class="court">
+      <span class="cc"><span class="face"><img alt="Haliburton" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"><span class="fbadge"><span class="r">PG</span><span class="o">90</span></span></span></span>
+      <span class="cc"><span class="face"><img alt="Edwards" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"><span class="fbadge"><span class="r">SG</span><span class="o">94</span></span></span></span>
+      <span class="cc target">
+        <span class="face ph"><span class="phplus">+</span><span class="fbadge"><span class="r">PF</span><span class="o">?</span></span></span>
+        <span class="face real"><img alt="Antetokounmpo" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png"><span class="fbadge"><span class="r">PF</span><span class="o">96</span></span></span>
+      </span>
+      <span class="cc"><span class="face"><img alt="Tatum" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"><span class="fbadge"><span class="r">SF</span><span class="o">95</span></span></span></span>
+      <span class="cc"><span class="face"><img alt="Embiid" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"><span class="fbadge"><span class="r">C</span><span class="o">96</span></span></span></span>
+    </div>
+
+    <div class="ladder">
+      <label class="on">FAC<small>numeri</small></label>
+      <label>NOR<small>barre</small></label>
+      <label>DIF<small>no ovr</small></label>
+      <label>CLU<small>al buio</small></label>
+    </div>
+
+    <div class="candscope">
+      <div class="incoming">
+        <div class="inhd"><span class="inlab">Tessera mancante · pick 4</span><span class="needs"><span class="nchip">tiro da 3</span></span></div>
+        <div class="cand">
+          <span class="cand-top"><span class="nm">Antetokounmpo</span><span class="pos">Ala grande · 211 cm · Grecia</span></span>
+          <span class="cand-main">
+            <span class="face candface"><img alt="Antetokounmpo" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png"><span class="fbadge"><span class="o">96</span></span></span>
+            <span class="stats">
+              <span class="st"><span class="stl"><span>Tiro</span><span class="stnum">72</span></span><span class="trk"><i class="fil md" style="width:72%"></i></span></span>
+              <span class="st"><span class="stl"><span>Fisico</span><span class="stnum">98</span></span><span class="trk"><i class="fil" style="width:98%"></i></span></span>
+              <span class="st"><span class="stl"><span>Difesa</span><span class="stnum">91</span></span><span class="trk"><i class="fil" style="width:91%"></i></span></span>
+              <span class="st"><span class="stl"><span>Regia</span><span class="stnum">78</span></span><span class="trk"><i class="fil md" style="width:78%"></i></span></span>
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <button class="cta" type="button" id="draftBtn">
+      <span class="cta-before"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti nel quintetto</span>
+      <span class="cta-after"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Inizia la partita</span>
+    </button>
+
+  </div></div></div></div>
+</div>
+
+<script>
+  var cab = document.querySelector('.cab');
+  var draftBtn = document.getElementById('draftBtn');
+  var replayBtn = document.getElementById('replayBtn');
+
+  function draft(){ cab.classList.add('drafted'); }
+  function reset(){ cab.classList.remove('drafted'); void cab.offsetWidth; }
+
+  // la CTA dentro al telefono: se non ancora draftato → drafta (parte l'animazione)
+  draftBtn.addEventListener('click', function(){
+    if(!cab.classList.contains('drafted')) draft();
+  });
+
+  // tasto esterno: riparte da capo (mostra il "prima" per mezzo secondo, poi drafta)
+  replayBtn.addEventListener('click', function(){
+    reset();
+    setTimeout(draft, 600);
+  });
+
+  // auto-play una volta al load, così vedi subito il movimento
+  setTimeout(draft, 900);
+</script>
+</body>
+</html>

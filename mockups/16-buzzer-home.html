@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- viewer-template.html · scocca chip+palco (skill mockup). Cambiato solo #panels + titoli. -->
+<title>BUZZER · logo + home + palette (Arcade)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:60ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto · logo · home · palette</div>
+    <h1 id="mockTitle">BUZZER — logo, home con apertura e tre palette</h1>
+    <p class="lead">Nome <b>bloccato: BUZZER</b>. Pelle <b>bloccata: Arcade · Jam</b> (Bungee, mezzatinta, ombre dure). Quello che cambia tra le tre tile è la <b>palette + il trattamento del logo</b>. Stessa interazione in tutte: tocca <b>«Apri l'app»</b> → il pallone fa la <b>schiacciata</b> e il marchio si stampa → compare la home. In basso a destra «↻» per rivedere.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ============ STILE BUZZER · ARCADE (scoped, dentro #panels) ============ -->
+      <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+
+      /* ---- telaio telefono comune ---- */
+      .ph{
+        width:300px; max-width:100%; margin:4px auto 0; padding:9px;
+        background:linear-gradient(160deg,#22262f,#0c0e12);
+        border:1px solid #2a2f3a; border-radius:40px;
+        box-shadow:0 36px 64px -34px rgba(0,0,0,.95), inset 0 0 0 2px #14161b;
+      }
+      .scr{ position:relative; isolation:isolate; overflow:hidden; height:586px; border-radius:32px; display:flex; flex-direction:column; }
+      .opn{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+      .ph svg{display:block}
+      .notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:74px;height:5px;border-radius:99px;background:#000;z-index:6}
+
+      /* SPLASH (copertina) → cliccabile, fa da toggle */
+      .splash{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;
+        transition:opacity .42s var(--ease,ease), transform .42s var(--ease,ease)}
+      .ph:has(.opn:checked) .splash{opacity:0;transform:scale(1.06);pointer-events:none}
+      /* HOME (sotto) → visibile ad app aperta */
+      .home{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;opacity:0;pointer-events:none;
+        transition:opacity .3s ease .04s}
+      .ph:has(.opn:checked) .home{opacity:1;pointer-events:auto}
+
+      /* ingresso scaglionato */
+      .ph:has(.opn:checked) .rise{animation:rise .5s var(--d,0s) cubic-bezier(.16,1,.3,1) both}
+      @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+      /* basket SVG (colori via var) */
+      .ball-fill{fill:var(--ball)} .ball-hi{fill:#fff;opacity:.16} .ball-sd{fill:var(--ball2);opacity:.5}
+      .seam{stroke:var(--seam);stroke-width:2.6;fill:none;stroke-linecap:round}
+
+      /* ---- HOME: barra alto ---- */
+      .bz-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:28px 16px 0;font-family:"Bungee"}
+      .bz-credit{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pop2)}
+      .bz-best{font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);display:flex;align-items:center;gap:6px}
+      .bz-best b{color:var(--win)}
+
+      /* ---- HOME: palco emblema ---- */
+      .bz-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 18px}
+      .emblem{position:relative;width:172px;height:176px;display:flex;align-items:flex-end;justify-content:center}
+      .hoop{position:absolute;top:0;left:50%;transform:translateX(-50%);width:108px;height:86px;z-index:1}
+      .bz-ball{position:relative;z-index:2;width:120px;height:120px;margin-bottom:6px;filter:drop-shadow(0 7px 0 rgba(0,0,0,.16))}
+      .net{transform-origin:50% 20%}
+
+      .bz-wm{font-family:"Bungee";font-size:2.4rem;line-height:.9;letter-spacing:.012em;text-transform:uppercase;text-align:center;
+        color:var(--wm-fill);-webkit-text-stroke:2px var(--wm-stroke);paint-order:stroke fill;text-shadow:3px 3px 0 var(--wm-sh)}
+      .bz-wm b{color:var(--zz)}
+      .bz-sub{font-family:"Bungee";font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);opacity:.92;margin-top:8px}
+
+      /* fioritura per-direzione */
+      .burst{position:absolute;inset:-12px;z-index:0;border-radius:50%;opacity:0;
+        background:repeating-conic-gradient(from 0deg,var(--pop2) 0 9deg,transparent 9deg 18deg);
+        mask-image:radial-gradient(closest-side,#000 52%,transparent 72%)}
+      .klaxon{position:absolute;top:-6px;left:50%;z-index:3;font-family:"Bungee";font-size:.74rem;letter-spacing:.02em;color:var(--pop);opacity:0;white-space:nowrap;
+        -webkit-text-stroke:1.4px var(--ink);paint-order:stroke fill;transform:translateX(-50%) scale(.6)}
+      .pow{position:absolute;top:-8px;right:-6px;z-index:3;font-family:"Bungee";font-size:.82rem;color:var(--pop);opacity:0;
+        -webkit-text-stroke:1.6px var(--ink);paint-order:stroke fill;transform:rotate(-9deg) scale(.4)}
+
+      /* ---- HOME: piede ---- */
+      .bz-foot{position:relative;z-index:2;padding:0 16px 18px}
+      .bz-cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:54px;cursor:pointer;
+        font-family:"Bungee";font-size:1.14rem;letter-spacing:.03em;text-transform:uppercase;
+        color:var(--cta-fg);background:var(--cta-bg);border:2.5px solid var(--ink);border-radius:15px;
+        box-shadow:5px 5px 0 var(--ink);transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .bz-cta svg{width:18px;height:18px}
+      .bz-cta:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+
+      .bz-modes{display:flex;gap:6px;margin-top:11px}
+      .bz-mode{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:2px solid var(--surf-bd);border-radius:11px;padding:8px 3px;background:var(--surf)}
+      .bz-mode .n{font-family:"Bungee";font-size:.66rem;color:var(--pop2);line-height:1}
+      .bz-mode b{font-family:"Bungee";font-size:.46rem;letter-spacing:.02em;text-transform:uppercase;color:var(--txt-dim);line-height:1}
+      .bz-mode .play{font-family:"Bungee";font-size:.42rem;letter-spacing:.04em;text-transform:uppercase;color:var(--win)}
+      .bz-mode .soon{font-family:"Bungee";font-size:.42rem;letter-spacing:.04em;text-transform:uppercase;color:var(--pop);opacity:.85}
+      .bz-mode--on{border-color:var(--pop);background:var(--surf-on)}
+      .bz-mode--on .n{color:var(--pop)}
+      .bz-mode--on b{color:var(--txt)}
+
+      /* tasto rivedi intro (affordance di mockup, in flusso sotto le modalità) */
+      .replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;align-self:center;margin:10px auto 0;min-height:28px;padding:0 13px;border-radius:99px;cursor:pointer;
+        font-family:"Bungee";font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;
+        background:transparent;border:2px solid var(--surf-bd);color:var(--txt-dim);transition:color .15s,border-color .15s}
+      .replay:hover{color:var(--txt);border-color:var(--pop)}
+      .replay svg{width:12px;height:12px}
+
+      /* ---- SPLASH contenuti ---- */
+      .sp-ball{width:108px;height:108px;animation:spin 3.6s linear infinite}
+      .sp-wm{font-size:2.7rem;margin-top:18px}
+      .sp-tag{font-family:"Bungee";font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim);margin-top:10px}
+      .bz-open{display:inline-flex;align-items:center;gap:8px;min-height:50px;margin-top:24px;padding:0 22px;border-radius:13px;cursor:pointer;
+        font-family:"Bungee";font-size:.9rem;letter-spacing:.04em;text-transform:uppercase;color:var(--cta-fg);
+        background:var(--cta-bg);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);animation:blink 1.3s steps(1) infinite}
+      .bz-open svg{width:16px;height:16px}
+      @keyframes blink{50%{filter:brightness(.85)}}
+      @keyframes spin{to{transform:rotate(360deg)}}
+
+      /* ===================== ANIMAZIONI D'APERTURA ===================== */
+      /* schiacciata: il pallone sale dal basso, attraversa il ferro e si assesta */
+      .ph:has(.opn:checked) .bz-ball{animation:dunk 1.2s var(--ease) both}
+      @keyframes dunk{
+        0%{transform:translateY(150px) scale(.4) rotate(-28deg);opacity:0}
+        26%{opacity:1}
+        46%{transform:translateY(-94px) scale(.64) rotate(8deg)}   /* su, attraversa il ferro */
+        58%{transform:translateY(-46px) scale(.74) rotate(0)}      /* dentro la retina */
+        72%{transform:translateY(6px) scaleY(.84) scaleX(1.12)}    /* atterra, squash */
+        86%{transform:translateY(-10px) scale(1)}
+        100%{transform:translateY(0) scale(1)}
+      }
+      .ph:has(.opn:checked) .net{animation:netflick 1.2s var(--ease) both}
+      @keyframes netflick{0%,44%{transform:scaleY(1)}54%{transform:scaleY(1.42)}68%{transform:scaleY(.86)}82%{transform:scaleY(1.07)}100%{transform:scaleY(1)}}
+      /* il marchio si "stampa" */
+      .ph:has(.opn:checked) .home .bz-wm{animation:stamp .5s .58s cubic-bezier(.2,1.6,.4,1) both}
+      @keyframes stamp{0%{transform:scale(1.5);opacity:0}70%{transform:scale(.96);opacity:1}100%{transform:scale(1)}}
+      /* fioriture */
+      .ph:has(.opn:checked) .burst{animation:burst .7s .5s ease both}
+      @keyframes burst{0%{transform:scale(.3) rotate(0);opacity:0}45%{opacity:.5}100%{transform:scale(1.3) rotate(40deg);opacity:0}}
+      .ph:has(.opn:checked) .klaxon{animation:klaxon 1s .52s ease both}
+      @keyframes klaxon{0%{opacity:0;transform:translateX(-50%) scale(.6)}22%{opacity:1;transform:translateX(-50%) scale(1.08)}70%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1)}}
+      .ph:has(.opn:checked) .pow{animation:pow .9s .5s ease both}
+      @keyframes pow{0%{opacity:0;transform:rotate(-9deg) scale(.4)}25%{opacity:1;transform:rotate(-9deg) scale(1.12)}70%{opacity:1;transform:rotate(-9deg) scale(1)}100%{opacity:0;transform:rotate(-9deg) scale(1)}}
+
+      /* ============================ PALETTE ============================ */
+      /* ① CABINATO 90s — Attuale */
+      .ph--1{--ease:cubic-bezier(.2,.8,.2,1);
+        --bg:#15163a; --bg2:#0d0e29; --pop:#ff5b1e; --pop2:#ffcf33;
+        --ink:#0a0a18; --win:#34e0a0;
+        --ball:#ff5b1e; --ball2:#c8410f; --seam:#0a0a18;
+        --txt:#fdf2dd; --txt-dim:#8d8fc4;
+        --surf:rgba(0,0,0,.2); --surf-bd:rgba(253,242,221,.16); --surf-on:linear-gradient(180deg,rgba(255,91,30,.18),rgba(255,91,30,.03));
+        --wm-fill:#ffcf33; --wm-stroke:#0a0a18; --wm-sh:#0a0a18; --zz:#ff5b1e;
+        --rim:#ff5b1e; --netc:#fdf2dd;
+        --cta-bg:#ffcf33; --cta-fg:#0a0a18;
+        font-family:"Hanken Grotesk",sans-serif}
+      .ph--1 .scr{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 0%, #232463 0, var(--bg) 46%, var(--bg2) 100%); color:var(--txt)}
+      .ph--1 .splash{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 12%, #2a2b72 0, var(--bg) 50%, var(--bg2) 100%)}
+
+      /* ② SIRENA CLUTCH — Variante+ (rosso = la luce del buzzer) */
+      .ph--2{--ease:cubic-bezier(.2,.8,.2,1);
+        --bg:#1a0f12; --bg2:#0b0507; --pop:#ff2a3c; --pop2:#ffb22e;
+        --ink:#11070a; --win:#3fd98a;
+        --ball:#ff7a1e; --ball2:#c2480c; --seam:#11070a;
+        --txt:#ffeede; --txt-dim:#c08a86;
+        --surf:rgba(0,0,0,.26); --surf-bd:rgba(255,240,230,.13); --surf-on:linear-gradient(180deg,rgba(255,42,60,.2),rgba(255,42,60,.03));
+        --wm-fill:#fff0e6; --wm-stroke:#11070a; --wm-sh:#ff2a3c; --zz:#ff2a3c;
+        --rim:#ff2a3c; --netc:#ffeede;
+        --cta-bg:#ff2a3c; --cta-fg:#fff0e6;
+        font-family:"Hanken Grotesk",sans-serif}
+      .ph--2 .scr{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.04) 1px, transparent 1.6px) 0 0/14px 14px,
+        radial-gradient(130% 85% at 50% 4%, #34161b 0, var(--bg) 46%, var(--bg2) 100%); color:var(--txt)}
+      .ph--2 .splash{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.04) 1px, transparent 1.6px) 0 0/14px 14px,
+        radial-gradient(120% 80% at 50% 14%, #3a181d 0, var(--bg) 50%, var(--bg2) 100%)}
+
+      /* ③ POP FUMETTO — diversa (avorio + inchiostro + un colpo brace) */
+      .ph--3{--ease:cubic-bezier(.2,.85,.25,1);
+        --bg:#f4ead0; --bg2:#ece0bd; --pop:#ff5126; --pop2:#15110e;
+        --ink:#15110e; --win:#1f8f5e;
+        --ball:#e9621f; --ball2:#b8460f; --seam:#15110e;
+        --txt:#15110e; --txt-dim:#6b5d49;
+        --surf:rgba(21,17,14,.05); --surf-bd:rgba(21,17,14,.2); --surf-on:rgba(255,81,38,.12);
+        --wm-fill:#ff5126; --wm-stroke:#15110e; --wm-sh:#15110e; --zz:#15110e;
+        --rim:#15110e; --netc:#15110e;
+        --cta-bg:#ff5126; --cta-fg:#f7eed6;
+        font-family:"Hanken Grotesk",sans-serif}
+      .ph--3 .scr{background:
+        radial-gradient(circle at 1px 1px, rgba(21,17,14,.12) 1.4px, transparent 2px) 0 0/12px 12px,
+        linear-gradient(180deg,var(--bg) 0,var(--bg2) 100%); color:var(--txt)}
+      .ph--3 .splash{background:
+        radial-gradient(circle at 1px 1px, rgba(21,17,14,.12) 1.4px, transparent 2px) 0 0/12px 12px,
+        linear-gradient(180deg,#f7eed6,var(--bg))}
+      .ph--3 .bz-mode .n{color:#15110e}
+
+      @media (prefers-reduced-motion:reduce){
+        .ph *{animation:none!important;transition:none!important}
+        .home{opacity:1!important;pointer-events:auto!important}
+        .splash{opacity:1}
+      }
+      </style>
+
+      <!-- ═══════════════ ① CABINATO 90s ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Cabinato 90s"
+        data-mood="NBA Jam nativo · indaco notte + arancio/giallo (Bungee)"
+        data-why="È la pelle che hai scelto, ora col nome BUZZER: giallo elettrico, ombre dure, palla protagonista. Energia da sala giochi, zero aria da gestionale."
+        data-role="Attuale">
+        <div class="ph ph--1"><div class="scr">
+          <div class="notch"></div>
+
+          <div class="home">
+            <div class="bz-top">
+              <span class="bz-credit rise">★ 1 credito</span>
+              <span class="bz-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop" viewBox="0 0 108 86" aria-hidden="true">
+                  <ellipse cx="54" cy="16" rx="34" ry="7.5" fill="none" stroke="var(--rim)" stroke-width="4.5"/>
+                  <g class="net" stroke="var(--netc)" stroke-width="1.4" opacity=".5" fill="none">
+                    <path d="M22 18 L33 64 M86 18 L75 64 M34 17 L40 64 M74 17 L68 64 M54 19 L54 66"/>
+                    <path d="M25 32 Q54 40 83 32 M30 48 Q54 56 78 48"/>
+                  </g>
+                </svg>
+                <div class="burst"></div>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:.66s">imbattuto o niente</div>
+            </div>
+            <div class="bz-foot">
+              <div class="bz-cta rise" style="--d:.7s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</div>
+              <div class="bz-modes rise" style="--d:.76s">
+                <div class="bz-mode bz-mode--on"><div class="n">16–0</div><b>Corsa</b><span class="play">gioca</span></div>
+                <div class="bz-mode"><div class="n">serie</div><b>Playoff</b><span class="soon">presto</span></div>
+                <div class="bz-mode"><div class="n">82–0</div><b>Stagione</b><span class="soon">presto</span></div>
+                <div class="bz-mode"><div class="n">★</div><b>Sfida</b><span class="soon">presto</span></div>
+              </div>
+              <label class="replay" for="buz1-open" title="Rivedi l'apertura"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>Intro</label>
+            </div>
+          </div>
+
+          <input class="opn" type="checkbox" id="buz1-open">
+          <label class="splash" for="buz1-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ ② SIRENA CLUTCH ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Sirena clutch"
+        data-mood="il buzzer È la luce rossa di fine quarto · notte calda + rosso klaxon (Bungee)"
+        data-why="Qui il colore SIGNIFICA il nome: il rosso è la sirena dell'ultimo secondo. All'apertura la luce lampeggia e urla «BUZZER!». Più identitario — la mia preferita."
+        data-role="Variante +">
+        <div class="ph ph--2"><div class="scr">
+          <div class="notch"></div>
+
+          <div class="home">
+            <div class="bz-top">
+              <span class="bz-credit rise">● live · clutch</span>
+              <span class="bz-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop" viewBox="0 0 108 86" aria-hidden="true">
+                  <ellipse cx="54" cy="16" rx="34" ry="7.5" fill="none" stroke="var(--rim)" stroke-width="4.5"/>
+                  <g class="net" stroke="var(--netc)" stroke-width="1.4" opacity=".5" fill="none">
+                    <path d="M22 18 L33 64 M86 18 L75 64 M34 17 L40 64 M74 17 L68 64 M54 19 L54 66"/>
+                    <path d="M25 32 Q54 40 83 32 M30 48 Q54 56 78 48"/>
+                  </g>
+                </svg>
+                <div class="klaxon">BUZZER!</div>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:.66s">0:00 · l'ultimo tiro decide</div>
+            </div>
+            <div class="bz-foot">
+              <div class="bz-cta rise" style="--d:.7s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</div>
+              <div class="bz-modes rise" style="--d:.76s">
+                <div class="bz-mode bz-mode--on"><div class="n">16–0</div><b>Corsa</b><span class="play">gioca</span></div>
+                <div class="bz-mode"><div class="n">serie</div><b>Playoff</b><span class="soon">presto</span></div>
+                <div class="bz-mode"><div class="n">82–0</div><b>Stagione</b><span class="soon">presto</span></div>
+                <div class="bz-mode"><div class="n">★</div><b>Sfida</b><span class="soon">presto</span></div>
+              </div>
+              <label class="replay" for="buz2-open" title="Rivedi l'apertura"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>Intro</label>
+            </div>
+          </div>
+
+          <input class="opn" type="checkbox" id="buz2-open">
+          <label class="splash" for="buz2-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">suona la sirena · vinci all'ultimo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ ③ POP FUMETTO ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Pop fumetto"
+        data-mood="NBA Jam a fumetti · avorio + inchiostro, mezzatinta grossa, un colpo brace (Bungee)"
+        data-why="La rotta luminosa: carta avorio, contorni d'inchiostro, l'onomatopea «BZZT!» che esplode all'apertura — il suono del buzzer disegnato. Loud ma leggera, diversa dai due fondi scuri.">
+        <div class="ph ph--3"><div class="scr">
+          <div class="notch"></div>
+
+          <div class="home">
+            <div class="bz-top">
+              <span class="bz-credit rise">★ pow · pow</span>
+              <span class="bz-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop" viewBox="0 0 108 86" aria-hidden="true">
+                  <ellipse cx="54" cy="16" rx="34" ry="7.5" fill="none" stroke="var(--rim)" stroke-width="4.5"/>
+                  <g class="net" stroke="var(--netc)" stroke-width="1.5" opacity=".6" fill="none">
+                    <path d="M22 18 L33 64 M86 18 L75 64 M34 17 L40 64 M74 17 L68 64 M54 19 L54 66"/>
+                    <path d="M25 32 Q54 40 83 32 M30 48 Q54 56 78 48"/>
+                  </g>
+                </svg>
+                <div class="pow">BZZT!</div>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:.66s">imbattuto o niente</div>
+            </div>
+            <div class="bz-foot">
+              <div class="bz-cta rise" style="--d:.7s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</div>
+              <div class="bz-modes rise" style="--d:.76s">
+                <div class="bz-mode bz-mode--on"><div class="n">16–0</div><b>Corsa</b><span class="play">gioca</span></div>
+                <div class="bz-mode"><div class="n">serie</div><b>Playoff</b><span class="soon">presto</span></div>
+                <div class="bz-mode"><div class="n">82–0</div><b>Stagione</b><span class="soon">presto</span></div>
+                <div class="bz-mode"><div class="n">★</div><b>Sfida</b><span class="soon">presto</span></div>
+              </div>
+              <label class="replay" for="buz3-open" title="Rivedi l'apertura"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>Intro</label>
+            </div>
+          </div>
+
+          <input class="opn" type="checkbox" id="buz3-open">
+          <label class="splash" for="buz3-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">tocca · suona la sirena</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div><div class="dir-name">${p.dataset.name||'Direzione'}</div><div class="dir-mood">${p.dataset.mood||''}</div></div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+  function show(i){ panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i)); [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i)); }
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button'); b.type='button'; b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i)); chips.appendChild(b);
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>

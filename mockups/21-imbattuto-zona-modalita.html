@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- viewer chip+palco (skill mockup). Cambiato solo #panels + titoli. Focus: zona modalità con nome L'IMBATTUTO + Sirena. -->
+<title>BUZZER · L'IMBATTUTO — zona modalità (batch 2)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:64ch}
+  .lead b{color:var(--bone);font-weight:600}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Reco"]{background:rgba(255,207,51,.15);color:#ffcf33;border-color:var(--brass-deep)}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Home BUZZER · zona modalità · batch 2</div>
+    <h1>L'IMBATTUTO — nuovi layout della zona bassa</h1>
+    <p class="lead">Nome modalità bloccato = <b>L'IMBATTUTO</b> (16–0, l'unica giocabile; le altre 3 sono "presto"). Sottotitolo fisso <b>«a sangue freddo»</b>. Quattro archetipi <b>nuovi</b> della zona bassa, oltre ai precedenti A/B/C. In ognuno tocca <b>«Apri l'app»</b> → parte la <b>Sirena</b> (il buzzer-beater) → compare la home con quella zona modalità. <b>«↻ rivedi»</b> per rigiocare il tiro.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ============ scoped (dentro #panels): non tocca la scocca ============ -->
+      <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+
+      /* ---- telaio telefono ---- */
+      .ph{
+        width:300px; max-width:100%; margin:4px auto 0; padding:9px;
+        background:linear-gradient(160deg,#22262f,#0c0e12);
+        border:1px solid #2a2f3a; border-radius:40px;
+        box-shadow:0 36px 64px -34px rgba(0,0,0,.95), inset 0 0 0 2px #14161b;
+      }
+      .scr{ position:relative; isolation:isolate; overflow:hidden; height:586px; border-radius:32px; display:flex; flex-direction:column; }
+      .opn{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+      .ph svg{display:block}
+      .notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:74px;height:5px;border-radius:99px;background:#000;z-index:6}
+
+      .splash{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;
+        transition:opacity .42s var(--ease,ease), transform .42s var(--ease,ease)}
+      .ph:has(.opn:checked) .splash{opacity:0;transform:scale(1.06);pointer-events:none}
+      .home{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .3s ease .04s}
+      .ph:has(.opn:checked) .home{opacity:1;pointer-events:auto}
+      .ph:has(.opn:checked) .rise{animation:rise .5s var(--d,0s) cubic-bezier(.16,1,.3,1) both}
+      @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+      /* palette CABINA 90s */
+      .ph--cab{--ease:cubic-bezier(.2,.8,.2,1);
+        --bg:#15163a; --bg2:#0d0e29; --pop:#ff5b1e; --pop2:#ffcf33;
+        --ink:#0a0a18; --win:#34e0a0;
+        --ball:#ff5b1e; --ball2:#c8410f; --seam:#0a0a18;
+        --txt:#fdf2dd; --txt-dim:#8d8fc4;
+        --surf:rgba(0,0,0,.2); --surf-bd:rgba(253,242,221,.16); --surf-on:linear-gradient(180deg,rgba(255,91,30,.18),rgba(255,91,30,.03));
+        --wm-fill:#ffcf33; --wm-stroke:#0a0a18; --wm-sh:#0a0a18; --zz:#ff5b1e;
+        --rim:#ff5b1e; --netc:#fdf2dd;
+        --cta-bg:#ffcf33; --cta-fg:#0a0a18;
+        font-family:"Hanken Grotesk",sans-serif}
+      .ph--cab .scr{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 0%, #232463 0, var(--bg) 46%, var(--bg2) 100%); color:var(--txt)}
+      .ph--cab .splash{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 12%, #2a2b72 0, var(--bg) 50%, var(--bg2) 100%)}
+
+      /* basket SVG */
+      .ball-fill{fill:var(--ball)} .ball-hi{fill:#fff;opacity:.16} .ball-sd{fill:var(--ball2);opacity:.5}
+      .seam{stroke:var(--seam);stroke-width:2.6;fill:none;stroke-linecap:round}
+
+      /* HOME — testata + palco (emblem invariato dalla Sirena verificata, file 19) */
+      .bz-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:28px 16px 0;font-family:"Bungee"}
+      .bz-credit{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pop2)}
+      .bz-best{font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);display:flex;align-items:center;gap:6px}
+      .bz-best b{color:var(--win)}
+
+      .bz-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 18px;min-height:0}
+      .emblem{position:relative;width:188px;height:196px;display:flex;align-items:flex-end;justify-content:center}
+      .hoop{position:absolute;top:2px;left:50%;transform:translateX(-50%);width:120px;height:96px}
+      .hoop-back{z-index:1}
+      .hoop-front{z-index:3}
+      .bz-ball{position:relative;z-index:2;width:116px;height:116px;margin-bottom:2px;filter:drop-shadow(0 6px 0 rgba(0,0,0,.15))}
+      .net-back,.net-front{transform-box:fill-box;transform-origin:50% 0%}
+      .net-front{opacity:0}
+      .flash{position:absolute;left:50%;top:48px;width:172px;height:172px;border-radius:50%;
+        transform:translate(-50%,-50%) scale(.6);
+        background:radial-gradient(circle, rgba(255,207,51,0) 24%, rgba(255,176,46,.55) 45%, rgba(255,91,30,.32) 60%, transparent 74%);
+        z-index:4;opacity:0;pointer-events:none;mix-blend-mode:screen}
+
+      .bz-wm{font-family:"Bungee";font-size:2.3rem;line-height:.9;letter-spacing:.012em;text-transform:uppercase;text-align:center;
+        color:var(--wm-fill);-webkit-text-stroke:2px var(--wm-stroke);paint-order:stroke fill;text-shadow:3px 3px 0 var(--wm-sh)}
+      .bz-wm b{color:var(--zz)}
+      .bz-sub{font-family:"Bungee";font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;color:var(--pop2);opacity:.96;margin-top:8px}
+
+      .bz-foot{position:relative;z-index:2;padding:0 14px 16px}
+      .ic{width:14px;height:14px;flex:none}
+      .play-ic{width:18px;height:18px;flex:none}
+
+      /* riga "rivedi il tiro" condivisa */
+      .replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:11px auto 0;min-height:30px;padding:0 13px;border-radius:99px;cursor:pointer;
+        font-family:"Bungee";font-size:.46rem;letter-spacing:.08em;text-transform:uppercase;
+        background:transparent;border:2px solid var(--surf-bd);color:var(--txt-dim);transition:color .15s,border-color .15s}
+      .replay:hover{color:var(--txt);border-color:var(--pop)}
+      .replay svg{width:12px;height:12px}
+      .foot-replay{display:flex;justify-content:center}
+
+      .soon-h{font-family:"Bungee";font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-dim);margin:13px 0 8px;display:flex;align-items:center;gap:9px}
+      .soon-h::after{content:"";flex:1;height:1px;background:var(--surf-bd)}
+
+      /* ═══════════ DIR 1 · CARTUCCIA (inserisci la cartuccia) ═══════════ */
+      .footCart .cart-hero{position:relative;display:block;width:100%;text-align:left;cursor:pointer;
+        background:linear-gradient(180deg,#ffd84d,var(--cta-bg));border:2.5px solid var(--ink);border-radius:7px;
+        box-shadow:5px 5px 0 var(--ink);padding:13px 14px 14px;
+        clip-path:polygon(0 0,100% 0,100% 100%,20px 100%,0 calc(100% - 20px));
+        transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .footCart .cart-hero:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+      .footCart .cart-grip{position:absolute;top:9px;right:13px;display:flex;gap:3px}
+      .footCart .cart-grip i{width:3px;height:14px;border-radius:1px;background:rgba(10,10,24,.32)}
+      .footCart .cart-win{background:rgba(10,10,24,.9);border-radius:4px;padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:184px}
+      .footCart .cart-name{font-family:"Bungee";font-size:.92rem;color:var(--pop2);line-height:1}
+      .footCart .cart-score{font-family:"Bungee";font-size:.92rem;color:var(--win);line-height:1}
+      .footCart .cart-ins{display:flex;align-items:center;gap:7px;margin-top:9px;font-family:"Bungee";font-size:.56rem;letter-spacing:.05em;text-transform:uppercase;color:var(--cta-fg)}
+      .footCart .cart-ins svg{width:15px;height:15px}
+      .footCart .cart-mini-row{display:flex;gap:6px}
+      .footCart .cart-mini{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--surf);border:2px solid var(--surf-bd);
+        border-radius:5px;padding:9px 4px 8px;opacity:.72;
+        clip-path:polygon(0 0,100% 0,100% 100%,11px 100%,0 calc(100% - 11px))}
+      .footCart .cart-mini svg{color:var(--txt-dim)}
+      .footCart .cart-mini b{font-family:"Bungee";font-size:.5rem;text-transform:uppercase;color:var(--txt-dim);letter-spacing:.02em}
+
+      /* ═══════════ DIR 2 · METER DEL CALORE (barra incandescente) ═══════════ */
+      .footMeter .m-hero{display:block;width:100%;text-align:left;cursor:pointer;
+        background:linear-gradient(180deg,#15102a,var(--ink));border:2.5px solid var(--pop);border-radius:14px;
+        box-shadow:5px 5px 0 var(--ink);padding:12px 14px 13px;
+        transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .footMeter .m-hero:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+      .footMeter .m-top{display:flex;align-items:baseline;justify-content:space-between}
+      .footMeter .m-name{font-family:"Bungee";font-size:.96rem;color:var(--pop2);line-height:1}
+      .footMeter .m-goal{font-family:"Bungee";font-size:.5rem;letter-spacing:.04em;text-transform:uppercase;color:var(--txt-dim)}
+      .footMeter .m-bar{display:flex;gap:2px;margin:11px 0 6px;height:16px}
+      .footMeter .m-seg{flex:1;border-radius:2px;background:rgba(253,242,221,.1)}
+      .footMeter .m-seg.on{background:linear-gradient(180deg,var(--pop2),var(--pop));box-shadow:0 0 7px rgba(255,120,40,.75)}
+      .footMeter .m-seg.goal{background:repeating-linear-gradient(45deg,var(--pop2) 0 3px,var(--pop) 3px 6px);box-shadow:0 0 9px rgba(255,176,46,.9)}
+      .footMeter .m-scale{display:flex;align-items:center;justify-content:space-between;font-family:"Bungee";font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-dim)}
+      .footMeter .m-scale .now{color:var(--win)}
+      .footMeter .m-scale .max{color:var(--pop2);display:flex;align-items:center;gap:4px}
+      .footMeter .m-scale .max svg{width:11px;height:11px}
+      .footMeter .m-go{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin-top:11px;cursor:pointer;
+        font-family:"Bungee";font-size:.96rem;letter-spacing:.02em;text-transform:uppercase;color:var(--cta-fg);
+        background:var(--cta-bg);border:2.5px solid var(--ink);border-radius:12px;box-shadow:4px 4px 0 var(--ink);
+        transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .footMeter .m-go:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+      .footMeter .m-lock{display:flex;gap:6px}
+      .footMeter .m-cell{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:1.5px solid var(--surf-bd);border-radius:9px;padding:8px 3px;background:var(--surf);opacity:.7}
+      .footMeter .m-cell svg{color:var(--txt-dim)}
+      .footMeter .m-cell b{font-family:"Bungee";font-size:.48rem;text-transform:uppercase;color:var(--txt-dim)}
+
+      /* ═══════════ DIR 3 · INSEGNA PRIMETIME (marquee a lampadine) ═══════════ */
+      .footMq .mq{position:relative;display:block;width:100%;text-align:center;cursor:pointer;
+        background:radial-gradient(120% 130% at 50% 0%,#241a3e,var(--ink));border:2.5px solid var(--ink);border-radius:12px;
+        box-shadow:5px 5px 0 var(--ink);padding:20px 16px 18px;overflow:hidden;
+        transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .footMq .mq:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+      .footMq .mq-bulbs{position:absolute;left:9px;right:9px;display:flex;justify-content:space-between}
+      .footMq .mq-bulbs.top{top:7px}
+      .footMq .mq-bulbs.bot{bottom:7px}
+      .footMq .mq-bulbs i{width:6px;height:6px;border-radius:50%;background:var(--pop2);box-shadow:0 0 6px var(--pop2);animation:mqBlink 1.1s steps(1,end) infinite}
+      .footMq .mq-bulbs i:nth-child(even){animation-delay:.55s}
+      @keyframes mqBlink{0%,49%{opacity:1}50%,100%{opacity:.22}}
+      .footMq .mq-eyebrow{display:block;font-family:"Bungee";font-size:.44rem;letter-spacing:.22em;text-transform:uppercase;color:var(--pop)}
+      .footMq .mq-name{display:block;font-family:"Bungee";font-size:1.3rem;line-height:1;text-transform:uppercase;color:var(--pop2);margin:7px 0 4px;
+        text-shadow:0 0 14px rgba(255,176,46,.55)}
+      .footMq .mq-score{display:block;font-family:"Bungee";font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--win)}
+      .footMq .mq-go{display:inline-flex;align-items:center;gap:7px;margin-top:11px;min-height:40px;padding:0 18px;
+        font-family:"Bungee";font-size:.78rem;letter-spacing:.03em;text-transform:uppercase;color:var(--cta-fg);
+        background:var(--cta-bg);border:2.5px solid var(--ink);border-radius:11px;box-shadow:3px 3px 0 var(--ink)}
+      .footMq .mq-go svg{width:14px;height:14px}
+      .footMq .mq-soon{display:flex;align-items:center;gap:7px;margin-top:12px;border-top:1px dashed var(--surf-bd);padding-top:11px}
+      .footMq .mq-soon .lab{font-family:"Bungee";font-size:.4rem;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-dim);flex:none}
+      .footMq .mq-strip{display:flex;gap:5px;flex:1;justify-content:flex-end}
+      .footMq .mq-chip{display:flex;align-items:center;gap:4px;border:1.5px solid var(--surf-bd);border-radius:99px;padding:4px 8px;opacity:.72}
+      .footMq .mq-chip svg{width:10px;height:10px;color:var(--txt-dim)}
+      .footMq .mq-chip b{font-family:"Bungee";font-size:.42rem;text-transform:uppercase;color:var(--txt-dim)}
+
+      /* ═══════════ DIR 4 · PULSANTIERA (tasti arcade fisici) ═══════════ */
+      .footBtn .pb-main{display:flex;align-items:center;gap:13px;width:100%;text-align:left;cursor:pointer;
+        background:linear-gradient(180deg,#ffd84d,var(--cta-bg));border:2.5px solid var(--ink);border-radius:15px;
+        box-shadow:5px 5px 0 var(--ink);padding:11px 15px 11px 12px;
+        transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .footBtn .pb-main:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+      .footBtn .pb-main:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--ink)}
+      .footBtn .pb-knob{width:48px;height:48px;border-radius:50%;flex:none;
+        background:radial-gradient(circle at 38% 30%,#ff9a5a,var(--pop) 58%,var(--ball2));
+        border:3px solid var(--ink);box-shadow:inset 0 -4px 0 rgba(0,0,0,.32),inset 0 3px 0 rgba(255,255,255,.28);
+        display:flex;align-items:center;justify-content:center}
+      .footBtn .pb-knob svg{width:20px;height:20px;color:#0a0a18;margin-left:2px}
+      .footBtn .pb-txt .n{font-family:"Bungee";font-size:1.04rem;color:var(--cta-fg);line-height:1}
+      .footBtn .pb-txt small{display:block;font-family:"Bungee";font-size:.46rem;letter-spacing:.04em;text-transform:uppercase;color:rgba(10,10,24,.7);margin-top:6px}
+      .footBtn .pb-row{display:flex;gap:8px;margin-top:6px}
+      .footBtn .pb-lock{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+      .footBtn .pb-dim{width:46px;height:46px;border-radius:50%;
+        background:radial-gradient(circle at 38% 30%,#33356e,#181a44);
+        border:3px solid var(--surf-bd);box-shadow:inset 0 -4px 0 rgba(0,0,0,.4);
+        display:flex;align-items:center;justify-content:center;opacity:.85}
+      .footBtn .pb-dim svg{width:16px;height:16px;color:var(--txt-dim)}
+      .footBtn .pb-lock b{font-family:"Bungee";font-size:.44rem;text-transform:uppercase;color:var(--txt-dim);letter-spacing:.02em}
+
+      /* ═══════════ SPLASH (intro condivisa, dal file 19) ═══════════ */
+      .sp-ball{width:108px;height:108px;animation:spin 3.6s linear infinite}
+      .sp-wm{font-size:2.7rem;margin-top:18px}
+      .sp-tag{font-family:"Bungee";font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim);margin-top:10px}
+      .bz-open{display:inline-flex;align-items:center;gap:8px;min-height:50px;margin-top:24px;padding:0 22px;border-radius:13px;cursor:pointer;
+        font-family:"Bungee";font-size:.9rem;letter-spacing:.04em;text-transform:uppercase;color:var(--cta-fg);
+        background:var(--cta-bg);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);animation:blink 1.3s steps(1) infinite}
+      .bz-open svg{width:16px;height:16px}
+      @keyframes blink{50%{filter:brightness(.85)}}
+      @keyframes spin{to{transform:rotate(360deg)}}
+
+      /* il marchio si "stampa" nell'istante del buzzer */
+      .a-buzz:has(.opn:checked) .home .bz-wm{animation:stamp .5s 1.18s cubic-bezier(.2,1.6,.4,1) both}
+      @keyframes stamp{0%{transform:scale(1.5);opacity:0}70%{transform:scale(.96);opacity:1}100%{transform:scale(1)}}
+
+      /* ═══════════ SIRENA CLUTCH — animazione VERIFICATA (file 19), invariata ═══════════ */
+      .a-buzz:has(.opn:checked) .bz-ball{animation:shotBuzz 1.7s linear both}
+      @keyframes shotBuzz{
+        0%  {transform:translate(-160px,-30px) scale(.42) rotate(0deg);opacity:0;
+             animation-timing-function:cubic-bezier(.3,.7,.6,1)}
+        7%  {transform:translate(-138px,-66px) scale(.41) rotate(-26deg);opacity:1;
+             animation-timing-function:cubic-bezier(.18,.62,.4,1)}
+        44% {transform:translate(-52px,-146px) scale(.34) rotate(-150deg);
+             animation-timing-function:cubic-bezier(.5,.05,.85,.5)}
+        64% {transform:translate(0px,-84px) scale(.5) rotate(-214deg);
+             animation-timing-function:cubic-bezier(.3,.25,.5,1)}
+        78% {transform:translate(0px,-36px) scale(.66) rotate(-272deg);
+             animation-timing-function:cubic-bezier(.3,.5,.5,1)}
+        90% {transform:translate(0,5px) scaleX(1.15) scaleY(.84) rotate(-308deg);
+             animation-timing-function:cubic-bezier(.3,1.4,.5,1)}
+        96% {transform:translate(0,-6px) scale(1.03) rotate(-322deg)}
+        100%{transform:translate(0,0) scale(1) rotate(-330deg)}
+      }
+      .a-buzz:has(.opn:checked) .net-back{animation:swishNetB 1.7s linear both}
+      .a-buzz:has(.opn:checked) .net-front{animation:swishNetB 1.7s linear both, netShowB 1.7s linear both}
+      @keyframes swishNetB{
+        0%,63%{transform:scaleY(1) scaleX(1);animation-timing-function:cubic-bezier(.15,.7,.4,1)}
+        71%   {transform:scaleY(1.5) scaleX(.84);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        78%   {transform:scaleY(.95) scaleX(1.06);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        85%   {transform:scaleY(1.14) scaleX(.97);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        91%   {transform:scaleY(.98) scaleX(1.02);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        96%   {transform:scaleY(1.04) scaleX(.99)}
+        100%  {transform:scaleY(1) scaleX(1)}
+      }
+      @keyframes netShowB{0%,62%{opacity:0}68%{opacity:.95}82%{opacity:.7}92%{opacity:0}100%{opacity:0}}
+      .a-buzz:has(.opn:checked) .flash{animation:buzzFlash 1.7s linear both}
+      @keyframes buzzFlash{
+        0%,62%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
+        70%{opacity:.95;transform:translate(-50%,-50%) scale(1)}
+        80%{opacity:.42;transform:translate(-50%,-50%) scale(1.18)}
+        100%{opacity:0;transform:translate(-50%,-50%) scale(1.34)}
+      }
+      .a-buzz:has(.opn:checked) .scr::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+        box-shadow:inset 0 0 0 3px var(--pop), inset 0 0 30px rgba(255,91,30,.45);opacity:0;animation:buzzEdge 1.7s linear both}
+      @keyframes buzzEdge{0%,63%{opacity:0}70%{opacity:1}83%{opacity:.2}100%{opacity:0}}
+
+      @media (prefers-reduced-motion:reduce){
+        .ph *{animation:none!important;transition:none!important}
+        .ph .scr::after{animation:none!important;opacity:0!important}
+        .home{opacity:1!important;pointer-events:auto!important}
+        .splash{opacity:1}
+        .net-front{opacity:0!important}
+        .footMq .mq-bulbs i{opacity:1!important}
+      }
+      </style>
+
+      <!-- ═══════════════ DIR 1 · CARTUCCIA (reco) ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Cartuccia"
+        data-mood="inserisci la cartuccia · cabinato NBA Jam"
+        data-why="La modalità giocabile diventa un oggetto fisico che inserisci nel cabinato: massimo arcade, massimo «BUZZER». Le 3 bloccate sono cartucce spente col lucchetto — è chiarissimo cosa puoi inserire ora e cosa arriva. Riempie lo spazio con un gesto, non con una lista."
+        data-role="Reco">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-top">
+              <span class="bz-credit rise">★ 1 credito</span>
+              <span class="bz-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:.66s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footCart">
+              <label class="cart-hero rise" style="--d:.7s" for="buzz1-open">
+                <span class="cart-grip"><i></i><i></i><i></i><i></i></span>
+                <span class="cart-win">
+                  <span class="cart-name">L'IMBATTUTO</span>
+                  <span class="cart-score">16–0</span>
+                </span>
+                <span class="cart-ins"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 19h14"/></svg> inserisci · gioca</span>
+              </label>
+              <div class="soon-h rise" style="--d:.74s">prossimamente</div>
+              <div class="cart-mini-row rise" style="--d:.78s">
+                <div class="cart-mini"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Playoff</b></div>
+                <div class="cart-mini"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Stagione</b></div>
+                <div class="cart-mini"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Sfida</b></div>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:.82s" for="buzz1-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzz1-open">
+          <label class="splash" for="buzz1-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ DIR 2 · METER DEL CALORE ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Meter del calore"
+        data-mood="termometro 0→16 incandescente · la striscia che scalda"
+        data-why="Mette al centro la posta: il 16–0 come una barra che si accende segmento dopo segmento, col traguardo che brucia in fondo. Il colpo d'occhio è il calore che sale — la meccanica della striscia diventa l'immagine, non una scritta.">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-top">
+              <span class="bz-credit rise">★ 1 credito</span>
+              <span class="bz-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:.66s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footMeter">
+              <div class="m-hero rise" style="--d:.7s">
+                <div class="m-top"><span class="m-name">L'IMBATTUTO</span><span class="m-goal">la striscia</span></div>
+                <div class="m-bar">
+                  <span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg on"></span><span class="m-seg"></span><span class="m-seg"></span><span class="m-seg"></span><span class="m-seg"></span><span class="m-seg"></span><span class="m-seg"></span><span class="m-seg goal"></span>
+                </div>
+                <div class="m-scale"><span class="now">record 9</span><span class="max"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3 2-5 0 2 1 3 2 3 1 0 1-1 1-3 0-3-1-5-1-8z"/></svg> 16–0</span></div>
+                <label class="m-go" for="buzz2-open"><svg class="play-ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</label>
+              </div>
+              <div class="soon-h rise" style="--d:.74s">prossimamente</div>
+              <div class="m-lock rise" style="--d:.78s">
+                <div class="m-cell"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Playoff</b></div>
+                <div class="m-cell"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Stagione</b></div>
+                <div class="m-cell"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Sfida</b></div>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:.82s" for="buzz2-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzz2-open">
+          <label class="splash" for="buzz2-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ DIR 3 · INSEGNA PRIMETIME ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Insegna primetime"
+        data-mood="marquee a lampadine d'arena · ORA IN SALA"
+        data-why="La modalità accesa come l'insegna luminosa di un cabinato/arena: le lampadine che corrono dicono «è in scena adesso». Le bloccate scorrono sotto in un nastro «prossimamente». Teatrale, immediatamente da sala giochi — il movimento è il dettaglio che si ricorda.">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-top">
+              <span class="bz-credit rise">★ 1 credito</span>
+              <span class="bz-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:.66s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footMq">
+              <label class="mq rise" style="--d:.7s" for="buzz3-open">
+                <span class="mq-bulbs top"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <span class="mq-eyebrow">★ ora in sala ★</span>
+                <span class="mq-name">L'IMBATTUTO</span>
+                <span class="mq-score">16–0 · imbattuto o niente</span>
+                <span class="mq-go"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</span>
+                <span class="mq-bulbs bot"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              </label>
+              <div class="mq-soon rise" style="--d:.76s">
+                <span class="lab">prossimamente</span>
+                <span class="mq-strip">
+                  <span class="mq-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Playoff</b></span>
+                  <span class="mq-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Stagione</b></span>
+                  <span class="mq-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Sfida</b></span>
+                </span>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:.82s" for="buzz3-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzz3-open">
+          <label class="splash" for="buzz3-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ DIR 4 · PULSANTIERA ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Pulsantiera"
+        data-mood="tasti arcade fisici · premi e giochi"
+        data-why="Un solo grande tasto acceso = premi e parti, zero attrito (instant-play puro, come schiacciare «start» su un cabinato). I 3 tasti spenti col lucchetto dicono «ci sono ma non ancora». Il layout più immediato dei quattro.">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-top">
+              <span class="bz-credit rise">★ 1 credito</span>
+              <span class="bz-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:.66s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footBtn">
+              <label class="pb-main rise" style="--d:.7s" for="buzz4-open">
+                <span class="pb-knob"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg></span>
+                <span class="pb-txt"><span class="n">L'IMBATTUTO</span><small>16–0 · premi per giocare</small></span>
+              </label>
+              <div class="soon-h rise" style="--d:.74s">prossimamente</div>
+              <div class="pb-row rise" style="--d:.78s">
+                <div class="pb-lock"><span class="pb-dim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><b>Playoff</b></div>
+                <div class="pb-lock"><span class="pb-dim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><b>Stagione</b></div>
+                <div class="pb-lock"><span class="pb-dim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><b>Sfida</b></div>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:.82s" for="buzz4-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzz4-open">
+          <label class="splash" for="buzz4-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

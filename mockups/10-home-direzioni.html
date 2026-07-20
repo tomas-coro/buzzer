@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  ─────────────────────────────────────────────────────────────────────────────
+  SCOCCA FISSA, CONTENUTO VARIABILE.
+  La skill sostituisce SOLO il contenuto di <div id="panels"> con i 3/4 pannelli
+  reali. Ogni direzione è un <section class="dir-panel" data-name data-mood data-why>
+  che contiene SOLO il design di anteprima: la barra-titolo (nome+mood) e la riga
+  "perché" sono disegnate automaticamente dallo script qui sotto.
+  I chip in #chips sono generati automaticamente, uno per pannello.
+  NON modificare la scocca o lo script: cambia solo #panels (e <title>).
+-->
+<title>Home · 4 direzioni — mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Big+Shoulders+Display:wght@600;700;800;900&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:52ch}
+
+  /* chip bar */
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  /* palco */
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+
+  /* ───────── stili di esempio dei pannelli (la skill li sostituisce) ───────── */
+  .demo-nav{display:flex;gap:8px;align-items:center;font-size:.7rem;color:var(--bone-dim);margin-bottom:14px}
+  .demo-dot{width:8px;height:8px;border-radius:99px;background:var(--line)}
+  .demo-h{margin:0 0 8px;line-height:1.05}
+  .demo-p{margin:0 0 16px;font-size:.86rem;color:var(--bone-dim)}
+  .demo-btn{font:inherit;font-weight:700;font-size:.82rem;border:0;border-radius:9px;padding:11px 16px;min-height:44px;cursor:pointer;transition:transform .12s ease, filter .12s ease}
+  .demo-btn:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  .t-edit .demo-h{font-family:"Bodoni Moda",serif;font-weight:500;font-size:1.7rem;color:#f1ece1}
+  .t-edit .demo-btn{background:#e9e4d8;color:#181818}
+  .t-retro{background:linear-gradient(180deg,#241a12,#1b1f28);margin:-20px -18px;padding:20px 18px;border-radius:0}
+  .t-retro .demo-h{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:500;font-size:1.7rem;color:#f0c98a}
+  .t-retro .demo-btn{background:#d98b3f;color:#1a1206}
+  .t-tech .demo-h{font-family:"Hanken Grotesk";font-weight:700;letter-spacing:-.02em;font-size:1.6rem;color:#dfe7f2}
+  .t-tech .demo-btn{background:#5b7fb0;color:#0c1118}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto</div>
+    <h1 id="mockTitle">Home — 4 direzioni · Heatcheck</h1>
+    <p class="lead">Tocca un nome in alto per cambiare direzione. Ogni tile mostra l'estetica, un'interazione viva e il <b>perché</b>.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ═══════════════ stile dei 4 pannelli Home (Heatcheck) ═══════════════
+           Tutto è scoped a .ph (telefono): i token --hc-* non toccano la chrome
+           del viewer. Interazione mele-con-mele in OGNI tile: tocca «Inizia»
+           (checkbox-hack `:has(:checked)`, zero JS) → la scena si accende, il
+           calore (--heat 0→1) alza il bagliore brace. Volti reali NBA in duotone
+           brace, con fallback (#3a2418) se il CDN non risponde. -->
+      <style id="home-dirs">
+        .ph{
+          --hc-bg:#120c0a; --hc-bg2:#0b0706; --hc-panel:#1d1410; --hc-panel2:#261913;
+          --hc-line:#3a2a20; --hc-line2:#2a1e17;
+          --hc-ink:#f7eee6; --hc-dim:#d3bdb0; --hc-faint:#9c8579;
+          --hc-acc:#ff6a22; --hc-acc-hi:#ffb13a; --hc-acc-deep:#c84e12; --hc-acc-ink:#1c0d04;
+          --hc-win:#5ccf8e; --hc-live:#ff5038; --hc-glow:rgba(255,106,34,.5);
+          --ease:cubic-bezier(.16,1,.3,1); --heat:0;
+          position:relative; width:300px; max-width:100%; margin:0 auto;
+          padding:10px; border-radius:38px;
+          background:linear-gradient(155deg,#2a1c14,#0c0807);
+          border:1px solid var(--hc-line);
+          box-shadow:0 34px 70px -28px #000, inset 0 1px 0 rgba(255,255,255,.05);
+          animation:phin .5s var(--ease) both;
+        }
+        .ph::after{ /* notch */
+          content:""; position:absolute; top:17px; left:50%; transform:translateX(-50%);
+          width:94px; height:6px; border-radius:99px; background:#0c0807; z-index:6;
+        }
+        .ph:has(.ignite:checked){ --heat:1 }
+        .ph__screen{
+          position:relative; border-radius:28px; overflow:hidden; background:var(--hc-bg);
+          min-height:528px; display:flex; flex-direction:column; isolation:isolate;
+        }
+        .ph__screen::before{ /* bagliore brace dal basso, sale col calore */
+          content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+          background:
+            radial-gradient(130% 78% at 50% 122%, rgba(255,106,34,calc(.10 + var(--heat)*.5)), transparent 60%),
+            radial-gradient(100% 60% at 50% -12%, rgba(255,140,60,calc(.03 + var(--heat)*.1)), transparent 60%);
+          transition:background 1s var(--ease);
+        }
+        .ph__screen::after{ /* grana + scanline finissime */
+          content:""; position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.5;
+          background:repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
+        }
+        .ph__in{position:relative; z-index:1; flex:1; display:flex; flex-direction:column}
+
+        /* ── volti reali in duotone brace (+ fallback) ── */
+        .face{position:relative; background:#3a2418; overflow:hidden; flex:none}
+        .face img{width:100%; height:100%; object-fit:cover; object-position:center top; display:block;
+          filter:grayscale(1) sepia(.8) saturate(2.2) hue-rotate(-10deg) contrast(1.05) brightness(.95);
+          transition:filter .9s var(--ease)}
+        .ph:has(.ignite:checked) .face img{filter:grayscale(1) sepia(.62) saturate(2.7) hue-rotate(-6deg) contrast(1.06) brightness(1.08)}
+
+        /* ── logo RUN a fiamma ── */
+        .rlogo{font-family:"Big Shoulders Display",sans-serif; text-transform:uppercase; line-height:.82; text-align:center}
+        .rlogo .the{display:block; font-weight:700; letter-spacing:.4em; color:var(--hc-dim)}
+        .rlogo .run{display:block; font-weight:900;
+          background:linear-gradient(178deg,#ffe39a 4%,#ffb13a 36%,#ff6a22 78%,#e0480c 100%);
+          -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+          filter:drop-shadow(0 6px calc(16px + var(--heat)*26px) rgba(255,106,34,calc(.4 + var(--heat)*.4)));
+          transition:filter .9s var(--ease)}
+
+        /* ── bottone «Inizia» = checkbox-hack (stessa interazione in tutti) ── */
+        .start{position:relative; z-index:2; display:flex; align-items:center; justify-content:center; gap:9px;
+          min-height:52px; padding:0 22px; border-radius:13px; cursor:pointer; user-select:none;
+          font-family:"Big Shoulders Display",sans-serif; font-weight:800; font-size:1.06rem; letter-spacing:.06em; text-transform:uppercase;
+          color:var(--hc-acc-ink); background:linear-gradient(180deg,var(--hc-acc-hi),var(--hc-acc));
+          box-shadow:0 14px 30px -12px var(--hc-glow); transition:transform .16s var(--ease), filter .16s var(--ease)}
+        .start:hover{transform:translateY(-2px); filter:brightness(1.06)}
+        .start:active{transform:translateY(0)}
+        .start svg{width:16px; height:16px; flex:none}
+        .start:has(.ignite:focus-visible){outline:2px solid var(--hc-acc-hi); outline-offset:3px}
+        .ignite{position:absolute; width:1px; height:1px; opacity:0; pointer-events:none}
+        .start .lab-on{display:none}
+        .ph:has(.ignite:checked) .start .lab-off{display:none}
+        .ph:has(.ignite:checked) .start .lab-on{display:inline}
+
+        /* ── riga di stato sotto il bottone ── */
+        .status{font-size:.72rem; color:var(--hc-faint); text-align:center; letter-spacing:.01em; margin:0}
+        .status .s-on{display:none}
+        .ph:has(.ignite:checked) .status .s-off{display:none}
+        .ph:has(.ignite:checked) .status .s-on{display:inline; color:var(--hc-acc-hi); font-weight:600}
+
+        /* ════════ ① BRACE VIVA — press-start raffinato + fascia di volti ════════ */
+        .d-brace{padding:22px 18px 18px; justify-content:space-between; text-align:center}
+        .b-top{display:flex; justify-content:center}
+        .streak-chip{font-size:.6rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase; color:var(--hc-faint); border:1px solid var(--hc-line); border-radius:99px; padding:6px 12px}
+        .streak-chip b{color:var(--hc-win)}
+        .b-hero{margin-top:16px}
+        .b-logo .the{font-size:.92rem; margin-bottom:5px}
+        .b-logo .run{font-size:4.6rem}
+        .b-hook{font-size:.92rem; color:var(--hc-dim); line-height:1.42; margin:13px auto 0; max-width:26ch}
+        .b-hook b{color:var(--hc-ink); font-weight:700}
+        .b-cta{margin-top:20px; display:grid; gap:9px}
+        .b-cta .start{width:100%}
+        .b-roster{margin-top:20px}
+        .b-roster__lab{display:block; font-size:.54rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase; color:var(--hc-faint); margin-bottom:9px}
+        .b-strip{display:flex; gap:7px; justify-content:center}
+        .b-strip .face{width:36px; height:36px; border-radius:9px; border:1px solid var(--hc-line)}
+
+        /* ════════ ② INSEGNA PRIMETIME — insegna luminosa + tabellone ════════ */
+        .d-sign{padding:18px 16px; justify-content:space-between; text-align:center}
+        .sg-kick{font-size:.58rem; font-weight:800; letter-spacing:.3em; text-transform:uppercase; color:var(--hc-live)}
+        .sg-marquee{position:relative; margin:16px 2px 0; padding:20px 12px; border-radius:14px;
+          border:2px solid var(--hc-acc-deep);
+          background:radial-gradient(120% 130% at 50% 0,#241308,#160d08);
+          box-shadow:inset 0 0 calc(14px + var(--heat)*34px) rgba(255,106,34,calc(.14 + var(--heat)*.34));
+          transition:box-shadow .9s var(--ease)}
+        .sg-marquee::before{ /* file di lampadine lungo il bordo */
+          content:""; position:absolute; inset:5px; border-radius:9px; pointer-events:none;
+          background:
+            repeating-linear-gradient(90deg, var(--hc-acc-hi) 0 3px, transparent 3px 15px) top    /100% 3px no-repeat,
+            repeating-linear-gradient(90deg, var(--hc-acc-hi) 0 3px, transparent 3px 15px) bottom /100% 3px no-repeat,
+            repeating-linear-gradient(0deg,  var(--hc-acc-hi) 0 3px, transparent 3px 15px) left   /3px 100% no-repeat,
+            repeating-linear-gradient(0deg,  var(--hc-acc-hi) 0 3px, transparent 3px 15px) right  /3px 100% no-repeat;
+          opacity:calc(.4 + var(--heat)*.55); transition:opacity .9s var(--ease)}
+        .sg-logo{position:relative}
+        .sg-logo .the{font-size:.8rem; margin-bottom:4px}
+        .sg-logo .run{font-size:3.9rem}
+        .sg-board{margin-top:16px; border:1px solid var(--hc-line); border-radius:12px; padding:13px 12px; background:var(--hc-bg2)}
+        .sg-board__lab{display:block; font-size:.52rem; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:var(--hc-faint)}
+        .sg-digits{display:flex; align-items:center; justify-content:center; gap:9px; margin:7px 0 5px;
+          font-family:"Big Shoulders Display",sans-serif; font-weight:900; font-size:2.9rem; line-height:.88; font-variant-numeric:tabular-nums;
+          color:var(--hc-faint); transition:color .8s var(--ease), text-shadow .8s var(--ease)}
+        .ph:has(.ignite:checked) .sg-digits{color:var(--hc-acc-hi); text-shadow:0 0 22px var(--hc-glow)}
+        .sg-digits .sep{color:var(--hc-line); font-weight:700}
+        .sg-board__sub{font-size:.66rem; color:var(--hc-faint); letter-spacing:.04em}
+        .sg-cta{margin-top:16px; display:grid; gap:9px}
+        .sg-cta .start{width:100%}
+
+        /* ════════ ③ COVER LEGGENDA — un volto enorme stile cover 2K ════════ */
+        .d-cover{position:relative; padding:0}
+        .cv-face{position:absolute; inset:0; width:100%; height:100%; z-index:0}
+        .cv-face img{object-position:center 6%}
+        .cv-grad{position:absolute; inset:0; z-index:1; pointer-events:none;
+          background:linear-gradient(180deg, rgba(18,12,10,.12) 0, transparent 26%, rgba(18,12,10,.5) 60%, rgba(9,5,4,.97) 100%)}
+        .cv-ui{position:relative; z-index:2; flex:1; display:flex; flex-direction:column; justify-content:space-between; padding:16px 16px 18px}
+        .cv-top{display:flex; align-items:flex-start; justify-content:space-between}
+        .cv-logo{text-align:left}
+        .cv-logo .run{font-size:1.5rem}
+        .cv-badge{font-size:.52rem; font-weight:800; letter-spacing:.2em; text-transform:uppercase; color:var(--hc-acc-ink); background:var(--hc-acc-hi); border-radius:5px; padding:4px 8px}
+        .cv-bottom{display:grid; gap:9px}
+        .cv-pos{font-size:.58rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--hc-acc-hi)}
+        .cv-name{font-family:"Anton",sans-serif; font-weight:400; font-size:3.7rem; line-height:.84; letter-spacing:.005em; color:var(--hc-ink); margin:0; text-shadow:0 4px 30px rgba(0,0,0,.6); transition:text-shadow .9s var(--ease)}
+        .ph:has(.ignite:checked) .cv-name{text-shadow:0 0 32px var(--hc-glow), 0 4px 30px rgba(0,0,0,.6)}
+        .cv-hook{font-size:.82rem; color:var(--hc-dim); margin:0; max-width:30ch}
+        .cv-start{margin-top:4px}
+
+        /* ════════ ④ MURO DEI CAMPIONI — mosaico di volti / draft board ════════ */
+        .d-wall{position:relative; padding:0}
+        .wl-grid{position:absolute; inset:0; z-index:0; display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr}
+        .wl-grid .face{width:100%; height:100%; border:.5px solid #0c0807}
+        .wl-scrim{position:absolute; inset:0; z-index:1; pointer-events:none;
+          background:
+            linear-gradient(180deg, rgba(9,5,4,calc(.8 - var(--heat)*.24)), rgba(9,5,4,calc(.66 - var(--heat)*.2))),
+            radial-gradient(92% 60% at 50% 56%, rgba(255,106,34,calc(var(--heat)*.24)), transparent 62%);
+          transition:background .9s var(--ease)}
+        .wl-ui{position:relative; z-index:2; flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:26px 18px; gap:11px}
+        .wl-kick{font-size:.55rem; font-weight:800; letter-spacing:.22em; text-transform:uppercase; color:var(--hc-acc-hi)}
+        .wl-stamp{font-family:"Anton",sans-serif; font-weight:400; font-size:1rem; letter-spacing:.06em; text-transform:uppercase; color:var(--hc-dim); margin:0}
+        .wl-logo .the{font-size:.78rem; margin-bottom:4px}
+        .wl-logo .run{font-size:3.7rem}
+        .wl-hook{font-size:.8rem; color:var(--hc-dim); max-width:24ch; margin:0}
+        .wl-cta{display:grid; gap:9px; width:100%; margin-top:4px}
+        .wl-cta .start{width:100%}
+
+        @keyframes phin{from{opacity:0; transform:translateY(16px)}to{opacity:1; transform:none}}
+      </style>
+
+      <!-- ═══════════════ ① BRACE VIVA (Migliora) ═══════════════ -->
+      <section class="dir-panel" data-name="Brace viva" data-mood="press-start raffinato · Heatcheck" data-role="Migliora"
+        data-why="Resta il press-start pulito, ma la fascia di volti reali dice subito «ecco chi puoi pescare»: desiderio prima del tap.">
+        <div class="ph">
+          <div class="ph__screen">
+            <div class="d-brace ph__in">
+              <div class="b-top"><span class="streak-chip">Striscia record <b>11–0</b></span></div>
+              <div class="b-hero">
+                <h2 class="rlogo b-logo"><span class="the">THE</span><span class="run">RUN</span></h2>
+                <p class="b-hook"><b>16 di fila. Zero ko.</b> Pesca la tua squadra dei sogni e resta in fiamme.</p>
+              </div>
+              <div class="b-cta">
+                <label class="start">
+                  <input type="checkbox" class="ignite">
+                  <span class="lab-off">Inizia la corsa</span><span class="lab-on">La corsa è partita</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </label>
+                <p class="status"><span class="s-off">Premi per accendere la corsa</span><span class="s-on">Sei in fiamme · 16–0 ti aspetta</span></p>
+              </div>
+              <div class="b-roster">
+                <span class="b-roster__lab">Chi puoi pescare</span>
+                <div class="b-strip">
+                  <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                  <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                  <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203999.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                  <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                  <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                  <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ ② INSEGNA PRIMETIME (Migliora) ═══════════════ -->
+      <section class="dir-panel" data-name="Insegna primetime" data-mood="insegna d'arena · diretta TV" data-role="Migliora"
+        data-why="Il logo diventa un'insegna luminosa e il 16–0 un tabellone: l'atmosfera da prime time già dalla home, e si accende quando parti." hidden>
+        <div class="ph">
+          <div class="ph__screen">
+            <div class="d-sign ph__in">
+              <div><span class="sg-kick">Prime time</span></div>
+              <div class="sg-marquee">
+                <h2 class="rlogo sg-logo"><span class="the">THE</span><span class="run">RUN</span></h2>
+              </div>
+              <div class="sg-board">
+                <span class="sg-board__lab">L'obiettivo</span>
+                <div class="sg-digits"><span>16</span><span class="sep">–</span><span>0</span></div>
+                <span class="sg-board__sub">l'anello perfetto, zero sconfitte</span>
+              </div>
+              <div class="sg-cta">
+                <label class="start">
+                  <input type="checkbox" class="ignite">
+                  <span class="lab-off">Accendi l'insegna</span><span class="lab-on">Sei in onda</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </label>
+                <p class="status"><span class="s-off">Le luci sono ancora spente</span><span class="s-on">Arena accesa · luci puntate su di te</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ ③ COVER LEGGENDA (Nuova) ═══════════════ -->
+      <section class="dir-panel" data-name="Cover leggenda" data-mood="un volto enorme · alla cover 2K" data-role="Nuova"
+        data-why="Un solo campione gigante riempie lo schermo come una cover: massimo impatto, zero spiegazioni — e il volto si accende al via." hidden>
+        <div class="ph">
+          <div class="ph__screen">
+            <div class="d-cover ph__in">
+              <span class="face cv-face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+              <div class="cv-grad"></div>
+              <div class="cv-ui">
+                <div class="cv-top">
+                  <span class="rlogo cv-logo"><span class="run">RUN</span></span>
+                  <span class="cv-badge">Cover</span>
+                </div>
+                <div class="cv-bottom">
+                  <span class="cv-pos">La tua corsa all'anello</span>
+                  <h2 class="cv-name">GIANNIS</h2>
+                  <p class="cv-hook">Costruisci la squadra attorno al tuo uomo copertina. Tieni la striscia.</p>
+                  <label class="start cv-start">
+                    <input type="checkbox" class="ignite">
+                    <span class="lab-off">Inizia la corsa</span><span class="lab-on">La corsa è partita</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </label>
+                  <p class="status"><span class="s-off">Tocca per accendere la corsa</span><span class="s-on">Sei in fiamme · 16–0 ti aspetta</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ ④ MURO DEI CAMPIONI (Nuova) ═══════════════ -->
+      <section class="dir-panel" data-name="Muro dei campioni" data-mood="mosaico di volti · draft board" data-role="Nuova"
+        data-why="Il muro di volti promette la profondità del pool: la home è già la posta in gioco — e il muro si illumina quando parti." hidden>
+        <div class="ph">
+          <div class="ph__screen">
+            <div class="d-wall ph__in">
+              <div class="wl-grid" aria-hidden="true">
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203999.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1629029.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201142.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+                <span class="face"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="" referrerpolicy="no-referrer" onerror="this.remove()"></span>
+              </div>
+              <div class="wl-scrim"></div>
+              <div class="wl-ui">
+                <span class="wl-kick">Il muro dei campioni</span>
+                <h2 class="rlogo wl-logo"><span class="the">THE</span><span class="run">RUN</span></h2>
+                <p class="wl-hook">Pesca dal meglio della lega. Uno per slot, fino all'anello.</p>
+                <div class="wl-cta">
+                  <label class="start">
+                    <input type="checkbox" class="ignite">
+                    <span class="lab-off">Inizia la corsa</span><span class="lab-on">La corsa è partita</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                  </label>
+                  <p class="status"><span class="s-off">Il muro è ancora al buio</span><span class="s-on">Il muro è in fiamme · 16–0 ti aspetta</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  // Disegna la chrome (barra nome+mood, riga "perché") dentro ogni pannello dai data-*
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+
+  // Esempio di interazione "viva ma leggera" con dato finto in localStorage.
+  // (La skill può riusare lo stesso pattern data-save nei pannelli reali.)
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest('[data-save]');
+    if(!btn) return;
+    const on = btn.dataset.on === '1';
+    btn.dataset.on = on ? '0':'1';
+    btn.textContent = on ? 'Salva' : 'Salvato ✓';
+    try{ localStorage.setItem('mockup-demo-saved', on ? '0':'1'); }catch(_){}
+  });
+})();
+</script>
+</body>
+</html>

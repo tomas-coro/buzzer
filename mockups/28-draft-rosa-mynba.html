@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA, CONTENUTO VARIABILE — sostituito SOLO #panels e i titoli.
+  Draft a Normale: la ROSA in stile NBA 2K / MyNBA, 3 direzioni — capire ruoli + cosa manca.
+-->
+<title>Draft Normale · rosa stile MyNBA · 3 direzioni · BUZZER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:56ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Draft · la rosa stile MyNBA</div>
+    <h1 id="mockTitle">La tua rosa come una schermata 2K · 3 direzioni</h1>
+    <p class="lead">Concetto di <b>«In campo»</b> ma con grafica da <b>NBA 2K / MyNBA</b>: leggi a colpo d'occhio <b>chi hai</b> e soprattutto <b>cosa ti manca</b>. Il gioco non ha ruoli fissi — conta la <b>copertura di skill</b> (tiro · regia · difesa · ferro · rimbalzo) — quindi i &laquo;buchi&raquo; qui sono le skill scoperte, non caselle vuote da regolamento. Tocca un giocatore per la scheda. Tre modi di mostrarlo: scegline uno.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <style>
+        /* ─── stili scoped BUZZER · Cabina 90s (NBA Jam) — vivono dentro #panels ─── */
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@500;700;900&display=swap');
+
+        .bzph{
+          width:344px; max-width:100%; margin:2px auto 0;
+          background:linear-gradient(180deg,#15163a 0%,#0d0e29 100%);
+          border:3px solid #000; border-radius:30px; padding:16px 14px;
+          box-shadow:7px 7px 0 #000; color:#fff; position:relative; overflow:hidden;
+          font-family:"Hanken Grotesk",sans-serif;
+        }
+        .bzph::before{ /* retino arena sottile */
+          content:""; position:absolute; inset:0; pointer-events:none; opacity:.06;
+          background-image:radial-gradient(circle, #6b6cc0 1px, transparent 1px);
+          background-size:14px 14px;
+        }
+        .bzph > *{ position:relative; z-index:1 }
+
+        /* ── context bar (comune) ── */
+        .ctx{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px }
+        .ctx-l{ font-family:"Bungee"; font-size:.86rem; color:#ffcf33; line-height:1; letter-spacing:.3px }
+        .ctx-l small{ display:block; font-family:"Hanken Grotesk"; font-weight:700; font-size:.54rem;
+          color:#7c7bbf; letter-spacing:.14em; text-transform:uppercase; margin-top:6px }
+        .ctx-pick{ font-family:"Bungee"; font-size:.56rem; color:#0d0e29; background:#ff5b1e;
+          border:2px solid #000; border-radius:9px; padding:6px 9px; box-shadow:2px 2px 0 #000;
+          white-space:nowrap; letter-spacing:.5px }
+
+        /* ── colori per fascia: numeri E barre (comune) ── */
+        .t-hi{ color:#5ccf8e } .t-md{ color:#ffcf33 } .t-lo{ color:#ff7a6a }
+        .bg-hi{ background:#5ccf8e } .bg-md{ background:#ffcf33 } .bg-lo{ background:#ff7a6a }
+
+        /* ── readout buco (comune) ── */
+        .gap{ display:flex; gap:9px; align-items:center; background:#1c1132; border:2px solid #743225;
+          border-radius:11px; padding:10px 12px; margin-bottom:12px; box-shadow:2px 2px 0 #000 }
+        .gap svg{ width:18px; height:18px; flex:none; color:#ff7a6a }
+        .gap-t{ font-size:.66rem; color:#ffc3b0; line-height:1.35 }
+        .gap-t b{ font-family:"Bungee"; font-size:.58rem; color:#ff7a6a; letter-spacing:.4px; margin-right:3px }
+
+        /* photo duotone brace (comune) */
+        .ph-img{ background:#3a2418; overflow:hidden; border:2px solid #000; position:relative;
+          display:flex; align-items:center; justify-content:center; flex:none }
+        .ph-img img{ width:100%; height:100%; object-fit:cover; display:block;
+          filter:grayscale(1) sepia(1) saturate(2.4) hue-rotate(-18deg) contrast(1.05) }
+
+        /* ── bottone conferma (comune ai 3 telai) ── */
+        .conf{ font-family:"Bungee"; font-size:.72rem; letter-spacing:.5px; text-align:center;
+          margin-top:13px; padding:14px; min-height:48px; border:3px solid #000; border-radius:12px;
+          background:#2a2b59; color:#6f6eb0; box-shadow:4px 4px 0 #000; transition:background .15s, color .15s }
+        .conf .go{ display:none }
+        .mano1:has(input:checked) ~ .conf, .mano2:has(input:checked) ~ .conf, .mano3:has(input:checked) ~ .conf{ background:#ffcf33; color:#0d0e29 }
+        .mano1:has(input:checked) ~ .conf .idle, .mano2:has(input:checked) ~ .conf .idle, .mano3:has(input:checked) ~ .conf .idle{ display:none }
+        .mano1:has(input:checked) ~ .conf .go, .mano2:has(input:checked) ~ .conf .go, .mano3:has(input:checked) ~ .conf .go{ display:inline }
+
+        /* ── MANO di pesca condivisa (righe compatte selezionabili) ── */
+        .manoLab{ display:flex; align-items:baseline; justify-content:space-between; margin:12px 0 9px }
+        .manoLab b{ font-family:"Bungee"; font-size:.68rem; color:#ffcf33; letter-spacing:.3px }
+        .manoLab small{ font-size:.52rem; color:#7c7bbf; text-transform:uppercase; letter-spacing:.12em }
+        .hand{ display:grid; gap:7px }
+        .hrow{ position:relative; display:grid; grid-template-columns:34px 1fr auto; align-items:center; gap:9px;
+          cursor:pointer; background:#1b1c46; border:2px solid #2c2d63; border-radius:11px; padding:7px 10px 7px 8px;
+          box-shadow:2px 2px 0 #000; transition:border-color .14s, transform .12s, opacity .14s; animation:rise .4s both }
+        .hrow:nth-child(1){ animation-delay:.04s } .hrow:nth-child(2){ animation-delay:.09s }
+        .hrow:nth-child(3){ animation-delay:.14s } .hrow:nth-child(4){ animation-delay:.19s }
+        .hrow:nth-child(5){ animation-delay:.24s }
+        .hrow input{ position:absolute; opacity:0; width:0; height:0; pointer-events:none }
+        .hrow:hover{ border-color:#5b5c9e }
+        .hand:has(input:checked) .hrow:not(:has(input:checked)){ opacity:.5 }
+        .hrow:has(input:checked){ border-color:#ffcf33; opacity:1 }
+        .hr-photo{ width:34px; height:34px; border-radius:8px }
+        .hr-id{ min-width:0 }
+        .hr-name{ font-family:"Bungee"; font-size:.6rem; letter-spacing:.2px }
+        .hr-sub{ font-size:.5rem; color:#9594d0; text-transform:uppercase; letter-spacing:.08em; margin-top:4px }
+        .hr-right{ display:flex; align-items:center; gap:9px }
+        .hr-ovr{ font-family:"Doto"; font-weight:900; font-size:1.1rem; letter-spacing:.5px; line-height:1 }
+        .hr-stats{ display:flex; gap:4px }
+        .hr-st{ text-align:center }
+        .hr-st em{ display:block; font-style:normal; font-size:.38rem; color:#7c7bbf; letter-spacing:.03em }
+        .hr-st b{ display:block; font-family:"Doto"; font-weight:900; font-size:.58rem; letter-spacing:.2px; margin-top:2px }
+        .hr-tag{ position:absolute; top:-7px; left:-7px; font-family:"Bungee"; font-size:.4rem; letter-spacing:.3px;
+          background:#5ccf8e; color:#062012; border:2px solid #000; border-radius:6px; padding:2px 5px; box-shadow:1px 1px 0 #000 }
+        .hr-tag.warn{ background:#2c2d63; color:#9594d0 }
+        .hr-check{ position:absolute; top:-7px; right:-7px; width:22px; height:22px; background:#ffcf33;
+          border:2px solid #000; border-radius:99px; display:flex; align-items:center; justify-content:center;
+          opacity:0; transform:scale(.4); transition:opacity .15s, transform .15s; z-index:4 }
+        .hrow:has(input:checked) .hr-check{ opacity:1; transform:scale(1) }
+
+        /* ════════════ OVERLAY scheda preso (CSS-only, comune) ════════════ */
+        .insp{ position:absolute; opacity:0; width:0; height:0; pointer-events:none }
+        .ovl{ position:absolute; inset:0; z-index:60; display:none; flex-direction:column;
+          background:linear-gradient(180deg,#15163a 0%,#0d0e29 100%); padding:15px 14px;
+          overflow:auto; overscroll-behavior:contain; animation:ovlin .2s ease }
+        #m1:checked ~ #ov-m1, #m2:checked ~ #ov-m2, #m3:checked ~ #ov-m3, #m4:checked ~ #ov-m4, #m5:checked ~ #ov-m5,
+        #g1:checked ~ #ov-g1, #g2:checked ~ #ov-g2, #g3:checked ~ #ov-g3, #g4:checked ~ #ov-g4, #g5:checked ~ #ov-g5,
+        #q1:checked ~ #ov-q1, #q2:checked ~ #ov-q2, #q3:checked ~ #ov-q3, #q4:checked ~ #ov-q4, #q5:checked ~ #ov-q5{ display:flex }
+        @keyframes ovlin{ from{opacity:0; transform:scale(.97)} to{opacity:1; transform:none} }
+        .ovl-x{ align-self:flex-end; width:44px; height:44px; flex:none; border:2px solid #000; border-radius:11px;
+          background:#2a2b59; color:#fff; display:flex; align-items:center; justify-content:center;
+          cursor:pointer; box-shadow:2px 2px 0 #000 }
+        .ovl-x:hover{ background:#3a3b78 }
+        .ovl-top{ display:flex; gap:13px; align-items:center; margin:8px 2px 15px }
+        .ovl-photo{ width:96px; height:96px; border-radius:15px }
+        .ovl-name{ font-family:"Bungee"; font-size:1.25rem; line-height:1; letter-spacing:.3px }
+        .ovl-sub{ font-size:.66rem; color:#b3b1e6; text-transform:uppercase; letter-spacing:.14em; margin-top:9px }
+        .ovl-ovrlab{ font-size:.5rem; color:#7c7bbf; letter-spacing:.2em; text-transform:uppercase; font-weight:700; margin-top:11px }
+        .ovl-ovr{ font-family:"Doto"; font-weight:900; font-size:2.1rem; line-height:1; letter-spacing:1.5px; margin-top:2px }
+        .ovl-stats{ display:grid; gap:11px; padding:0 2px }
+        .stbar{ display:grid; grid-template-columns:34px 1fr 30px; align-items:center; gap:9px }
+        .stbar .stl{ font-family:"Bungee"; font-size:.5rem; color:#9594d0; letter-spacing:.3px }
+        .sttrack{ height:10px; background:#0d0e29; border:2px solid #000; border-radius:6px; overflow:hidden }
+        .stfill{ display:block; height:100% }
+        .stbar b{ font-family:"Doto"; font-weight:900; font-size:.78rem; text-align:right; letter-spacing:.5px }
+        .ovl-needs{ display:flex; gap:9px; align-items:flex-start; margin-top:15px; padding:12px 13px;
+          background:#10112e; border:2px solid #2c2d63; border-radius:12px; font-size:.68rem; color:#cfcdf0; line-height:1.4 }
+        .ovl-needs svg{ width:16px; height:16px; flex:none; color:#ffcf33; margin-top:1px }
+        .ovl-needs b{ color:#5ccf8e }
+
+        @keyframes rise{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+
+        /* ══════════════════ DIR 1 · CAMPO & REPARTI (mappa di copertura) ══════════════════ */
+        .cmap{ position:relative; height:236px; border-radius:14px; overflow:hidden; margin-bottom:10px;
+          background:repeating-linear-gradient(94deg,#0a0b22 0 15px,#0c0d28 15px 30px);
+          border:2px solid #2c2d63; box-shadow:inset 0 0 0 2px #000 }
+        .cmap .lines{ position:absolute; inset:0; width:100%; height:100% }
+        /* zona perimetro COPERTA = verde; paint SCOPERTA = rossa */
+        .zperim{ position:absolute; left:-6%; right:-6%; bottom:-10%; height:62%; z-index:1;
+          background:radial-gradient(120% 100% at 50% 120%, rgba(92,207,142,.22) 0%, rgba(92,207,142,.06) 55%, transparent 72%) }
+        .zperim span{ position:absolute; left:50%; bottom:9px; transform:translateX(-50%); white-space:nowrap;
+          font-family:"Bungee"; font-size:.5rem; letter-spacing:.4px; color:#7ee0a6; display:flex; align-items:center; gap:5px }
+        .zperim span svg{ width:11px; height:11px }
+        .zpaint{ position:absolute; left:50%; top:0; transform:translateX(-50%); width:34%; height:42%; z-index:2;
+          background:rgba(255,90,30,.16); border:2px dashed #ff5b1e; border-top:none; border-radius:0 0 10px 10px;
+          display:flex; align-items:flex-end; justify-content:center; padding-bottom:8px;
+          animation:paintpulse 2.6s ease-in-out infinite }
+        @keyframes paintpulse{ 0%,100%{ background:rgba(255,90,30,.13) } 50%{ background:rgba(255,90,30,.26) } }
+        .zpaint span{ font-family:"Bungee"; font-size:.5rem; color:#ff9a6a; letter-spacing:.3px; text-align:center;
+          display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1.3 }
+        .zpaint svg{ width:13px; height:13px }
+        .tok{ position:absolute; transform:translate(-50%,-50%); width:56px; cursor:pointer; text-align:center;
+          z-index:3; animation:pop .42s both }
+        .tok:nth-of-type(1){ animation-delay:.08s } .tok:nth-of-type(2){ animation-delay:.14s }
+        .tok:nth-of-type(3){ animation-delay:.2s } .tok:nth-of-type(4){ animation-delay:.26s }
+        .tok:nth-of-type(5){ animation-delay:.32s }
+        @keyframes pop{ from{opacity:0; transform:translate(-50%,-50%) scale(.5)} to{opacity:1; transform:translate(-50%,-50%) scale(1)} }
+        .tk-circle{ display:block; width:50px; height:50px; border-radius:99px; border:3px solid #ffcf33; overflow:hidden; margin:0 auto;
+          box-shadow:2px 2px 0 #000; background:#3a2418; transition:transform .14s }
+        .tok:hover .tk-circle{ transform:scale(1.08) }
+        .tk-circle img{ width:100%; height:100%; object-fit:cover;
+          filter:grayscale(1) sepia(1) saturate(2.4) hue-rotate(-18deg) contrast(1.05) }
+        .tk-ovr{ font-family:"Doto"; font-weight:900; font-size:.72rem; letter-spacing:.5px; line-height:1.1; margin-top:3px;
+          background:#0d0e29; border:2px solid #000; border-radius:6px; display:inline-block; padding:1px 6px }
+        .tk-name{ font-family:"Bungee"; font-size:.42rem; color:#cfcdf0; letter-spacing:.2px; margin-top:3px }
+        /* legenda reparti */
+        .reparti{ display:grid; grid-template-columns:repeat(5,1fr); gap:5px; margin-bottom:4px }
+        .rep{ background:#10112e; border:2px solid #2c2d63; border-radius:9px; padding:7px 2px 6px;
+          text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px }
+        .rep em{ font-style:normal; font-family:"Bungee"; font-size:.42rem; letter-spacing:.2px; color:#cfcdf0 }
+        .rep .dot{ width:11px; height:11px; border-radius:99px; border:2px solid #000 }
+        .rep.ok{ border-color:#2e5a44 } .rep.ok .dot{ background:#5ccf8e }
+        .rep.mid{ border-color:#6a5a1f } .rep.mid .dot{ background:#ffcf33 }
+        .rep.no{ border-color:#743225; background:#1c1132 } .rep.no .dot{ background:#ff7a6a }
+        .rep.no em{ color:#ffc3b0 }
+
+        /* ══════════════════ DIR 2 · CRUSCOTTO REPARTI (voti 2K) ══════════════════ */
+        .rosG-h{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px }
+        .rosG-h span{ font-size:.56rem; letter-spacing:.16em; text-transform:uppercase; color:#9594d0; font-weight:700 }
+        .rosG-h b{ font-family:"Bungee"; font-size:.62rem; color:#ffcf33 }
+        .grid2{ display:grid; grid-template-columns:repeat(2,1fr); gap:7px; margin-bottom:12px }
+        .gcard{ position:relative; display:flex; align-items:center; gap:9px; min-height:54px; min-width:0; cursor:pointer;
+          background:#1b1c46; border:2px solid #2c2d63; border-radius:12px; padding:8px 9px; box-shadow:2px 2px 0 #000;
+          transition:border-color .12s, transform .12s; animation:rise .38s both }
+        .gcard:nth-child(1){ animation-delay:.03s } .gcard:nth-child(2){ animation-delay:.07s }
+        .gcard:nth-child(3){ animation-delay:.11s } .gcard:nth-child(4){ animation-delay:.15s }
+        .gcard:nth-child(5){ animation-delay:.19s }
+        .gcard:hover{ border-color:#5b5c9e; transform:translateY(-2px) }
+        .gc-photo{ width:38px; height:38px; border-radius:9px }
+        .gc-id{ flex:1; min-width:0 }
+        .gc-name{ font-family:"Bungee"; font-size:.58rem; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+        .gc-role{ font-size:.48rem; color:#9594d0; text-transform:uppercase; letter-spacing:.08em; margin-top:5px }
+        .gc-ovr{ font-family:"Doto"; font-weight:900; font-size:1.35rem; letter-spacing:.5px; line-height:1; flex:none }
+        .gc-empty{ display:flex; align-items:center; justify-content:center; min-height:54px;
+          border:2px dashed #3a3b78; border-radius:12px; background:#0d0e29; font-family:"Bungee"; font-size:.5rem;
+          color:#45467f; letter-spacing:.4px; opacity:.65 }
+        .voti{ background:#10112e; border:2px solid #2c2d63; border-radius:14px; padding:12px 13px; margin-bottom:4px }
+        .voti-h{ font-family:"Bungee"; font-size:.6rem; color:#ffcf33; letter-spacing:.3px; margin-bottom:11px;
+          display:flex; align-items:center; gap:7px }
+        .voti-h small{ font-family:"Hanken Grotesk"; font-weight:700; font-size:.5rem; color:#7c7bbf;
+          text-transform:uppercase; letter-spacing:.12em }
+        .vrow{ display:grid; grid-template-columns:74px 1fr 30px; align-items:center; gap:10px; margin-bottom:9px }
+        .vrow:last-child{ margin-bottom:0 }
+        .vrow .vlab{ font-family:"Bungee"; font-size:.46rem; letter-spacing:.2px; color:#cfcdf0 }
+        .vtrack{ height:9px; background:#0d0e29; border:2px solid #000; border-radius:6px; overflow:hidden }
+        .vfill{ display:block; height:100% }
+        .grade{ font-family:"Doto"; font-weight:900; font-size:1.15rem; line-height:1; text-align:center;
+          border:2px solid #000; border-radius:7px; padding:3px 0; letter-spacing:.5px }
+        .gr-a{ background:#163b29; color:#5ccf8e } .gr-c{ background:#3b3413; color:#ffcf33 }
+        .gr-d{ background:#3a1f10; color:#ff9a4d } .gr-f{ background:#3a1620; color:#ff7a6a }
+
+        /* ══════════════════ DIR 3 · QUINTETTO SCHIERATO (depth chart) ══════════════════ */
+        .lc-h{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px }
+        .lc-h span{ font-size:.56rem; letter-spacing:.16em; text-transform:uppercase; color:#9594d0; font-weight:700 }
+        .lc-h b{ font-family:"Bungee"; font-size:.62rem; color:#ffcf33 }
+        .lineup{ display:grid; gap:6px; margin-bottom:11px }
+        .lslot{ position:relative; display:grid; grid-template-columns:30px 38px 1fr auto; align-items:center; gap:10px;
+          min-height:52px; border-radius:11px; padding:7px 11px 7px 8px; box-shadow:2px 2px 0 #000; animation:rise .4s both }
+        .lslot:nth-child(1){ animation-delay:.03s } .lslot:nth-child(2){ animation-delay:.08s }
+        .lslot:nth-child(3){ animation-delay:.13s } .lslot:nth-child(4){ animation-delay:.18s }
+        .lslot:nth-child(5){ animation-delay:.23s }
+        .lpos{ font-family:"Bungee"; font-size:.66rem; letter-spacing:.3px; color:#ffcf33; text-align:center }
+        /* slot pieno */
+        .lfull{ cursor:pointer; background:#1b1c46; border:2px solid #2c2d63; transition:border-color .12s, transform .12s }
+        .lfull:hover{ border-color:#5b5c9e; transform:translateX(2px) }
+        .lf-photo{ width:38px; height:38px; border-radius:9px }
+        .lf-id{ min-width:0 }
+        .lf-name{ font-family:"Bungee"; font-size:.6rem; letter-spacing:.2px }
+        .lf-sub{ display:flex; align-items:center; gap:6px; font-size:.48rem; color:#9594d0;
+          text-transform:uppercase; letter-spacing:.08em; margin-top:5px }
+        .lf-info{ display:inline-flex; align-items:center; gap:3px; color:#7c7bbf }
+        .lf-info svg{ width:10px; height:10px }
+        .lf-ovr{ font-family:"Doto"; font-weight:900; font-size:1.3rem; letter-spacing:.5px; line-height:1; flex:none }
+        /* slot vuoto = scoperto rosso */
+        .lempty{ background:#1c1132; border:2px dashed #ff5b1e; grid-template-columns:30px 1fr; }
+        .le-msg{ display:flex; align-items:center; gap:7px; font-family:"Bungee"; font-size:.5rem; color:#ff9a6a; letter-spacing:.3px }
+        .le-msg svg{ width:14px; height:14px; flex:none; color:#ff7a6a }
+        .lpos.dim{ color:#ff7a6a }
+        .bench{ display:flex; align-items:center; gap:7px; background:#10112e; border:2px solid #2c2d63;
+          border-radius:11px; padding:8px 10px; margin-bottom:4px }
+        .bench-lab{ font-family:"Bungee"; font-size:.46rem; color:#7c7bbf; letter-spacing:.2px; writing-mode:vertical-rl;
+          transform:rotate(180deg); text-align:center; white-space:nowrap }
+        .bench-row{ display:flex; gap:6px; flex:1; overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none }
+        .bench-row::-webkit-scrollbar{ display:none }
+        .bchip{ flex:none; display:flex; align-items:center; gap:6px; cursor:pointer; background:#1b1c46;
+          border:2px solid #2c2d63; border-radius:9px; padding:5px 8px 5px 5px; transition:border-color .12s }
+        .bchip:hover{ border-color:#5b5c9e }
+        .bchip .ph-img{ width:26px; height:26px; border-radius:6px }
+        .bchip .bn{ font-family:"Bungee"; font-size:.46rem; letter-spacing:.2px }
+        .bchip .bo{ font-family:"Doto"; font-weight:900; font-size:.74rem; letter-spacing:.3px }
+
+        @media (prefers-reduced-motion:reduce){
+          *{ animation:none!important; transition:none!important }
+        }
+      </style>
+
+      <!-- ════════════════ DIR 1 · CAMPO & REPARTI ════════════════ -->
+      <section class="dir-panel" data-name="Campo &amp; reparti" data-mood="lavagna tattica viva &middot; zone che si accendono &middot; alla MyNBA lineup" data-why="Il campo &egrave; una mappa di copertura: il pitturato ROSSO grida il buco sotto canestro, il perimetro verde dice che il tiro &egrave; coperto. La barra reparti d&aacute; il dettaglio. Il &laquo;cosa manca&raquo; &egrave; spaziale, da colpo d'occhio.">
+        <div class="bzph">
+          <div class="ctx">
+            <div class="ctx-l">LA TUA ROSA<small>Normale &middot; turno 1</small></div>
+            <div class="ctx-pick">PICK 6/10</div>
+          </div>
+
+          <div class="cmap">
+            <svg class="lines" viewBox="0 0 316 236" preserveAspectRatio="none" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2">
+              <line x1="134" y1="16" x2="182" y2="16"/>
+              <circle cx="158" cy="26" r="6"/>
+              <circle cx="158" cy="95" r="30"/>
+              <path d="M34 16 L34 74 A124 110 0 0 0 282 74 L282 16"/>
+              <path d="M120 236 A38 32 0 0 1 196 236"/>
+            </svg>
+
+            <div class="zperim"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>PERIMETRO COPERTO &middot; TIRO &amp; REGIA</span></div>
+            <div class="zpaint"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>FERRO &amp; RIMBALZO<br>SCOPERTI</span></div>
+
+            <label class="tok" for="m1" style="left:50%;top:62%">
+              <span class="tk-circle"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="SGA" loading="lazy"></span>
+              <span class="tk-ovr t-hi">95</span><span class="tk-name">SGA</span>
+            </label>
+            <label class="tok" for="m2" style="left:18%;top:44%">
+              <span class="tk-circle"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="Mitchell" loading="lazy"></span>
+              <span class="tk-ovr t-hi">89</span><span class="tk-name">MITCHELL</span>
+            </label>
+            <label class="tok" for="m3" style="left:82%;top:44%">
+              <span class="tk-circle"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="Booker" loading="lazy"></span>
+              <span class="tk-ovr t-hi">89</span><span class="tk-name">BOOKER</span>
+            </label>
+            <label class="tok" for="m4" style="left:27%;top:82%">
+              <span class="tk-circle"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="Brunson" loading="lazy"></span>
+              <span class="tk-ovr t-hi">88</span><span class="tk-name">BRUNSON</span>
+            </label>
+            <label class="tok" for="m5" style="left:73%;top:82%">
+              <span class="tk-circle"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton" loading="lazy"></span>
+              <span class="tk-ovr t-hi">88</span><span class="tk-name">HALIBURT.</span>
+            </label>
+          </div>
+
+          <div class="reparti">
+            <div class="rep ok"><span class="dot"></span><em>TIRO</em></div>
+            <div class="rep ok"><span class="dot"></span><em>REGIA</em></div>
+            <div class="rep mid"><span class="dot"></span><em>DIFESA</em></div>
+            <div class="rep no"><span class="dot"></span><em>FERRO</em></div>
+            <div class="rep no"><span class="dot"></span><em>RIMB.</em></div>
+          </div>
+
+          <div class="manoLab"><b>PESCA LA 6&ordf;</b><small>scegli ci&ograve; che ti manca</small></div>
+          <div class="hand mano1">
+            <label class="hrow">
+              <input type="radio" name="selM">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag warn">DOPPIONE</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="Curry" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">CURRY</span><span class="hr-sub">PG &middot; GSW</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">96</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-hi">99</b></span><span class="hr-st"><em>REG</em><b class="t-hi">90</b></span><span class="hr-st"><em>DIF</em><b class="t-lo">68</b></span><span class="hr-st"><em>FER</em><b class="t-md">72</b></span><span class="hr-st"><em>RIM</em><b class="t-lo">52</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selM">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">EDWARDS</span><span class="hr-sub">SG &middot; MIN</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">93</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-md">84</b></span><span class="hr-st"><em>REG</em><b class="t-md">76</b></span><span class="hr-st"><em>DIF</em><b class="t-md">83</b></span><span class="hr-st"><em>FER</em><b class="t-hi">85</b></span><span class="hr-st"><em>RIM</em><b class="t-lo">63</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selM">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">TATUM</span><span class="hr-sub">SF &middot; BOS</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">95</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-hi">88</b></span><span class="hr-st"><em>REG</em><b class="t-md">80</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">85</b></span><span class="hr-st"><em>FER</em><b class="t-md">82</b></span><span class="hr-st"><em>RIM</em><b class="t-md">79</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selM">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag">COPRE IL BUCO</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="Antetokounmpo" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">GIANNIS</span><span class="hr-sub">PF &middot; MIL</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">97</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-lo">60</b></span><span class="hr-st"><em>REG</em><b class="t-md">81</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">92</b></span><span class="hr-st"><em>FER</em><b class="t-hi">99</b></span><span class="hr-st"><em>RIM</em><b class="t-hi">93</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selM">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag">COPRE IL BUCO</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">WEMBY</span><span class="hr-sub">C &middot; SAS</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">96</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-md">79</b></span><span class="hr-st"><em>REG</em><b class="t-lo">58</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">97</b></span><span class="hr-st"><em>FER</em><b class="t-hi">95</b></span><span class="hr-st"><em>RIM</em><b class="t-hi">95</b></span></span></span>
+            </label>
+          </div>
+
+          <div class="conf"><span class="idle">TOCCA UN CANDIDATO</span><span class="go">AGGIUNGI ALLA ROSA</span></div>
+
+          <input class="insp" type="checkbox" id="m1">
+          <input class="insp" type="checkbox" id="m2">
+          <input class="insp" type="checkbox" id="m3">
+          <input class="insp" type="checkbox" id="m4">
+          <input class="insp" type="checkbox" id="m5">
+
+          <div class="ovl" id="ov-m1">
+            <label class="ovl-x" for="m1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="SGA"></div><div><div class="ovl-name">SGA</div><div class="ovl-sub">G &middot; OKC</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">95</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:86%"></span></span><b class="t-hi">86</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:88%"></span></span><b class="t-hi">88</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-hi" style="width:90%"></span></span><b class="t-hi">90</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:58%"></span></span><b class="t-lo">58</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia e ferro</b> &middot; manca ancora rimbalzo e un lungo</span></div>
+          </div>
+          <div class="ovl" id="ov-m2">
+            <label class="ovl-x" for="m2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="Mitchell"></div><div><div class="ovl-name">MITCHELL</div><div class="ovl-sub">G &middot; CLE</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">89</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:85%"></span></span><b class="t-hi">85</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-md" style="width:78%"></span></span><b class="t-md">78</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:76%"></span></span><b class="t-md">76</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:82%"></span></span><b class="t-md">82</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:55%"></span></span><b class="t-lo">55</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge tiro</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-m3">
+            <label class="ovl-x" for="m3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="Booker"></div><div><div class="ovl-name">BOOKER</div><div class="ovl-sub">G &middot; PHX</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">89</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:72%"></span></span><b class="t-md">72</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:80%"></span></span><b class="t-md">80</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:52%"></span></span><b class="t-lo">52</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge tiro</b> &middot; manca difesa interna e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-m4">
+            <label class="ovl-x" for="m4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="Brunson"></div><div><div class="ovl-name">BRUNSON</div><div class="ovl-sub">G &middot; NYK</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">88</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-md" style="width:84%"></span></span><b class="t-md">84</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:70%"></span></span><b class="t-md">70</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:48%"></span></span><b class="t-lo">48</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-m5">
+            <label class="ovl-x" for="m5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton"></div><div><div class="ovl-name">HALIBURTON</div><div class="ovl-sub">G &middot; IND</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">88</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:93%"></span></span><b class="t-hi">93</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:71%"></span></span><b class="t-md">71</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:74%"></span></span><b class="t-md">74</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:50%"></span></span><b class="t-lo">50</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ DIR 2 · CRUSCOTTO REPARTI ════════════════ -->
+      <section class="dir-panel" data-name="Cruscotto reparti" data-mood="scheda squadra 2K &middot; voti A-F per reparto" data-why="La schermata roster 2K vera e propria: la rosa in griglia con OVR + i VOTI SQUADRA per reparto (Tiro A &middot; Ferro D &middot; Rimbalzo F). Il &laquo;cosa manca&raquo; &egrave; quantificato — i voti bassi saltano all'occhio." hidden>
+        <div class="bzph">
+          <div class="ctx">
+            <div class="ctx-l">SCHEDA SQUADRA<small>Normale &middot; turno 1</small></div>
+            <div class="ctx-pick">PICK 6/10</div>
+          </div>
+
+          <div class="rosG-h"><span>La tua rosa &middot; tocca per la scheda</span><b>5/10</b></div>
+          <div class="grid2">
+            <label class="gcard" for="g1">
+              <span class="ph-img gc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="SGA" loading="lazy"></span>
+              <span class="gc-id"><span class="gc-name">SGA</span><span class="gc-role">G &middot; OKC</span></span><span class="gc-ovr t-hi">95</span>
+            </label>
+            <label class="gcard" for="g2">
+              <span class="ph-img gc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="Mitchell" loading="lazy"></span>
+              <span class="gc-id"><span class="gc-name">MITCHELL</span><span class="gc-role">G &middot; CLE</span></span><span class="gc-ovr t-hi">89</span>
+            </label>
+            <label class="gcard" for="g3">
+              <span class="ph-img gc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="Booker" loading="lazy"></span>
+              <span class="gc-id"><span class="gc-name">BOOKER</span><span class="gc-role">G &middot; PHX</span></span><span class="gc-ovr t-hi">89</span>
+            </label>
+            <label class="gcard" for="g4">
+              <span class="ph-img gc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="Brunson" loading="lazy"></span>
+              <span class="gc-id"><span class="gc-name">BRUNSON</span><span class="gc-role">G &middot; NYK</span></span><span class="gc-ovr t-hi">88</span>
+            </label>
+            <label class="gcard" for="g5">
+              <span class="ph-img gc-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton" loading="lazy"></span>
+              <span class="gc-id"><span class="gc-name">HALIBURTON</span><span class="gc-role">G &middot; IND</span></span><span class="gc-ovr t-hi">88</span>
+            </label>
+            <div class="gc-empty">+5 DA PESCARE</div>
+          </div>
+
+          <div class="voti">
+            <div class="voti-h">VOTI SQUADRA<small>copertura per reparto</small></div>
+            <div class="vrow"><span class="vlab">TIRO DA 3</span><span class="vtrack"><span class="vfill bg-hi" style="width:90%"></span></span><span class="grade gr-a">A</span></div>
+            <div class="vrow"><span class="vlab">REGIA</span><span class="vtrack"><span class="vfill bg-hi" style="width:88%"></span></span><span class="grade gr-a">A</span></div>
+            <div class="vrow"><span class="vlab">DIFESA PER.</span><span class="vtrack"><span class="vfill bg-md" style="width:62%"></span></span><span class="grade gr-c">C</span></div>
+            <div class="vrow"><span class="vlab">PROT. FERRO</span><span class="vtrack"><span class="vfill bg-lo" style="width:38%"></span></span><span class="grade gr-d">D</span></div>
+            <div class="vrow"><span class="vlab">RIMBALZO</span><span class="vtrack"><span class="vfill bg-lo" style="width:22%"></span></span><span class="grade gr-f">F</span></div>
+          </div>
+
+          <div class="manoLab"><b>PESCA LA 6&ordf;</b><small>alza i voti bassi</small></div>
+          <div class="hand mano2">
+            <label class="hrow">
+              <input type="radio" name="selG">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag warn">DOPPIONE</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="Curry" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">CURRY</span><span class="hr-sub">PG &middot; GSW</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">96</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-hi">99</b></span><span class="hr-st"><em>REG</em><b class="t-hi">90</b></span><span class="hr-st"><em>DIF</em><b class="t-lo">68</b></span><span class="hr-st"><em>FER</em><b class="t-md">72</b></span><span class="hr-st"><em>RIM</em><b class="t-lo">52</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selG">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">EDWARDS</span><span class="hr-sub">SG &middot; MIN</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">93</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-md">84</b></span><span class="hr-st"><em>REG</em><b class="t-md">76</b></span><span class="hr-st"><em>DIF</em><b class="t-md">83</b></span><span class="hr-st"><em>FER</em><b class="t-hi">85</b></span><span class="hr-st"><em>RIM</em><b class="t-lo">63</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selG">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">TATUM</span><span class="hr-sub">SF &middot; BOS</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">95</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-hi">88</b></span><span class="hr-st"><em>REG</em><b class="t-md">80</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">85</b></span><span class="hr-st"><em>FER</em><b class="t-md">82</b></span><span class="hr-st"><em>RIM</em><b class="t-md">79</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selG">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag">ALZA FERRO+RIMB</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="Antetokounmpo" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">GIANNIS</span><span class="hr-sub">PF &middot; MIL</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">97</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-lo">60</b></span><span class="hr-st"><em>REG</em><b class="t-md">81</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">92</b></span><span class="hr-st"><em>FER</em><b class="t-hi">99</b></span><span class="hr-st"><em>RIM</em><b class="t-hi">93</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selG">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag">ALZA FERRO+RIMB</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">WEMBY</span><span class="hr-sub">C &middot; SAS</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">96</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-md">79</b></span><span class="hr-st"><em>REG</em><b class="t-lo">58</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">97</b></span><span class="hr-st"><em>FER</em><b class="t-hi">95</b></span><span class="hr-st"><em>RIM</em><b class="t-hi">95</b></span></span></span>
+            </label>
+          </div>
+
+          <div class="conf"><span class="idle">TOCCA UN CANDIDATO</span><span class="go">AGGIUNGI ALLA ROSA</span></div>
+
+          <input class="insp" type="checkbox" id="g1">
+          <input class="insp" type="checkbox" id="g2">
+          <input class="insp" type="checkbox" id="g3">
+          <input class="insp" type="checkbox" id="g4">
+          <input class="insp" type="checkbox" id="g5">
+
+          <div class="ovl" id="ov-g1">
+            <label class="ovl-x" for="g1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="SGA"></div><div><div class="ovl-name">SGA</div><div class="ovl-sub">G &middot; OKC</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">95</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:86%"></span></span><b class="t-hi">86</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:88%"></span></span><b class="t-hi">88</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-hi" style="width:90%"></span></span><b class="t-hi">90</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:58%"></span></span><b class="t-lo">58</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia e ferro</b> &middot; manca ancora rimbalzo e un lungo</span></div>
+          </div>
+          <div class="ovl" id="ov-g2">
+            <label class="ovl-x" for="g2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="Mitchell"></div><div><div class="ovl-name">MITCHELL</div><div class="ovl-sub">G &middot; CLE</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">89</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:85%"></span></span><b class="t-hi">85</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-md" style="width:78%"></span></span><b class="t-md">78</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:76%"></span></span><b class="t-md">76</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:82%"></span></span><b class="t-md">82</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:55%"></span></span><b class="t-lo">55</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge tiro</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-g3">
+            <label class="ovl-x" for="g3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="Booker"></div><div><div class="ovl-name">BOOKER</div><div class="ovl-sub">G &middot; PHX</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">89</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:72%"></span></span><b class="t-md">72</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:80%"></span></span><b class="t-md">80</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:52%"></span></span><b class="t-lo">52</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge tiro</b> &middot; manca difesa interna e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-g4">
+            <label class="ovl-x" for="g4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="Brunson"></div><div><div class="ovl-name">BRUNSON</div><div class="ovl-sub">G &middot; NYK</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">88</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-md" style="width:84%"></span></span><b class="t-md">84</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:70%"></span></span><b class="t-md">70</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:48%"></span></span><b class="t-lo">48</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-g5">
+            <label class="ovl-x" for="g5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton"></div><div><div class="ovl-name">HALIBURTON</div><div class="ovl-sub">G &middot; IND</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">88</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:93%"></span></span><b class="t-hi">93</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:71%"></span></span><b class="t-md">71</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:74%"></span></span><b class="t-md">74</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:50%"></span></span><b class="t-lo">50</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════ DIR 3 · QUINTETTO SCHIERATO ════════════════ -->
+      <section class="dir-panel" data-name="Quintetto schierato" data-mood="formazione / depth chart 2K &middot; slot per ruolo" data-why="La lineup card 2K: i posti per ruolo PG-SG-SF-PF-C, con PF e C SCOPERTI in rosso = il buco salta subito. NB: nel gioco i ruoli non sono vincoli (peschi 10 liberi) — qui sono una lettura comoda dei reparti, non caselle obbligate." hidden>
+        <div class="bzph">
+          <div class="ctx">
+            <div class="ctx-l">FORMAZIONE<small>Normale &middot; turno 1</small></div>
+            <div class="ctx-pick">PICK 6/10</div>
+          </div>
+
+          <div class="lc-h"><span>Schierati per ruolo &middot; tocca per la scheda</span><b>5/10</b></div>
+          <div class="lineup">
+            <label class="lslot lfull" for="q1">
+              <span class="lpos">PG</span>
+              <span class="ph-img lf-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="SGA" loading="lazy"></span>
+              <span class="lf-id"><span class="lf-name">SGA</span><span class="lf-sub">OKC<span class="lf-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>scheda</span></span></span>
+              <span class="lf-ovr t-hi">95</span>
+            </label>
+            <label class="lslot lfull" for="q2">
+              <span class="lpos">SG</span>
+              <span class="ph-img lf-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="Mitchell" loading="lazy"></span>
+              <span class="lf-id"><span class="lf-name">MITCHELL</span><span class="lf-sub">CLE<span class="lf-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg>scheda</span></span></span>
+              <span class="lf-ovr t-hi">89</span>
+            </label>
+            <div class="lslot lempty">
+              <span class="lpos dim">SF</span>
+              <span class="le-msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>ALA SCOPERTA &middot; serve un'ala</span>
+            </div>
+            <div class="lslot lempty">
+              <span class="lpos dim">PF</span>
+              <span class="le-msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>LUNGO SCOPERTO &middot; ferro + rimbalzo</span>
+            </div>
+            <div class="lslot lempty">
+              <span class="lpos dim">C</span>
+              <span class="le-msg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>CENTRO SCOPERTO &middot; protezione ferro</span>
+            </div>
+          </div>
+
+          <div class="bench">
+            <span class="bench-lab">PANCA</span>
+            <div class="bench-row">
+              <label class="bchip" for="q3"><span class="ph-img"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="Booker" loading="lazy"></span><span class="bn">BOOKER</span><span class="bo t-hi">89</span></label>
+              <label class="bchip" for="q4"><span class="ph-img"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="Brunson" loading="lazy"></span><span class="bn">BRUNSON</span><span class="bo t-hi">88</span></label>
+              <label class="bchip" for="q5"><span class="ph-img"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton" loading="lazy"></span><span class="bn">HALIB.</span><span class="bo t-hi">88</span></label>
+            </div>
+          </div>
+
+          <div class="gap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+            <div class="gap-t"><b>5 ESTERNI &middot; 0 LUNGHI</b> &mdash; ti manca tutto il frontcourt</div>
+          </div>
+
+          <div class="manoLab"><b>PESCA LA 6&ordf;</b><small>copri SF/PF/C</small></div>
+          <div class="hand mano3">
+            <label class="hrow">
+              <input type="radio" name="selQ">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag warn">DOPPIONE</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png" alt="Curry" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">CURRY</span><span class="hr-sub">PG &middot; GSW</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">96</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-hi">99</b></span><span class="hr-st"><em>REG</em><b class="t-hi">90</b></span><span class="hr-st"><em>DIF</em><b class="t-lo">68</b></span><span class="hr-st"><em>FER</em><b class="t-md">72</b></span><span class="hr-st"><em>RIM</em><b class="t-lo">52</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selQ">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png" alt="Edwards" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">EDWARDS</span><span class="hr-sub">SG &middot; MIN</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">93</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-md">84</b></span><span class="hr-st"><em>REG</em><b class="t-md">76</b></span><span class="hr-st"><em>DIF</em><b class="t-md">83</b></span><span class="hr-st"><em>FER</em><b class="t-hi">85</b></span><span class="hr-st"><em>RIM</em><b class="t-lo">63</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selQ">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag">COPRE L'ALA</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png" alt="Tatum" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">TATUM</span><span class="hr-sub">SF &middot; BOS</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">95</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-hi">88</b></span><span class="hr-st"><em>REG</em><b class="t-md">80</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">85</b></span><span class="hr-st"><em>FER</em><b class="t-md">82</b></span><span class="hr-st"><em>RIM</em><b class="t-md">79</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selQ">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag">COPRE IL LUNGO</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png" alt="Antetokounmpo" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">GIANNIS</span><span class="hr-sub">PF &middot; MIL</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">97</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-lo">60</b></span><span class="hr-st"><em>REG</em><b class="t-md">81</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">92</b></span><span class="hr-st"><em>FER</em><b class="t-hi">99</b></span><span class="hr-st"><em>RIM</em><b class="t-hi">93</b></span></span></span>
+            </label>
+            <label class="hrow">
+              <input type="radio" name="selQ">
+              <span class="hr-check"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="hr-tag">COPRE IL CENTRO</span>
+              <span class="ph-img hr-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png" alt="Wembanyama" loading="lazy"></span>
+              <span class="hr-id"><span class="hr-name">WEMBY</span><span class="hr-sub">C &middot; SAS</span></span>
+              <span class="hr-right"><span class="hr-ovr t-hi">96</span><span class="hr-stats"><span class="hr-st"><em>TIR</em><b class="t-md">79</b></span><span class="hr-st"><em>REG</em><b class="t-lo">58</b></span><span class="hr-st"><em>DIF</em><b class="t-hi">97</b></span><span class="hr-st"><em>FER</em><b class="t-hi">95</b></span><span class="hr-st"><em>RIM</em><b class="t-hi">95</b></span></span></span>
+            </label>
+          </div>
+
+          <div class="conf"><span class="idle">TOCCA UN CANDIDATO</span><span class="go">AGGIUNGI ALLA ROSA</span></div>
+
+          <input class="insp" type="checkbox" id="q1">
+          <input class="insp" type="checkbox" id="q2">
+          <input class="insp" type="checkbox" id="q3">
+          <input class="insp" type="checkbox" id="q4">
+          <input class="insp" type="checkbox" id="q5">
+
+          <div class="ovl" id="ov-q1">
+            <label class="ovl-x" for="q1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628983.png" alt="SGA"></div><div><div class="ovl-name">SGA</div><div class="ovl-sub">G &middot; OKC</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">95</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:86%"></span></span><b class="t-hi">86</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:88%"></span></span><b class="t-hi">88</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-hi" style="width:90%"></span></span><b class="t-hi">90</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:58%"></span></span><b class="t-lo">58</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia e ferro</b> &middot; manca ancora rimbalzo e un lungo</span></div>
+          </div>
+          <div class="ovl" id="ov-q2">
+            <label class="ovl-x" for="q2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628378.png" alt="Mitchell"></div><div><div class="ovl-name">MITCHELL</div><div class="ovl-sub">G &middot; CLE</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">89</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:85%"></span></span><b class="t-hi">85</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-md" style="width:78%"></span></span><b class="t-md">78</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:76%"></span></span><b class="t-md">76</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:82%"></span></span><b class="t-md">82</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:55%"></span></span><b class="t-lo">55</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge tiro</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-q3">
+            <label class="ovl-x" for="q3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1626164.png" alt="Booker"></div><div><div class="ovl-name">BOOKER</div><div class="ovl-sub">G &middot; PHX</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">89</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:72%"></span></span><b class="t-md">72</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:80%"></span></span><b class="t-md">80</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:52%"></span></span><b class="t-lo">52</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge tiro</b> &middot; manca difesa interna e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-q4">
+            <label class="ovl-x" for="q4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628973.png" alt="Brunson"></div><div><div class="ovl-name">BRUNSON</div><div class="ovl-sub">G &middot; NYK</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">88</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-md" style="width:84%"></span></span><b class="t-md">84</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:87%"></span></span><b class="t-hi">87</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:70%"></span></span><b class="t-md">70</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:48%"></span></span><b class="t-lo">48</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+          <div class="ovl" id="ov-q5">
+            <label class="ovl-x" for="q5"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" width="20" height="20"><path d="M18 6 6 18M6 6l12 12"/></svg></label>
+            <div class="ovl-top"><div class="ph-img ovl-photo"><img src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png" alt="Haliburton"></div><div><div class="ovl-name">HALIBURTON</div><div class="ovl-sub">G &middot; IND</div><div class="ovl-ovrlab">OVR</div><div class="ovl-ovr t-hi">88</div></div></div>
+            <div class="ovl-stats">
+              <div class="stbar"><span class="stl">TIR</span><span class="sttrack"><span class="stfill bg-md" style="width:83%"></span></span><b class="t-md">83</b></div>
+              <div class="stbar"><span class="stl">REG</span><span class="sttrack"><span class="stfill bg-hi" style="width:93%"></span></span><b class="t-hi">93</b></div>
+              <div class="stbar"><span class="stl">DIF</span><span class="sttrack"><span class="stfill bg-md" style="width:71%"></span></span><b class="t-md">71</b></div>
+              <div class="stbar"><span class="stl">FER</span><span class="sttrack"><span class="stfill bg-md" style="width:74%"></span></span><b class="t-md">74</b></div>
+              <div class="stbar"><span class="stl">RIM</span><span class="sttrack"><span class="stfill bg-lo" style="width:50%"></span></span><b class="t-lo">50</b></div>
+            </div>
+            <div class="ovl-needs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 7.5h.01"/></svg><span><b>aggiunge regia</b> &middot; manca protezione ferro e rimbalzo</span></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

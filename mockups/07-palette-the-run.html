@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  ─────────────────────────────────────────────────────────────────────────────
+  SCOCCA FISSA, CONTENUTO VARIABILE.
+  Qui la variabile è la PALETTE: il telaio Broadcast (font + layout + scorebug)
+  resta identico in ogni tile, cambiano solo i colori. Sostituito SOLO #panels
+  (+ <title>/#mockTitle). Scocca e script NON toccati.
+-->
+<title>THE RUN — palette a confronto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:52ch}
+
+  /* chip bar */
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  /* palco */
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+
+  /* ───────── stili di esempio dei pannelli (la skill li sostituisce) ───────── */
+  .demo-nav{display:flex;gap:8px;align-items:center;font-size:.7rem;color:var(--bone-dim);margin-bottom:14px}
+  .demo-dot{width:8px;height:8px;border-radius:99px;background:var(--line)}
+  .demo-h{margin:0 0 8px;line-height:1.05}
+  .demo-p{margin:0 0 16px;font-size:.86rem;color:var(--bone-dim)}
+  .demo-btn{font:inherit;font-weight:700;font-size:.82rem;border:0;border-radius:9px;padding:11px 16px;min-height:44px;cursor:pointer;transition:transform .12s ease, filter .12s ease}
+  .demo-btn:hover{transform:translateY(-2px);filter:brightness(1.07)}
+  .t-edit .demo-h{font-family:"Bodoni Moda",serif;font-weight:500;font-size:1.7rem;color:#f1ece1}
+  .t-edit .demo-btn{background:#e9e4d8;color:#181818}
+  .t-retro{background:linear-gradient(180deg,#241a12,#1b1f28);margin:-20px -18px;padding:20px 18px;border-radius:0}
+  .t-retro .demo-h{font-family:"Bodoni Moda",serif;font-style:italic;font-weight:500;font-size:1.7rem;color:#f0c98a}
+  .t-retro .demo-btn{background:#d98b3f;color:#1a1206}
+  .t-tech .demo-h{font-family:"Hanken Grotesk";font-weight:700;letter-spacing:-.02em;font-size:1.6rem;color:#dfe7f2}
+  .t-tech .demo-btn{background:#5b7fb0;color:#0c1118}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto</div>
+    <h1 id="mockTitle">THE RUN — quale palette? · telaio Broadcast fisso, cambiano solo i colori</h1>
+    <p class="lead">Tocca un nome in alto per cambiare direzione. Ogni tile mostra l'estetica, un'interazione viva e il <b>perché</b>.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ════════════════════════════════════════════════════════════
+           PALETTE-VIEWER · telaio Broadcast (font + layout fissi)
+           Stile e font Broadcast importati qui (Big Shoulders Display);
+           Hanken Grotesk è già caricato dalla scocca.
+           Ogni .pal-* ridefinisce SOLO le variabili colore --rb-*.
+           ════════════════════════════════════════════════════════════ -->
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&display=swap');
+
+        /* ── chip = legenda palette: ogni pastiglia mostra l'accento vero ── */
+        #chips button:nth-child(1) .swatch{background:#f6b43c}
+        #chips button:nth-child(2) .swatch{background:#e9c479}
+        #chips button:nth-child(3) .swatch{background:#ea3b2e}
+        #chips button:nth-child(4) .swatch{background:#ff6a2b}
+        #chips button:nth-child(1)[aria-pressed="true"]{border-color:#f6b43c}
+        #chips button:nth-child(2)[aria-pressed="true"]{border-color:#e9c479}
+        #chips button:nth-child(3)[aria-pressed="true"]{border-color:#ea3b2e}
+        #chips button:nth-child(4)[aria-pressed="true"]{border-color:#ff6a2b}
+
+        /* ── PALETTE: solo variabili colore, il resto è condiviso ── */
+        .pal-oro{
+          --rb-bg:#0a1020; --rb-bg2:#070b16; --rb-panel:#101a2e; --rb-panel2:#16233c; --rb-slot:#0e1727;
+          --rb-line:#243450; --rb-line2:#1a2740;
+          --rb-ink:#eef3fb; --rb-dim:#aebbd2; --rb-faint:#7385a3;
+          --rb-acc:#f6b43c; --rb-acc-hi:#ffd27a; --rb-acc-deep:#d18f25; --rb-acc-ink:#170f02;
+          --rb-acc-tint:rgba(246,180,60,.15); --rb-glow:rgba(246,180,60,.45);
+          --rb-live:#ff4d4d; --rb-win:#54d08a;
+        }
+        .pal-champ{
+          --rb-bg:#0b0c0e; --rb-bg2:#060607; --rb-panel:#16171b; --rb-panel2:#1d1f24; --rb-slot:#101114;
+          --rb-line:#2c2e34; --rb-line2:#202227;
+          --rb-ink:#f4f1ea; --rb-dim:#bdb8ac; --rb-faint:#827d72;
+          --rb-acc:#e9c479; --rb-acc-hi:#f7e2ad; --rb-acc-deep:#c39a4c; --rb-acc-ink:#23190a;
+          --rb-acc-tint:rgba(233,196,121,.14); --rb-glow:rgba(233,196,121,.4);
+          --rb-live:#ef5350; --rb-win:#5bcf93;
+        }
+        .pal-cinabro{
+          --rb-bg:#110d0d; --rb-bg2:#0b0808; --rb-panel:#1c1414; --rb-panel2:#241818; --rb-slot:#150f0f;
+          --rb-line:#3a2828; --rb-line2:#2a1d1d;
+          --rb-ink:#f6efe9; --rb-dim:#cdb8b2; --rb-faint:#977f79;
+          --rb-acc:#ea3b2e; --rb-acc-hi:#ff7059; --rb-acc-deep:#b62b22; --rb-acc-ink:#fff2ef;
+          --rb-acc-tint:rgba(234,59,46,.15); --rb-glow:rgba(234,59,46,.42);
+          --rb-live:#ff5a4d; --rb-win:#4fc98a;
+        }
+        .pal-acciaio{
+          --rb-bg:#0f1216; --rb-bg2:#0a0c0f; --rb-panel:#181c22; --rb-panel2:#1f242b; --rb-slot:#13161b;
+          --rb-line:#2d333c; --rb-line2:#222730;
+          --rb-ink:#eef1f5; --rb-dim:#b0b7c1; --rb-faint:#7c828d;
+          --rb-acc:#ff6a2b; --rb-acc-hi:#ff9a5a; --rb-acc-deep:#cc4f17; --rb-acc-ink:#1a0d05;
+          --rb-acc-tint:rgba(255,106,43,.14); --rb-glow:rgba(255,106,43,.42);
+          --rb-live:#ff5040; --rb-win:#56c98c;
+        }
+
+        /* ── SCENA condivisa (legge le variabili --rb-*) ── */
+        .rb{position:relative;margin:-20px -18px;background:linear-gradient(180deg,var(--rb-bg),var(--rb-bg2));color:var(--rb-ink);font-family:"Hanken Grotesk",sans-serif;overflow:hidden}
+        .rb::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 70% at 50% 116%,var(--rb-glow),transparent 60%);opacity:.55}
+        .rb > *{position:relative;z-index:1}
+
+        /* scorebug */
+        .rb-bug{display:flex;align-items:center;gap:11px;padding:11px 14px;background:rgba(0,0,0,.3);border-bottom:1px solid var(--rb-line)}
+        .rb-logo{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:.01em;text-transform:uppercase;line-height:.85;color:var(--rb-ink)}
+        .rb-logo b{color:var(--rb-acc)}
+        .rb-rec{display:flex;align-items:center;gap:7px;font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1.16rem;font-variant-numeric:tabular-nums;color:var(--rb-ink)}
+        .rb-rec .arr{color:var(--rb-faint);font-size:.92rem}
+        .rb-rec .goal{color:var(--rb-acc)}
+        .rb-streak{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:.64rem;letter-spacing:.1em;color:var(--rb-win);border:1px solid var(--rb-win);border-radius:99px;padding:2px 7px}
+        .rb-live{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--rb-live)}
+        .rb-live i{width:8px;height:8px;border-radius:99px;background:var(--rb-live);animation:rbpulse 2.2s ease infinite}
+
+        /* on the clock */
+        .rb-clock{padding:16px 16px 4px}
+        .rb-call{display:flex;align-items:center;gap:9px;margin-bottom:13px;flex-wrap:wrap}
+        .rb-tag{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:.92rem;letter-spacing:.07em;text-transform:uppercase;color:var(--rb-acc-ink);background:var(--rb-acc);padding:4px 10px;border-radius:6px}
+        .rb-slotlab{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:.94rem;letter-spacing:.04em;text-transform:uppercase;color:var(--rb-dim)}
+        .rb-slotlab b{color:var(--rb-ink)}
+        .rb-team{display:flex;align-items:center;gap:11px;padding:10px 11px;background:rgba(0,0,0,.22);border:1px solid var(--rb-line2);border-radius:11px;margin-bottom:14px}
+        .rb-crest{width:42px;height:42px;flex:none;border-radius:9px;display:grid;place-items:center;background:var(--rb-panel2);border:1px solid var(--rb-line);font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1rem;letter-spacing:.02em;color:var(--rb-dim)}
+        .rb-tmeta{display:flex;flex-direction:column;min-width:0}
+        .rb-tname{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:1.12rem;letter-spacing:.01em;text-transform:uppercase;color:var(--rb-ink);line-height:1}
+        .rb-tsub{font-size:.72rem;color:var(--rb-faint);margin-top:3px}
+        .rb-tsub b{color:var(--rb-acc);font-weight:600}
+
+        /* picks */
+        .rb-picks{border:0;margin:0;padding:0;min-width:0;display:flex;flex-direction:column;gap:8px}
+        .rb-picks legend{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+        .rb-pick{position:relative;display:flex;align-items:center;gap:12px;min-height:58px;padding:9px 12px;background:var(--rb-slot);border:1px solid var(--rb-line);border-radius:11px;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}
+        .rb-pick:hover{transform:translateY(-2px);border-color:var(--rb-acc-deep)}
+        .rb-pick:focus-within{outline:2px solid var(--rb-acc);outline-offset:2px}
+        .rb-pick input{position:absolute;opacity:0;width:1px;height:1px}
+        .rb-rank{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:1rem;color:var(--rb-faint);width:1.1ch;text-align:center}
+        .rb-pname{flex:1;min-width:0;font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:1.16rem;letter-spacing:.01em;text-transform:uppercase;color:var(--rb-ink);line-height:1}
+        .rb-pos{font-size:.56rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--rb-dim);background:rgba(255,255,255,.06);border:1px solid var(--rb-line);border-radius:5px;padding:2px 6px}
+        .rb-ovr{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1.4rem;color:var(--rb-ink);min-width:2.2ch;text-align:right}
+        .rb-pick:has(input:checked){background:linear-gradient(180deg,var(--rb-acc-tint),transparent);border-color:var(--rb-acc);box-shadow:inset 3px 0 0 var(--rb-acc)}
+        .rb-pick:has(input:checked) .rb-rank{color:var(--rb-acc)}
+        .rb-pick:has(input:checked) .rb-ovr{color:var(--rb-acc-hi)}
+
+        /* act bar */
+        .rb-act{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:13px;border-top:1px solid var(--rb-line2)}
+        .rb-prog{display:flex;flex-direction:column;gap:7px;min-width:140px;flex:1}
+        .rb-plab{font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--rb-faint)}
+        .rb-plab b{color:var(--rb-ink);font-family:"Big Shoulders Display",sans-serif;font-size:.9rem;letter-spacing:.04em}
+        .rb-meter{display:flex;gap:3px}
+        .rb-meter i{height:7px;flex:1;border-radius:2px;background:var(--rb-line);transition:background .3s ease}
+        .rb-meter i.on{background:var(--rb-acc)}
+        .rb-meter i.live{background:var(--rb-acc-hi);animation:rbbreathe 1.8s ease infinite}
+        .rb-cta{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1rem;letter-spacing:.05em;text-transform:uppercase;color:var(--rb-acc-ink);background:linear-gradient(180deg,var(--rb-acc-hi),var(--rb-acc));border:0;border-radius:11px;padding:0 20px;min-height:50px;cursor:pointer;box-shadow:0 12px 26px -12px var(--rb-glow);transition:transform .16s ease,filter .16s ease,opacity .2s ease;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+        .rb-cta svg{width:16px;height:16px}
+        .rb-cta:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.05)}
+        .rb-cta:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;filter:saturate(.5)}
+
+        /* roster peek */
+        .rb-roster{padding:4px 16px 16px;display:flex;flex-direction:column;gap:7px}
+        .rb-rhead{display:flex;align-items:center;gap:8px;padding:10px 2px 2px;font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--rb-dim)}
+        .rb-rhead::after{content:"";flex:1;height:1px;background:var(--rb-line2)}
+        .rb-slot{display:flex;align-items:center;gap:11px;min-height:52px;padding:8px 11px;border:1px solid var(--rb-line2);border-radius:10px;background:var(--rb-slot)}
+        .rb-spos{width:34px;flex:none;text-align:center;font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:.86rem;color:var(--rb-dim);border:1px solid var(--rb-line);border-radius:7px;padding:5px 0}
+        .rb-sid{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+        .rb-sname{font-family:"Big Shoulders Display",sans-serif;font-weight:700;font-size:1rem;letter-spacing:.01em;text-transform:uppercase;color:var(--rb-ink);line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .rb-ssrc{font-size:.64rem;color:var(--rb-faint)}
+        .rb-sovr{font-family:"Big Shoulders Display",sans-serif;font-weight:800;font-size:1.2rem;color:var(--rb-ink);min-width:2.1ch;text-align:right}
+        .rb-slot.is-pending{border-color:var(--rb-acc);background:linear-gradient(180deg,var(--rb-acc-tint),transparent)}
+        .rb-slot.is-pending .rb-spos{color:var(--rb-acc-ink);background:var(--rb-acc);border-color:var(--rb-acc)}
+        .rb-slot.is-pending .rb-sname{color:var(--rb-acc-hi)}
+        .rb-slive{font-family:"Big Shoulders Display",sans-serif;font-size:.54rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rb-acc);border:1px solid var(--rb-acc-deep);border-radius:99px;padding:3px 8px;white-space:nowrap}
+
+        @keyframes rbpulse{0%{box-shadow:0 0 0 0 var(--rb-glow)}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+        @keyframes rbbreathe{0%,100%{opacity:.55}50%{opacity:1}}
+      </style>
+
+      <!-- ░░░░░░░░░░ 1 · ORO SU MEZZANOTTE (Attuale) ░░░░░░░░░░ -->
+      <section class="dir-panel" data-name="Oro su Mezzanotte" data-mood="navy notturno · oro campionato · alla NBA Finals" data-why="È la palette del mockup: blu mezzanotte da Finals e oro trofeo come unica azione. Calda e riconoscibile, ma il blu la avvicina a molte grafiche sportive 'già viste'." data-role="Attuale">
+        <div class="rb pal-oro">
+          <div class="rb-bug">
+            <span class="rb-logo">THE&nbsp;<b>RUN</b></span>
+            <span class="rb-rec"><span class="now">0</span>–0 <span class="arr">→</span> <span class="goal">16–0</span></span>
+            <span class="rb-live"><i></i>Live draft</span>
+          </div>
+          <div class="rb-clock">
+            <div class="rb-call"><span class="rb-tag">On the clock</span><span class="rb-slotlab">Slot <b>3</b>/10 · Titolare <b>PG</b></span></div>
+            <div class="rb-team">
+              <span class="rb-crest">GSW</span>
+              <span class="rb-tmeta"><span class="rb-tname">Golden State Warriors</span><span class="rb-tsub">Franchigia <b>uscita a sorte</b> · scegli un playmaker</span></span>
+            </div>
+            <fieldset class="rb-picks">
+              <legend>Scegli il playmaker dai Golden State Warriors</legend>
+              <label class="rb-pick"><input type="radio" name="pg-oro" data-name="Stephen Curry" data-ovr="96" onchange="rbPick(this)"><span class="rb-rank">1</span><span class="rb-pname">Stephen Curry</span><span class="rb-pos">PG</span><span class="rb-ovr">96</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-oro" data-name="Chris Paul" data-ovr="84" onchange="rbPick(this)"><span class="rb-rank">2</span><span class="rb-pname">Chris Paul</span><span class="rb-pos">PG</span><span class="rb-ovr">84</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-oro" data-name="Brandin Podziemski" data-ovr="78" onchange="rbPick(this)"><span class="rb-rank">3</span><span class="rb-pname">Brandin Podziemski</span><span class="rb-pos">SG/PG</span><span class="rb-ovr">78</span></label>
+            </fieldset>
+            <div class="rb-act">
+              <div class="rb-prog"><span class="rb-plab">Rosa · <b class="rb-count">2</b>/10 presi</span><span class="rb-meter"><i class="on"></i><i class="on"></i><i class="live"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <button class="rb-cta" disabled onclick="rbConfirm(this)">Conferma e avanza <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+          <div class="rb-roster">
+            <div class="rb-rhead">La tua rosa · quintetto</div>
+            <div class="rb-slot rb-slot--pg is-pending"><span class="rb-spos">PG</span><span class="rb-sid"><span class="rb-sname">Stai scegliendo…</span><span class="rb-ssrc">dai Golden State Warriors</span></span><span class="rb-slive">On clock</span></div>
+            <div class="rb-slot"><span class="rb-spos">C</span><span class="rb-sid"><span class="rb-sname">Nikola Jokić</span><span class="rb-ssrc">dai Denver Nuggets</span></span><span class="rb-sovr">98</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ░░░░░░░░░░ 2 · CHAMPAGNE SU CARBONE (Variante +) ░░░░░░░░░░ -->
+      <section class="dir-panel" data-name="Champagne su Carbone" data-mood="carbone neutro · oro champagne · premium senza tempo" data-why="Toglie il sottofondo blu: base carbone neutra + oro più champagne e meno 'caramella'. Più contrasto, più senso di trofeo. La mia evoluzione consigliata." data-role="Variante +" hidden>
+        <div class="rb pal-champ">
+          <div class="rb-bug">
+            <span class="rb-logo">THE&nbsp;<b>RUN</b></span>
+            <span class="rb-rec"><span class="now">0</span>–0 <span class="arr">→</span> <span class="goal">16–0</span></span>
+            <span class="rb-live"><i></i>Live draft</span>
+          </div>
+          <div class="rb-clock">
+            <div class="rb-call"><span class="rb-tag">On the clock</span><span class="rb-slotlab">Slot <b>3</b>/10 · Titolare <b>PG</b></span></div>
+            <div class="rb-team">
+              <span class="rb-crest">GSW</span>
+              <span class="rb-tmeta"><span class="rb-tname">Golden State Warriors</span><span class="rb-tsub">Franchigia <b>uscita a sorte</b> · scegli un playmaker</span></span>
+            </div>
+            <fieldset class="rb-picks">
+              <legend>Scegli il playmaker dai Golden State Warriors</legend>
+              <label class="rb-pick"><input type="radio" name="pg-champ" data-name="Stephen Curry" data-ovr="96" onchange="rbPick(this)"><span class="rb-rank">1</span><span class="rb-pname">Stephen Curry</span><span class="rb-pos">PG</span><span class="rb-ovr">96</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-champ" data-name="Chris Paul" data-ovr="84" onchange="rbPick(this)"><span class="rb-rank">2</span><span class="rb-pname">Chris Paul</span><span class="rb-pos">PG</span><span class="rb-ovr">84</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-champ" data-name="Brandin Podziemski" data-ovr="78" onchange="rbPick(this)"><span class="rb-rank">3</span><span class="rb-pname">Brandin Podziemski</span><span class="rb-pos">SG/PG</span><span class="rb-ovr">78</span></label>
+            </fieldset>
+            <div class="rb-act">
+              <div class="rb-prog"><span class="rb-plab">Rosa · <b class="rb-count">2</b>/10 presi</span><span class="rb-meter"><i class="on"></i><i class="on"></i><i class="live"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <button class="rb-cta" disabled onclick="rbConfirm(this)">Conferma e avanza <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+          <div class="rb-roster">
+            <div class="rb-rhead">La tua rosa · quintetto</div>
+            <div class="rb-slot rb-slot--pg is-pending"><span class="rb-spos">PG</span><span class="rb-sid"><span class="rb-sname">Stai scegliendo…</span><span class="rb-ssrc">dai Golden State Warriors</span></span><span class="rb-slive">On clock</span></div>
+            <div class="rb-slot"><span class="rb-spos">C</span><span class="rb-sid"><span class="rb-sname">Nikola Jokić</span><span class="rb-ssrc">dai Denver Nuggets</span></span><span class="rb-sovr">98</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ░░░░░░░░░░ 3 · CINABRO IN DIRETTA ░░░░░░░░░░ -->
+      <section class="dir-panel" data-name="Cinabro in Diretta" data-mood="inchiostro caldo · rosso regìa · urgenza da Game 7" data-why="Il rosso diventa l'azione, non solo il LIVE: tutto urla 'ON AIR, ultima partita'. Energia massima e identità fortissima, ma il rosso pesa e va dosato." hidden>
+        <div class="rb pal-cinabro">
+          <div class="rb-bug">
+            <span class="rb-logo">THE&nbsp;<b>RUN</b></span>
+            <span class="rb-rec"><span class="now">0</span>–0 <span class="arr">→</span> <span class="goal">16–0</span></span>
+            <span class="rb-live"><i></i>Live draft</span>
+          </div>
+          <div class="rb-clock">
+            <div class="rb-call"><span class="rb-tag">On the clock</span><span class="rb-slotlab">Slot <b>3</b>/10 · Titolare <b>PG</b></span></div>
+            <div class="rb-team">
+              <span class="rb-crest">GSW</span>
+              <span class="rb-tmeta"><span class="rb-tname">Golden State Warriors</span><span class="rb-tsub">Franchigia <b>uscita a sorte</b> · scegli un playmaker</span></span>
+            </div>
+            <fieldset class="rb-picks">
+              <legend>Scegli il playmaker dai Golden State Warriors</legend>
+              <label class="rb-pick"><input type="radio" name="pg-cinabro" data-name="Stephen Curry" data-ovr="96" onchange="rbPick(this)"><span class="rb-rank">1</span><span class="rb-pname">Stephen Curry</span><span class="rb-pos">PG</span><span class="rb-ovr">96</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-cinabro" data-name="Chris Paul" data-ovr="84" onchange="rbPick(this)"><span class="rb-rank">2</span><span class="rb-pname">Chris Paul</span><span class="rb-pos">PG</span><span class="rb-ovr">84</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-cinabro" data-name="Brandin Podziemski" data-ovr="78" onchange="rbPick(this)"><span class="rb-rank">3</span><span class="rb-pname">Brandin Podziemski</span><span class="rb-pos">SG/PG</span><span class="rb-ovr">78</span></label>
+            </fieldset>
+            <div class="rb-act">
+              <div class="rb-prog"><span class="rb-plab">Rosa · <b class="rb-count">2</b>/10 presi</span><span class="rb-meter"><i class="on"></i><i class="on"></i><i class="live"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <button class="rb-cta" disabled onclick="rbConfirm(this)">Conferma e avanza <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+          <div class="rb-roster">
+            <div class="rb-rhead">La tua rosa · quintetto</div>
+            <div class="rb-slot rb-slot--pg is-pending"><span class="rb-spos">PG</span><span class="rb-sid"><span class="rb-sname">Stai scegliendo…</span><span class="rb-ssrc">dai Golden State Warriors</span></span><span class="rb-slive">On clock</span></div>
+            <div class="rb-slot"><span class="rb-spos">C</span><span class="rb-sid"><span class="rb-sname">Nikola Jokić</span><span class="rb-ssrc">dai Denver Nuggets</span></span><span class="rb-sovr">98</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ░░░░░░░░░░ 4 · ACCIAIO & BRACE ░░░░░░░░░░ -->
+      <section class="dir-panel" data-name="Acciaio &amp; Brace" data-mood="grafite freddo · un colpo d'arancio brace · minimale" data-why="Quasi monocromo: interfaccia acciaio e un solo colpo di brace sull'azione. La più sobria e 'da regìa pulita': l'accento si vede da lontano proprio perché tutto il resto tace." hidden>
+        <div class="rb pal-acciaio">
+          <div class="rb-bug">
+            <span class="rb-logo">THE&nbsp;<b>RUN</b></span>
+            <span class="rb-rec"><span class="now">0</span>–0 <span class="arr">→</span> <span class="goal">16–0</span></span>
+            <span class="rb-live"><i></i>Live draft</span>
+          </div>
+          <div class="rb-clock">
+            <div class="rb-call"><span class="rb-tag">On the clock</span><span class="rb-slotlab">Slot <b>3</b>/10 · Titolare <b>PG</b></span></div>
+            <div class="rb-team">
+              <span class="rb-crest">GSW</span>
+              <span class="rb-tmeta"><span class="rb-tname">Golden State Warriors</span><span class="rb-tsub">Franchigia <b>uscita a sorte</b> · scegli un playmaker</span></span>
+            </div>
+            <fieldset class="rb-picks">
+              <legend>Scegli il playmaker dai Golden State Warriors</legend>
+              <label class="rb-pick"><input type="radio" name="pg-acciaio" data-name="Stephen Curry" data-ovr="96" onchange="rbPick(this)"><span class="rb-rank">1</span><span class="rb-pname">Stephen Curry</span><span class="rb-pos">PG</span><span class="rb-ovr">96</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-acciaio" data-name="Chris Paul" data-ovr="84" onchange="rbPick(this)"><span class="rb-rank">2</span><span class="rb-pname">Chris Paul</span><span class="rb-pos">PG</span><span class="rb-ovr">84</span></label>
+              <label class="rb-pick"><input type="radio" name="pg-acciaio" data-name="Brandin Podziemski" data-ovr="78" onchange="rbPick(this)"><span class="rb-rank">3</span><span class="rb-pname">Brandin Podziemski</span><span class="rb-pos">SG/PG</span><span class="rb-ovr">78</span></label>
+            </fieldset>
+            <div class="rb-act">
+              <div class="rb-prog"><span class="rb-plab">Rosa · <b class="rb-count">2</b>/10 presi</span><span class="rb-meter"><i class="on"></i><i class="on"></i><i class="live"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              <button class="rb-cta" disabled onclick="rbConfirm(this)">Conferma e avanza <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+          <div class="rb-roster">
+            <div class="rb-rhead">La tua rosa · quintetto</div>
+            <div class="rb-slot rb-slot--pg is-pending"><span class="rb-spos">PG</span><span class="rb-sid"><span class="rb-sname">Stai scegliendo…</span><span class="rb-ssrc">dai Golden State Warriors</span></span><span class="rb-slive">On clock</span></div>
+            <div class="rb-slot"><span class="rb-spos">C</span><span class="rb-sid"><span class="rb-sname">Nikola Jokić</span><span class="rb-ssrc">dai Denver Nuggets</span></span><span class="rb-sovr">98</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- interazione dei pannelli: funzioni globali, chiamate dagli on* inline.
+           NB: sta FUORI dai .dir-panel, così la scocca (che riscrive l'innerHTML
+           dei soli .dir-panel) non lo tocca. Gli handler inline sopravvivono. -->
+      <script>
+        function rbPick(input){
+          var panel = input.closest('.dir-panel');
+          var slot  = panel.querySelector('.rb-slot--pg');
+          slot.classList.add('is-pending');
+          slot.querySelector('.rb-sname').textContent = input.dataset.name;
+          slot.querySelector('.rb-ssrc').textContent  = 'in arrivo · conferma per bloccare';
+          var live = slot.querySelector('.rb-slive'); if(live) live.textContent = input.dataset.ovr + ' OVR';
+          panel.querySelector('.rb-cta').disabled = false;
+          try{ localStorage.setItem('therun-pal-'+panel.dataset.name, input.dataset.name); }catch(e){}
+        }
+        function rbConfirm(btn){
+          var panel = btn.closest('.dir-panel');
+          if(panel.querySelector('.rb-cta').disabled) return;
+          var slot = panel.querySelector('.rb-slot--pg');
+          slot.classList.remove('is-pending');
+          slot.querySelector('.rb-ssrc').textContent = 'dai Golden State Warriors';
+          var live = slot.querySelector('.rb-slive'); if(live) live.remove();
+          panel.querySelectorAll('.rb-meter i').forEach(function(s,i){ s.className = i<3?'on':(i===3?'live':''); });
+          panel.querySelector('.rb-count').textContent = '3';
+          btn.disabled = true;
+          btn.firstChild.textContent = 'Slot 4 · prossima franchigia ';
+        }
+      </script>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  // Disegna la chrome (barra nome+mood, riga "perché") dentro ogni pannello dai data-*
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+
+  // Esempio di interazione "viva ma leggera" con dato finto in localStorage.
+  // (La skill può riusare lo stesso pattern data-save nei pannelli reali.)
+  document.addEventListener('click', e=>{
+    const btn = e.target.closest('[data-save]');
+    if(!btn) return;
+    const on = btn.dataset.on === '1';
+    btn.dataset.on = on ? '0':'1';
+    btn.textContent = on ? 'Salva' : 'Salvato ✓';
+    try{ localStorage.setItem('mockup-demo-saved', on ? '0':'1'); }catch(_){}
+  });
+})();
+</script>
+</body>
+</html>

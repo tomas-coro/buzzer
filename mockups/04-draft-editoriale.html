@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STREAK — Costruisci la rosa · direzione Editoriale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Saira+Condensed:wght@500;600;700;800&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* carta editoriale fredda-calda (volutamente NON il cream #F4F1EA + terracotta da default AI) */
+    --paper:#ece7db; --paper-deep:#e4ddcd; --card:#f6f1e6;
+    --ink:#1b1813; --ink-2:#6b6452; --ink-3:#9b917a;
+    --line:#d6ccb8; --line-2:#e2dac9;
+    /* accento UNICO = stato/azione/obiettivo: verde bottiglia "via libera / anello" */
+    --go:#1c4a3a; --go-hi:#2d6e53; --go-wash:rgba(28,74,58,.09);
+    --serif:"Spectral",serif;
+    --cond:"Saira Condensed",sans-serif;
+    --mono:"Spline Sans Mono",monospace;
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:var(--serif); line-height:1.6;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  }
+  /* grana di carta + luce calda in alto, per dare profondità (no fondo piatto) */
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background:
+      radial-gradient(120% 70% at 50% -10%, rgba(28,74,58,.05), transparent 60%),
+      radial-gradient(90% 60% at 100% 0, rgba(120,90,40,.05), transparent 55%);
+  }
+  body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .skip{position:absolute;left:-999px}
+  .skip:focus{left:8px;top:8px;z-index:50;background:var(--ink);color:var(--card);padding:8px 12px;border-radius:4px}
+
+  /* ───────── testata ───────── */
+  .mast{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 86%,transparent);
+    backdrop-filter:blur(7px);border-bottom:1px solid var(--line)}
+  .mast-in{max-width:1180px;margin:0 auto;padding:11px 22px;display:flex;align-items:center;gap:16px}
+  .brand{font-family:var(--serif);font-weight:800;font-size:1.32rem;letter-spacing:.01em;line-height:1;color:var(--ink);text-decoration:none;display:flex;align-items:baseline;gap:7px}
+  .brand sup{font-family:var(--cond);font-weight:700;font-size:.5rem;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase;transform:translateY(-.55em)}
+  .mast-mid{font-family:var(--cond);font-weight:700;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-2);
+    border-left:1px solid var(--line);padding-left:16px}
+  .mast-rec{margin-left:auto;display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:.8rem;color:var(--ink-2)}
+  .mast-rec b{font-family:var(--serif);font-weight:700;font-size:1.05rem;color:var(--ink);letter-spacing:.01em}
+  .mast-rec .arw{color:var(--go);font-weight:700}
+  .mast-rec .goal{color:var(--go)}
+  @media (max-width:620px){ .mast-mid{display:none} }
+
+  main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 22px 80px}
+
+  /* ───────── hero / tesi ───────── */
+  .hero{padding:54px 0 30px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.26em;text-transform:uppercase;color:var(--go);
+    display:flex;align-items:center;gap:11px}
+  .kicker::after{content:"";height:1px;flex:1;max-width:120px;background:var(--line)}
+  .hero-h{font-family:var(--serif);font-weight:700;letter-spacing:-.022em;line-height:1.02;
+    font-size:clamp(2.5rem,8.4vw,4.6rem);margin:.34em 0 .2em;max-width:15ch}
+  .hero-h em{font-style:italic;font-weight:500;color:var(--go)}
+  .hero-dek{font-size:clamp(1rem,2.4vw,1.18rem);color:var(--ink-2);max-width:46ch;margin:0;font-weight:400}
+  .hero-dek b{color:var(--ink);font-weight:600}
+
+  /* ───────── griglia principale ───────── */
+  .grid{display:grid;grid-template-columns:1fr;gap:30px;padding-top:34px}
+  @media (min-width:900px){
+    .grid{grid-template-columns:1.45fr 1fr;gap:46px;align-items:start}
+    .roster{position:sticky;top:74px}
+  }
+
+  .sec-head{margin-bottom:18px}
+  .eyebrow{font-family:var(--cond);font-weight:700;font-size:.74rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3)}
+  .sec-head h2{font-family:var(--serif);font-weight:600;font-size:1.62rem;letter-spacing:-.015em;margin:.18em 0 0;line-height:1.1}
+  .draw{margin-top:9px;font-size:.96rem;color:var(--ink-2)}
+  .draw b{font-family:var(--cond);font-weight:700;font-size:1rem;letter-spacing:.02em;color:var(--ink);text-transform:uppercase}
+  .draw .dice{display:inline-grid;place-items:center;width:20px;height:20px;border:1px solid var(--line);border-radius:5px;
+    font-family:var(--mono);font-size:.62rem;color:var(--go);margin-right:7px;vertical-align:-.28em;background:var(--card)}
+
+  /* candidati "sul cronometro" */
+  .cands{border:0;margin:0;padding:0;min-width:0;display:flex;flex-direction:column}
+  .cand{position:relative;display:flex;align-items:center;gap:15px;min-height:64px;padding:15px 6px;cursor:pointer;
+    border-top:1px solid var(--line);
+    opacity:0;transform:translateY(12px);animation:rise .6s var(--ease) forwards;animation-delay:calc(var(--i)*90ms + 120ms)}
+  .cands .cand:last-child{border-bottom:1px solid var(--line)}
+  .cand-pick{flex:none;width:22px;height:22px;border-radius:50%;border:1.6px solid var(--ink-3);position:relative;transition:border-color .2s var(--ease),background .2s var(--ease)}
+  .cand-pick::after{content:"";position:absolute;inset:0;margin:auto;width:8px;height:8px;border-radius:50%;background:var(--card);transform:scale(0);transition:transform .2s var(--ease)}
+  .cand-main{flex:1;min-width:0}
+  .cand-name{display:block;font-family:var(--serif);font-weight:600;font-size:1.26rem;line-height:1.15;letter-spacing:-.01em}
+  .cand-meta{display:block;font-family:var(--cond);font-weight:600;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+  .cand-ovr{flex:none;text-align:right;line-height:1}
+  .cand-ovr b{font-family:var(--mono);font-weight:600;font-size:1.5rem;color:var(--ink);letter-spacing:-.02em}
+  .cand-ovr small{display:block;font-family:var(--cond);font-weight:700;font-size:.58rem;letter-spacing:.2em;color:var(--ink-3);margin-top:2px}
+  .cand-stamp{flex:none;width:54px;text-align:right;font-family:var(--cond);font-weight:700;font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--go);opacity:0;transition:opacity .25s var(--ease)}
+  .cand:hover .cand-name{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;text-decoration-color:var(--line)}
+  .cand:hover .cand-pick{border-color:var(--go)}
+  .cand:focus-within{outline:none}
+  .cand:focus-within .cand-pick{outline:2px solid var(--go);outline-offset:3px}
+  .cand:has(input:checked){--rule:var(--go)}
+  .cand:has(input:checked) .cand-pick{border-color:var(--go);background:var(--go)}
+  .cand:has(input:checked) .cand-pick::after{transform:scale(1)}
+  .cand:has(input:checked) .cand-ovr b{color:var(--go)}
+  .cand:has(input:checked) .cand-stamp{opacity:1}
+  .cand:has(input:checked)::before{content:"";position:absolute;left:-6px;top:10px;bottom:10px;width:3px;background:var(--go);border-radius:2px}
+
+  .cta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:24px}
+  .cta{font-family:var(--cond);font-weight:800;font-size:.92rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--card);background:var(--go);border:0;border-radius:6px;padding:0 24px;min-height:50px;cursor:pointer;
+    transition:transform .12s var(--ease),background .2s var(--ease),opacity .2s var(--ease)}
+  .cta:hover{background:var(--go-hi)}
+  .cta:active{transform:scale(.98)}
+  .cta:disabled{opacity:.32;cursor:not-allowed;background:var(--ink-2)}
+  .cta-note{font-family:var(--cond);font-weight:600;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+  /* ───────── rosa = scheda formazione ───────── */
+  .roster-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 20px 16px;
+    box-shadow:0 2px 8px rgba(40,30,10,.04)}
+  .prog{display:flex;align-items:center;gap:12px;margin-top:12px}
+  .prog-n{font-family:var(--cond);font-weight:700;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+  .prog-n b{font-family:var(--mono);font-weight:600;color:var(--go);font-size:.92rem}
+  .meter{flex:1;display:flex;gap:4px}
+  .meter i{flex:1;height:7px;border-radius:2px;background:var(--line-2);border:1px solid var(--line);transition:background .3s var(--ease),border-color .3s var(--ease)}
+  .meter i.on{background:var(--go);border-color:var(--go)}
+
+  .group-lab{font-family:var(--cond);font-weight:700;font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3);
+    margin:16px 0 2px;display:flex;align-items:center;gap:9px}
+  .group-lab::after{content:"";height:1px;flex:1;background:var(--line)}
+  .slots{list-style:none;margin:0;padding:0}
+  .slot{display:flex;align-items:center;gap:13px;min-height:56px;padding:9px 2px;border-bottom:1px solid var(--line-2);
+    opacity:0;transform:translateY(10px);animation:rise .55s var(--ease) forwards;animation-delay:calc(var(--i)*55ms + 240ms)}
+  .slots li:last-child .slot{border-bottom:0}
+  .slot-pos{flex:none;width:34px;height:34px;border-radius:7px;display:grid;place-items:center;
+    font-family:var(--cond);font-weight:800;font-size:.82rem;letter-spacing:.04em;
+    border:1px solid var(--line);color:var(--ink-2);background:var(--paper)}
+  .slot-body{flex:1;min-width:0}
+  .slot-name{display:block;font-family:var(--serif);font-weight:600;font-size:1.02rem;line-height:1.2;letter-spacing:-.01em}
+  .slot-meta{display:block;font-family:var(--cond);font-weight:600;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:1px}
+  .slot-ovr{flex:none;font-family:var(--mono);font-weight:600;font-size:1.06rem;color:var(--ink);letter-spacing:-.02em}
+
+  /* stato: pieno */
+  .slot.filled .slot-pos{border-color:var(--ink);color:var(--ink);background:var(--card)}
+  /* stato: in corso (lo slot PG che stiamo pescando) */
+  .slot.live .slot-pos{border-color:var(--go);color:var(--go);background:var(--go-wash);border-style:solid}
+  .slot.live .slot-name{color:var(--ink)}
+  .slot.live .slot-meta{color:var(--go)}
+  .slot.live::after{content:"sul cronometro";font-family:var(--cond);font-weight:700;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--go);background:var(--go-wash);padding:4px 8px;border-radius:99px;white-space:nowrap}
+  /* stato: vuoto — il whitespace come scelta: riga di registro in attesa */
+  .slot.empty{opacity:0;animation:rise-faint .55s var(--ease) forwards;animation-delay:calc(var(--i)*55ms + 240ms)}
+  .slot.empty .slot-pos{border-style:dashed;border-color:var(--line);color:var(--ink-3);background:transparent}
+  .slot.empty .slot-name{font-style:italic;font-weight:400;color:var(--ink-3)}
+  .slot.empty .slot-ovr{color:var(--line)}
+  .slot.empty .slot-ovr::before{content:"—"}
+
+  .colophon{margin-top:30px;padding-top:16px;border-top:1px solid var(--line);
+    font-family:var(--cond);font-weight:600;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  /* toast non-modale alla conferma */
+  .toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,18px);z-index:40;
+    background:var(--ink);color:var(--card);font-family:var(--cond);font-weight:700;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;
+    padding:13px 20px;border-radius:7px;box-shadow:0 10px 30px -12px rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transition:opacity .3s var(--ease),transform .3s var(--ease)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast b{color:#9fd9be}
+
+  @keyframes rise{to{opacity:1;transform:none}}
+  @keyframes rise-faint{to{opacity:.78;transform:none}}
+  @keyframes flash{0%{background:var(--go-wash)}100%{background:transparent}}
+  .slot.just{animation:flash .9s var(--ease)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .cand,.slot,.slot.empty{opacity:1!important;transform:none!important}
+    .slot.empty{opacity:.78!important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#clock">Salta al draft</a>
+
+<header class="mast">
+  <div class="mast-in">
+    <a class="brand" href="#">Streak<sup>nome provv.</sup></a>
+    <span class="mast-mid">Corsa all'anello</span>
+    <span class="mast-rec">
+      <span>oggi</span><b>0–0</b><span class="arw">→</span><b class="goal">16–0</b>
+    </span>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="kicker">Dispatch · Atto I — i Playoff</div>
+    <h1 class="hero-h">Sette nomi ti separano dall'<em>imbattibilità</em>.</h1>
+    <p class="hero-dek">Ogni slot pesca una franchigia a sorte: tu scegli il meglio che ha da offrire. Poi metti in fila <b>sedici vittorie</b>, senza un solo passo falso.</p>
+  </section>
+
+  <div class="grid">
+
+    <!-- SUL CRONOMETRO -->
+    <section class="clock" id="clock">
+      <div class="sec-head">
+        <span class="eyebrow">Sul cronometro · slot 3 di 10</span>
+        <h2>Il tuo playmaker titolare</h2>
+        <p class="draw"><span class="dice" aria-hidden="true">3/6</span>Esce a sorte: <b>Golden State Warriors</b> — scegli un PG dalla loro rosa.</p>
+      </div>
+
+      <fieldset class="cands">
+        <legend class="skip">Scegli un playmaker dai Golden State Warriors</legend>
+
+        <label class="cand" style="--i:0">
+          <input class="skip" type="radio" name="pg" value="Stephen Curry" data-ovr="96">
+          <span class="cand-pick" aria-hidden="true"></span>
+          <span class="cand-main">
+            <span class="cand-name">Stephen Curry</span>
+            <span class="cand-meta">PG · Golden State</span>
+          </span>
+          <span class="cand-ovr"><b>96</b><small>OVR</small></span>
+          <span class="cand-stamp">in rosa</span>
+        </label>
+
+        <label class="cand" style="--i:1">
+          <input class="skip" type="radio" name="pg" value="Chris Paul" data-ovr="84">
+          <span class="cand-pick" aria-hidden="true"></span>
+          <span class="cand-main">
+            <span class="cand-name">Chris Paul</span>
+            <span class="cand-meta">PG · Golden State</span>
+          </span>
+          <span class="cand-ovr"><b>84</b><small>OVR</small></span>
+          <span class="cand-stamp">in rosa</span>
+        </label>
+
+        <label class="cand" style="--i:2">
+          <input class="skip" type="radio" name="pg" value="Brandin Podziemski" data-ovr="78">
+          <span class="cand-pick" aria-hidden="true"></span>
+          <span class="cand-main">
+            <span class="cand-name">Brandin Podziemski</span>
+            <span class="cand-meta">SG / PG · Golden State</span>
+          </span>
+          <span class="cand-ovr"><b>78</b><small>OVR</small></span>
+          <span class="cand-stamp">in rosa</span>
+        </label>
+      </fieldset>
+
+      <div class="cta-row">
+        <button class="cta" id="confirm" disabled>Conferma e avanza</button>
+        <span class="cta-note" id="ctaNote">Scegli un playmaker per continuare</span>
+      </div>
+    </section>
+
+    <!-- LA TUA ROSA -->
+    <aside class="roster">
+      <div class="roster-card">
+        <div class="sec-head">
+          <span class="eyebrow">La tua rosa</span>
+          <h2>Quintetto &amp; panchina</h2>
+          <div class="prog">
+            <span class="prog-n">presi <b id="taken">2</b> / 10</span>
+            <span class="meter" id="meter" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="group-lab">Quintetto</div>
+        <ol class="slots">
+          <li><div class="slot live" id="slotPG" style="--i:0"><span class="slot-pos">PG</span><span class="slot-body"><span class="slot-name" id="pgName">In pesca…</span><span class="slot-meta" id="pgMeta">dai Golden State</span></span><span class="slot-ovr" id="pgOvr">—</span></div></li>
+          <li><div class="slot empty" style="--i:1"><span class="slot-pos">SG</span><span class="slot-body"><span class="slot-name">in attesa</span><span class="slot-meta">slot da pescare</span></span><span class="slot-ovr"></span></div></li>
+          <li><div class="slot filled" style="--i:2"><span class="slot-pos">SF</span><span class="slot-body"><span class="slot-name">Jayson Tatum</span><span class="slot-meta">da Boston</span></span><span class="slot-ovr">94</span></div></li>
+          <li><div class="slot empty" style="--i:3"><span class="slot-pos">PF</span><span class="slot-body"><span class="slot-name">in attesa</span><span class="slot-meta">slot da pescare</span></span><span class="slot-ovr"></span></div></li>
+          <li><div class="slot filled" style="--i:4"><span class="slot-pos">C</span><span class="slot-body"><span class="slot-name">Nikola Jokić</span><span class="slot-meta">da Denver</span></span><span class="slot-ovr">98</span></div></li>
+        </ol>
+
+        <div class="group-lab">Panchina</div>
+        <ol class="slots">
+          <li><div class="slot empty" style="--i:5"><span class="slot-pos">6</span><span class="slot-body"><span class="slot-name">in attesa</span><span class="slot-meta">primo cambio</span></span><span class="slot-ovr"></span></div></li>
+          <li><div class="slot empty" style="--i:6"><span class="slot-pos">7</span><span class="slot-body"><span class="slot-name">in attesa</span><span class="slot-meta">rotazione</span></span><span class="slot-ovr"></span></div></li>
+          <li><div class="slot empty" style="--i:7"><span class="slot-pos">8</span><span class="slot-body"><span class="slot-name">in attesa</span><span class="slot-meta">rotazione</span></span><span class="slot-ovr"></span></div></li>
+          <li><div class="slot empty" style="--i:8"><span class="slot-pos">9</span><span class="slot-body"><span class="slot-name">in attesa</span><span class="slot-meta">profondità</span></span><span class="slot-ovr"></span></div></li>
+          <li><div class="slot empty" style="--i:9"><span class="slot-pos">10</span><span class="slot-body"><span class="slot-name">in attesa</span><span class="slot-meta">profondità</span></span><span class="slot-ovr"></span></div></li>
+        </ol>
+
+        <div class="colophon"><span>Streak — provino di stile</span><span>dati fittizi</span></div>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  const radios = [...document.querySelectorAll('input[name="pg"]')];
+  const confirm = document.getElementById('confirm');
+  const note = document.getElementById('ctaNote');
+  const slotPG = document.getElementById('slotPG');
+  const pgName = document.getElementById('pgName');
+  const pgMeta = document.getElementById('pgMeta');
+  const pgOvr  = document.getElementById('pgOvr');
+  const takenEl = document.getElementById('taken');
+  const meter = document.getElementById('meter');
+  const toast = document.getElementById('toast');
+  const KEY = 'streak-draft-pg';
+
+  // costruisci il metro a 10 tacche (2 già prese)
+  let baseTaken = 2;
+  for(let i=0;i<10;i++){ const t=document.createElement('i'); if(i<baseTaken) t.className='on'; meter.appendChild(t); }
+  const pips = [...meter.children];
+
+  function applyPick(value, ovr, flash){
+    pgName.textContent = value;
+    pgMeta.textContent = 'dai Golden State';
+    pgOvr.textContent = ovr;
+    slotPG.classList.remove('live'); slotPG.classList.add('filled');
+    if(flash){ slotPG.classList.remove('just'); void slotPG.offsetWidth; slotPG.classList.add('just'); }
+    // PG è il 3° preso
+    takenEl.textContent = '3';
+    if(pips[2]) pips[2].classList.add('on');
+    confirm.disabled = false;
+    note.textContent = value + ' · pronto ad avanzare';
+  }
+
+  radios.forEach(r=>{
+    r.addEventListener('change', ()=>{
+      applyPick(r.value, r.dataset.ovr, true);
+      try{ localStorage.setItem(KEY, JSON.stringify({v:r.value,o:r.dataset.ovr})); }catch(_){}
+    });
+  });
+
+  confirm.addEventListener('click', ()=>{
+    const sel = radios.find(r=>r.checked); if(!sel) return;
+    toast.innerHTML = 'PG confermato — <b>'+sel.value+'</b>. Prossimo slot…';
+    toast.classList.add('show');
+    clearTimeout(confirm._t);
+    confirm._t = setTimeout(()=>toast.classList.remove('show'), 2400);
+  });
+
+  // ripristina una scelta salvata
+  try{
+    const saved = JSON.parse(localStorage.getItem(KEY)||'null');
+    if(saved && saved.v){
+      const m = radios.find(r=>r.value===saved.v);
+      if(m){ m.checked = true; applyPick(saved.v, saved.o, false); }
+    }
+  }catch(_){}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA, CONTENUTO VARIABILE. Cambia solo #panels (e <title>/#mockTitle).
+-->
+<title>Draft · nuove direzioni grafiche · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:56ch}
+
+  /* chip bar */
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  /* palco */
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Draft · nuove rotte estetiche</div>
+    <h1 id="mockTitle">Draft — la grafica, 4 direzioni</h1>
+    <p class="lead">Stessa schermata chiave in tutte e 4: il <b>candidato in scelta</b> → tocca <b>"Aggiungi alla rosa"</b> → entra nella tua rosa (lo slot libero si riempie). Cambia solo la <b>pelle</b>. ① è l'attuale, ② una sua evoluzione, ③④ due strade diverse. Solo telefono.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ═══════════════════════ ① CABINA 90s (Attuale) ═══════════════════════ -->
+      <section class="dir-panel"
+        data-name="Cabina 90s"
+        data-mood="arcade notturno · NBA Jam / sala giochi"
+        data-why="Energia da sala giochi, riconoscibile a colpo d'occhio — ma rischia di sembrare un giocattolo, non un gioco 'serio' da grandi."
+        data-role="Attuale">
+        <style>
+        @import url("https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@600;900&display=swap");
+        .t90{ --bg:#15163a; --bg2:#0d0e29; --panel:#1d1e4a; --orange:#ff5b1e; --yellow:#ffcf33;
+              --cream:#f4eee0; --green:#5ccf8e; --dim:#8a8bc0; color:var(--cream);
+              font-family:"Hanken Grotesk",sans-serif }
+        .t90 *{box-sizing:border-box}
+        .t90 .stagewrap{display:flex;justify-content:center}
+        .t90 .phone{width:300px;max-width:100%;border:9px solid #05030f;border-radius:30px;background:#05030f;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+        .t90 .screen{position:relative;overflow:hidden;border-radius:21px;padding:13px;
+              background:radial-gradient(120% 80% at 50% -10%,#20206a 0,var(--bg) 55%,var(--bg2) 100%)}
+        .t90 .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .t90 .wm{font-family:"Bungee";font-size:.92rem;color:var(--yellow);line-height:1}
+        .t90 .wm b{color:var(--orange)}
+        .t90 .mode{font-size:.55rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:700;text-align:right}
+        .t90 .mode em{color:var(--yellow);font-style:normal}
+        .t90 .lab{font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:0 0 7px}
+        .t90 .cand{background:linear-gradient(180deg,#241a3e,#141538);border:1px solid #3a2a66;border-radius:14px;padding:12px}
+        .t90 .crow{display:flex;gap:11px;align-items:center}
+        .t90 .face{width:64px;height:64px;border-radius:11px;flex:none;display:flex;align-items:center;justify-content:center;
+              font-family:"Bungee";font-size:1.5rem;color:#fff;background:linear-gradient(150deg,#ff5b1e,#b9234f)}
+        .t90 .nm{font-family:"Bungee";font-size:1rem;line-height:1}
+        .t90 .pos{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:6px}
+        .t90 .ovr{margin-left:auto;text-align:center;flex:none}
+        .t90 .ovr b{display:block;font-family:"Doto";font-weight:900;font-size:1.9rem;line-height:.8;color:var(--yellow);text-shadow:0 2px 0 #b8901f}
+        .t90 .ovr small{font-size:.45rem;letter-spacing:.2em;color:var(--dim);font-weight:700}
+        .t90 .stats{display:grid;grid-template-columns:1fr 1fr;gap:7px 11px;margin-top:11px}
+        .t90 .st b{display:block;font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+        .t90 .trk{height:6px;border-radius:99px;background:#23246a;overflow:hidden}
+        .t90 .fil{height:100%;border-radius:99px;background:var(--green)}
+        .t90 .fil.md{background:var(--yellow)}
+        .t90 .cta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:11px;cursor:pointer;
+              font-family:"Bungee";font-size:.74rem;color:#1a1206;background:var(--yellow);border-radius:10px;padding:13px;min-height:46px;box-shadow:0 4px 0 #b8901f;transition:transform .1s,box-shadow .1s}
+        .t90 .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+        .t90 .cta svg{width:15px;height:15px}
+        .t90 .cta .on{display:none}
+        .t90 .k:checked ~ .cand .cta{background:var(--green);color:#0c2417;box-shadow:0 4px 0 #2f7a52}
+        .t90 .k:checked ~ .cand .cta .off{display:none}
+        .t90 .k:checked ~ .cand .cta .on{display:inline-flex;align-items:center;gap:7px}
+        .t90 .miss{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:.6rem}
+        .t90 .miss .l{letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700}
+        .t90 .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:99px;background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.4);color:#ffb0a6;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+        .t90 .chip::before{content:"";width:5px;height:5px;border-radius:99px;background:#ff5038}
+        .t90 .rost{display:flex;gap:7px;margin-top:13px}
+        .t90 .slot{flex:1;background:#1a1842;border:1px solid #2c2a63;border-radius:10px;padding:8px 6px;text-align:center}
+        .t90 .slot .pn{font-family:"Doto";font-weight:900;font-size:.92rem;color:var(--cream)}
+        .t90 .slot .pp{font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:3px}
+        .t90 .slot.empty{border-style:dashed;border-color:#ffcf3355}
+        .t90 .slot.empty .pn{color:#5b5a8f}
+        .t90 .slot .got{display:none}
+        .t90 .k:checked ~ .rost .slot.empty{border-style:solid;border-color:var(--green);background:rgba(92,207,142,.1)}
+        .t90 .k:checked ~ .rost .slot.empty .ph{display:none}
+        .t90 .k:checked ~ .rost .slot.empty .got{display:block}
+        .t90 .k:checked ~ .rost .slot.empty .got .pn{color:var(--green)}
+        </style>
+        <div class="t90"><div class="stagewrap"><div class="phone"><div class="screen">
+          <div class="hd">
+            <div class="wm">BU<b>ZZ</b>ER</div>
+            <div class="mode">L'imbattuto<br><em>Difficile</em></div>
+          </div>
+          <input class="k" type="checkbox" id="t90add" aria-label="Aggiungi alla rosa">
+          <p class="lab">In scelta · pick 4</p>
+          <div class="cand">
+            <div class="crow">
+              <div class="face">BK</div>
+              <div>
+                <div class="nm">B. KOWALSKI</div>
+                <div class="pos">Ala grande · 211cm</div>
+              </div>
+              <div class="ovr"><b>90</b><small>OVR</small></div>
+            </div>
+            <div class="stats">
+              <div class="st"><b>Rimbalzi</b><div class="trk"><i class="fil" style="width:88%"></i></div></div>
+              <div class="st"><b>Tiro 3pt</b><div class="trk"><i class="fil md" style="width:52%"></i></div></div>
+              <div class="st"><b>Difesa</b><div class="trk"><i class="fil" style="width:84%"></i></div></div>
+              <div class="st"><b>Atletismo</b><div class="trk"><i class="fil" style="width:79%"></i></div></div>
+            </div>
+            <label class="cta" for="t90add">
+              <span class="off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Aggiungi alla rosa</span>
+              <span class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> In rosa</span>
+            </label>
+          </div>
+          <div class="miss"><span class="l">Manca:</span><span class="chip">centro</span><span class="chip">tiro da 3</span></div>
+          <div class="rost">
+            <div class="slot"><div class="pn">RIV</div><div class="pp">PG · 88</div></div>
+            <div class="slot"><div class="pn">OKA</div><div class="pp">C · 85</div></div>
+            <div class="slot"><div class="pn">VÁS</div><div class="pp">SF · 84</div></div>
+            <div class="slot empty">
+              <span class="ph"><div class="pn">+</div><div class="pp">libero</div></span>
+              <span class="got"><div class="pn">KOW</div><div class="pp">PF · 90</div></span>
+            </div>
+          </div>
+        </div></div></div></div>
+      </section>
+
+      <!-- ═══════════════════ ② HARDWOOD BROADCAST (Variante +) ═══════════════════ -->
+      <section class="dir-panel"
+        data-name="Hardwood Broadcast"
+        data-mood="telecronaca premium · grafiche TNT / ESPN"
+        data-why="Stesso battito 'da partita' ma cresciuto: tipografia condensata, un solo accento ambra e numeri da scoreboard. Sembra TV vera, non un giocattolo."
+        data-role="Variante +">
+        <style>
+        @import url("https://fonts.googleapis.com/css2?family=Anton&family=Sora:wght@400;600;700&family=Martian+Mono:wght@600;800&display=swap");
+        .tbc{ --bg:#0d1016; --bg2:#070a0f; --panel:#141923; --line:#222a36;
+              --amber:#f4a73c; --amber2:#c97f1f; --red:#e23b2e; --ink:#eef2f7; --dim:#8b97a6; --green:#4fd49a;
+              color:var(--ink); font-family:"Sora",sans-serif }
+        .tbc *{box-sizing:border-box}
+        .tbc .stagewrap{display:flex;justify-content:center}
+        .tbc .phone{width:300px;max-width:100%;border:9px solid #04060a;border-radius:30px;background:#04060a;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+        .tbc .screen{position:relative;overflow:hidden;border-radius:21px;padding:0 0 14px;background:linear-gradient(180deg,#10141c,var(--bg) 40%,var(--bg2))}
+        .tbc .topbar{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:#0a0d13;border-bottom:1px solid var(--line)}
+        .tbc .wm{font-family:"Anton";letter-spacing:.04em;font-size:1.05rem;line-height:1}
+        .tbc .wm i{color:var(--amber);font-style:normal}
+        .tbc .live{display:flex;align-items:center;gap:5px;font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:700}
+        .tbc .live::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--red);box-shadow:0 0 0 3px rgba(226,59,46,.2)}
+        .tbc .pad{padding:13px}
+        /* lower-third style banner */
+        .tbc .lt{position:relative;background:linear-gradient(100deg,#161c27,#10141c);border-left:4px solid var(--amber);border-radius:4px;padding:11px 13px;display:flex;align-items:center;gap:12px;overflow:hidden}
+        .tbc .lt::after{content:"PICK 04";position:absolute;right:-6px;top:-8px;font-family:"Anton";font-size:2.6rem;color:#ffffff08;letter-spacing:.05em}
+        .tbc .num{font-family:"Anton";font-size:.66rem;letter-spacing:.18em;color:var(--amber);writing-mode:vertical-rl;transform:rotate(180deg)}
+        .tbc .face{width:60px;height:60px;border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;font-family:"Anton";font-size:1.4rem;color:#0a0d13;background:linear-gradient(160deg,var(--amber),var(--amber2))}
+        .tbc .who{flex:1;min-width:0}
+        .tbc .nm{font-family:"Anton";font-size:1.2rem;line-height:.95;letter-spacing:.01em}
+        .tbc .pos{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:5px}
+        .tbc .ovr{flex:none;text-align:center;background:#0a0d13;border:1px solid var(--line);border-radius:6px;padding:5px 9px}
+        .tbc .ovr b{display:block;font-family:"Martian Mono";font-weight:800;font-size:1.25rem;line-height:1;color:var(--amber)}
+        .tbc .ovr small{font-size:.42rem;letter-spacing:.18em;color:var(--dim);font-weight:700}
+        .tbc .statline{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:11px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+        .tbc .sl{background:var(--panel);padding:8px 6px;text-align:center}
+        .tbc .sl small{display:block;font-size:.46rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700}
+        .tbc .sl b{font-family:"Martian Mono";font-weight:800;font-size:.95rem;color:var(--ink)}
+        .tbc .sl b.hi{color:var(--green)}
+        .tbc .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:11px;cursor:pointer;
+              font-family:"Anton";letter-spacing:.04em;font-size:.86rem;text-transform:uppercase;color:#0a0d13;background:var(--amber);border-radius:6px;padding:13px;min-height:46px;transition:filter .12s,transform .1s}
+        .tbc .cta:active{transform:translateY(1px)}
+        .tbc .cta svg{width:16px;height:16px}
+        .tbc .cta .on{display:none}
+        .tbc .k:checked ~ .pad .cta{background:var(--green)}
+        .tbc .k:checked ~ .pad .cta .off{display:none}
+        .tbc .k:checked ~ .pad .cta .on{display:inline-flex;align-items:center;gap:8px}
+        .tbc .need{display:flex;align-items:center;gap:7px;margin-top:12px;font-size:.6rem}
+        .tbc .need .l{letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700}
+        .tbc .tag{font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#ffd0a0;border:1px solid var(--amber2);border-radius:3px;padding:2px 7px}
+        .tbc .rost{display:flex;gap:1px;margin-top:13px;background:var(--line);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+        .tbc .slot{flex:1;background:var(--panel);padding:9px 5px;text-align:center}
+        .tbc .slot .pn{font-family:"Anton";font-size:.82rem;letter-spacing:.03em}
+        .tbc .slot .pp{font-family:"Martian Mono";font-weight:600;font-size:.5rem;color:var(--dim);margin-top:3px}
+        .tbc .slot.empty{background:repeating-linear-gradient(45deg,#10141c,#10141c 5px,#141923 5px,#141923 10px)}
+        .tbc .slot.empty .pn{color:#4a5564}
+        .tbc .slot .got{display:none}
+        .tbc .k:checked ~ .rost .slot.empty{background:rgba(79,212,154,.1)}
+        .tbc .k:checked ~ .rost .slot.empty .ph{display:none}
+        .tbc .k:checked ~ .rost .slot.empty .got{display:block}
+        .tbc .k:checked ~ .rost .slot.empty .got .pn{color:var(--green)}
+        </style>
+        <div class="tbc"><div class="stagewrap"><div class="phone"><div class="screen">
+          <div class="topbar">
+            <div class="wm">BUZZER<i>·</i></div>
+            <div class="live">L'imbattuto · Difficile</div>
+          </div>
+          <input class="k" type="checkbox" id="tbcadd" aria-label="Aggiungi alla rosa">
+          <div class="pad">
+            <div class="lt">
+              <div class="num">PICK<br>04</div>
+              <div class="face">BK</div>
+              <div class="who">
+                <div class="nm">B. Kowalski</div>
+                <div class="pos">Ala grande · 211</div>
+              </div>
+              <div class="ovr"><b>90</b><small>OVR</small></div>
+            </div>
+            <div class="statline">
+              <div class="sl"><small>RIM</small><b class="hi">88</b></div>
+              <div class="sl"><small>3PT</small><b>52</b></div>
+              <div class="sl"><small>DIF</small><b class="hi">84</b></div>
+            </div>
+            <label class="cta" for="tbcadd">
+              <span class="off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Aggiungi alla rosa</span>
+              <span class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> In rosa</span>
+            </label>
+            <div class="need"><span class="l">Manca</span><span class="tag">centro</span><span class="tag">tiro da 3</span></div>
+          </div>
+          <div class="rost" style="margin:0 13px">
+            <div class="slot"><div class="pn">RIV</div><div class="pp">PG·88</div></div>
+            <div class="slot"><div class="pn">OKA</div><div class="pp">C·85</div></div>
+            <div class="slot"><div class="pn">VÁS</div><div class="pp">SF·84</div></div>
+            <div class="slot empty">
+              <span class="ph"><div class="pn">—</div><div class="pp">vuoto</div></span>
+              <span class="got"><div class="pn">KOW</div><div class="pp">PF·90</div></span>
+            </div>
+          </div>
+        </div></div></div></div>
+      </section>
+
+      <!-- ═══════════════════════ ③ CARTONCINO (figurine) ═══════════════════════ -->
+      <section class="dir-panel"
+        data-name="Cartoncino"
+        data-mood="figurine da collezione · Panini / Topps anni 90"
+        data-why="Il draft È una collezione: ogni scelta è una carta che vuoi possedere. Carta, mezzatinta e foil danno un piacere tattile che l'arcade non ha."
+        data-role="">
+        <style>
+        @import url("https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Libre+Franklin:wght@400;600;700;800&display=swap");
+        .tcd{ --paper:#efe6d3; --paper2:#e6dbc3; --ink:#191512; --red:#cf3a26; --foil:#b08431; --foil2:#d8b35a;
+              --green:#2f8f5f; --dim:#7a7060; color:var(--ink); font-family:"Libre Franklin",sans-serif }
+        .tcd *{box-sizing:border-box}
+        .tcd .stagewrap{display:flex;justify-content:center}
+        .tcd .phone{width:300px;max-width:100%;border:9px solid #14110d;border-radius:30px;background:#14110d;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+        .tcd .screen{position:relative;overflow:hidden;border-radius:21px;padding:14px 13px 16px;
+              background:var(--paper);
+              background-image:radial-gradient(var(--paper2) 1px,transparent 1.4px);background-size:7px 7px}
+        .tcd .hd{display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:13px}
+        .tcd .wm{font-family:"Syne";font-weight:800;font-size:1.05rem;letter-spacing:-.01em}
+        .tcd .wm i{color:var(--red);font-style:normal}
+        .tcd .mode{font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700}
+        .tcd .lab{font-family:"Syne";font-weight:700;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin:0 0 8px}
+        /* the trading card */
+        .tcd .card{position:relative;background:#fff;border:1px solid var(--ink);border-radius:7px;padding:9px;
+              box-shadow:6px 6px 0 var(--ink);transform:rotate(-1.2deg)}
+        .tcd .frame{border:2px solid var(--ink);border-radius:4px;overflow:hidden}
+        .tcd .pic{position:relative;height:96px;display:flex;align-items:center;justify-content:center;
+              background:linear-gradient(150deg,var(--red),#7d1f16)}
+        .tcd .pic::before{content:"";position:absolute;inset:0;opacity:.22;
+              background:radial-gradient(#000 1.1px,transparent 1.4px);background-size:5px 5px}
+        .tcd .pic b{position:relative;font-family:"Syne";font-weight:800;font-size:2.4rem;color:#fff5e6}
+        .tcd .foil{position:absolute;top:7px;right:7px;font-family:"Syne";font-weight:800;font-size:.5rem;letter-spacing:.12em;
+              color:#3a2c08;background:linear-gradient(120deg,var(--foil2),var(--foil),#fff3cf,var(--foil));padding:3px 7px;border-radius:99px;border:1px solid #8a6a22}
+        .tcd .ovrtab{position:absolute;left:7px;bottom:7px;font-family:"Syne";font-weight:800;font-size:1.5rem;color:#fff;line-height:.8;text-shadow:2px 2px 0 var(--ink)}
+        .tcd .ovrtab small{display:block;font-size:.4rem;letter-spacing:.18em;font-weight:700}
+        .tcd .strip{background:var(--ink);color:var(--paper);padding:7px 9px}
+        .tcd .nm{font-family:"Syne";font-weight:800;font-size:1.05rem;line-height:1}
+        .tcd .pos{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:#cdbfa4;font-weight:700;margin-top:3px}
+        .tcd .stats{display:flex;gap:0;background:#fff}
+        .tcd .st{flex:1;text-align:center;padding:7px 4px;border-right:1px solid #e0d6c0}
+        .tcd .st:last-child{border-right:0}
+        .tcd .st small{display:block;font-size:.44rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700}
+        .tcd .st b{font-family:"Syne";font-weight:800;font-size:1rem}
+        .tcd .st b.hi{color:var(--green)}
+        .tcd .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:15px;cursor:pointer;
+              font-family:"Syne";font-weight:800;font-size:.8rem;letter-spacing:.02em;color:var(--paper);background:var(--ink);
+              border:2px solid var(--ink);border-radius:6px;padding:12px;min-height:46px;box-shadow:4px 4px 0 var(--red);transition:transform .1s,box-shadow .1s}
+        .tcd .cta:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--red)}
+        .tcd .cta svg{width:16px;height:16px}
+        .tcd .cta .on{display:none}
+        .tcd .k:checked ~ .cta{background:var(--green);border-color:var(--green);color:#fff;box-shadow:4px 4px 0 var(--ink)}
+        .tcd .k:checked ~ .cta .off{display:none}
+        .tcd .k:checked ~ .cta .on{display:inline-flex;align-items:center;gap:8px}
+        .tcd .need{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:13px;font-size:.6rem}
+        .tcd .need .l{font-family:"Syne";font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+        .tcd .tag{font-size:.55rem;letter-spacing:.05em;text-transform:uppercase;font-weight:700;color:#8c2417;border:1.5px solid var(--red);border-radius:3px;padding:2px 7px;background:#f7e4df}
+        .tcd .rost{display:flex;gap:6px;margin-top:14px}
+        .tcd .slot{flex:1;background:#fff;border:1.5px solid var(--ink);border-radius:5px;padding:7px 4px;text-align:center;box-shadow:2px 2px 0 var(--ink)}
+        .tcd .slot .pn{font-family:"Syne";font-weight:800;font-size:.82rem}
+        .tcd .slot .pp{font-size:.46rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:2px}
+        .tcd .slot.empty{background:repeating-linear-gradient(45deg,#efe6d3,#efe6d3 4px,#e6dbc3 4px,#e6dbc3 8px);border-style:dashed;box-shadow:none}
+        .tcd .slot.empty .pn{color:#a89878}
+        .tcd .slot .got{display:none}
+        .tcd .k:checked ~ .rost .slot.empty{background:#eaf6ef;border-style:solid;border-color:var(--green);box-shadow:2px 2px 0 var(--green)}
+        .tcd .k:checked ~ .rost .slot.empty .ph{display:none}
+        .tcd .k:checked ~ .rost .slot.empty .got{display:block}
+        .tcd .k:checked ~ .rost .slot.empty .got .pn{color:var(--green)}
+        </style>
+        <div class="tcd"><div class="stagewrap"><div class="phone"><div class="screen">
+          <div class="hd"><div class="wm">BUZZER<i>.</i></div><div class="mode">L'imbattuto · Difficile</div></div>
+          <input class="k" type="checkbox" id="tcdadd" aria-label="Aggiungi alla rosa">
+          <p class="lab">◆ Carta in scelta · pick 04</p>
+          <div class="card">
+            <div class="frame">
+              <div class="pic">
+                <span class="foil">ROOKIE</span>
+                <b>BK</b>
+                <span class="ovrtab">90<small>OVR</small></span>
+              </div>
+              <div class="strip">
+                <div class="nm">B. Kowalski</div>
+                <div class="pos">Ala grande · 211 cm</div>
+              </div>
+              <div class="stats">
+                <div class="st"><small>Rim</small><b class="hi">88</b></div>
+                <div class="st"><small>3pt</small><b>52</b></div>
+                <div class="st"><small>Dif</small><b class="hi">84</b></div>
+                <div class="st"><small>Atl</small><b>79</b></div>
+              </div>
+            </div>
+          </div>
+          <label class="cta" for="tcdadd">
+            <span class="off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Aggiungi alla collezione</span>
+            <span class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> Nella rosa</span>
+          </label>
+          <div class="need"><span class="l">Ti manca</span><span class="tag">un centro</span><span class="tag">tiro da 3</span></div>
+          <div class="rost">
+            <div class="slot"><div class="pn">RIV</div><div class="pp">PG · 88</div></div>
+            <div class="slot"><div class="pn">OKA</div><div class="pp">C · 85</div></div>
+            <div class="slot"><div class="pn">VÁS</div><div class="pp">SF · 84</div></div>
+            <div class="slot empty">
+              <span class="ph"><div class="pn">+</div><div class="pp">libero</div></span>
+              <span class="got"><div class="pn">KOW</div><div class="pp">PF · 90</div></span>
+            </div>
+          </div>
+        </div></div></div></div>
+      </section>
+
+      <!-- ═══════════════════ ④ EDITORIALE HARDWOOD (rivista) ═══════════════════ -->
+      <section class="dir-panel"
+        data-name="Editoriale Hardwood"
+        data-mood="rivista sportiva · The Athletic / Monocle"
+        data-why="Tono adulto e 'da intenditore': carta chiara, un serif Bodoni forte, stat tabellari pulite e un solo accento. Comunica competenza, non gioco da ragazzini."
+        data-role="">
+        <style>
+        @import url("https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap");
+        .ted{ --paper:#f6f1e7; --paper2:#efe8d9; --ink:#17120c; --ink2:#4a4334;
+              --rule:#d7cdb8; --accent:#c0531c; --green:#3c7a52; --dim:#8b8270;
+              color:var(--ink); font-family:"Spectral",serif }
+        .ted *{box-sizing:border-box}
+        .ted .stagewrap{display:flex;justify-content:center}
+        .ted .phone{width:300px;max-width:100%;border:9px solid #15110b;border-radius:30px;background:#15110b;box-shadow:0 18px 40px rgba(0,0,0,.5)}
+        .ted .screen{position:relative;overflow:hidden;border-radius:21px;padding:15px 14px 16px;background:var(--paper)}
+        .ted .mast{display:flex;align-items:baseline;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:7px;margin-bottom:3px}
+        .ted .wm{font-family:"Bodoni Moda",serif;font-weight:700;font-size:1.15rem;letter-spacing:-.01em}
+        .ted .iss{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-weight:600}
+        .ted .kick{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:600;border-bottom:1px solid var(--rule);padding-bottom:9px;margin-bottom:11px}
+        .ted .cand{display:flex;gap:12px;align-items:flex-start}
+        .ted .face{width:58px;height:74px;flex:none;border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;
+              font-family:"Bodoni Moda",serif;font-weight:700;font-size:1.5rem;color:var(--paper);background:var(--ink)}
+        .ted .who{flex:1;min-width:0}
+        .ted .nm{font-family:"Bodoni Moda",serif;font-weight:700;font-size:1.45rem;line-height:1;letter-spacing:-.01em}
+        .ted .pos{font-style:italic;font-size:.78rem;color:var(--ink2);margin-top:5px}
+        .ted .ovr{text-align:right;flex:none}
+        .ted .ovr b{display:block;font-family:"Bodoni Moda",serif;font-weight:700;font-size:2rem;line-height:.85;color:var(--accent)}
+        .ted .ovr small{font-size:.46rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-weight:600}
+        .ted .tbl{margin-top:13px;border-top:1px solid var(--ink)}
+        .ted .tr{display:flex;align-items:center;justify-content:space-between;padding:6px 1px;border-bottom:1px solid var(--rule);font-size:.78rem}
+        .ted .tr span{color:var(--ink2)}
+        .ted .tr b{font-variant-numeric:tabular-nums;font-weight:600}
+        .ted .tr b.hi{color:var(--green)}
+        .ted .tr b.lo{color:var(--accent)}
+        .ted .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:15px;cursor:pointer;
+              font-family:"Spectral";font-weight:600;font-size:.84rem;letter-spacing:.02em;color:var(--paper);background:var(--ink);
+              border:1px solid var(--ink);border-radius:2px;padding:13px;min-height:46px;transition:background .12s}
+        .ted .cta svg{width:15px;height:15px}
+        .ted .cta .on{display:none}
+        .ted .k:checked ~ .cta{background:var(--green);border-color:var(--green)}
+        .ted .k:checked ~ .cta .off{display:none}
+        .ted .k:checked ~ .cta .on{display:inline-flex;align-items:center;gap:8px}
+        .ted .note{margin-top:12px;font-style:italic;font-size:.72rem;color:var(--ink2);border-left:2px solid var(--accent);padding-left:9px}
+        .ted .note b{font-style:normal;color:var(--accent);font-weight:600}
+        .ted .rost{margin-top:13px;border-top:1px solid var(--ink);padding-top:9px}
+        .ted .rl{font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:7px}
+        .ted .rrow{display:flex;gap:8px}
+        .ted .slot{flex:1;text-align:center}
+        .ted .slot .pn{font-family:"Bodoni Moda",serif;font-weight:700;font-size:.92rem}
+        .ted .slot .pp{font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:600;margin-top:2px}
+        .ted .slot.empty{border:1px dashed var(--rule);border-radius:2px;padding:3px 0}
+        .ted .slot.empty .pn{color:#b3a98f;font-family:"Spectral";font-style:italic;font-weight:400}
+        .ted .slot .got{display:none}
+        .ted .k:checked ~ .rost .rrow .slot.empty{border-color:var(--green)}
+        .ted .k:checked ~ .rost .rrow .slot.empty .ph{display:none}
+        .ted .k:checked ~ .rost .rrow .slot.empty .got{display:block}
+        .ted .k:checked ~ .rost .rrow .slot.empty .got .pn{color:var(--green)}
+        </style>
+        <div class="ted"><div class="stagewrap"><div class="phone"><div class="screen">
+          <div class="mast"><div class="wm">Buzzer</div><div class="iss">L'imbattuto · Difficile</div></div>
+          <div class="kick">Il draft — Scelta nº 4</div>
+          <input class="k" type="checkbox" id="tedadd" aria-label="Aggiungi alla rosa">
+          <div class="cand">
+            <div class="face">BK</div>
+            <div class="who">
+              <div class="nm">B. Kowalski</div>
+              <div class="pos">Ala grande · 211 cm</div>
+            </div>
+            <div class="ovr"><b>90</b><small>Overall</small></div>
+          </div>
+          <div class="tbl">
+            <div class="tr"><span>Rimbalzi</span><b class="hi">88</b></div>
+            <div class="tr"><span>Tiro da 3</span><b class="lo">52</b></div>
+            <div class="tr"><span>Difesa</span><b class="hi">84</b></div>
+            <div class="tr"><span>Atletismo</span><b>79</b></div>
+          </div>
+          <label class="cta" for="tedadd">
+            <span class="off"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Aggiungi alla rosa</span>
+            <span class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg> In rosa</span>
+          </label>
+          <p class="note">Alla tua rosa servono ancora <b>un centro</b> e <b>tiro da 3</b>: Kowalski copre i rimbalzi, non il perimetro.</p>
+          <div class="rost">
+            <div class="rl">La tua rosa</div>
+            <div class="rrow">
+              <div class="slot"><div class="pn">Rivers</div><div class="pp">PG · 88</div></div>
+              <div class="slot"><div class="pn">Okafor</div><div class="pp">C · 85</div></div>
+              <div class="slot"><div class="pn">Vásquez</div><div class="pp">SF · 84</div></div>
+              <div class="slot empty">
+                <span class="ph"><div class="pn">libero</div><div class="pp">pick 4</div></span>
+                <span class="got"><div class="pn">Kowalski</div><div class="pp">PF · 90</div></span>
+              </div>
+            </div>
+          </div>
+        </div></div></div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- viewer-template.html · scocca chip+palco (skill mockup). Cambiato solo #panels + titoli. -->
+<title>Home · 3 stili + apertura · The Run</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:56ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto · home + apertura</div>
+    <h1 id="mockTitle">Home · 3 stili nuovi + l'apertura col pallone</h1>
+    <p class="lead">Tre <b>mondi diversi da Heatcheck</b>, tutti leggeri e instant-play come 7-0/38-0-0, con il <b>basket al centro</b>. Stessa interazione in tutti: tocca <b>«Apri l'app»</b> → parte l'animazione del pallone → compare la home. In basso a destra «↻» per <b>rivedere l'intro</b>.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ============ STILI HOME (scoped, dentro #panels, ignorati dallo script scocca) ============ -->
+      <style>
+      @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Young+Serif&family=Bungee&family=Bevan&family=Libre+Franklin:wght@400;500;600;700;800&display=swap');
+
+      /* ---- telaio telefono comune ---- */
+      .ph{
+        width:300px; max-width:100%; margin:4px auto 0; padding:9px;
+        background:linear-gradient(160deg,#22262f,#0c0e12);
+        border:1px solid #2a2f3a; border-radius:40px;
+        box-shadow:0 36px 64px -34px rgba(0,0,0,.95), inset 0 0 0 2px #14161b;
+      }
+      .scr{
+        position:relative; isolation:isolate; overflow:hidden;
+        height:586px; border-radius:32px; display:flex; flex-direction:column;
+      }
+      .opn{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+      .ph svg{display:block}
+      .notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:74px;height:5px;border-radius:99px;background:#000;z-index:6}
+
+      /* SPLASH (copertina app) → cliccabile, fa da toggle */
+      .splash{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;cursor:pointer;
+        transition:opacity .45s var(--ease,ease), transform .45s var(--ease,ease)}
+      .ph:has(.opn:checked) .splash{opacity:0;transform:scale(1.05);pointer-events:none}
+      /* HOME (sotto) → visibile solo ad app aperta */
+      .home{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;opacity:0;pointer-events:none;
+        transition:opacity .3s ease .05s}
+      .ph:has(.opn:checked) .home{opacity:1;pointer-events:auto}
+
+      /* ingresso scaglionato elementi home */
+      .ph:has(.opn:checked) .rise{animation:rise .5s var(--d,0s) cubic-bezier(.16,1,.3,1) both}
+      @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+      /* tasto "rivedi intro" comune */
+      .replay{position:absolute;right:11px;bottom:11px;z-index:4;display:flex;align-items:center;gap:5px;
+        min-height:30px;padding:0 10px;border-radius:99px;cursor:pointer;font-size:.6rem;font-weight:700;
+        letter-spacing:.08em;text-transform:uppercase}
+      .replay svg{width:13px;height:13px}
+
+      /* ===================================================================
+         A · CENTROCAMPO / DAYLIGHT  (parquet acero chiaro, editoriale sport)
+         =================================================================== */
+      .ph--A{--ease:cubic-bezier(.16,1,.3,1);
+        --bg:#efe3c8; --bg2:#e6d6b2; --ink:#1d160c; --ink2:#5a4d36; --faint:#8c7c5d;
+        --paint:#c0392b; --ball:#df6f1e; --ball2:#b8540f; --seam:#1c1208; --win:#2e7d57;
+        --line:rgba(29,22,12,.16);
+        font-family:"Archivo",sans-serif}
+      .ph--A .scr{background:
+        repeating-linear-gradient(90deg, rgba(120,86,40,.05) 0 2px, transparent 2px 26px),
+        linear-gradient(180deg,var(--bg) 0,var(--bg2) 100%);
+        color:var(--ink)}
+      /* righe del campo, fondo */
+      .court{position:absolute;inset:0;z-index:0;pointer-events:none;color:var(--ink);opacity:.5}
+      .court svg{width:100%;height:100%}
+      .a-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:30px 18px 0}
+      .a-wm{font-family:"Archivo",sans-serif;font-weight:900;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase}
+      .a-streak{font-size:.62rem;font-weight:700;letter-spacing:.04em;color:var(--ink2);display:flex;align-items:center;gap:5px}
+      .a-streak b{color:var(--win);font-weight:900}
+      .a-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 18px;gap:2px}
+      .a-ball{width:138px;height:138px;filter:drop-shadow(0 14px 16px rgba(40,22,4,.28))}
+      .a-shadow{width:108px;height:14px;border-radius:50%;background:radial-gradient(closest-side,rgba(40,22,4,.32),transparent);margin-top:-6px}
+      .a-eyebrow{font-family:"Young Serif",serif;font-style:normal;font-size:.84rem;color:var(--paint);margin-top:14px;letter-spacing:.01em}
+      .a-score{font-family:"Archivo",sans-serif;font-weight:900;font-size:4.4rem;line-height:.82;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+      .a-sub{font-size:.72rem;color:var(--ink2);text-align:center;max-width:30ch;margin-top:6px}
+      .a-foot{position:relative;z-index:2;padding:0 16px 20px}
+      .a-cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:52px;cursor:pointer;
+        font-family:"Archivo",sans-serif;font-weight:800;font-size:1.02rem;letter-spacing:.04em;text-transform:uppercase;
+        color:#fbf0d8;background:var(--paint);border:0;border-radius:14px;
+        box-shadow:0 12px 22px -10px rgba(192,57,43,.6); transition:transform .15s var(--ease),filter .15s}
+      .a-cta svg{width:17px;height:17px}
+      .a-cta:hover{transform:translateY(-2px);filter:brightness(1.05)}
+      .a-modes{display:flex;gap:7px;margin-top:11px}
+      .a-mode{flex:1;text-align:center;border:1px solid var(--line);border-radius:10px;padding:8px 4px;background:rgba(255,255,255,.22)}
+      .a-mode b{display:block;font-family:"Archivo";font-weight:800;font-size:.66rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2)}
+      .a-mode span{font-size:.5rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+      /* splash A */
+      .ph--A .splash{background:
+        repeating-linear-gradient(90deg, rgba(120,86,40,.05) 0 2px, transparent 2px 26px),
+        radial-gradient(120% 70% at 50% 28%, #f5ebd3 0, var(--bg) 55%, var(--bg2) 100%);
+        align-items:center;justify-content:center;text-align:center}
+      .a-splash-wm{font-family:"Archivo";font-weight:900;font-size:2.9rem;line-height:.86;letter-spacing:-.02em;text-transform:uppercase;color:var(--ink)}
+      .a-splash-wm .run{color:var(--paint)}
+      .a-splash-tag{font-family:"Young Serif",serif;font-size:.82rem;color:var(--ink2);margin:8px 0 26px}
+      .a-open{display:flex;align-items:center;gap:9px;min-height:50px;padding:0 22px;border-radius:99px;cursor:pointer;
+        font-family:"Archivo";font-weight:800;font-size:.92rem;letter-spacing:.05em;text-transform:uppercase;
+        color:#fbf0d8;background:var(--ink);box-shadow:0 12px 24px -12px rgba(29,22,12,.7)}
+      .a-open svg{width:16px;height:16px}
+      .ph--A .replay{background:rgba(255,255,255,.5);border:1px solid var(--line);color:var(--ink2)}
+      /* intro A: il pallone cade e rimbalza al centro */
+      .ph--A:has(.opn:checked) .a-ball{animation:dropBounce 1.15s var(--ease) both}
+      @keyframes dropBounce{
+        0%{transform:translateY(-380px) rotate(-12deg)}
+        52%{transform:translateY(0) rotate(0) scaleY(.84) scaleX(1.14)}
+        64%{transform:translateY(-66px) scale(1)}
+        80%{transform:translateY(0) scaleY(.93) scaleX(1.06)}
+        90%{transform:translateY(-20px) scale(1)}
+        100%{transform:translateY(0) scale(1)}
+      }
+      .ph--A:has(.opn:checked) .a-shadow{animation:shadowPulse 1.15s var(--ease) both}
+      @keyframes shadowPulse{0%{transform:scale(.4);opacity:0}50%{transform:scale(1.15);opacity:.9}52%{transform:scale(.8)}100%{transform:scale(1);opacity:1}}
+      .ph--A:has(.opn:checked) .court{animation:courtIn 1s .15s ease both}
+      @keyframes courtIn{from{opacity:0}to{opacity:.5}}
+
+      /* ===================================================================
+         B · ARCADE / JAM  (NBA Jam, sala giochi, flat pop + mezzatinta)
+         =================================================================== */
+      .ph--B{--ease:cubic-bezier(.2,.8,.2,1);
+        --bg:#15163a; --bg2:#0d0e29; --pop:#ff5b1e; --pop2:#ffcf33; --cream:#fdf2dd;
+        --ink:#0a0a18; --win:#34e0a0; --faint:#8d8fc4;
+        --ball:#ff5b1e; --ball2:#c8410f; --seam:#0a0a18;
+        font-family:"Hanken Grotesk",sans-serif}
+      .ph--B .scr{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 0%, #232463 0, var(--bg) 46%, var(--bg2) 100%);
+        color:var(--cream)}
+      .b-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:30px 16px 0;font-family:"Bungee"}
+      .b-coin{font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pop2)}
+      .b-best{font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;color:var(--cream);display:flex;align-items:center;gap:6px}
+      .b-best b{color:var(--win)}
+      .b-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 18px}
+      .b-emblem{position:relative;width:150px;height:150px;display:grid;place-items:center}
+      .burst{position:absolute;inset:-18px;z-index:0;border-radius:50%;
+        background:repeating-conic-gradient(from 0deg, var(--pop2) 0 9deg, transparent 9deg 18deg);opacity:.0;mask-image:radial-gradient(closest-side,#000 52%,transparent 72%)}
+      .b-ball{position:relative;z-index:1;width:128px;height:128px;filter:drop-shadow(0 0 0 #000)}
+      .b-wm{font-family:"Bungee";font-size:2.5rem;line-height:.9;letter-spacing:.005em;text-transform:uppercase;text-align:center;
+        color:var(--pop2);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink)}
+      .b-wm .run{color:var(--pop)}
+      .b-score{font-family:"Bungee";font-size:1.1rem;color:var(--cream);letter-spacing:.06em;margin-top:2px}
+      .b-foot{position:relative;z-index:2;padding:0 16px 20px}
+      .b-cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:54px;cursor:pointer;
+        font-family:"Bungee";font-size:1.15rem;letter-spacing:.04em;text-transform:uppercase;
+        color:var(--ink);background:var(--pop2);border:2.5px solid var(--ink);border-radius:15px;
+        box-shadow:5px 5px 0 var(--ink); transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .b-cta svg{width:18px;height:18px}
+      .b-cta:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+      .b-menu{display:flex;gap:7px;margin-top:11px}
+      .b-mItem{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid rgba(253,242,221,.16);border-radius:11px;padding:8px 4px;background:rgba(0,0,0,.18)}
+      .b-mItem b{font-family:"Bungee";font-size:.6rem;letter-spacing:.02em;text-transform:uppercase;color:var(--faint)}
+      .b-mItem span{font-family:"Bungee";font-size:.46rem;letter-spacing:.06em;color:var(--pop)}
+      /* splash B */
+      .ph--B .splash{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 12%, #2a2b72 0, var(--bg) 50%, var(--bg2) 100%);
+        align-items:center;justify-content:center;text-align:center}
+      .b-splash-ball{width:120px;height:120px;animation:spin 3.6s linear infinite}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .b-splash-wm{font-family:"Bungee";font-size:2.6rem;line-height:.9;text-transform:uppercase;margin-top:20px;color:var(--pop2);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:3px 3px 0 var(--ink)}
+      .b-splash-wm .run{color:var(--pop)}
+      .b-open{display:flex;align-items:center;gap:8px;min-height:50px;margin-top:24px;padding:0 22px;border-radius:13px;cursor:pointer;
+        font-family:"Bungee";font-size:.9rem;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);
+        background:var(--pop2);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);animation:blink 1.3s steps(1) infinite}
+      @keyframes blink{50%{filter:brightness(.82)}}
+      .ph--B .replay{background:var(--pop2);border:2px solid var(--ink);color:var(--ink);font-family:"Bungee";box-shadow:2px 2px 0 var(--ink)}
+      /* intro B: la palla vola e gira, burst + stampo del marchio */
+      .ph--B:has(.opn:checked) .b-ball{animation:spinIn .9s var(--ease) both}
+      @keyframes spinIn{0%{transform:translate(-110px,150px) rotate(-220deg) scale(.25);opacity:0}55%{opacity:1}100%{transform:translate(0,0) rotate(0) scale(1);opacity:1}}
+      .ph--B:has(.opn:checked) .burst{animation:burst .8s .05s ease both}
+      @keyframes burst{0%{transform:scale(.2) rotate(0);opacity:0}45%{opacity:.55}100%{transform:scale(1.35) rotate(40deg);opacity:0}}
+      .ph--B:has(.opn:checked) .b-wm{animation:stamp .5s .35s cubic-bezier(.2,1.6,.4,1) both}
+      @keyframes stamp{0%{transform:scale(1.55);opacity:0}70%{transform:scale(.95);opacity:1}100%{transform:scale(1)}}
+
+      /* ===================================================================
+         C · ALBUM / COLLEZIONE  (figurine Panini, pacchetto da aprire, foil)
+         =================================================================== */
+      .ph--C{--ease:cubic-bezier(.2,.9,.3,1);
+        --bg:#ece6d8; --bg2:#f5f1e7; --ink:#23262e; --ink2:#5b606c; --faint:#9aa0ab;
+        --ball:#d96a22; --ball2:#aa4f12; --seam:#1c1208;
+        --t1:#1d4e89; --t2:#b23a48; --t3:#1f7a5a; --t4:#caa23a;
+        --win:#1f7a5a; --line:rgba(35,38,46,.16);
+        font-family:"Libre Franklin",sans-serif}
+      .ph--C .scr{background:
+        radial-gradient(circle at 1px 1px, rgba(35,38,46,.05) 1px, transparent 1.4px) 0 0/16px 16px,
+        linear-gradient(180deg,var(--bg2) 0,var(--bg) 100%);
+        color:var(--ink)}
+      .c-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:30px 18px 6px}
+      .c-wm{font-family:"Bevan",serif;font-size:1rem;letter-spacing:.01em;text-transform:uppercase}
+      .c-prog{font-size:.6rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);display:flex;align-items:center;gap:5px}
+      .c-prog b{color:var(--win);font-family:"Bevan"}
+      .c-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 18px 0}
+      .sticker{position:relative;width:180px;border-radius:16px;padding:3px;overflow:hidden;
+        background:linear-gradient(150deg,#e7cf86,#fff4cf 30%,#bd9136 64%,#f2dd9c 100%);
+        box-shadow:0 16px 26px -14px rgba(60,42,8,.5)}
+      .sticker::after{content:"";position:absolute;top:-30%;left:0;width:55%;height:160%;z-index:3;pointer-events:none;
+        background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);transform:translateX(-160%) rotate(18deg);opacity:0}
+      .sticker .inner{position:relative;border-radius:13px;background:linear-gradient(170deg,#fbf6ea,#efe6d2);padding:14px 12px 12px;text-align:center}
+      .sticker .badge{position:absolute;top:9px;left:9px;font-family:"Bevan";font-size:.56rem;letter-spacing:.04em;color:#fff;background:var(--t2);padding:3px 7px;border-radius:6px}
+      .sticker .pos{position:absolute;top:9px;right:9px;font-family:"Bevan";font-size:.56rem;color:var(--ink2)}
+      .c-ball{width:96px;height:96px;margin:6px auto 4px;filter:drop-shadow(0 8px 10px rgba(60,42,8,.3))}
+      .sticker .name{font-family:"Bevan";font-size:1.9rem;line-height:.88;letter-spacing:-.01em;margin-top:2px;color:var(--ink)}
+      .sticker .meta{font-size:.6rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-top:5px}
+      .c-row{display:flex;gap:7px;margin-top:14px;width:100%;max-width:200px}
+      .c-tile{flex:1;aspect-ratio:1;border-radius:9px;display:grid;place-items:center;font-family:"Bevan";font-size:.9rem;color:#fff;border:1px solid rgba(0,0,0,.12)}
+      .c-foot{position:relative;z-index:2;padding:14px 16px 20px}
+      .c-cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:52px;cursor:pointer;
+        font-family:"Bevan";font-size:1rem;letter-spacing:.02em;text-transform:uppercase;
+        color:#fbf6ea;background:var(--ink);border:0;border-radius:13px;
+        box-shadow:0 12px 22px -12px rgba(35,38,46,.7);transition:transform .15s var(--ease),filter .15s}
+      .c-cta svg{width:17px;height:17px}
+      .c-cta:hover{transform:translateY(-2px);filter:brightness(1.08)}
+      .c-hint{text-align:center;font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-top:9px}
+      /* splash C: pacchetto chiuso */
+      .ph--C .splash{background:linear-gradient(180deg,var(--bg2),var(--bg));align-items:center;justify-content:center;text-align:center;padding:0 26px}
+      .c-pack{width:172px;height:230px;border-radius:14px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+        background:linear-gradient(160deg,var(--t1),#13345e 70%);box-shadow:0 22px 34px -16px rgba(20,40,70,.6);border:2px solid rgba(255,255,255,.14)}
+      .c-pack::before{content:"";position:absolute;top:0;left:0;right:0;height:16px;background:repeating-linear-gradient(90deg,#fff 0 6px,transparent 6px 12px);opacity:.5}
+      .c-pack .pwm{font-family:"Bevan";font-size:1.7rem;line-height:.9;text-transform:uppercase;color:#fff}
+      .c-pack .pwm .run{color:var(--t4)}
+      .c-pack .pball{width:64px;height:64px}
+      .c-pack .ptag{font-size:.56rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+      .c-open{display:flex;align-items:center;gap:8px;min-height:50px;margin-top:24px;padding:0 22px;border-radius:99px;cursor:pointer;
+        font-family:"Bevan";font-size:.9rem;letter-spacing:.02em;text-transform:uppercase;color:#fbf6ea;background:var(--ink);box-shadow:0 12px 24px -12px rgba(35,38,46,.7)}
+      .c-open svg{width:16px;height:16px}
+      .ph--C .replay{background:rgba(255,255,255,.6);border:1px solid var(--line);color:var(--ink2)}
+      /* intro C: la figurina "schiocca" + lampo foil */
+      .ph--C:has(.opn:checked) .sticker{animation:slap 1s var(--ease) both}
+      @keyframes slap{0%{transform:translateY(-46px) rotate(-9deg) scale(1.25);opacity:0}55%{transform:translateY(0) rotate(2deg) scale(.97);opacity:1}74%{transform:rotate(-1.4deg) scale(1.02)}100%{transform:rotate(0) scale(1)}}
+      .ph--C:has(.opn:checked) .sticker::after{animation:shine 1.15s .4s ease both}
+      @keyframes shine{0%{transform:translateX(-160%) rotate(18deg);opacity:0}30%{opacity:.95}100%{transform:translateX(360%) rotate(18deg);opacity:0}}
+      .ph--C:has(.opn:checked) .c-tile{animation:tileIn .45s var(--d,0s) var(--ease) both}
+      @keyframes tileIn{from{opacity:0;transform:scale(.6) rotate(-6deg)}to{opacity:1;transform:none}}
+
+      /* basket SVG: colori via classi */
+      .ball-fill{fill:var(--ball)} .ball-hi{fill:#fff;opacity:.16} .ball-sd{fill:var(--ball2);opacity:.5}
+      .seam{stroke:var(--seam);stroke-width:2.6;fill:none;stroke-linecap:round}
+
+      @media (prefers-reduced-motion:reduce){
+        .ph *{animation:none!important;transition:none!important}
+        .home{opacity:1!important;pointer-events:auto!important}
+        .splash{opacity:1}
+      }
+      </style>
+
+      <!-- ═══════════════ A · CENTROCAMPO / DAYLIGHT ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Centrocampo · Daylight"
+        data-mood="parquet acero alla luce del giorno · editoriale sportivo (alla SLAM/cartaceo)"
+        data-why="Una sola immagine memorabile — il pallone a centrocampo — e una sola azione. Niente app-bar/feed: si legge in mezzo secondo, leggero come 7-0.">
+        <div class="ph ph--A"><div class="scr">
+          <div class="notch"></div>
+
+          <!-- HOME (sotto) -->
+          <div class="home">
+            <div class="court" aria-hidden="true">
+              <svg viewBox="0 0 300 580" fill="none" stroke="currentColor" stroke-width="1.4">
+                <circle cx="150" cy="250" r="78"/><circle cx="150" cy="250" r="2.5" fill="currentColor" stroke="none"/>
+                <path d="M150 80 V250"/><path d="M40 250 H260"/>
+                <path d="M150 250 m-40 130 a40 40 0 0 0 80 0" />
+                <rect x="110" y="446" width="80" height="92"/>
+              </svg>
+            </div>
+            <div class="a-top">
+              <span class="a-wm rise">THE RUN</span>
+              <span class="a-streak rise" style="--d:.04s">in fiamme <b>4</b> di fila</span>
+            </div>
+            <div class="a-stage">
+              <svg class="a-ball" viewBox="0 0 64 64" aria-hidden="true">
+                <circle class="ball-fill" cx="32" cy="32" r="30"/>
+                <path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/>
+                <ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+              </svg>
+              <div class="a-shadow"></div>
+              <div class="a-eyebrow rise" style="--d:.16s">la corsa all'anello</div>
+              <div class="a-score rise" style="--d:.2s">16<span style="color:var(--paint)">–</span>0</div>
+              <p class="a-sub rise" style="--d:.26s">Sedici vittorie di fila. Una sola sconfitta e sei a casa.</p>
+            </div>
+            <div class="a-foot">
+              <label class="a-cta rise" for="a-open" style="--d:.3s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</label>
+              <div class="a-modes rise" style="--d:.36s">
+                <div class="a-mode"><b>Playoff</b><span>presto</span></div>
+                <div class="a-mode"><b>Stagione</b><span>presto</span></div>
+                <div class="a-mode"><b>Sfida</b><span>presto</span></div>
+              </div>
+            </div>
+            <label class="replay" for="a-open" title="Rivedi l'apertura"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/><path d="M20 15a8 8 0 0 1-13 3l-3-3M4 19v-4h4"/></svg>Intro</label>
+          </div>
+
+          <!-- SPLASH (copertina, toggle) -->
+          <input class="opn" type="checkbox" id="a-open">
+          <label class="splash" for="a-open">
+            <div class="a-splash-wm">THE <span class="run">RUN</span></div>
+            <div class="a-splash-tag">la corsa all'anello · 16-0</div>
+            <span class="a-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ B · ARCADE / JAM ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Arcade · Jam"
+        data-mood="NBA Jam / sala giochi · flat pop, mezzatinta, type ciccione (Bungee)"
+        data-why="Apri e ti viene da giocare: marchio che 'stampa', palla-emblema, 'GIOCA' grosso. Massima leggerezza ludica, zero aria da gestionale." hidden>
+        <div class="ph ph--B"><div class="scr">
+          <div class="notch"></div>
+
+          <div class="home">
+            <div class="b-top">
+              <span class="b-coin rise">★ 1 credito</span>
+              <span class="b-best rise" style="--d:.04s">best <b>9–0</b></span>
+            </div>
+            <div class="b-stage">
+              <div class="b-emblem">
+                <div class="burst"></div>
+                <svg class="b-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/>
+                  <path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/>
+                  <ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+              </div>
+              <div class="b-wm">THE <span class="run">RUN</span></div>
+              <div class="b-score rise" style="--d:.5s">16–0 o niente</div>
+            </div>
+            <div class="b-foot">
+              <label class="b-cta rise" for="b-open" style="--d:.55s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</label>
+              <div class="b-menu rise" style="--d:.62s">
+                <div class="b-mItem"><b>Playoff</b><span>soon</span></div>
+                <div class="b-mItem"><b>Season</b><span>soon</span></div>
+                <div class="b-mItem"><b>Daily</b><span>soon</span></div>
+              </div>
+            </div>
+            <label class="replay" for="b-open" title="Rivedi l'apertura"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/><path d="M20 15a8 8 0 0 1-13 3l-3-3M4 19v-4h4"/></svg>Intro</label>
+          </div>
+
+          <input class="opn" type="checkbox" id="b-open">
+          <label class="splash" for="b-open">
+            <svg class="b-splash-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/>
+              <path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/>
+              <ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="b-splash-wm">THE <span class="run">RUN</span></div>
+            <span class="b-open">▶ Tocca per giocare</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ C · ALBUM / COLLEZIONE ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Album · Collezione"
+        data-mood="figurine Panini / pacchetto da aprire · carta, foil, colori squadra (Bevan)"
+        data-why="L'apertura È il gesto: strappi il pacchetto e la figurina schiocca col lampo foil. Tattile, nostalgico, collezionabile — un colpo d'occhio che resta." hidden>
+        <div class="ph ph--C"><div class="scr">
+          <div class="notch"></div>
+
+          <div class="home">
+            <div class="c-top">
+              <span class="c-wm rise">The Run</span>
+              <span class="c-prog rise" style="--d:.04s">album <b>9</b>/16</span>
+            </div>
+            <div class="c-stage">
+              <div class="sticker">
+                <div class="inner">
+                  <span class="badge">16–0</span><span class="pos">RUN</span>
+                  <svg class="c-ball" viewBox="0 0 64 64" aria-hidden="true">
+                    <circle class="ball-fill" cx="32" cy="32" r="30"/>
+                    <path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/>
+                    <ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                    <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                  </svg>
+                  <div class="name">LA CORSA</div>
+                  <div class="meta">edizione · imbattuti</div>
+                </div>
+              </div>
+              <div class="c-row">
+                <div class="c-tile rise" style="--d:.5s;background:var(--t1)">PG</div>
+                <div class="c-tile rise" style="--d:.56s;background:var(--t2)">SG</div>
+                <div class="c-tile rise" style="--d:.62s;background:var(--t3)">SF</div>
+                <div class="c-tile rise" style="--d:.68s;background:var(--t4)">C</div>
+              </div>
+            </div>
+            <div class="c-foot">
+              <label class="c-cta rise" for="c-open" style="--d:.74s"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Comincia la corsa</label>
+              <div class="c-hint rise" style="--d:.8s">completa l'album: 16 vittorie, zero buchi</div>
+            </div>
+            <label class="replay" for="c-open" title="Rivedi l'apertura"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/><path d="M20 15a8 8 0 0 1-13 3l-3-3M4 19v-4h4"/></svg>Intro</label>
+          </div>
+
+          <input class="opn" type="checkbox" id="c-open">
+          <label class="splash" for="c-open">
+            <div class="c-pack">
+              <div class="pwm">THE <span class="run">RUN</span></div>
+              <svg class="pball" viewBox="0 0 64 64" aria-hidden="true">
+                <circle class="ball-fill" cx="32" cy="32" r="30"/>
+                <path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/>
+                <ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+              </svg>
+              <div class="ptag">pacchetto · 16-0</div>
+            </div>
+            <span class="c-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri il pacchetto</span>
+          </label>
+        </div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div><div class="dir-name">${p.dataset.name||'Direzione'}</div><div class="dir-mood">${p.dataset.mood||''}</div></div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+  function show(i){ panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i)); [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i)); }
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button'); b.type='button'; b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i)); chips.appendChild(b);
+  });
+  show(0);
+})();
+</script>
+</body>
+</html>

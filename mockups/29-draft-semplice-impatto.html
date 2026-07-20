@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  29-draft-semplice-impatto.html · visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA, CONTENUTO VARIABILE. Sostituito SOLO #panels e i titoli.
+  Brief: 3 direzioni NUOVE del DRAFT, look Cabina 90s tenuto, impostazione
+  grafica più semplice e d'impatto, NBA che si sente senza strafare.
+-->
+<title>Draft semplice & d'impatto · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:52ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto</div>
+    <h1 id="mockTitle">Draft — più semplice & d'impatto (look Cabina 90s)</h1>
+    <p class="lead">Stessa scelta (7ª carta su 10, 5 candidati a Normale). Cambia <b>come leggi le 5 carte</b>. Tocca un candidato → si accende «PRENDI». Foto/dati finti.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <style>
+        /* ====== Cabina 90s — base condivisa del draft (file 29) ====== */
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@500;700;900&display=swap');
+
+        #panels .ph{ width:336px; max-width:100%; margin:0 auto;
+          background:linear-gradient(180deg,#15163a 0%,#0d0e29 100%);
+          border:3px solid #000; border-radius:26px;
+          box-shadow:0 0 0 2px #2a2b62, 8px 8px 0 #000; overflow:hidden;
+          font-family:"Hanken Grotesk",sans-serif; color:#eef0ff; }
+        #panels .ph-in{ padding:15px 13px 17px; }
+
+        /* header sottile: scelta + cosa manca (il "sussurro" strategico) */
+        #panels .dh{ display:flex; align-items:center; gap:9px; margin-bottom:13px; }
+        #panels .dh-pick{ font-family:"Bungee"; font-size:.6rem; color:#0d0e29; background:#ffcf33;
+          border:2px solid #000; border-radius:7px; padding:6px 9px; letter-spacing:.4px; box-shadow:2px 2px 0 #000; }
+        #panels .dh-need{ margin-left:auto; font-size:.6rem; color:#9aa0d8; text-align:right; line-height:1.3;
+          text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+        #panels .dh-need b{ font-family:"Bungee"; font-weight:400; font-size:.55rem; color:#0d0e29;
+          background:#ff7a6a; border:2px solid #000; border-radius:5px; padding:1px 5px; letter-spacing:.3px; margin-left:3px; }
+
+        /* foto duotone brace (filtro verificato dal look Cabina 90s) */
+        #panels .face img{ width:100%; height:100%; object-fit:cover; object-position:top center;
+          filter:grayscale(1) sepia(1) saturate(2.4) hue-rotate(-18deg) contrast(1.05); }
+        #panels .face{ background:#3a2418; overflow:hidden; }
+
+        /* tag "copre il buco" — verde = azione che riempie il bisogno */
+        #panels .cover{ font-family:"Bungee"; color:#0d0e29; background:#5ccf8e;
+          border:2px solid #000; border-radius:5px; box-shadow:2px 2px 0 #000; letter-spacing:.2px; }
+
+        /* barra conferma condivisa */
+        #panels .conf{ margin-top:13px; text-align:center; font-family:"Bungee"; font-size:.68rem;
+          padding:14px; border:3px solid #000; border-radius:12px; background:#23244e; color:#6a6ca0;
+          box-shadow:4px 4px 0 #000; letter-spacing:.4px; min-height:50px; }
+
+        #panels .vh{ position:absolute; opacity:0; width:0; height:0; pointer-events:none; }
+
+        /* =================================================================
+           A · CARTA IN VETRINA  — una grande carta alla volta
+        ================================================================= */
+        #panels .astage{ position:relative; border:3px solid #000; border-radius:16px; overflow:hidden;
+          box-shadow:5px 5px 0 #000; background:#0d0e29; }
+        #panels .acard{ display:none; }
+        #panels .aphoto{ position:relative; height:178px; }
+        #panels .aphoto .face{ position:absolute; inset:0; }
+        #panels .aovr{ position:absolute; top:7px; right:11px; font-family:"Doto"; font-weight:900;
+          font-size:2.7rem; line-height:.78; color:#ffcf33; text-shadow:3px 3px 0 #000; }
+        #panels .aovr small{ display:block; font-family:"Bungee"; font-size:.4rem; color:#fff; text-shadow:none;
+          letter-spacing:.2em; text-align:right; margin-top:3px; }
+        #panels .arole{ position:absolute; top:11px; left:11px; font-family:"Bungee"; font-size:.5rem;
+          color:#0d0e29; background:#fff; border:2px solid #000; border-radius:5px; padding:3px 7px; letter-spacing:.3px; }
+        #panels .acover{ position:absolute; bottom:11px; left:11px; font-size:.5rem; padding:3px 7px; }
+        #panels .ainfo{ padding:12px 13px 13px; }
+        #panels .aname{ font-family:"Bungee"; font-size:1.12rem; color:#fff; line-height:1; }
+        #panels .ateam{ font-size:.62rem; color:#9aa0d8; margin-top:6px; text-transform:uppercase;
+          letter-spacing:.12em; font-weight:700; }
+        #panels .aspec{ margin-top:9px; display:inline-block; font-size:.7rem; color:#ffcf33; font-weight:700; }
+
+        #panels .athumbs{ display:flex; gap:7px; margin:12px 0 0; }
+        #panels .athumb{ flex:1; height:48px; border:2px solid #2a2b62; border-radius:9px; overflow:hidden;
+          cursor:pointer; transition:border-color .14s, box-shadow .14s; }
+        #panels .athumb .face{ width:100%; height:100%; }
+        #panels .athumb .face img{ opacity:.55; transition:opacity .14s; }
+
+        #panels #a-c1:checked ~ .astage .acard[data-i="1"],
+        #panels #a-c2:checked ~ .astage .acard[data-i="2"],
+        #panels #a-c3:checked ~ .astage .acard[data-i="3"],
+        #panels #a-c4:checked ~ .astage .acard[data-i="4"],
+        #panels #a-c5:checked ~ .astage .acard[data-i="5"]{ display:block; }
+
+        #panels #a-c1:checked ~ .athumbs .athumb[data-i="1"],
+        #panels #a-c2:checked ~ .athumbs .athumb[data-i="2"],
+        #panels #a-c3:checked ~ .athumbs .athumb[data-i="3"],
+        #panels #a-c4:checked ~ .athumbs .athumb[data-i="4"],
+        #panels #a-c5:checked ~ .athumbs .athumb[data-i="5"]{ border-color:#ffcf33; box-shadow:0 0 0 2px #ffcf33; }
+        #panels #a-c1:checked ~ .athumbs .athumb[data-i="1"] .face img,
+        #panels #a-c2:checked ~ .athumbs .athumb[data-i="2"] .face img,
+        #panels #a-c3:checked ~ .athumbs .athumb[data-i="3"] .face img,
+        #panels #a-c4:checked ~ .athumbs .athumb[data-i="4"] .face img,
+        #panels #a-c5:checked ~ .athumbs .athumb[data-i="5"] .face img{ opacity:1; }
+
+        #panels .aPrendi{ display:block; margin-top:13px; text-align:center; cursor:pointer;
+          font-family:"Bungee"; font-size:.72rem; padding:14px; border:3px solid #000; border-radius:12px;
+          background:#ff5b1e; color:#0d0e29; box-shadow:4px 4px 0 #000; letter-spacing:.4px;
+          transition:background .14s, transform .1s; }
+        #panels .aPrendi:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 #000; }
+        #panels .aPrendi .p-done{ display:none; }
+        #panels #a-take:checked + .aPrendi{ background:#ffcf33; }
+        #panels #a-take:checked + .aPrendi .p-go{ display:none; }
+        #panels #a-take:checked + .aPrendi .p-done{ display:inline; }
+
+        /* =================================================================
+           B · CINQUE IN FILA — mano orizzontale, confronto a colpo d'occhio
+        ================================================================= */
+        #panels .bhand{ display:flex; gap:9px; overflow-x:auto; padding:9px 2px 10px;
+          scroll-snap-type:x mandatory; }
+        #panels .bcard{ scroll-snap-align:center; flex:0 0 120px; border:3px solid #000; border-radius:14px;
+          overflow:hidden; background:#0d0e29; box-shadow:4px 4px 0 #000; cursor:pointer; position:relative;
+          transition:transform .14s, border-color .14s, opacity .14s; }
+        #panels .bphoto{ position:relative; height:100px; }
+        #panels .bphoto .face{ position:absolute; inset:0; }
+        #panels .bovr{ position:absolute; top:5px; right:7px; font-family:"Doto"; font-weight:900;
+          font-size:1.55rem; line-height:.8; color:#ffcf33; text-shadow:2px 2px 0 #000; }
+        #panels .brole{ position:absolute; top:6px; left:6px; font-family:"Bungee"; font-size:.42rem;
+          color:#0d0e29; background:#fff; border:2px solid #000; border-radius:4px; padding:2px 5px; }
+        #panels .binfo{ padding:8px 9px 10px; }
+        #panels .bname{ font-family:"Bungee"; font-size:.64rem; color:#fff; line-height:1.05; }
+        #panels .bspec{ font-size:.56rem; color:#ffcf33; margin-top:5px; font-weight:700; }
+        #panels .bcover{ display:inline-block; margin-top:6px; font-size:.42rem; padding:2px 5px; }
+        #panels .bcheck{ position:absolute; top:-9px; right:-9px; width:24px; height:24px; background:#ffcf33;
+          border:2px solid #000; border-radius:99px; display:none; align-items:center; justify-content:center; }
+        #panels .bcard:has(input:checked){ border-color:#ffcf33; transform:translateY(-5px); }
+        #panels .bcard:has(input:checked) .bcheck{ display:flex; }
+        #panels .bhand:has(input:checked) .bcard:not(:has(input:checked)){ opacity:.5; }
+        #panels .bhand:has(input:checked) ~ .conf{ background:#ffcf33; color:#0d0e29; }
+        #panels .bhint{ text-align:center; font-size:.58rem; color:#6a6ca0; margin-top:2px;
+          text-transform:uppercase; letter-spacing:.1em; font-weight:700; }
+
+        /* =================================================================
+           C · TABELLA DI SCELTA — lista verticale secca, alla 7-0/38-0-0
+        ================================================================= */
+        #panels .clist{ display:flex; flex-direction:column; gap:9px; }
+        #panels .crow{ display:flex; align-items:center; gap:11px; padding:10px 12px; border:3px solid #000;
+          border-radius:13px; background:#0d0e29; box-shadow:3px 3px 0 #000; cursor:pointer; position:relative;
+          min-height:62px; transition:border-color .14s, background .14s, opacity .14s; }
+        #panels .cface{ width:44px; height:44px; border-radius:11px; border:2px solid #000; flex:none; }
+        #panels .cmain{ flex:1; min-width:0; }
+        #panels .cname{ font-family:"Bungee"; font-size:.74rem; color:#fff; line-height:1;
+          white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        #panels .cmeta{ font-size:.58rem; color:#9aa0d8; margin-top:6px; text-transform:uppercase;
+          letter-spacing:.05em; font-weight:700; }
+        #panels .cmeta .cspec{ color:#ffcf33; }
+        #panels .crole{ font-family:"Bungee"; font-size:.46rem; color:#0d0e29; background:#fff;
+          border:2px solid #000; border-radius:5px; padding:3px 6px; flex:none; }
+        #panels .covr{ font-family:"Doto"; font-weight:900; font-size:1.8rem; color:#ffcf33;
+          text-shadow:2px 2px 0 #000; flex:none; min-width:40px; text-align:right; }
+        #panels .ccover{ position:absolute; top:-10px; left:11px; font-size:.44rem; padding:1px 6px; }
+        #panels .crow:has(input:checked){ border-color:#ffcf33; background:#171748; }
+        #panels .clist:has(input:checked) .crow:not(:has(input:checked)){ opacity:.5; }
+        #panels .clist:has(input:checked) ~ .conf{ background:#ffcf33; color:#0d0e29; }
+      </style>
+
+      <!-- ============================ A ============================ -->
+      <section class="dir-panel" data-name="Carta in vetrina"
+        data-mood="una alla volta · alla 2K MyTeam"
+        data-why="Una sola carta enorme alla volta: zero affollamento, massimo impatto — sfogli e scegli come aprire un pacchetto." data-role="">
+        <div class="ph"><div class="ph-in">
+
+          <div class="dh">
+            <span class="dh-pick">7ª SCELTA · 7/10</span>
+            <span class="dh-need">ti manca <b>FERRO</b> <b>RIMBALZO</b></span>
+          </div>
+
+          <input class="vh" type="radio" name="aSel" id="a-c1" checked>
+          <input class="vh" type="radio" name="aSel" id="a-c2">
+          <input class="vh" type="radio" name="aSel" id="a-c3">
+          <input class="vh" type="radio" name="aSel" id="a-c4">
+          <input class="vh" type="radio" name="aSel" id="a-c5">
+
+          <div class="astage">
+            <article class="acard" data-i="1">
+              <div class="aphoto">
+                <div class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png"></div>
+                <div class="arole">CENTRO</div>
+                <div class="aovr">95<small>OVR</small></div>
+                <div class="acover cover">COPRE: FERRO</div>
+              </div>
+              <div class="ainfo"><div class="aname">WEMBANYAMA</div>
+                <div class="ateam">San Antonio</div>
+                <div class="aspec">★ Protezione ferro</div></div>
+            </article>
+            <article class="acard" data-i="2">
+              <div class="aphoto">
+                <div class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"></div>
+                <div class="arole">CENTRO</div>
+                <div class="aovr">96<small>OVR</small></div>
+                <div class="acover cover">COPRE: RIMBALZO</div>
+              </div>
+              <div class="ainfo"><div class="aname">EMBIID</div>
+                <div class="ateam">Philadelphia</div>
+                <div class="aspec">★ Dominio area</div></div>
+            </article>
+            <article class="acard" data-i="3">
+              <div class="aphoto">
+                <div class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"></div>
+                <div class="arole">GUARDIA</div>
+                <div class="aovr">94<small>OVR</small></div>
+              </div>
+              <div class="ainfo"><div class="aname">EDWARDS</div>
+                <div class="ateam">Minnesota</div>
+                <div class="aspec">★ Realizzatore</div></div>
+            </article>
+            <article class="acard" data-i="4">
+              <div class="aphoto">
+                <div class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"></div>
+                <div class="arole">ALA</div>
+                <div class="aovr">95<small>OVR</small></div>
+              </div>
+              <div class="ainfo"><div class="aname">TATUM</div>
+                <div class="ateam">Boston</div>
+                <div class="aspec">★ Ala completa</div></div>
+            </article>
+            <article class="acard" data-i="5">
+              <div class="aphoto">
+                <div class="face"><img loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"></div>
+                <div class="arole">PLAY</div>
+                <div class="aovr">90<small>OVR</small></div>
+              </div>
+              <div class="ainfo"><div class="aname">HALIBURTON</div>
+                <div class="ateam">Indiana</div>
+                <div class="aspec">★ Regia élite</div></div>
+            </article>
+          </div>
+
+          <div class="athumbs">
+            <label class="athumb" data-i="1" for="a-c1"><span class="face"><img loading="lazy" alt="Wembanyama" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png"></span></label>
+            <label class="athumb" data-i="2" for="a-c2"><span class="face"><img loading="lazy" alt="Embiid" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"></span></label>
+            <label class="athumb" data-i="3" for="a-c3"><span class="face"><img loading="lazy" alt="Edwards" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"></span></label>
+            <label class="athumb" data-i="4" for="a-c4"><span class="face"><img loading="lazy" alt="Tatum" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"></span></label>
+            <label class="athumb" data-i="5" for="a-c5"><span class="face"><img loading="lazy" alt="Haliburton" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"></span></label>
+          </div>
+
+          <input class="vh" type="checkbox" id="a-take">
+          <label class="aPrendi" for="a-take"><span class="p-go">PRENDI QUESTO ▸</span><span class="p-done">PRESO ✓</span></label>
+
+        </div></div>
+      </section>
+
+      <!-- ============================ B ============================ -->
+      <section class="dir-panel" data-name="Cinque in fila"
+        data-mood="ballottaggio · mano pulita"
+        data-why="Le 5 opzioni affiancate e leggibili in un colpo: confronti OVR e specialità senza grafici, tocchi quella giusta." data-role="" hidden>
+        <div class="ph"><div class="ph-in">
+
+          <div class="dh">
+            <span class="dh-pick">7ª SCELTA · 7/10</span>
+            <span class="dh-need">ti manca <b>FERRO</b> <b>RIMBALZO</b></span>
+          </div>
+
+          <div class="bhint">◂ scorri · tocca per scegliere ▸</div>
+          <div class="bhand">
+            <label class="bcard">
+              <input class="vh" type="radio" name="bSel">
+              <span class="bcheck"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="bphoto"><span class="face"><img loading="lazy" alt="Wembanyama" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png"></span><span class="brole">C</span><span class="bovr">95</span></span>
+              <span class="binfo"><span class="bname">WEMBY</span><br><span class="bspec">Protezione ferro</span><br><span class="bcover cover">COPRE: FERRO</span></span>
+            </label>
+            <label class="bcard">
+              <input class="vh" type="radio" name="bSel">
+              <span class="bcheck"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="bphoto"><span class="face"><img loading="lazy" alt="Embiid" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"></span><span class="brole">C</span><span class="bovr">96</span></span>
+              <span class="binfo"><span class="bname">EMBIID</span><br><span class="bspec">Dominio area</span><br><span class="bcover cover">COPRE: RIMB.</span></span>
+            </label>
+            <label class="bcard">
+              <input class="vh" type="radio" name="bSel">
+              <span class="bcheck"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="bphoto"><span class="face"><img loading="lazy" alt="Edwards" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"></span><span class="brole">G</span><span class="bovr">94</span></span>
+              <span class="binfo"><span class="bname">EDWARDS</span><br><span class="bspec">Realizzatore</span></span>
+            </label>
+            <label class="bcard">
+              <input class="vh" type="radio" name="bSel">
+              <span class="bcheck"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="bphoto"><span class="face"><img loading="lazy" alt="Tatum" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"></span><span class="brole">A</span><span class="bovr">95</span></span>
+              <span class="binfo"><span class="bname">TATUM</span><br><span class="bspec">Ala completa</span></span>
+            </label>
+            <label class="bcard">
+              <input class="vh" type="radio" name="bSel">
+              <span class="bcheck"><svg viewBox="0 0 24 24" fill="none" stroke="#0d0e29" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M5 13l4 4L19 7"/></svg></span>
+              <span class="bphoto"><span class="face"><img loading="lazy" alt="Haliburton" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"></span><span class="brole">P</span><span class="bovr">90</span></span>
+              <span class="binfo"><span class="bname">HALI</span><br><span class="bspec">Regia élite</span></span>
+            </label>
+          </div>
+
+          <div class="conf">AGGIUNGI ALLA ROSA</div>
+
+        </div></div>
+      </section>
+
+      <!-- ============================ C ============================ -->
+      <section class="dir-panel" data-name="Tabella di scelta"
+        data-mood="lista secca · alla 7-0 / 38-0-0"
+        data-why="La lista verticale è la più veloce e intuitiva col pollice: nome, ruolo, OVR, scegli. Esattamente il passo di 7-0." data-role="" hidden>
+        <div class="ph"><div class="ph-in">
+
+          <div class="dh">
+            <span class="dh-pick">7ª SCELTA · 7/10</span>
+            <span class="dh-need">ti manca <b>FERRO</b> <b>RIMBALZO</b></span>
+          </div>
+
+          <div class="clist">
+            <label class="crow">
+              <input class="vh" type="radio" name="cSel">
+              <span class="ccover cover">COPRE: FERRO</span>
+              <span class="cface face"><img loading="lazy" alt="Wembanyama" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1641705.png"></span>
+              <span class="cmain"><span class="cname">WEMBANYAMA</span><span class="cmeta">San Antonio · <span class="cspec">Protezione ferro</span></span></span>
+              <span class="crole">C</span><span class="covr">95</span>
+            </label>
+            <label class="crow">
+              <input class="vh" type="radio" name="cSel">
+              <span class="ccover cover">COPRE: RIMBALZO</span>
+              <span class="cface face"><img loading="lazy" alt="Embiid" src="https://cdn.nba.com/headshots/nba/latest/1040x760/203954.png"></span>
+              <span class="cmain"><span class="cname">EMBIID</span><span class="cmeta">Philadelphia · <span class="cspec">Dominio area</span></span></span>
+              <span class="crole">C</span><span class="covr">96</span>
+            </label>
+            <label class="crow">
+              <input class="vh" type="radio" name="cSel">
+              <span class="cface face"><img loading="lazy" alt="Edwards" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630162.png"></span>
+              <span class="cmain"><span class="cname">EDWARDS</span><span class="cmeta">Minnesota · <span class="cspec">Realizzatore</span></span></span>
+              <span class="crole">G</span><span class="covr">94</span>
+            </label>
+            <label class="crow">
+              <input class="vh" type="radio" name="cSel">
+              <span class="cface face"><img loading="lazy" alt="Tatum" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1628369.png"></span>
+              <span class="cmain"><span class="cname">TATUM</span><span class="cmeta">Boston · <span class="cspec">Ala completa</span></span></span>
+              <span class="crole">A</span><span class="covr">95</span>
+            </label>
+            <label class="crow">
+              <input class="vh" type="radio" name="cSel">
+              <span class="cface face"><img loading="lazy" alt="Haliburton" src="https://cdn.nba.com/headshots/nba/latest/1040x760/1630169.png"></span>
+              <span class="cmain"><span class="cname">HALIBURTON</span><span class="cmeta">Indiana · <span class="cspec">Regia élite</span></span></span>
+              <span class="crole">P</span><span class="covr">90</span>
+            </label>
+          </div>
+
+          <div class="conf">AGGIUNGI ALLA ROSA</div>
+
+        </div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

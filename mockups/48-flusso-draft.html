@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flusso draft · apertura → candidati → inserimento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%,#1d2230 0,transparent 60%),#14171e;
+    color:#e9e4d8;font-family:"Hanken Grotesk",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:24px 18px 64px;text-align:center}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:#e0a96d;font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.3rem,4vw,1.9rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:#a39e93;font-size:.88rem;margin:.45rem auto 0;max-width:52ch}
+  .lead b{color:#ffcf33;font-weight:600}
+
+  /* ── stepper: i tre momenti del flusso ── */
+  .stepper{display:inline-flex;gap:6px;align-items:center;margin:18px auto 4px;flex-wrap:wrap;justify-content:center}
+  .step{display:inline-flex;align-items:center;gap:7px;font-family:"Bungee";font-size:.56rem;letter-spacing:.02em;color:#7b76a0;
+    background:#171a3a;border:1px solid #2c2a63;border-radius:99px;padding:8px 13px;transition:color .25s,background .25s,border-color .25s}
+  .step .dot{width:7px;height:7px;border-radius:99px;background:#3a3a6a;transition:background .25s,transform .25s}
+  .step.on{color:#1a1206;background:#ffcf33;border-color:#ffcf33}
+  .step.on .dot{background:#1a1206;transform:scale(1.25)}
+  .step.done{color:#5ccf8e;border-color:#2f6f4f;background:#13241c}
+  .step.done .dot{background:#5ccf8e}
+  .stepsep{color:#3a3a6a;font-size:.6rem}
+
+  .controls{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:14px auto 2px}
+  .master{display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:0;
+    font-family:"Bungee";font-size:.72rem;color:#1a1206;background:#ffcf33;border-radius:11px;padding:12px 18px;box-shadow:0 4px 0 #b8901f;transition:transform .1s,box-shadow .1s}
+  .master:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .master svg{width:15px;height:15px;fill:currentColor}
+  .ctl{display:inline-flex;align-items:center;gap:7px;cursor:pointer;border:1px solid #2c2a63;
+    font-family:"Bungee";font-size:.64rem;color:#ffcf33;background:#171a3a;border-radius:11px;padding:12px 15px;transition:transform .1s,background .15s,box-shadow .15s}
+  .ctl:hover{background:#1e2147}
+  .ctl:active{transform:translateY(2px)}
+  .ctl svg{width:14px;height:14px;fill:currentColor}
+  .ctl.on{background:#ffcf33;color:#1a1206;border-color:#ffcf33;box-shadow:0 3px 0 #b8901f}
+
+  .stage{display:flex;justify-content:center;margin-top:24px}
+
+  /* ───────── CABINA 90s ───────── */
+  .cab{--bg:#15163a;--bg2:#0d0e29;--panel2:#241a3e;--t:1;
+    --orange:#ff5b1e;--yellow:#ffcf33;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;--dim:#8a8bc0;--hair:#2c2a63;
+    color:var(--cream);font-family:"Hanken Grotesk",sans-serif;text-align:left}
+  .cab.slow{--t:2.3}
+  .cab *{box-sizing:border-box}
+  .phone{width:322px;max-width:100%;border:9px solid #05030f;border-radius:34px;background:#05030f;box-shadow:0 22px 50px rgba(0,0,0,.55)}
+  .screen{position:relative;overflow:hidden;border-radius:25px;padding:14px;background:radial-gradient(120% 80% at 50% -10%,#20206a 0,var(--bg) 55%,var(--bg2) 100%)}
+
+  .apphd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .wm{font-family:"Bungee";font-size:.84rem;color:var(--yellow);line-height:1}
+  .wm b{color:var(--orange)}
+  .flame{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:9px;padding:4px 9px}
+  .flame svg{width:13px;height:13px;flex:none;opacity:.85}
+  .flame .ico1{fill:var(--orange)} .flame .ico2{fill:var(--yellow)}
+  .flame .fn{font-family:"Doto";font-weight:700;font-size:.74rem;color:var(--cream);line-height:1;letter-spacing:.04em}
+  .flame .fn i{font-style:normal;color:var(--dim);margin:0 .06em}
+  .flame .fs{font-size:.42rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:800;line-height:1}
+
+  .seclab{font-size:.54rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:800;margin:0 0 7px}
+  .seclab b{font-family:"Doto";font-weight:900;letter-spacing:.04em;color:var(--orange)}
+  .seclab .cafter{display:none}
+  .cab.drafted .seclab .cbefore{display:none}
+  .cab.drafted .seclab .cafter{display:inline}
+  .cab.drafted .seclab .cafter b{color:var(--green)}
+
+  .court{position:relative;display:flex;gap:5px;background:linear-gradient(180deg,#1a1640,#120f33);border:1px solid var(--hair);border-radius:13px;padding:6px;margin-bottom:12px;background-image:radial-gradient(120% 90% at 50% 0,rgba(255,91,30,.1),transparent 60%)}
+  .cc{flex:1}
+  .face{position:relative;border-radius:11px;overflow:hidden;flex:none;display:block}
+  .face img{width:100%;height:100%;object-fit:cover;object-position:50% 8%;display:block}
+  .face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(40,20,80,.05) 40%,rgba(255,91,30,.16));pointer-events:none}
+  .fbadge{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;padding:3px 4px;background:linear-gradient(180deg,transparent,rgba(5,3,15,.85));font-size:.44rem;font-weight:800}
+  .fbadge .r{color:var(--cream);letter-spacing:.04em}
+  .fbadge .o{font-family:"Doto";font-weight:900;color:var(--yellow)}
+  .cc .face.ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;width:100%;aspect-ratio:3/4;
+    border:1.5px dashed var(--hair);background:#1c142e}
+  .cc.target .face.ph{border-color:var(--orange);background:#211435}
+  .phpos{font-size:.46rem;letter-spacing:.1em;font-weight:800;color:var(--dim);text-transform:uppercase}
+  .phplus{font-family:"Bungee";font-size:.95rem;color:var(--orange);line-height:.7}
+  .cc:not(.target) .phplus{color:var(--dim);opacity:.5}
+  .cc.target{position:relative;z-index:2}
+  .cc.target .face.real{display:none;width:100%;aspect-ratio:3/4}
+  .cab.drafted .cc.target .face.ph{display:none}
+  .cab.drafted .cc.target .face.real{display:block}
+
+  /* ── blocco scelta: striscia 5 candidati + dettaglio ── */
+  .pickblock{overflow:hidden;max-height:0;opacity:0;transform:translateY(8px);
+    transition:max-height .45s cubic-bezier(.4,0,.2,1),opacity .35s ease,transform .4s ease}
+  .cab.s-pick .pickblock{max-height:340px;opacity:1;transform:none}
+  .cab.drafted .pickblock{max-height:0;opacity:0;transform:translateY(8px)}
+
+  .pikhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .pikhd .inlab{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+  .pikhd .cnt{font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:800}
+
+  .boardstrip{display:flex;gap:5px;margin-bottom:11px}
+  .btile{flex:1;border-radius:11px;padding:2px;border:1.5px solid transparent;background:transparent}
+  .btile .face{width:100%;aspect-ratio:3/4}
+  .btile.sel{border-color:var(--yellow);background:rgba(255,207,51,.12)}
+
+  .bdetail{background:linear-gradient(180deg,var(--panel2),#141538);border:1px solid #3a2a66;border-radius:13px;padding:12px}
+  .bdetail .dhd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .nm{font-family:"Bungee";line-height:1.05;letter-spacing:-.01em;font-size:.84rem}
+  .pos{font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:4px}
+  .ovrtag{display:inline-flex;flex-direction:column;align-items:center;line-height:.8;flex:none}
+  .ovrtag b{font-family:"Doto";font-weight:900;font-size:1.3rem;color:var(--yellow);text-shadow:0 2px 0 #b8901f}
+  .ovrtag small{font-size:.36rem;letter-spacing:.16em;color:var(--dim);font-weight:700;margin-top:2px}
+  .bars{display:grid;grid-template-columns:1fr 1fr;gap:6px 11px}
+  .b{min-width:0}
+  .b .bl{display:flex;justify-content:space-between;align-items:baseline;font-size:.46rem;letter-spacing:.04em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-bottom:3px}
+  .b .bn{font-family:"Doto";font-weight:900;font-size:.66rem;color:var(--cream)}
+  .trk{display:block;height:6px;border-radius:99px;background:#211f55;overflow:hidden}
+  .fil{display:block;height:100%;border-radius:99px;background:var(--green)}
+  .fil.md{background:var(--yellow)} .fil.lo{background:var(--red)}
+
+  .cta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin-top:12px;min-height:46px;
+    font-family:"Bungee";font-size:.7rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:13px;box-shadow:0 4px 0 #b8901f;border:0;transition:background .25s,box-shadow .25s}
+  .cta svg{width:15px;height:15px;fill:currentColor}
+  .cta span{align-items:center;gap:7px}
+  .cta .cta-open{display:inline-flex}
+  .cta .cta-pick,.cta .cta-after{display:none}
+  .cab.s-pick .cta .cta-open{display:none}
+  .cab.s-pick .cta .cta-pick{display:inline-flex}
+  .cab.drafted .cta .cta-open,.cab.drafted .cta .cta-pick{display:none}
+  .cab.drafted .cta .cta-after{display:inline-flex}
+  .cab.drafted .cta{background:var(--green);box-shadow:0 4px 0 #2f9c64}
+
+  /* ════════════ FASE 1 · APERTURA — si monta il tabellone (gate .cab.s-open) ════════════ */
+  .cab .court,.cab .court .cc{opacity:0}
+  .cab.s-open .court,.cab.s-open .court .cc{opacity:1}
+  @keyframes frameDraw{0%{opacity:0;transform:scaleY(.1)}45%{opacity:1;transform:scaleY(.1)}100%{opacity:1;transform:scaleY(1)}}
+  .cab.s-open .court{animation:frameDraw calc(.55s*var(--t)) cubic-bezier(.4,0,.2,1) both;transform-origin:center}
+  @keyframes snapIn{0%{opacity:0;transform:translateY(-12px) scale(.7)}68%{opacity:1;transform:translateY(2px) scale(1.08)}100%{opacity:1;transform:none}}
+  .cab.s-open .court .cc{animation:snapIn calc(.4s*var(--t)) cubic-bezier(.34,1.56,.64,1) both}
+  .cab.s-open .court .cc:nth-child(1){animation-delay:calc(.55s*var(--t))}
+  .cab.s-open .court .cc:nth-child(2){animation-delay:calc(.64s*var(--t))}
+  .cab.s-open .court .cc:nth-child(3){animation-delay:calc(.73s*var(--t))}
+  .cab.s-open .court .cc:nth-child(4){animation-delay:calc(.82s*var(--t))}
+  .cab.s-open .court .cc:nth-child(5){animation-delay:calc(.91s*var(--t))}
+
+  /* ════════════ FASE 2 · CANDIDATI — il tabellone che gira, B + Opzione 1 (gate .cab.s-pick) ════════════ */
+  .cab .boardstrip .btile,.cab .bdetail{opacity:0}
+  .cab.s-pick .boardstrip .btile,.cab.s-pick .bdetail{opacity:1}
+  @keyframes flipIn{0%{opacity:0;transform:perspective(420px) rotateY(-88deg)}55%{opacity:1}100%{opacity:1;transform:perspective(420px) rotateY(0)}}
+  @keyframes detUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  @keyframes selGlow{0%,100%{box-shadow:0 0 0 0 rgba(255,207,51,0)}50%{box-shadow:0 0 0 3px rgba(255,207,51,.3)}}
+  .cab.s-pick .boardstrip .btile{animation:flipIn calc(.4s*var(--t)) cubic-bezier(.3,.8,.3,1) both;transform-origin:left center}
+  .cab.s-pick .boardstrip .btile:nth-child(1){animation-delay:calc(.05s*var(--t))}
+  .cab.s-pick .boardstrip .btile:nth-child(2){animation-delay:calc(.17s*var(--t))}
+  .cab.s-pick .boardstrip .btile:nth-child(3){animation-delay:calc(.29s*var(--t))}
+  .cab.s-pick .boardstrip .btile:nth-child(4){animation-delay:calc(.41s*var(--t))}
+  .cab.s-pick .boardstrip .btile:nth-child(5){animation-delay:calc(.53s*var(--t))}
+  /* Opzione 1: anche la prima (sel) si gira come le altre, poi pulsa */
+  .cab.s-pick .boardstrip .btile.sel{transform-origin:left center;animation:flipIn calc(.4s*var(--t)) cubic-bezier(.3,.8,.3,1) calc(.05s*var(--t)) both, selGlow calc(2.4s*var(--t)) ease-in-out calc(1.1s*var(--t)) infinite}
+  /* Opzione 1: il dettaglio del primo sale subito, con lei */
+  .cab.s-pick .bdetail{animation:detUp calc(.42s*var(--t)) ease-out calc(.18s*var(--t)) both}
+
+  /* ════════════ FASE 3 · INSERIMENTO — vola nello slot, A (gate .cab.drafted) ════════════ */
+  @keyframes slotPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,91,30,0)}50%{box-shadow:0 0 0 3px rgba(255,91,30,.24)}}
+  .cab.s-pick:not(.drafted) .cc.target .face.ph{animation:slotPulse calc(2.2s*var(--t)) ease-in-out infinite}
+  @keyframes ringFlash{0%{box-shadow:0 0 0 0 rgba(92,207,142,0),0 0 0 0 rgba(255,207,51,0)}
+    30%{box-shadow:0 0 0 4px rgba(92,207,142,.6),0 0 22px 5px rgba(255,207,51,.5)}
+    100%{box-shadow:0 0 0 0 rgba(92,207,142,0),0 0 0 0 rgba(255,207,51,0)}}
+  /* la tessera scelta si stacca dalla striscia e vola nello slot: --dx/--dy/--sc misurati a runtime */
+  @keyframes flyFromTile{0%{opacity:0;transform:translate(var(--dx,0px),var(--dy,120px)) scale(var(--sc,.5)) rotate(-3deg)}
+    14%{opacity:1}82%{transform:translate(0,-6%) scale(1.06)}100%{opacity:1;transform:none}}
+  .cab.drafted .cc.target .face.real{animation:flyFromTile calc(.66s*var(--t)) cubic-bezier(.3,.8,.3,1) both,ringFlash calc(.7s*var(--t)) ease-out calc(.5s*var(--t)) both}
+  /* le altre quattro tessere svaniscono; la scelta si dissolve mentre il suo volto è già in volo (handoff) */
+  .cab.drafted .boardstrip .btile:not(.sel){opacity:0;transition:opacity .22s ease}
+  .cab.drafted .boardstrip .btile.sel{opacity:0;transition:opacity .3s ease .16s}
+
+  @media (prefers-reduced-motion:reduce){
+    .cab *{animation:none!important;transition:none!important}
+    .cab .court,.cab .court .cc,.cab .boardstrip .btile,.cab .bdetail{opacity:1!important;transform:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Movimento · il flusso completo del draft</div>
+  <h1>Dall'apertura allo slot pieno, in fila</h1>
+  <p class="lead">I tre momenti scelti, su <b>un solo telefono</b>: si monta il tabellone vuoto <b>0/5</b>, entrano i <b>5 candidati</b>, e quello scelto <b>vola nello slot PF</b> (0/5 → 1/5). Guarda la giunzione e il ritmo. <b>Rivedi</b> per ripeterlo, <b>Rallenta</b> per studiarlo.</p>
+
+  <div class="stepper" id="stepper">
+    <span class="step" data-i="0"><span class="dot"></span>1 · Apertura</span>
+    <span class="stepsep">→</span>
+    <span class="step" data-i="1"><span class="dot"></span>2 · Candidati</span>
+    <span class="stepsep">→</span>
+    <span class="step" data-i="2"><span class="dot"></span>3 · Inserimento</span>
+  </div>
+
+  <div class="controls">
+    <button class="master" type="button" id="replay">
+      <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/></svg> Rivedi il flusso
+    </button>
+    <button class="ctl" type="button" id="slowMo">
+      <svg viewBox="0 0 24 24"><path d="M11 7h2v6h-2zm0 8h2v2h-2zM12 2a10 10 0 1 0 .001 20.001A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg> Rallenta
+    </button>
+  </div>
+
+  <div class="stage" id="stage"></div>
+</div>
+
+<script>
+  var CANDS = [
+    {id:'203507', nm:'Antetokounmpo', r:'PF', pos:'Ala grande · 211 · GRE', ovr:96, tiro:70, fisico:98, difesa:91, regia:78},
+    {id:'201142', nm:'Durant',        r:'PF', pos:'Ala · 208 · USA',        ovr:95, tiro:96, fisico:80, difesa:78, regia:82},
+    {id:'1631094',nm:'Banchero',      r:'PF', pos:'Ala grande · 208 · USA', ovr:88, tiro:84, fisico:85, difesa:72, regia:78},
+    {id:'1627783',nm:'Siakam',        r:'PF', pos:'Ala grande · 203 · CMR', ovr:87, tiro:80, fisico:86, difesa:84, regia:74},
+    {id:'203932', nm:'Gordon',        r:'PF', pos:'Ala grande · 203 · USA', ovr:84, tiro:68, fisico:92, difesa:88, regia:60}
+  ];
+  var PICK = CANDS[0];                 // il candidato scelto = il primo (quello evidenziato)
+  var POS = ['PG','SG','PF','SF','C'];
+  var IMG = function(id){ return 'https://cdn.nba.com/headshots/nba/latest/1040x760/'+id+'.png'; };
+  var cls = function(v){ return v>=80?'':(v>=60?'md':'lo'); };
+  function bar(l,v){ return '<span class="b"><span class="bl"><span>'+l+'</span><span class="bn">'+v+'</span></span><span class="trk"><i class="fil '+cls(v)+'" style="width:'+v+'%"></i></span></span>'; }
+  function bars4(c){ return '<div class="bars">'+bar('Tiro',c.tiro)+bar('Fisico',c.fisico)+bar('Difesa',c.difesa)+bar('Regia',c.regia)+'</div>'; }
+
+  function courtHTML(){
+    return '<div class="court">'+POS.map(function(p){
+      if(p==='PF'){
+        return '<span class="cc target">'+
+          '<span class="face ph"><span class="phpos">PF</span><span class="phplus">+</span></span>'+
+          '<span class="face real"><img alt="'+PICK.nm+'" src="'+IMG(PICK.id)+'"><span class="fbadge"><span class="r">PF</span><span class="o">'+PICK.ovr+'</span></span></span>'+
+        '</span>';
+      }
+      return '<span class="cc"><span class="face ph"><span class="phpos">'+p+'</span><span class="phplus">+</span></span></span>';
+    }).join('')+'</div>';
+  }
+  function stripHTML(){
+    return '<div class="boardstrip">'+CANDS.map(function(c,i){
+      return '<span class="btile'+(i===0?' sel':'')+'"><span class="face"><img alt="'+c.nm+'" src="'+IMG(c.id)+'"><span class="fbadge"><span class="r">'+c.r+'</span><span class="o">'+c.ovr+'</span></span></span></span>';
+    }).join('')+'</div>';
+  }
+  function detailHTML(c){
+    return '<div class="bdetail"><div class="dhd"><div><div class="nm">'+c.nm+'</div><div class="pos">'+c.pos+'</div></div>'+
+      '<span class="ovrtag"><b>'+c.ovr+'</b><small>OVR</small></span></div>'+bars4(c)+'</div>';
+  }
+  function phoneHTML(){
+    return '<div class="phone"><div class="screen">'+
+      '<div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div>'+
+        '<div class="flame"><svg viewBox="0 0 24 24"><path class="ico1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="ico2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>'+
+          '<span class="fn">16<i>&ndash;</i>0</span><span class="fs">imbattuto</span></div></div>'+
+      '<div class="seclab">Il tuo quintetto &middot; <span class="cbefore"><b>0/5</b></span><span class="cafter"><b>1/5</b></span></div>'+
+      courtHTML()+
+      '<div class="pickblock">'+
+        '<div class="pikhd"><span class="inlab">Scegli la tessera &middot; PF</span><span class="cnt">5 candidati</span></div>'+
+        stripHTML()+detailHTML(CANDS[0])+
+      '</div>'+
+      '<button class="cta" type="button">'+
+        '<span class="cta-open"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Pesca il tuo giocatore</span>'+
+        '<span class="cta-pick"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti '+PICK.nm+' nel quintetto</span>'+
+        '<span class="cta-after"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Inizia la partita</span>'+
+      '</button>'+
+      '</div></div>';
+  }
+
+  document.getElementById('stage').innerHTML = '<div class="cab v-vola">'+phoneHTML()+'</div>';
+
+  var cab   = document.querySelector('.cab');
+  var steps = Array.prototype.slice.call(document.querySelectorAll('.step'));
+  var slow  = false, timers = [];
+
+  function setStep(i){
+    steps.forEach(function(s){
+      var j = +s.getAttribute('data-i');
+      s.classList.toggle('on', j === i);
+      s.classList.toggle('done', j < i);
+    });
+  }
+  function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+
+  // misura la partenza del volto = posizione esatta della tessera scelta (slot .ph come proxy della posizione finale).
+  // Usa la geometria di LAYOUT (offsetLeft/offsetWidth): ignora le trasformazioni CSS, così è stabile
+  // anche se la tessera è a metà del flip (rotateY) — getBoundingClientRect darebbe misure sballate.
+  function layoutBox(el){ var x=0,y=0,n=el; while(n){ x+=n.offsetLeft; y+=n.offsetTop; n=n.offsetParent; } return {x:x,y:y,w:el.offsetWidth}; }
+  function measureFly(){
+    var tf = cab.querySelector('.btile.sel .face');
+    var sf = cab.querySelector('.cc.target .face.ph');
+    var real = cab.querySelector('.cc.target .face.real');
+    if(!tf || !sf || !real) return;
+    var a = layoutBox(tf), b = layoutBox(sf);
+    if(!a.w || !b.w) return;
+    real.style.setProperty('--dx', (a.x - b.x).toFixed(1)+'px');
+    real.style.setProperty('--dy', (a.y - b.y).toFixed(1)+'px');
+    real.style.setProperty('--sc', (a.w / b.w).toFixed(3));
+  }
+
+  function run(){
+    clearTimers();
+    cab.className = 'cab v-vola' + (slow ? ' slow' : '');   // reset completo
+    void cab.offsetWidth;                                   // forza il reflow → riparte
+    cab.classList.add('s-open'); setStep(0);
+    var k = slow ? 2.3 : 1;
+    timers.push(setTimeout(function(){ cab.classList.add('s-pick');  setStep(1); }, 1500 * k));
+    timers.push(setTimeout(function(){ measureFly(); cab.classList.add('drafted'); setStep(2); }, 3500 * k));
+  }
+
+  document.getElementById('replay').addEventListener('click', run);
+  document.getElementById('slowMo').addEventListener('click', function(){
+    slow = !slow;
+    this.classList.toggle('on', slow);
+    run();
+  });
+
+  run();
+</script>
+</body>
+</html>

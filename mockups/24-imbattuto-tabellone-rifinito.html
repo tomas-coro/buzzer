@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- viewer chip+palco (skill mockup). Cambiato solo #panels + titoli. ESPANDI TABELLONE: 4 trattamenti scoreboard mele-con-mele, coreografia "il resto si accende DOPO il canestro" invariata. -->
+<title>BUZZER · L'IMBATTUTO — Tabellone, 4 trattamenti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:64ch}
+  .lead b{color:var(--bone);font-weight:600}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Reco"]{background:rgba(255,207,51,.15);color:#ffcf33;border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-tag[data-role="Attuale"]{background:var(--ink-3);color:var(--bone-dim)}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Home BUZZER · L'IMBATTUTO · espandi il Tabellone</div>
+    <h1>Il Tabellone, rifinito — 4 trattamenti del segnapunti</h1>
+    <p class="lead">Hai scelto il <b>Tabellone</b>. Qui lo affino: stessa Sirena verificata, stesso «<b>a sangue freddo</b>», stessa coreografia (il resto si accende <b>dopo</b> che la palla entra). Cambia solo la forma del segnapunti: ① <b>Attuale</b> (dot-grid) · ② <b>Tabellone d'arena</b> (LED a matrice di punti, font Doto) · ③ <b>Jumbotron</b> (09 contro 16, sfida all'anello) · ④ <b>Split-flap</b> (tabellone meccanico). <b>«↻ rivedi»</b> per rivedere il tiro.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ============ scoped (dentro #panels): non tocca la scocca ============ -->
+      <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@500;700;900&display=swap');
+
+      /* ---- telaio telefono ---- */
+      .ph{
+        width:300px; max-width:100%; margin:4px auto 0; padding:9px;
+        background:linear-gradient(160deg,#22262f,#0c0e12);
+        border:1px solid #2a2f3a; border-radius:40px;
+        box-shadow:0 36px 64px -34px rgba(0,0,0,.95), inset 0 0 0 2px #14161b;
+      }
+      .scr{ position:relative; isolation:isolate; overflow:hidden; height:586px; border-radius:32px; display:flex; flex-direction:column; }
+      .opn{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+      .ph svg{display:block}
+      .notch{position:absolute;top:7px;left:50%;transform:translateX(-50%);width:74px;height:5px;border-radius:99px;background:#000;z-index:6}
+
+      .splash{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;
+        transition:opacity .42s var(--ease,ease), transform .42s var(--ease,ease)}
+      .ph:has(.opn:checked) .splash{opacity:0;transform:scale(1.06);pointer-events:none}
+      .home{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .3s ease .04s}
+      .ph:has(.opn:checked) .home{opacity:1;pointer-events:auto}
+      /* il "resto" entra DOPO il canestro: i .rise hanno --d >= 1.25s (canestro ~1.09s, buzzer/stamp 1.18s) */
+      .ph:has(.opn:checked) .rise{animation:rise .5s var(--d,0s) cubic-bezier(.16,1,.3,1) both}
+      @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+      /* palette CABINA 90s */
+      .ph--cab{--ease:cubic-bezier(.2,.8,.2,1);
+        --bg:#15163a; --bg2:#0d0e29; --pop:#ff5b1e; --pop2:#ffcf33;
+        --ink:#0a0a18; --win:#34e0a0;
+        --ball:#ff5b1e; --ball2:#c8410f; --seam:#0a0a18;
+        --txt:#fdf2dd; --txt-dim:#8d8fc4;
+        --surf:rgba(0,0,0,.2); --surf-bd:rgba(253,242,221,.16);
+        --wm-fill:#ffcf33; --wm-stroke:#0a0a18; --wm-sh:#0a0a18; --zz:#ff5b1e;
+        --rim:#ff5b1e; --netc:#fdf2dd;
+        --cta-bg:#ffcf33; --cta-fg:#0a0a18;
+        font-family:"Hanken Grotesk",sans-serif}
+      .ph--cab .scr{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 0%, #232463 0, var(--bg) 46%, var(--bg2) 100%); color:var(--txt)}
+      .ph--cab .splash{background:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+        radial-gradient(130% 80% at 50% 12%, #2a2b72 0, var(--bg) 50%, var(--bg2) 100%)}
+
+      /* basket SVG */
+      .ball-fill{fill:var(--ball)} .ball-hi{fill:#fff;opacity:.16} .ball-sd{fill:var(--ball2);opacity:.5}
+      .seam{stroke:var(--seam);stroke-width:2.6;fill:none;stroke-linecap:round}
+
+      /* HOME — palco (emblem invariato dalla Sirena verificata, file 19); barra in alto RIMOSSA */
+      .bz-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:14px 18px 0;min-height:0}
+      .emblem{position:relative;width:188px;height:196px;display:flex;align-items:flex-end;justify-content:center}
+      .hoop{position:absolute;top:2px;left:50%;transform:translateX(-50%);width:120px;height:96px}
+      .hoop-back{z-index:1}
+      .hoop-front{z-index:3}
+      .bz-ball{position:relative;z-index:2;width:116px;height:116px;margin-bottom:2px;filter:drop-shadow(0 6px 0 rgba(0,0,0,.15))}
+      .net-back,.net-front{transform-box:fill-box;transform-origin:50% 0%}
+      .net-front{opacity:0}
+      .flash{position:absolute;left:50%;top:48px;width:172px;height:172px;border-radius:50%;
+        transform:translate(-50%,-50%) scale(.6);
+        background:radial-gradient(circle, rgba(255,207,51,0) 24%, rgba(255,176,46,.55) 45%, rgba(255,91,30,.32) 60%, transparent 74%);
+        z-index:4;opacity:0;pointer-events:none;mix-blend-mode:screen}
+
+      .bz-wm{font-family:"Bungee";font-size:2.3rem;line-height:.9;letter-spacing:.012em;text-transform:uppercase;text-align:center;
+        color:var(--wm-fill);-webkit-text-stroke:2px var(--wm-stroke);paint-order:stroke fill;text-shadow:3px 3px 0 var(--wm-sh)}
+      .bz-wm b{color:var(--zz)}
+      .bz-sub{font-family:"Bungee";font-size:.6rem;letter-spacing:.05em;text-transform:uppercase;color:var(--pop2);opacity:.96;margin-top:8px}
+
+      .bz-foot{position:relative;z-index:2;padding:0 14px 13px}
+      .ic{width:14px;height:14px;flex:none}
+
+      /* riga "rivedi il tiro" condivisa */
+      .replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;margin:9px auto 0;min-height:30px;padding:0 13px;border-radius:99px;cursor:pointer;
+        font-family:"Bungee";font-size:.46rem;letter-spacing:.08em;text-transform:uppercase;
+        background:transparent;border:2px solid var(--surf-bd);color:var(--txt-dim);transition:color .15s,border-color .15s}
+      .replay:hover{color:var(--txt);border-color:var(--pop)}
+      .replay svg{width:12px;height:12px}
+      .foot-replay{display:flex;justify-content:center}
+
+      /* GIOCA — tasto condiviso da tutte le varianti */
+      .m-go{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:48px;cursor:pointer;
+        font-family:"Bungee";font-size:1rem;letter-spacing:.02em;text-transform:uppercase;color:var(--cta-fg);
+        background:var(--cta-bg);border:2.5px solid var(--ink);border-radius:13px;box-shadow:4px 4px 0 var(--ink);
+        transition:transform .1s var(--ease),box-shadow .1s var(--ease)}
+      .m-go:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+      .m-go:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--ink)}
+      .m-go svg{width:20px;height:20px;flex:none}
+
+      /* riga "prossimamente" condivisa (3 modalità bloccate, identica in tutte) */
+      .soon-row{display:flex;align-items:center;gap:8px;margin-top:11px;border-top:1px dashed var(--surf-bd);padding-top:9px}
+      .soon-row .lab{font-family:"Bungee";font-size:.4rem;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-dim);flex:none}
+      .soon-row .chips{display:flex;gap:5px;flex:1;justify-content:flex-end}
+      .soon-row .chip{display:flex;align-items:center;gap:4px;border:1.5px solid var(--surf-bd);border-radius:99px;padding:5px 9px;opacity:.72}
+      .soon-row .chip svg{width:10px;height:10px;color:var(--txt-dim);flex:none}
+      .soon-row .chip b{font-family:"Bungee";font-size:.42rem;text-transform:uppercase;color:var(--txt-dim)}
+
+      /* ═══════════ ① TABELLONE — ATTUALE (dot-grid, dal file 23) ═══════════ */
+      .sb{position:relative;overflow:hidden;background:linear-gradient(180deg,#0c0a1e,var(--ink));
+        border:2.5px solid var(--pop);border-radius:14px;box-shadow:5px 5px 0 var(--ink);padding:12px 15px 14px}
+      .sb::before{content:"";position:absolute;inset:0;opacity:.6;pointer-events:none;
+        background-image:radial-gradient(circle at 1px 1px, rgba(255,150,50,.12) 1px, transparent 1.6px);background-size:8px 8px}
+      .sb-in{position:relative}
+      .sb-lab{font-family:"Bungee";font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--txt-dim);text-align:center}
+      .sb-row{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:5px 0 8px}
+      .sb-big{font-family:"Bungee";font-size:3rem;line-height:.82;color:var(--pop2);
+        text-shadow:0 0 16px rgba(255,176,46,.85),0 3px 0 #5a3a10}
+      .sb-of{font-family:"Bungee";font-size:1rem;color:var(--txt-dim)}
+      .sb-strip{display:flex;gap:2px;justify-content:center;margin-bottom:9px}
+      .sb-led{width:11px;height:7px;border-radius:1.5px;background:rgba(253,242,221,.12)}
+      .sb-led.on{background:linear-gradient(180deg,var(--pop2),var(--pop));box-shadow:0 0 6px rgba(255,130,40,.85)}
+      .sb-led.goal{background:repeating-linear-gradient(45deg,var(--pop2) 0 2px,var(--pop) 2px 4px);box-shadow:0 0 8px rgba(255,176,46,.95)}
+      .sb-foot{display:flex;align-items:center;justify-content:center;gap:6px;font-family:"Bungee";font-size:.44rem;letter-spacing:.06em;text-transform:uppercase;color:var(--win);margin-bottom:11px}
+      .sb-foot svg{width:11px;height:11px;color:var(--pop2)}
+
+      /* ═══════════ ② TABELLONE D'ARENA — LED a matrice di punti incassato (Doto) ═══════════ */
+      .sb2{position:relative;background:linear-gradient(180deg,#0a0816,#06040e);
+        border:2.5px solid var(--pop);border-radius:14px;box-shadow:5px 5px 0 var(--ink);padding:7px 9px 10px}
+      .sb2-bezel{position:relative;border-radius:9px;padding:7px 9px 8px;
+        background:linear-gradient(180deg,#171036,#0c0820);
+        box-shadow:inset 0 0 0 2px #000, inset 0 0 0 4px #241a4d}
+      .sb2-top{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px}
+      .sb2-top .lab{font-family:"Doto",monospace;font-weight:700;font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--txt-dim)}
+      .sb2-top .dot{width:6px;height:6px;border-radius:50%;background:var(--pop);box-shadow:0 0 6px var(--pop);flex:none}
+      .sb2-screen{position:relative;overflow:hidden;border-radius:7px;background:#05030c;
+        box-shadow:inset 0 0 14px rgba(0,0,0,.9);padding:7px 10px 7px}
+      .sb2-screen::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.4;
+        background:repeating-linear-gradient(0deg, rgba(0,0,0,.55) 0 1px, transparent 1px 3px)}
+      .sb2-row{display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:6px}
+      .sb2-big{font-family:"Doto",monospace;font-weight:900;font-size:2.7rem;line-height:.8;color:var(--pop2);
+        text-shadow:0 0 12px rgba(255,176,46,.85),0 0 26px rgba(255,120,40,.45);letter-spacing:.02em}
+      .sb2-of{font-family:"Doto",monospace;font-weight:700;font-size:1rem;color:var(--txt-dim)}
+      .sb2-strip{display:flex;gap:2px;justify-content:center}
+      .sb2-led{width:11px;height:8px;border-radius:1.5px;background:rgba(253,242,221,.1)}
+      .sb2-led.on{background:linear-gradient(180deg,var(--pop2),var(--pop));box-shadow:0 0 6px rgba(255,130,40,.9)}
+      .sb2-led.goal{background:repeating-linear-gradient(45deg,var(--pop2) 0 2px,var(--pop) 2px 4px);box-shadow:0 0 8px rgba(255,176,46,.95)}
+      .sb2-ticks{display:flex;justify-content:space-between;font-family:"Doto",monospace;font-weight:500;font-size:.46rem;color:var(--txt-dim);margin-top:3px;padding:0 1px}
+      .sb2-cap{display:flex;align-items:center;justify-content:center;gap:6px;font-family:"Bungee";font-size:.44rem;letter-spacing:.05em;text-transform:uppercase;color:var(--win);margin:7px 2px 0}
+      .sb2-cap svg{width:11px;height:11px;color:var(--pop2)}
+      .sb2 .m-go{margin-top:7px}
+
+      /* ═══════════ ③ JUMBOTRON — sfida all'anello (HOME vs GUEST) ═══════════ */
+      .jb{background:linear-gradient(180deg,#141033,var(--ink));border:2.5px solid var(--pop);
+        border-radius:14px;box-shadow:5px 5px 0 var(--ink);padding:11px 13px 12px}
+      .jb-board{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;
+        background:#06040e;border-radius:9px;padding:10px 8px 11px;box-shadow:inset 0 0 12px rgba(0,0,0,.85)}
+      .jb-side{display:flex;flex-direction:column;align-items:center;gap:3px}
+      .jb-tag{font-family:"Bungee";font-size:.42rem;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-dim)}
+      .jb-you .jb-tag{color:var(--pop2)}
+      .jb-num{font-family:"Bungee";font-size:2.5rem;line-height:.82}
+      .jb-you .jb-num{color:var(--pop2);text-shadow:0 0 16px rgba(255,176,46,.8),0 3px 0 #5a3a10}
+      .jb-goal .jb-num{color:transparent;-webkit-text-stroke:2px #4a4470}
+      .jb-mid{display:flex;flex-direction:column;align-items:center;gap:4px}
+      .jb-mid svg{width:22px;height:22px;color:var(--pop)}
+      .jb-mid .cap{font-family:"Bungee";font-size:.36rem;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-dim);text-align:center;line-height:1.2}
+      .jb-strip{display:flex;gap:2px;justify-content:center;margin-top:10px}
+      .jb-led{flex:1;max-width:12px;height:7px;border-radius:1.5px;background:rgba(253,242,221,.1)}
+      .jb-led.on{background:linear-gradient(180deg,var(--pop2),var(--pop));box-shadow:0 0 6px rgba(255,130,40,.85)}
+      .jb-led.goal{background:repeating-linear-gradient(45deg,var(--pop2) 0 2px,var(--pop) 2px 4px);box-shadow:0 0 8px rgba(255,176,46,.95)}
+      .jb .m-go{margin-top:11px}
+
+      /* ═══════════ ④ SPLIT-FLAP — tabellone meccanico a palette (alla Solari) ═══════════ */
+      .sf{background:linear-gradient(180deg,#141033,var(--ink));border:2.5px solid var(--pop);
+        border-radius:14px;box-shadow:5px 5px 0 var(--ink);padding:11px 13px 12px}
+      .sf-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
+      .sf-name{font-family:"Bungee";font-size:.9rem;color:var(--pop2);line-height:1}
+      .sf-mini{font-family:"Hanken Grotesk",sans-serif;font-weight:700;font-size:.58rem;text-transform:uppercase;letter-spacing:.04em;color:var(--txt-dim);text-align:right;white-space:nowrap}
+      .sf-cards{display:flex;align-items:center;gap:6px;justify-content:center;margin-bottom:12px}
+      .sf-card{position:relative;width:48px;height:62px;border-radius:8px;overflow:hidden;
+        display:flex;align-items:center;justify-content:center;
+        background:linear-gradient(180deg,#221a4e 0 50%,#120d2c 50% 100%);
+        border:1.5px solid #2c2456;box-shadow:0 4px 10px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);
+        font-family:"Bungee";font-size:2.5rem;color:var(--pop2);text-shadow:0 2px 0 #5a3a10}
+      .sf-card::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;transform:translateY(-50%);
+        background:rgba(0,0,0,.55);box-shadow:0 1px 0 rgba(255,255,255,.05)}
+      .sf-strip{display:flex;gap:3px;justify-content:center}
+      .sf-tile{width:12px;height:15px;border-radius:2.5px;position:relative;
+        background:linear-gradient(180deg,#1a1442 0 50%,#0e0a26 50% 100%);border:1px solid #241d4a}
+      .sf-tile::after{content:"";position:absolute;left:1px;right:1px;top:50%;height:1px;transform:translateY(-50%);background:rgba(0,0,0,.5)}
+      .sf-tile.on{background:linear-gradient(180deg,var(--pop2) 0 50%,var(--pop) 50% 100%);border-color:transparent;box-shadow:0 0 6px rgba(255,130,40,.7)}
+      .sf-tile.goal{background:repeating-linear-gradient(45deg,var(--pop2) 0 2px,var(--pop) 2px 4px);border-color:transparent;box-shadow:0 0 8px rgba(255,176,46,.95)}
+      .sf .m-go{margin-top:12px}
+
+      /* ═══════════ SPLASH (intro condivisa, dal file 19) ═══════════ */
+      .sp-ball{width:108px;height:108px;animation:spin 3.6s linear infinite}
+      .sp-wm{font-size:2.7rem;margin-top:18px}
+      .sp-tag{font-family:"Bungee";font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-dim);margin-top:10px}
+      .bz-open{display:inline-flex;align-items:center;gap:8px;min-height:50px;margin-top:24px;padding:0 22px;border-radius:13px;cursor:pointer;
+        font-family:"Bungee";font-size:.9rem;letter-spacing:.04em;text-transform:uppercase;color:var(--cta-fg);
+        background:var(--cta-bg);border:2.5px solid var(--ink);box-shadow:4px 4px 0 var(--ink);animation:blink 1.3s steps(1) infinite}
+      .bz-open svg{width:16px;height:16px}
+      @keyframes blink{50%{filter:brightness(.85)}}
+      @keyframes spin{to{transform:rotate(360deg)}}
+
+      /* il marchio si "stampa" nell'istante del buzzer (il canestro) */
+      .a-buzz:has(.opn:checked) .home .bz-wm{animation:stamp .5s 1.18s cubic-bezier(.2,1.6,.4,1) both}
+      @keyframes stamp{0%{transform:scale(1.5);opacity:0}70%{transform:scale(.96);opacity:1}100%{transform:scale(1)}}
+
+      /* ═══════════ SIRENA CLUTCH — animazione VERIFICATA (file 19), invariata ═══════════ */
+      .a-buzz:has(.opn:checked) .bz-ball{animation:shotBuzz 1.7s linear both}
+      @keyframes shotBuzz{
+        0%  {transform:translate(-160px,-30px) scale(.42) rotate(0deg);opacity:0;
+             animation-timing-function:cubic-bezier(.3,.7,.6,1)}
+        7%  {transform:translate(-138px,-66px) scale(.41) rotate(-26deg);opacity:1;
+             animation-timing-function:cubic-bezier(.18,.62,.4,1)}
+        44% {transform:translate(-52px,-146px) scale(.34) rotate(-150deg);
+             animation-timing-function:cubic-bezier(.5,.05,.85,.5)}
+        64% {transform:translate(0px,-84px) scale(.5) rotate(-214deg);
+             animation-timing-function:cubic-bezier(.3,.25,.5,1)}
+        78% {transform:translate(0px,-36px) scale(.66) rotate(-272deg);
+             animation-timing-function:cubic-bezier(.3,.5,.5,1)}
+        90% {transform:translate(0,5px) scaleX(1.15) scaleY(.84) rotate(-308deg);
+             animation-timing-function:cubic-bezier(.3,1.4,.5,1)}
+        96% {transform:translate(0,-6px) scale(1.03) rotate(-322deg)}
+        100%{transform:translate(0,0) scale(1) rotate(-330deg)}
+      }
+      .a-buzz:has(.opn:checked) .net-back{animation:swishNetB 1.7s linear both}
+      .a-buzz:has(.opn:checked) .net-front{animation:swishNetB 1.7s linear both, netShowB 1.7s linear both}
+      @keyframes swishNetB{
+        0%,63%{transform:scaleY(1) scaleX(1);animation-timing-function:cubic-bezier(.15,.7,.4,1)}
+        71%   {transform:scaleY(1.5) scaleX(.84);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        78%   {transform:scaleY(.95) scaleX(1.06);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        85%   {transform:scaleY(1.14) scaleX(.97);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        91%   {transform:scaleY(.98) scaleX(1.02);animation-timing-function:cubic-bezier(.3,0,.35,1)}
+        96%   {transform:scaleY(1.04) scaleX(.99)}
+        100%  {transform:scaleY(1) scaleX(1)}
+      }
+      @keyframes netShowB{0%,62%{opacity:0}68%{opacity:.95}82%{opacity:.7}92%{opacity:0}100%{opacity:0}}
+      .a-buzz:has(.opn:checked) .flash{animation:buzzFlash 1.7s linear both}
+      @keyframes buzzFlash{
+        0%,62%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
+        70%{opacity:.95;transform:translate(-50%,-50%) scale(1)}
+        80%{opacity:.42;transform:translate(-50%,-50%) scale(1.18)}
+        100%{opacity:0;transform:translate(-50%,-50%) scale(1.34)}
+      }
+      .a-buzz:has(.opn:checked) .scr::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+        box-shadow:inset 0 0 0 3px var(--pop), inset 0 0 30px rgba(255,91,30,.45);opacity:0;animation:buzzEdge 1.7s linear both}
+      @keyframes buzzEdge{0%,63%{opacity:0}70%{opacity:1}83%{opacity:.2}100%{opacity:0}}
+
+      @media (prefers-reduced-motion:reduce){
+        .ph *{animation:none!important;transition:none!important}
+        .ph .scr::after{animation:none!important;opacity:0!important}
+        .home{opacity:1!important;pointer-events:auto!important}
+        .splash{opacity:1}
+        .net-front{opacity:0!important}
+      }
+      </style>
+
+      <!-- ═══════════════ ① TABELLONE — ATTUALE ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Tabellone (attuale)"
+        data-mood="scoreboard LED · dot-grid centrato"
+        data-role="Attuale"
+        data-why="Le cifre dell'arena: numero grande a LED + fila di luci del progresso. Resta il riferimento — leggibile e diretto, ma la griglia di punti dietro lo rende un po' generico.">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:1.25s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footScore">
+              <div class="sb rise" style="--d:1.35s">
+                <div class="sb-in">
+                  <div class="sb-lab">★ striscia record ★</div>
+                  <div class="sb-row"><span class="sb-big">09</span><span class="sb-of">/16</span></div>
+                  <div class="sb-strip">
+                    <span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led on"></span><span class="sb-led"></span><span class="sb-led"></span><span class="sb-led"></span><span class="sb-led"></span><span class="sb-led"></span><span class="sb-led"></span><span class="sb-led goal"></span>
+                  </div>
+                  <div class="sb-foot"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3 2-5 0 2 1 3 2 3 1 0 1-1 1-3 0-3-1-5-1-8z"/></svg> imbattuto · graal 16–0</div>
+                  <label class="m-go" for="buzzA-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</label>
+                </div>
+              </div>
+              <div class="soon-row rise" style="--d:1.45s">
+                <span class="lab">prossimamente</span>
+                <span class="chips">
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Playoff</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Stagione</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Sfida</b></span>
+                </span>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:1.55s" for="buzzA-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzzA-open">
+          <label class="splash" for="buzzA-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ ② TABELLONE D'ARENA (LED dot-matrix, Doto) ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Tabellone d'arena"
+        data-mood="LED a matrice di punti incassato · alla Daktronics (font Doto)"
+        data-role="Variante +"
+        data-why="Stesso tabellone, ma incassato come un vero segnapunti: cifre a matrice di punti (font Doto), schermo recesso con scanline, luci con le tacche 1·8·16. Più 'arena ufficiale' e meno effetto-barra astratta — la mia reco.">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:1.25s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footArena">
+              <div class="sb2 rise" style="--d:1.35s">
+                <div class="sb2-bezel">
+                  <div class="sb2-top"><span class="dot"></span><span class="lab">striscia record</span><span class="dot"></span></div>
+                  <div class="sb2-screen">
+                    <div class="sb2-row"><span class="sb2-big">09</span><span class="sb2-of">/16</span></div>
+                    <div class="sb2-strip">
+                      <span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led on"></span><span class="sb2-led"></span><span class="sb2-led"></span><span class="sb2-led"></span><span class="sb2-led"></span><span class="sb2-led"></span><span class="sb2-led"></span><span class="sb2-led goal"></span>
+                    </div>
+                    <div class="sb2-ticks"><span>1</span><span>8</span><span>16</span></div>
+                  </div>
+                </div>
+                <div class="sb2-cap"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c3 4 6 6 6 10a6 6 0 0 1-12 0c0-2 1-3 2-5 0 2 1 3 2 3 1 0 1-1 1-3 0-3-1-5-1-8z"/></svg> imbattuto · 7 all'anello</div>
+                <label class="m-go" for="buzzB-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</label>
+              </div>
+              <div class="soon-row rise" style="--d:1.45s">
+                <span class="lab">prossimamente</span>
+                <span class="chips">
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Playoff</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Stagione</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Sfida</b></span>
+                </span>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:1.55s" for="buzzB-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzzB-open">
+          <label class="splash" for="buzzB-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ ③ JUMBOTRON — sfida all'anello ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Jumbotron · sfida"
+        data-mood="tabellone a sfida · punteggio HOME–GUEST d'arena"
+        data-why="Il tabellone diventa una sfida: TU 09 contro l'ANELLO 16, come il punteggio HOME–GUEST di un'arena. Dà subito un avversario e una posta — il titolo è il numero da raggiungere, non un'astrazione.">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:1.25s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footJumbo">
+              <div class="jb rise" style="--d:1.35s">
+                <div class="jb-board">
+                  <div class="jb-side jb-you">
+                    <span class="jb-tag">imbattuto</span>
+                    <span class="jb-num">09</span>
+                  </div>
+                  <div class="jb-mid">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="13" r="6"/><path d="M9 7l-2-4h10l-2 4"/></svg>
+                    <span class="cap">all'anello</span>
+                  </div>
+                  <div class="jb-side jb-goal">
+                    <span class="jb-tag">titolo</span>
+                    <span class="jb-num">16</span>
+                  </div>
+                </div>
+                <div class="jb-strip">
+                  <span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led on"></span><span class="jb-led"></span><span class="jb-led"></span><span class="jb-led"></span><span class="jb-led"></span><span class="jb-led"></span><span class="jb-led"></span><span class="jb-led goal"></span>
+                </div>
+                <label class="m-go" for="buzzC-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</label>
+              </div>
+              <div class="soon-row rise" style="--d:1.45s">
+                <span class="lab">prossimamente</span>
+                <span class="chips">
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Playoff</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Stagione</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Sfida</b></span>
+                </span>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:1.55s" for="buzzC-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzzC-open">
+          <label class="splash" for="buzzC-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+      <!-- ═══════════════ ④ SPLIT-FLAP — tabellone meccanico ═══════════════ -->
+      <section class="dir-panel"
+        data-name="Split-flap"
+        data-mood="tabellone meccanico a palette · alla Solari d'aeroporto"
+        data-why="Tabellone meccanico a palette: le cifre 'scattano' come un Solari di aeroporto/stazione. Nostalgico e tattile, diverso dal LED — il numero che gira ha un suo carattere. Strana per un'app sportiva, ma memorabile.">
+        <div class="ph ph--cab a-buzz"><div class="scr">
+          <div class="notch"></div>
+          <div class="home">
+            <div class="bz-stage">
+              <div class="emblem">
+                <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
+                  <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
+                  <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
+                  <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                </svg>
+                <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
+                  <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+                  <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+                </svg>
+                <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
+                  <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
+                    <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
+                    <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+                  </g>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
+                  <path d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+                </svg>
+                <span class="flash" aria-hidden="true"></span>
+              </div>
+              <div class="bz-wm">BU<b>ZZ</b>ER</div>
+              <div class="bz-sub rise" style="--d:1.25s">a sangue freddo</div>
+            </div>
+            <div class="bz-foot footFlap">
+              <div class="sf rise" style="--d:1.35s">
+                <div class="sf-head">
+                  <span class="sf-name">L'IMBATTUTO</span>
+                  <span class="sf-mini">/ 16 per<br>l'anello</span>
+                </div>
+                <div class="sf-cards">
+                  <span class="sf-card">0</span><span class="sf-card">9</span>
+                </div>
+                <div class="sf-strip">
+                  <span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile on"></span><span class="sf-tile"></span><span class="sf-tile"></span><span class="sf-tile"></span><span class="sf-tile"></span><span class="sf-tile"></span><span class="sf-tile"></span><span class="sf-tile goal"></span>
+                </div>
+                <label class="m-go" for="buzzD-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</label>
+              </div>
+              <div class="soon-row rise" style="--d:1.45s">
+                <span class="lab">prossimamente</span>
+                <span class="chips">
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Playoff</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Stagione</b></span>
+                  <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><b>Sfida</b></span>
+                </span>
+              </div>
+              <div class="foot-replay"><label class="replay rise" style="--d:1.55s" for="buzzD-open"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>rivedi il tiro</label></div>
+            </div>
+          </div>
+          <input class="opn" type="checkbox" id="buzzD-open">
+          <label class="splash" for="buzzD-open">
+            <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
+              <circle class="ball-fill" cx="32" cy="32" r="30"/><path class="ball-sd" d="M32 62a30 30 0 0 0 27-16 30 30 0 0 1-54 0A30 30 0 0 0 32 62z"/><ellipse class="ball-hi" cx="24" cy="22" rx="13" ry="9"/>
+              <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
+            </svg>
+            <div class="bz-wm sp-wm">BU<b>ZZ</b>ER</div>
+            <div class="sp-tag">il gioco da ultimo secondo</div>
+            <span class="bz-open"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Apri l'app</span>
+          </label>
+        </div></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

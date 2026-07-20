@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco di prova · formula OVR / ATT / DIF di squadra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%,#1d2230 0,transparent 60%),#14171e;
+    color:#e9e4d8;font-family:"Hanken Grotesk",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:26px 18px 70px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:#e0a96d;font-weight:700;text-align:center}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.3rem,4vw,1.9rem);margin:.35rem 0 0;letter-spacing:-.015em;text-align:center}
+  .lead{color:#a39e93;font-size:.9rem;margin:.5rem auto 0;max-width:60ch;text-align:center}
+  .lead b{color:#ffcf33;font-weight:600}
+
+  :root{--orange:#ff5b1e;--yellow:#ffcf33;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;--dim:#8a8bc0;--hair:#2c2a63}
+
+  /* ── box OVR squadra (stile G1) ── */
+  .teamcard{max-width:360px;margin:26px auto 0;border:9px solid #05030f;border-radius:30px;background:#05030f;box-shadow:0 22px 50px rgba(0,0,0,.55)}
+  .teamscreen{border-radius:22px;padding:16px;background:radial-gradient(120% 80% at 50% -10%,#20206a 0,#15163a 55%,#0d0e29 100%)}
+  .ledbox{position:relative;background:linear-gradient(180deg,#07081c,#04050f);border:1px solid var(--hair);border-radius:16px;overflow:hidden;box-shadow:inset 0 2px 18px rgba(0,0,0,.7)}
+  .ledbox::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 4px)}
+  .tmlab{position:relative;display:flex;align-items:center;justify-content:space-between;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:800;padding:10px 12px 0}
+  .g1box{position:relative;display:flex;align-items:flex-end;justify-content:space-around;gap:6px;padding:8px 12px 14px}
+  .cellovr{display:flex;flex-direction:column;align-items:center;text-align:center;flex:1}
+  .ovr-n{font-family:"Doto";font-weight:900;color:var(--yellow);line-height:.8;text-shadow:0 0 16px rgba(255,207,51,.45),0 0 5px rgba(255,207,51,.8);letter-spacing:.04em}
+  .side .ovr-n{font-size:2.1rem}
+  .tot .ovr-n{font-size:3.5rem}
+  .ovr-l{font-size:.46rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-top:7px}
+  .sep{width:1px;align-self:stretch;background:linear-gradient(180deg,transparent,var(--hair),transparent);margin:8px 0}
+
+  /* ── tabella giocatori ── */
+  .panel{max-width:680px;margin:30px auto 0;background:linear-gradient(180deg,#16183a,#101127);border:1px solid var(--hair);border-radius:16px;padding:6px 6px 8px}
+  .ptitle{font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:800;padding:10px 12px 8px;display:flex;justify-content:space-between;align-items:center}
+  .prow{display:grid;grid-template-columns:1fr 52px 52px 52px;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid #21224a;cursor:pointer}
+  .prow:hover{background:rgba(255,255,255,.025)}
+  .pname{display:flex;align-items:center;gap:10px;min-width:0}
+  .pface{width:34px;height:40px;border-radius:7px;object-fit:cover;object-position:50% 8%;flex:none;background:#241a44}
+  .pn{font-family:"Bungee";font-size:.74rem;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ppos{font-size:.5rem;color:var(--dim);font-weight:700;letter-spacing:.06em;margin-top:3px}
+  .pv{font-family:"Doto";font-weight:900;font-size:1.2rem;text-align:center;line-height:1}
+  .pv small{display:block;font-family:"Hanken Grotesk";font-weight:800;font-size:.42rem;letter-spacing:.12em;color:var(--dim);margin-top:3px}
+  .pv.ovr b{color:var(--yellow)} .pv.att b{color:#7fd0a6} .pv.def b{color:#ff9e7a}
+  .head{grid-template-columns:1fr 52px 52px 52px;border-top:0;cursor:default}
+  .head span{font-size:.46rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:800;text-align:center}
+  .head .hl{text-align:left}
+
+  /* dettaglio sotto-stat espandibile */
+  .detail{grid-column:1/-1;display:none;padding:4px 4px 10px}
+  .prow.open + .detail{display:block}
+  .darea{margin-top:8px}
+  .dh{font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--dim);margin:0 4px 5px;display:flex;gap:7px;align-items:center}
+  .dh .tag{font-size:.42rem;padding:1px 6px;border-radius:20px;font-weight:800;letter-spacing:.06em}
+  .tag.att{background:rgba(127,208,166,.16);color:#7fd0a6} .tag.def{background:rgba(255,158,122,.16);color:#ff9e7a} .tag.off{background:rgba(138,139,192,.16);color:var(--dim)}
+  .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px}
+  .dw{font-family:"JetBrains Mono",monospace;font-size:.52rem;color:#ffcf33;margin-left:6px;opacity:.85}
+  .dw.lo{color:#7a789e}
+  .dst{display:flex;align-items:center;gap:8px}
+  .dst .dl{flex:1;font-size:.58rem;color:#cfc9bd;display:flex;justify-content:space-between}
+  .dst .dl b{font-family:"Doto";font-weight:900;color:var(--cream)}
+  .dtrk{flex:none;width:74px;height:6px;border-radius:4px;background:#221d4f;overflow:hidden}
+  .dfil{height:100%;border-radius:4px;background:linear-gradient(90deg,#ff7a2e,#ffcf33)}
+  .dst.d-def .dfil{background:linear-gradient(90deg,#ff6a52,#ff9e7a)}
+  .dst.d-off .dfil{background:linear-gradient(90deg,#6a68a8,#a7a6e0)}
+
+  /* formula */
+  .formula{max-width:680px;margin:30px auto 0;background:#0c0d22;border:1px solid var(--hair);border-radius:16px;overflow:hidden}
+  .fhd{padding:11px 14px;font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--yellow);font-weight:800;border-bottom:1px solid var(--hair)}
+  pre{margin:0;padding:14px 16px;font-family:"JetBrains Mono",monospace;font-size:.72rem;line-height:1.65;color:#d7d3e6;overflow:auto}
+  pre .c{color:#6f6e9b} pre .k{color:#ff9e7a} pre .s{color:#7fd0a6} pre .f{color:#ffcf33}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Modello 2K · banco di prova</div>
+  <h1>Formula OVR / Attacco / Difesa</h1>
+  <p class="lead"><b>OVR</b> = media degli OVR dei 5. <b>Attacco</b> e <b>Difesa</b> = media <b>pesata per ruolo</b> delle sotto-stat (come 2K: per un centro il sottocanestro pesa, il tiro da 3 quasi no). Tocca un giocatore per vedere i pesi accanto a ogni statistica.</p>
+
+  <div class="teamcard">
+    <div class="teamscreen">
+      <div class="ledbox">
+        <div class="tmlab"><span>Valutazione squadra</span><span id="tmnote">5/5</span></div>
+        <div class="g1box">
+          <div class="cellovr side"><span class="ovr-n" id="tAtt">0</span><span class="ovr-l">Attacco</span></div>
+          <div class="sep"></div>
+          <div class="cellovr tot"><span class="ovr-n" id="tOvr">0</span><span class="ovr-l">OVR squadra</span></div>
+          <div class="sep"></div>
+          <div class="cellovr side"><span class="ovr-n" id="tDef">0</span><span class="ovr-l">Difesa</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ptitle"><span>Contributo dei giocatori</span><span>tocca per i dettagli</span></div>
+    <div class="prow head"><span class="hl">Giocatore</span><span>OVR</span><span>ATT</span><span>DIF</span></div>
+    <div id="players"></div>
+  </div>
+
+  <div class="formula">
+    <div class="fhd">L'algoritmo (pronto da innestare)</div>
+    <pre><span class="c">// Pesi per RUOLO: quanto conta ogni sotto-stat (1 = neutro).</span>
+<span class="c">// Es. Centro → sottocanestro pesa 3.0, tiro da 3 solo 0.3.</span>
+<span class="k">const</span> PESI = {
+  PG:{att:{tiro3:1.3, palleggio:1.6, visione:1.6, sottocanestro:0.5, ...}, def:{difPerimetro:1.6, rubate:1.5, ...}},
+  PF:{att:{sottocanestro:2.6, tiro3:0.6, ...},                          def:{difInterna:1.5, rimbalzi:1.6, ...}},
+  C :{att:{sottocanestro:3.0, tiro3:0.3, ...},                          def:{difInterna:2.0, stoppate:1.8, ...}},
+  <span class="c">/* …SG, SF idem… */</span>
+};
+
+<span class="c">// media PESATA delle sotto-stat di un gruppo, secondo il ruolo</span>
+<span class="k">function</span> <span class="f">pesata</span>(g, chiavi, pesiRuolo){
+  <span class="k">let</span> somma=0, pesi=0;
+  <span class="k">for</span>(<span class="k">const</span> k <span class="k">of</span> chiavi){ <span class="k">const</span> w = pesiRuolo[k] ?? 1; somma += g.stat[k]*w; pesi += w; }
+  <span class="k">return</span> Math.round(somma / pesi);
+}
+
+<span class="c">// giocatore: ATT/DEF pesati per il suo ruolo · squadra: media dei 5</span>
+<span class="k">function</span> <span class="f">valutaGiocatore</span>(g){
+  <span class="k">const</span> p = PESI[g.ruolo];
+  <span class="k">return</span> { ovr:g.ovr, att:<span class="f">pesata</span>(g,STAT_ATT,p.att), def:<span class="f">pesata</span>(g,STAT_DEF,p.def) };
+}
+<span class="k">function</span> <span class="f">valutaSquadra</span>(rosa){
+  <span class="k">const</span> v = rosa.map(<span class="f">valutaGiocatore</span>);
+  <span class="k">return</span> { ovr:<span class="f">media</span>(v.map(x=>x.ovr)), att:<span class="f">media</span>(v.map(x=>x.att)), def:<span class="f">media</span>(v.map(x=>x.def)) };
+}</pre>
+  </div>
+</div>
+
+<script>
+  // ===== algoritmo (Opzione A · media PESATA per ruolo) =====
+  const STAT_ATT = ['tiro3','tiroMedio','tiroLibero','sottocanestro','palleggio','visione'];
+  const STAT_DEF = ['difInterna','difPerimetro','stoppate','rubate','rimbalzi'];
+  const STAT_FIS = ['atletismo','forza','velocita']; // fuori dallo split
+
+  // pesi per ruolo: quanto conta ogni sotto-stat per quel ruolo (1 = neutro)
+  const PESI = {
+    PG:{att:{tiro3:1.3,tiroMedio:1.1,tiroLibero:0.8,sottocanestro:0.5,palleggio:1.6,visione:1.6},
+        def:{difInterna:0.5,difPerimetro:1.6,stoppate:0.6,rubate:1.5,rimbalzi:0.6}},
+    SG:{att:{tiro3:1.6,tiroMedio:1.3,tiroLibero:1.0,sottocanestro:1.0,palleggio:1.0,visione:0.7},
+        def:{difInterna:0.6,difPerimetro:1.5,stoppate:0.7,rubate:1.3,rimbalzi:0.7}},
+    SF:{att:{tiro3:1.2,tiroMedio:1.2,tiroLibero:0.9,sottocanestro:1.2,palleggio:1.0,visione:0.8},
+        def:{difInterna:0.9,difPerimetro:1.2,stoppate:0.9,rubate:1.1,rimbalzi:1.0}},
+    PF:{att:{tiro3:0.6,tiroMedio:1.0,tiroLibero:0.7,sottocanestro:2.6,palleggio:0.8,visione:0.7},
+        def:{difInterna:1.5,difPerimetro:0.8,stoppate:1.4,rubate:0.8,rimbalzi:1.6}},
+    C: {att:{tiro3:0.3,tiroMedio:0.7,tiroLibero:0.6,sottocanestro:3.0,palleggio:0.4,visione:0.5},
+        def:{difInterna:2.0,difPerimetro:0.5,stoppate:1.8,rubate:0.6,rimbalzi:1.8}}
+  };
+  const media = arr => Math.round(arr.reduce((s,x)=>s+x,0) / arr.length);
+  function val(g,k){ const v=g.stat[k]; if(typeof v!=='number') throw new Error('Manca la stat "'+k+'" per '+g.nome); return v; }
+  // media pesata di un gruppo di sotto-stat secondo i pesi del ruolo
+  function pesata(g, chiavi, pesiRuolo){
+    let somma=0, pesi=0;
+    for(const k of chiavi){ const w = pesiRuolo[k] ?? 1; somma += val(g,k)*w; pesi += w; }
+    return Math.round(somma / pesi);
+  }
+  function valutaGiocatore(g){
+    const p = PESI[g.ruolo]; if(!p) throw new Error('Ruolo sconosciuto: '+g.ruolo+' ('+g.nome+')');
+    return { ovr:g.ovr, att:pesata(g,STAT_ATT,p.att), def:pesata(g,STAT_DEF,p.def) };
+  }
+  // squadra: OVR = media OVR · ATT/DEF = media degli ATT/DEF (già pesati per ruolo) dei 5
+  function valutaSquadra(rosa){
+    const v = rosa.map(valutaGiocatore);
+    return { ovr:media(v.map(x=>x.ovr)), att:media(v.map(x=>x.att)), def:media(v.map(x=>x.def)) };
+  }
+
+  // ===== quintetto di prova (14 sotto-stat ciascuno) =====
+  // disegnato per mostrare il tuo caso: OVR alto, ATT discreto, DIF tirata giù da chi non difende
+  const ROSA = [
+    {nome:'Haliburton', pos:'Playmaker', id:'1630169', ovr:90, stat:{
+      tiro3:92,tiroMedio:88,tiroLibero:90,sottocanestro:62, palleggio:90,visione:96,
+      difInterna:40,difPerimetro:62,stoppate:30,rubate:80, atletismo:72,forza:55,velocita:85,rimbalzi:45}},
+    {nome:'Edwards', pos:'Guardia tiratrice', id:'1630162', ovr:94, stat:{
+      tiro3:84,tiroMedio:86,tiroLibero:82,sottocanestro:88, palleggio:86,visione:76,
+      difInterna:60,difPerimetro:74,stoppate:55,rubate:78, atletismo:96,forza:82,velocita:92,rimbalzi:68}},
+    {nome:'Antetokounmpo', pos:'Ala grande', id:'203507', ovr:96, stat:{
+      tiro3:58,tiroMedio:72,tiroLibero:65,sottocanestro:99, palleggio:80,visione:76,
+      difInterna:95,difPerimetro:84,stoppate:88,rubate:79, atletismo:99,forza:96,velocita:90,rimbalzi:92}},
+    {nome:'Tatum', pos:'Ala piccola', id:'1628369', ovr:95, stat:{
+      tiro3:86,tiroMedio:88,tiroLibero:84,sottocanestro:82, palleggio:82,visione:80,
+      difInterna:72,difPerimetro:84,stoppate:70,rubate:76, atletismo:88,forza:84,velocita:85,rimbalzi:80}},
+    {nome:'Embiid', pos:'Centro', id:'203954', ovr:96, stat:{
+      tiro3:78,tiroMedio:84,tiroLibero:86,sottocanestro:96, palleggio:60,visione:58,
+      difInterna:92,difPerimetro:70,stoppate:90,rubate:60, atletismo:84,forza:96,velocita:70,rimbalzi:90}}
+  ];
+
+  // assegna il ruolo (chiave dei PESI) a partire dal nome posizione
+  const RUOLO = {'Playmaker':'PG','Guardia tiratrice':'SG','Ala piccola':'SF','Ala grande':'PF','Centro':'C'};
+  ROSA.forEach(g => { g.ruolo = RUOLO[g.pos]; if(!g.ruolo) throw new Error('Posizione non mappata: '+g.pos); });
+
+  const IMG = id => 'https://cdn.nba.com/headshots/nba/latest/1040x760/'+id+'.png';
+  const LABELS = {tiro3:'Tiro da 3',tiroMedio:'Tiro medio',tiroLibero:'Tiro libero',sottocanestro:'Sottocanestro',
+    palleggio:'Palleggio',visione:'Visione',difInterna:'Difesa interna',difPerimetro:'Difesa perimetro',
+    stoppate:'Stoppate',rubate:'Palle rubate',atletismo:'Atletismo',forza:'Forza',velocita:'Velocità',rimbalzi:'Rimbalzi'};
+
+  function statRow(g,k,cls,w){ const v=g.stat[k];
+    const wtxt = (w!=null) ? '<span class="dw'+(w<1?' lo':'')+'">×'+w+'</span>' : '';
+    return '<div class="dst '+cls+'"><div class="dl"><span>'+LABELS[k]+wtxt+'</span><b>'+v+'</b></div><div class="dtrk"><span class="dfil" style="width:'+v+'%"></span></div></div>'; }
+  function detail(g){
+    const p = PESI[g.ruolo];
+    const off = STAT_ATT.map(k=>statRow(g,k,'d-off',p.att[k])).join('');
+    const def = STAT_DEF.map(k=>statRow(g,k,'d-def',p.def[k])).join('');
+    const fis = STAT_FIS.map(k=>statRow(g,k,'d-off',null)).join('');
+    return '<div class="detail">'+
+      '<div class="darea"><div class="dh">Entrano in Attacco · pesati per '+g.ruolo+' <span class="tag att">ATT</span></div><div class="dgrid">'+off+'</div></div>'+
+      '<div class="darea"><div class="dh">Entrano in Difesa · pesati per '+g.ruolo+' <span class="tag def">DIF</span></div><div class="dgrid">'+def+'</div></div>'+
+      '<div class="darea"><div class="dh">Fuori dallo split <span class="tag off">solo OVR</span></div><div class="dgrid">'+fis+'</div></div>'+
+      '</div>';
+  }
+
+  const box = document.getElementById('players');
+  box.innerHTML = ROSA.map((g,i)=>{ const v=valutaGiocatore(g);
+    return '<div class="prow" data-i="'+i+'">'+
+        '<div class="pname"><img class="pface" loading="lazy" alt="" src="'+IMG(g.id)+'"><div><div class="pn">'+g.nome+'</div><div class="ppos">'+g.pos+'</div></div></div>'+
+        '<div class="pv ovr"><b>'+v.ovr+'</b><small>OVR</small></div>'+
+        '<div class="pv att"><b>'+v.att+'</b><small>ATT</small></div>'+
+        '<div class="pv def"><b>'+v.def+'</b><small>DIF</small></div>'+
+      '</div>'+detail(g);
+  }).join('');
+
+  box.querySelectorAll('.prow').forEach(r=>r.addEventListener('click',()=>r.classList.toggle('open')));
+
+  // ===== calcolo squadra + render =====
+  const T = valutaSquadra(ROSA);
+  document.getElementById('tOvr').textContent = T.ovr;
+  document.getElementById('tAtt').textContent = T.att;
+  document.getElementById('tDef').textContent = T.def;
+  // esposto per la verifica automatica
+  window.__TEAM__ = T;
+  window.__PLAYERS__ = ROSA.map(g => ({ nome:g.nome, ruolo:g.ruolo, ...valutaGiocatore(g) }));
+</script>
+</body>
+</html>
