@@ -1,20 +1,273 @@
+/* L'IMBATTUTO — direzione "arena/sirena": ink bluastro + brass caldo, display
+   Bricolage, numeri Bodoni da tabellone. Token allineati ai mockup approvati. */
 :root {
-  --nero: #0b0b0d;
-  --nero-2: #141418;
-  --oro: #e8b23a;
-  --oro-soft: #caa04e;
-  --testo: #f4f2ec;
-  --testo-soft: #a9a49a;
-  --linea: #26262c;
-  --ok: #4caf7d;
-  --ko: #d1495b;
-  --display: "Barlow Condensed", "Oswald", system-ui, sans-serif; /* condensato; il font reale si rifinisce nel prototipo */
-  --testo-font: system-ui, sans-serif;
+  --ink: #14171e;      /* fondo arena */
+  --ink-2: #1b1f28;    /* pannello/card */
+  --ink-3: #232936;    /* rialzo/hover */
+  --line: #323a4a;     /* filo */
+  --bone: #e9e4d8;     /* testo */
+  --bone-dim: #a39e93; /* testo soft */
+  --brass: #e0a96d;    /* oro accento */
+  --brass-deep: #b9824a;
+  --ok: #7fb59a;       /* vinto */
+  --ko: #d1657a;       /* perso */
+  --display: "Bricolage Grotesque", system-ui, sans-serif;
+  --serif: "Bodoni Moda", Georgia, serif; /* numeri tabellone */
+  --body: "Hanken Grotesk", system-ui, sans-serif;
+  --radius: 14px;
+  --ease: cubic-bezier(.2, .8, .2, 1);
 }
+
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--nero); color: var(--testo); font-family: var(--testo-font); }
-#app { min-height: 100dvh; max-width: 960px; margin: 0 auto; padding: 20px; }
-h1, h2, .display { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.02em; margin: 0; }
-button { font: inherit; cursor: pointer; }
-.estimated-badge { font-size: 11px; color: var(--nero); background: var(--oro-soft); border-radius: 3px; padding: 1px 5px; text-transform: uppercase; letter-spacing: .03em; }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+html, body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--bone);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Atmosfera: alone brass dall'alto + grana appena percettibile, non colore piatto. */
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(224, 169, 109, .10), transparent 55%),
+    radial-gradient(90% 60% at 50% 120%, rgba(20, 23, 30, .6), transparent 60%),
+    var(--ink);
+}
+
+#app {
+  min-height: 100dvh;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(20px, 5vw, 40px) 20px 64px;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, .display {
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: -.015em;
+  margin: 0;
+  line-height: 1.05;
+}
+
+button { font: inherit; cursor: pointer; color: inherit; }
+button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+/* ---- Ingresso staggered di ogni schermata ---- */
+.screen { display: flex; flex-direction: column; gap: 22px; }
+.screen > * { animation: rise .5s var(--ease) both; }
+.screen > *:nth-child(2) { animation-delay: .05s; }
+.screen > *:nth-child(3) { animation-delay: .10s; }
+.screen > *:nth-child(4) { animation-delay: .15s; }
+.screen > *:nth-child(5) { animation-delay: .20s; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Eyebrow: etichetta strutturale brass usata come firma tipografica. */
+.eyebrow {
+  font-size: .7rem; letter-spacing: .28em; text-transform: uppercase;
+  color: var(--brass); font-weight: 700;
+}
+
+/* =================== HOME =================== */
+.home { gap: 18px; }
+.home h1 { font-size: clamp(2.6rem, 12vw, 4.4rem); letter-spacing: -.03em; }
+.home h1::after {
+  content: ""; display: block; width: 56px; height: 4px; margin-top: 14px;
+  background: var(--brass); border-radius: 2px;
+}
+.tagline {
+  font-family: var(--serif); font-style: italic; font-size: 1.05rem;
+  color: var(--bone-dim); margin: -6px 0 6px;
+}
+.pick { border: none; padding: 0; margin: 0; }
+.pick legend {
+  font-size: .7rem; letter-spacing: .24em; text-transform: uppercase;
+  color: var(--bone-dim); font-weight: 700; padding: 0; margin-bottom: 10px;
+  font-family: var(--body);
+}
+.pick > .chip { margin: 0 8px 8px 0; }
+.chip {
+  display: inline-block; padding: 10px 16px; min-height: 44px;
+  background: var(--ink-2); border: 1px solid var(--line); border-radius: 999px;
+  color: var(--bone-dim); font-weight: 600; text-transform: capitalize;
+  transition: border-color .18s, color .18s, background .18s, transform .1s;
+}
+.chip:hover { border-color: var(--brass-deep); color: var(--bone); }
+.chip:active { transform: scale(.97); }
+.chip.on {
+  background: var(--ink-3); border-color: var(--brass); color: var(--bone);
+  box-shadow: inset 0 0 0 1px rgba(224, 169, 109, .35);
+}
+
+/* CTA principale */
+.cta {
+  align-self: flex-start; margin-top: 4px;
+  padding: 14px 26px; min-height: 48px;
+  background: var(--brass); color: #1a130a; border: none; border-radius: 12px;
+  font-family: var(--display); font-weight: 700; font-size: 1rem;
+  text-transform: uppercase; letter-spacing: .04em;
+  transition: transform .12s var(--ease), box-shadow .18s, filter .18s;
+  box-shadow: 0 8px 24px -10px rgba(224, 169, 109, .7);
+}
+.cta:hover { filter: brightness(1.06); box-shadow: 0 12px 30px -10px rgba(224, 169, 109, .9); }
+.cta:active { transform: translateY(1px) scale(.99); }
+.cta:disabled {
+  background: var(--ink-2); color: var(--bone-dim); cursor: not-allowed;
+  box-shadow: none; filter: none;
+}
+
+/* =================== DRAFT =================== */
+.slots {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+}
+.slot {
+  display: flex; flex-direction: column; gap: 2px; padding: 10px 8px;
+  background: var(--ink-2); border: 1px solid var(--line); border-radius: 12px;
+  border-top: 2px solid var(--line); transition: border-color .2s, background .2s;
+  min-height: 58px;
+}
+.slot .role { font-size: .62rem; letter-spacing: .12em; color: var(--bone-dim); font-weight: 700; }
+.slot .who { font-size: .82rem; font-weight: 600; line-height: 1.15; }
+.slot.full { border-top-color: var(--ok); }
+.slot.full .who { color: var(--bone); }
+.slot.active {
+  border-color: var(--brass); border-top-color: var(--brass);
+  background: var(--ink-3);
+}
+.slot.active .role { color: var(--brass); }
+
+.draft h2 { font-size: 1.15rem; }
+.draft h2::before {
+  content: "Turno"; display: block;
+  font-family: var(--body); font-size: .7rem; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--brass); font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.cand {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  align-items: center; gap: 2px 12px; text-align: left;
+  padding: 12px 14px; background: var(--ink-2);
+  border: 1px solid var(--line); border-radius: 12px;
+  transition: border-color .16s, transform .1s, background .16s;
+}
+.cand:hover { border-color: var(--brass); background: var(--ink-3); }
+.cand:active { transform: scale(.98); }
+.cand-ovr {
+  grid-row: 1 / 3; font-family: var(--serif); font-weight: 700;
+  font-size: 1.9rem; line-height: 1; color: var(--brass);
+}
+.cand-name { font-weight: 600; font-size: .92rem; line-height: 1.15; }
+.cand-pos { font-size: .68rem; letter-spacing: .1em; color: var(--bone-dim); font-weight: 700; }
+.cand.off {
+  opacity: .4; cursor: not-allowed; filter: grayscale(.5);
+}
+.cand.off .cand-ovr { color: var(--bone-dim); }
+
+.estimated-badge {
+  display: inline-block; font-size: 9px; vertical-align: middle;
+  color: #1a130a; background: var(--brass-deep); border-radius: 3px;
+  padding: 1px 4px; margin-left: 4px; text-transform: uppercase; letter-spacing: .04em;
+  font-weight: 700;
+}
+
+.aids { display: flex; flex-wrap: wrap; gap: 8px; }
+.aid {
+  padding: 9px 14px; min-height: 40px;
+  background: transparent; border: 1px solid var(--line); border-radius: 999px;
+  color: var(--bone-dim); font-weight: 600; font-size: .82rem;
+  transition: border-color .16s, color .16s;
+}
+.aid:hover:not(:disabled) { border-color: var(--brass-deep); color: var(--bone); }
+.aid:disabled { opacity: .35; cursor: not-allowed; }
+
+/* =================== COACH =================== */
+.coach h2 { font-size: 1.6rem; }
+.coaches { display: grid; gap: 12px; }
+@media (min-width: 560px) { .coaches { grid-template-columns: repeat(3, 1fr); } }
+.coach-card {
+  display: flex; flex-direction: column; gap: 8px; text-align: left;
+  padding: 20px 18px; background: var(--ink-2);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  transition: border-color .18s, transform .12s, background .18s;
+}
+.coach-card:hover { border-color: var(--brass); background: var(--ink-3); transform: translateY(-2px); }
+.coach-card:active { transform: translateY(0) scale(.99); }
+.coach-name { font-size: 1.15rem; }
+.grades { font-size: .78rem; letter-spacing: .06em; color: var(--bone-dim); font-weight: 600; }
+
+/* =================== RUN =================== */
+.run { gap: 26px; align-items: center; }
+.meter { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.meter-label { font-size: .72rem; letter-spacing: .3em; color: var(--brass); font-weight: 700; }
+.tacche { display: flex; gap: 8px; }
+.tacca {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--line); background: transparent;
+  transition: background .3s var(--ease), border-color .3s, box-shadow .3s;
+}
+.tacca.on {
+  background: var(--brass); border-color: var(--brass);
+  box-shadow: 0 0 10px -1px rgba(224, 169, 109, .8);
+}
+
+/* Tabellone da palazzetto: due lati, VS al centro, numeri Bodoni. */
+.tabellone {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+  width: 100%; padding: 22px 20px;
+  background: var(--ink-2); border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03);
+}
+.lato { display: flex; flex-direction: column; gap: 8px; text-align: center; min-width: 0; }
+.lato-nome { font-size: .8rem; letter-spacing: .04em; color: var(--bone-dim); }
+.lato.tuo .lato-nome { color: var(--brass); }
+.lato-ovr { font-family: var(--serif); font-weight: 700; font-size: clamp(2.4rem, 12vw, 3.6rem); line-height: 1; }
+.vs { font-size: .8rem; letter-spacing: .12em; color: var(--bone-dim); font-weight: 700; }
+.round-info { font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--bone-dim); font-weight: 700; margin: 0; }
+
+/* =================== ESITO =================== */
+.esito { align-items: flex-start; text-align: left; }
+.esito h1 { font-size: clamp(2.8rem, 14vw, 5rem); letter-spacing: -.03em; }
+.esito.win h1 { color: var(--brass); }
+.esito.lose h1 { color: var(--ko); }
+.esito h1::after {
+  content: ""; display: block; width: 56px; height: 4px; margin-top: 12px; border-radius: 2px;
+}
+.esito.win h1::after { background: var(--brass); }
+.esito.lose h1::after { background: var(--ko); }
+.riepilogo { font-family: var(--serif); font-style: italic; font-size: 1.2rem; color: var(--bone-dim); margin: 0; }
+.storia { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.storia li {
+  display: flex; gap: 10px; padding: 10px 14px;
+  background: var(--ink-2); border: 1px solid var(--line); border-radius: 10px;
+  font-size: .88rem; font-variant-numeric: tabular-nums;
+}
+.azioni { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* =================== LEADERBOARD =================== */
+.leaderboard h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
+.bucket { font-size: .72rem; letter-spacing: .24em; text-transform: uppercase; color: var(--brass); font-weight: 700; margin: -10px 0 0; }
+.classifica { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.classifica li {
+  display: flex; align-items: baseline; gap: 12px; padding: 12px 16px;
+  background: var(--ink-2); border: 1px solid var(--line); border-radius: 10px;
+  font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.classifica li:first-child { border-color: var(--brass-deep); }
+.classifica .pos { font-family: var(--serif); font-weight: 700; font-size: 1.3rem; color: var(--brass); min-width: 24px; }
+.classifica .vuoto { color: var(--bone-dim); font-weight: 400; font-style: italic; justify-content: center; }
+.lifetime {
+  display: flex; flex-wrap: wrap; gap: 20px; padding: 16px 0; margin-top: 4px;
+  border-top: 1px solid var(--line); font-size: .82rem; color: var(--bone-dim);
+}
+.lifetime span { display: flex; flex-direction: column; }
+
+/* =================== accessibilità =================== */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

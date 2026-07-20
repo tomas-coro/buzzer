@@ -33,7 +33,7 @@ export function render(ctx) {
 
   el.innerHTML = `
     <div class="slots">${slots}</div>
-    <h2 class="display">Turno: ${draftView.role} — ${draftView.key.replace("|", " ")}</h2>
+    <h2 class="display">${draftView.role} — ${draftView.key.replace("|", " ")}</h2>
     <div class="cands">${cand}</div>
     <div class="aids">
       ${aidBtn("respin", "Re-spin")}
