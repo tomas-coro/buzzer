@@ -30,6 +30,14 @@ test("squadra migliore ha ovr più alto di squadra scarsa", () => {
   assert.ok(teamRating(forte).ovr > teamRating(scarsa).ovr);
 });
 
+test("carta con 'att' di lunghezza sbagliata lancia (niente NaN silenzioso)", () => {
+  assert.throws(() => teamRating([card({ att: [70, 70, 70] })]), /att/);
+});
+
+test("carta con 'def' di lunghezza sbagliata lancia", () => {
+  assert.throws(() => teamRating([card({ def: [70, 70] })]), /def/);
+});
+
 test("teamRating con costanti custom usa ovrMix", () => {
   const five = [card(), card(), card(), card(), card()];
   const soloAtt = teamRating(five, { ...DEFAULT_K, ovrMix: 1 });

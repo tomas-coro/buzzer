@@ -37,6 +37,21 @@ test("useAid consuma un aiuto; se esaurito e non freeSwitch lancia", () => {
   assert.throws(() => useAid(s, "squadra"), /esaurit/);
 });
 
+test("useAid con tipo inesistente lancia (niente aiuto fantasma)", () => {
+  const s = newRun({ formato: "playoff", difficolta: "normale" });
+  assert.throws(() => useAid(s, "bogus"), /inesistente/);
+});
+
+test("chooseCoach/startRun fuori dalla fase coach lanciano", () => {
+  let s = fullDraft(newRun({ formato: "playoff", difficolta: "normale" }), 90);
+  s = chooseCoach(s, COACH);
+  s = startRun(s, poolAt(60));
+  s = resolveRound(s); // 1 vittoria, run ancora attivo (N=6)
+  assert.equal(s.stato, "run");
+  assert.throws(() => chooseCoach(s, COACH), /non in fase coach/);
+  assert.throws(() => startRun(s, poolAt(60)), /non in fase coach/);
+});
+
 test("Facile: switch liberi non si esauriscono", () => {
   let s = newRun({ formato: "playoff", difficolta: "facile" });
   for (let i = 0; i < 9; i++) s = useAid(s, "squadra");

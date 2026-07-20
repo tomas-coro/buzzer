@@ -29,7 +29,10 @@ export function draftPick(state, role, card) {
   return { ...state, quintetto, stato };
 }
 
+const AID_TYPES = ["squadra", "stagione", "respin"];
+
 export function useAid(state, type) {
+  if (!AID_TYPES.includes(type)) throw new Error(`Tipo aiuto inesistente: ${type}`);
   const d = DIFFICULTIES[state.difficolta];
   if (d.freeSwitch && (type === "squadra" || type === "stagione")) {
     return state; // switch illimitati in Facile
@@ -40,10 +43,12 @@ export function useAid(state, type) {
 
 export function chooseCoach(state, coach) {
   if (!isComplete(state.quintetto)) throw new Error("chooseCoach: quintetto incompleto");
+  if (state.stato !== "coach") throw new Error("chooseCoach: non in fase coach");
   return { ...state, coach, stato: "coach" };
 }
 
 export function startRun(state, pool) {
+  if (state.stato !== "coach") throw new Error("startRun: non in fase coach");
   if (!state.coach) throw new Error("startRun: manca il coach");
   const cards = ROLES.map((r) => state.quintetto[r]);
   const voto = applyCoach(teamRating(cards, state.k), state.coach, state.k);

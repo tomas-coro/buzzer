@@ -22,6 +22,17 @@ export function defW(def) {
   return wmean(def, WDEF);
 }
 
+// Validazione carta: attributi presenti e della lunghezza attesa.
+// Niente fallback silenzioso: una carta monca → errore chiaro, mai NaN nascosto.
+function checkCard(c) {
+  if (!Array.isArray(c.att) || c.att.length !== WOFF.length) {
+    throw new Error(`Carta senza attributi 'att' validi (attesi ${WOFF.length})`);
+  }
+  if (!Array.isArray(c.def) || c.def.length !== WDEF.length) {
+    throw new Error(`Carta senza attributi 'def' validi (attesi ${WDEF.length})`);
+  }
+}
+
 // Voto di un singolo giocatore (interno).
 function playerAtt(c, k) {
   return c.ovr + k.A * (offW(c.att) - (k.AO + k.BO * c.ovr));
@@ -34,6 +45,7 @@ export function teamRating(cards, k = DEFAULT_K) {
   if (!Array.isArray(cards) || cards.length === 0) {
     throw new Error("teamRating: servono almeno una carta");
   }
+  cards.forEach(checkCard);
   const n = cards.length;
   const att = cards.reduce((s, c) => s + playerAtt(c, k), 0) / n;
   const dif = cards.reduce((s, c) => s + playerDef(c, k), 0) / n;
