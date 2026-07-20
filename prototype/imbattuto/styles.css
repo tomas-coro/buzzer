@@ -1,0 +1,20 @@
+:root {
+  --nero: #0b0b0d;
+  --nero-2: #141418;
+  --oro: #e8b23a;
+  --oro-soft: #caa04e;
+  --testo: #f4f2ec;
+  --testo-soft: #a9a49a;
+  --linea: #26262c;
+  --ok: #4caf7d;
+  --ko: #d1495b;
+  --display: "Barlow Condensed", "Oswald", system-ui, sans-serif; /* condensato; il font reale si rifinisce nel prototipo */
+  --testo-font: system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--nero); color: var(--testo); font-family: var(--testo-font); }
+#app { min-height: 100dvh; max-width: 960px; margin: 0 auto; padding: 20px; }
+h1, h2, .display { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.02em; margin: 0; }
+button { font: inherit; cursor: pointer; }
+.estimated-badge { font-size: 11px; color: var(--nero); background: var(--oro-soft); border-radius: 3px; padding: 1px 5px; text-transform: uppercase; letter-spacing: .03em; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
