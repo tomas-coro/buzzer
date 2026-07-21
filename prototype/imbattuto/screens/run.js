@@ -1,3 +1,5 @@
+import { toDisplayOvr } from "../display.js";
+
 // ctx: { state, N, dispatch }
 export function render(ctx) {
   const { state, N } = ctx;
@@ -17,12 +19,12 @@ export function render(ctx) {
     <div class="tabellone">
       <div class="lato tuo">
         <span class="lato-nome display">Tu</span>
-        <span class="lato-ovr">${state.voto.ovr}</span>
+        <span class="lato-ovr">${toDisplayOvr(state.voto.ovr)}</span>
       </div>
       <span class="vs display">VS</span>
       <div class="lato loro">
         <span class="lato-nome display">${avv.team} ${avv.season}</span>
-        <span class="lato-ovr">${avv.voto.ovr}</span>
+        <span class="lato-ovr">${toDisplayOvr(avv.voto.ovr)}</span>
       </div>
     </div>
     <p class="round-info">Round ${state.round}</p>

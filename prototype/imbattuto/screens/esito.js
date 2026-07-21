@@ -1,3 +1,5 @@
+import { toDisplayOvr } from "../display.js";
+
 // ctx: { state, dispatch, go }
 export function render(ctx) {
   const { state } = ctx;
@@ -5,7 +7,7 @@ export function render(ctx) {
   const el = document.createElement("section");
   el.className = `screen esito ${vinto ? "win" : "lose"}`;
   const righe = state.storia.map((h) =>
-    `<li>Round ${h.round}: ${h.vinto ? "✓" : "✗"} ${h.tuo} vs ${h.loro} (${h.avversario})</li>`).join("");
+    `<li>Round ${h.round}: ${h.vinto ? "✓" : "✗"} ${toDisplayOvr(h.tuo)} vs ${toDisplayOvr(h.loro)} (${h.avversario})</li>`).join("");
   el.innerHTML = `
     <h1 class="display">${vinto ? "IMBATTUTO" : "SCONFITTA"}</h1>
     <p class="riepilogo">${state.vittorie} vittorie di fila</p>
