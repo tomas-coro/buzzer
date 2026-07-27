@@ -345,28 +345,6 @@ button.bz-mode{cursor:pointer}
 .fbadge .r { color: var(--bone); letter-spacing: .04em; }
 .fbadge .o { font-family: var(--led); font-weight: 900; color: var(--yellow); }
 
-/* ---- Court: i 5 slot del quintetto ---- */
-.court {
-  display: flex; gap: 5px; padding: 9px; border-radius: 14px;
-  background: linear-gradient(180deg, #1a1640, #120f33); border: 1px solid var(--line);
-  background-image: radial-gradient(120% 90% at 50% 0, rgba(255, 91, 30, .1), transparent 60%);
-}
-.cc { flex: 1; display: block; min-width: 0; padding: 0; background: none; border: 0; }
-.cc .face { width: 100%; aspect-ratio: 3 / 4; }
-.cc .face .mono { font-size: 1.05rem; }
-.cc.filled { cursor: pointer; transition: transform .1s var(--ease); }
-.cc.filled:hover { transform: translateY(-2px); }
-.cc.filled:active { transform: translateY(0) scale(.98); }
-.cc.target .face {
-  display: flex; align-items: center; justify-content: center;
-  border: 1.5px dashed var(--brass); background: #211435;
-}
-.cc.target .face::before, .cc.target .face::after { display: none; }
-.cc.target .phplus { font-family: var(--arcade); font-size: 1.3rem; color: var(--brass); }
-.cc.empty .face { background: #171636; border: 1px solid var(--line); }
-.cc.empty .face::before, .cc.empty .face::after { display: none; }
-.cc.empty .mono { color: #4b4b82; font-size: .82rem; }
-
 /* ---- Aiuti ---- */
 .aidz { display: inline-flex; gap: 5px; flex-wrap: wrap; }
 .aid {
@@ -377,62 +355,6 @@ button.bz-mode{cursor:pointer}
 .aid b { color: var(--yellow); }
 .aid:hover:not(:disabled) { border-color: var(--brass-deep); color: var(--bone); }
 .aid:disabled { opacity: .35; cursor: not-allowed; }
-
-/* ---- Eroe a fuoco ---- */
-.incoming {
-  display: grid; grid-template-columns: auto 1fr; gap: 12px 14px; align-items: start;
-  padding: 14px; border-radius: 14px;
-  background: linear-gradient(180deg, #241a3e, #141538); border: 1px solid #3a2a66;
-}
-.incoming .inhd { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.inlab { font-size: .54rem; letter-spacing: .13em; text-transform: uppercase; color: var(--yellow); font-weight: 800; }
-.nchip {
-  display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px;
-  font-family: var(--arcade); font-size: .5rem; text-transform: uppercase; letter-spacing: .04em;
-  background: rgba(255, 91, 30, .14); border: 1px solid rgba(255, 91, 30, .4); color: #ffbda6;
-}
-.nchip.est { background: rgba(138, 139, 192, .14); border-color: rgba(138, 139, 192, .4); color: var(--bone-dim); }
-.cand-face { padding: 0; background: none; border: 0; cursor: pointer; }
-.cand-face .face { width: 92px; height: 112px; }
-.cand-face .face .mono { font-size: 1.6rem; }
-.cand-face:hover .face { outline: 2px solid rgba(255, 207, 51, .5); outline-offset: 2px; }
-.cand-body { min-width: 0; }
-.cand-body .nm {
-  display: block; font-family: var(--arcade); font-size: .98rem; letter-spacing: -.01em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--bone);
-}
-.cand-body .pos { display: block; font-size: .58rem; letter-spacing: .06em; text-transform: uppercase; color: var(--bone-dim); font-weight: 700; margin-top: 5px; }
-.blindnote { display: block; margin-top: 8px; font-size: .74rem; color: var(--bone-dim); font-style: italic; line-height: 1.4; }
-
-/* ---- Barre attributi ---- */
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; margin-top: 10px; }
-.st { display: block; min-width: 0; }
-.st .stl { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
-.st .stl > span:first-child { font-size: .46rem; letter-spacing: .05em; text-transform: uppercase; color: var(--bone-dim); font-weight: 800; }
-.st .stnum { font-family: var(--led); font-weight: 900; font-size: .72rem; color: var(--bone); }
-.trk { display: block; height: 7px; border-radius: 999px; background: #211f55; overflow: hidden; }
-.fil { display: block; height: 100%; border-radius: 999px; background: var(--green); }
-.fil.md { background: var(--yellow); } .fil.lo { background: var(--red); }
-
-/* ---- Shortlist: i 5 candidati sempre visibili ---- */
-.short { display: flex; gap: 6px; margin-top: 11px; }
-.sh {
-  flex: 1; position: relative; min-width: 0; padding: 0; cursor: pointer;
-  border-radius: 9px; overflow: hidden; border: 1px solid var(--line);
-  background: none; transition: transform .1s var(--ease), border-color .16s;
-}
-.sh .face { width: 100%; aspect-ratio: 1 / 1; border-radius: 0; }
-.sh .face .mono { font-size: .74rem; }
-.sh .sn {
-  position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
-  font-size: .42rem; font-weight: 800; text-align: center; padding: 3px 1px;
-  background: linear-gradient(180deg, transparent, rgba(5, 3, 15, .92));
-  color: var(--bone); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.sh .sn em { font-family: var(--led); font-style: normal; color: var(--yellow); }
-.sh:hover { transform: translateY(-2px); }
-.sh.on { border-color: var(--yellow); box-shadow: 0 0 0 1px var(--yellow) inset; }
-.sh.off { opacity: .38; filter: grayscale(.5); }
 
 /* ---- CTA (eredita .cta globale) ---- */
 .cta svg { width: 16px; height: 16px; fill: currentColor; }
@@ -467,7 +389,7 @@ button.bz-mode{cursor:pointer}
 }
 .bcell b { font-family: var(--led); font-weight: 900; font-size: 1.02rem; line-height: 1; color: var(--bone); }
 .bcell i { font-family: var(--body); font-weight: 800; font-size: .46rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); font-style: normal; }
-.blindnote { margin: 12px 2px 0; font-family: var(--body); font-style: italic; font-size: .68rem; color: var(--bone-dim); text-align: center; text-wrap: pretty; }
+.blindnote { display: block; margin: 12px 2px 0; font-family: var(--body); font-style: italic; font-size: .68rem; line-height: 1.4; color: var(--bone-dim); text-align: center; text-wrap: pretty; }
 @keyframes sheetIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
 
 /* =================== DRAFT LIBERO (mirino + snap) =================== */
@@ -541,8 +463,8 @@ button.bz-mode{cursor:pointer}
 .r-ovr b { display: block; font-family: var(--led); font-weight: 900; font-size: 1.4rem; line-height: .86; color: var(--bone); }
 .r-ovr b.q { color: #4b4b82; }
 .r-ovr.oro b { color: #ffcf4d; text-shadow: 0 0 12px rgba(255, 190, 60, .35); }
-.r-ovr.arg b { color: #d6dbe6; }
-.r-ovr.brz b { color: #c78a5b; }
+.r-ovr.arg b { color: #d6dbe6; text-shadow: 0 0 10px rgba(214, 219, 230, .3); }
+.r-ovr.brz b { color: #c78a5b; text-shadow: 0 0 10px rgba(199, 138, 91, .3); }
 .r-ovr small { font-family: var(--body); font-weight: 800; font-size: .36rem; letter-spacing: .12em; text-transform: uppercase; color: var(--bone-dim); }
 .r-id { min-width: 0; }
 .r-id .nm {
