@@ -37,9 +37,9 @@ const fascia = (o) => (o >= 88 ? "oro" : o >= 82 ? "arg" : "brz");
 // sui tetti tipici) e si accende in riga; l'etichetta è coerente con quella stessa firma.
 function archetype(s) {
   const norm = [
-    { k: "pts", v: s.pts / 28 },
-    { k: "reb", v: s.reb / 12 },
-    { k: "ast", v: s.ast / 9 },
+    { k: "pts", v: s.pts / 30 },
+    { k: "reb", v: s.reb / 14 },
+    { k: "ast", v: s.ast / 10 },
   ].sort((a, b) => b.v - a.v);
   const sig = norm[0].k;
   let label;
