@@ -9,9 +9,11 @@ test("ci sono carte e team-stagione", () => {
 });
 
 test("ogni carta ha la struttura richiesta dal motore", () => {
+  const STAT_KEYS = ["pts", "reb", "ast", "stl", "blk", "fg_pct", "tp_pct", "ft_pct"];
   for (const c of ALL_CARDS.slice(0, 200)) {
-    assert.equal(c.att.length, 7, `${c.name} att`);
-    assert.equal(c.def.length, 5, `${c.name} def`);
+    assert.ok(Number.isFinite(c.ovr), `${c.name} ovr`);
+    assert.ok(c.stats_real, `${c.name} stats_real`);
+    for (const k of STAT_KEYS) assert.ok(c.stats_real[k] != null, `${c.name} ${k}`);
     assert.ok(["PG", "SG", "SF", "PF", "C"].includes(c.pos.primary), `${c.name} pos`);
     assert.equal(typeof c.estimated, "boolean");
   }

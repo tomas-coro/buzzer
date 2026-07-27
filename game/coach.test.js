@@ -2,22 +2,28 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { applyCoach, GRADE_MULT } from "./coach.js";
 
-const base = { att: 80, dif: 80, ovr: 80 };
+const base = { ovr: 80 };
 
-test("coach OFF 'A' alza l'attacco, DEF 'C' lascia la difesa", () => {
-  const r = applyCoach(base, { off_grade: "A", def_grade: "C" });
-  assert.ok(r.att > base.att);
-  assert.equal(r.dif, Math.round(80 * GRADE_MULT.C));
+test("coach A/A alza il voto squadra", () => {
+  const r = applyCoach(base, { off_grade: "A", def_grade: "A" });
+  assert.ok(r.ovr > base.ovr);
+  assert.equal(r.ovr, Math.round(80 * GRADE_MULT.A));
 });
 
-test("coach DEF 'A' alza la difesa", () => {
-  const r = applyCoach(base, { off_grade: "C", def_grade: "A" });
-  assert.ok(r.dif > base.dif);
+test("coach C/C lascia il voto invariato", () => {
+  const r = applyCoach(base, { off_grade: "C", def_grade: "C" });
+  assert.equal(r.ovr, 80);
 });
 
-test("coach 'F' abbassa il lato corrispondente", () => {
+test("coach F/F abbassa il voto", () => {
   const r = applyCoach(base, { off_grade: "F", def_grade: "F" });
-  assert.ok(r.att < base.att && r.dif < base.dif);
+  assert.ok(r.ovr < base.ovr);
+});
+
+test("i due voti si fondono nella media dei moltiplicatori", () => {
+  const r = applyCoach(base, { off_grade: "A", def_grade: "F" });
+  const m = (GRADE_MULT.A + GRADE_MULT.F) / 2;
+  assert.equal(r.ovr, Math.round(80 * m));
 });
 
 test("champ_bonus si somma all'ovr", () => {
@@ -26,7 +32,6 @@ test("champ_bonus si somma all'ovr", () => {
   assert.equal(con.ovr - senza.ovr, 3);
 });
 
-test("ovr resta coerente con att/dif dopo il coach", () => {
-  const r = applyCoach(base, { off_grade: "A", def_grade: "A" });
-  assert.equal(r.ovr, Math.round(0.5 * r.att + 0.5 * r.dif));
+test("voto coach non valido lancia", () => {
+  assert.throws(() => applyCoach(base, { off_grade: "Z", def_grade: "C" }), /non valido/);
 });

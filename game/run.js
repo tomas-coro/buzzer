@@ -51,7 +51,7 @@ export function startRun(state, pool) {
   if (state.stato !== "coach") throw new Error("startRun: non in fase coach");
   if (!state.coach) throw new Error("startRun: manca il coach");
   const cards = ROLES.map((r) => state.quintetto[r]);
-  const voto = applyCoach(teamRating(cards, state.k), state.coach, state.k);
+  const voto = applyCoach(teamRating(cards, state.k), state.coach);
   const d = DIFFICULTIES[state.difficolta];
   const round = 1;
   const avversario = pickOpponent(pool, round, d);

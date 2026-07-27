@@ -2,9 +2,10 @@ import { newRun, draftPick, useAid, chooseCoach, startRun, resolveRound } from "
 import { ROLES } from "../../game/roster.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
-import { opponentPool, spin as spinPool } from "./pool.js";
+import { opponentPool, spinRoster } from "./pool.js";
 import { recordRun } from "./meta.js";
 import { render as home } from "./screens/home.js";
+import { render as difficolta } from "./screens/difficolta.js";
 import { render as draft } from "./screens/draft.js";
 import { render as coach } from "./screens/coach.js";
 import { render as run } from "./screens/run.js";
@@ -16,12 +17,12 @@ const app = document.getElementById("app");
 // Stato del prototipo: lo State del motore (o null) + la fase UI corrente.
 let state = null;          // State del motore
 let ui = "home";           // "home" | "leaderboard" | (altrimenti deriva da state.stato)
-let draftView = null;      // { role, key, cards, assignable } dei candidati mostrati nel turno
+let draftView = null;      // { key, cards } della rosa pescata (top-5) da cui piazzi liberamente
 const cards = CARDS_BY_TEAM_SEASON;
 const pool = opponentPool(cards); // pool avversari, calcolato una volta
 
 // Registry di render: chiave = fase UI o state.stato.
-const screens = { home, draft, coach, run, finito: esito, leaderboard };
+const screens = { home, difficolta, draft, coach, run, finito: esito, leaderboard };
 
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;
@@ -30,16 +31,14 @@ function ctx() {
 
 function go(nextUi) { ui = nextUi; render(); }
 
-// Il ruolo del turno = il primo slot vuoto in ordine ROLES.
-function currentRole() {
-  return ROLES.find((r) => state.quintetto[r] === null);
+// Slot ancora liberi (piazzamento libero: nessun ordine forzato).
+function freeRoles() {
+  return ROLES.filter((r) => state.quintetto[r] === null);
 }
-function spinFor(role) {
-  const { key, cards: shown, assignable } = spinPool(cards, role);
-  return { role, key, cards: shown, assignable };
-}
-function firstSpin() {
-  return spinFor(currentRole());
+// Pesca una rosa che copra almeno uno slot libero. filtro = vincoli aiuto.
+function spinRosterView(filtro = {}) {
+  const { key, cards: shown } = spinRoster(cards, freeRoles(), filtro);
+  return { key, cards: shown };
 }
 
 function dispatch(action) {
@@ -47,21 +46,29 @@ function dispatch(action) {
     case "newRun":
       state = newRun({ formato: action.formato, difficolta: action.difficolta });
       ui = null;                 // d'ora in poi la schermata deriva da state.stato
-      draftView = firstSpin();   // primo turno: pesca subito
+      draftView = spinRosterView();  // primo turno: pesca subito una rosa
       break;
     case "spin":
-      draftView = spinFor(currentRole());
+      draftView = spinRosterView();
       break;
     case "assign": {
-      state = draftPick(state, draftView.role, action.card);
-      // se restano ruoli, pesca il turno successivo; altrimenti stato passa a "coach"
-      draftView = state.stato === "draft" ? spinFor(currentRole()) : null;
+      // Piazzamento libero: la carta va nel ruolo scelto dall'utente.
+      state = draftPick(state, action.role, action.card);
+      // se restano slot, pesca una nuova rosa; altrimenti lo stato passa a "coach"
+      draftView = state.stato === "draft" ? spinRosterView() : null;
       break;
     }
-    case "aid":
+    case "aid": {
+      // Portata dell'aiuto rispetto alla rosa corrente (chiave "TEAM|SEASON"):
+      // respin = tutto nuovo · squadra = stesso anno altra squadra · stagione = stessa squadra altro anno.
+      const [curTeam, curSeason] = draftView.key.split("|");
+      const filtro = action.aid === "squadra" ? { sameSeason: curSeason, excludeKey: draftView.key }
+        : action.aid === "stagione" ? { sameTeam: curTeam, excludeKey: draftView.key }
+        : { excludeKey: draftView.key };
       state = useAid(state, action.aid);
-      if (action.aid === "respin") draftView = spinFor(currentRole());
+      draftView = spinRosterView(filtro);
       break;
+    }
     case "chooseCoach":
       state = chooseCoach(state, action.coach);
       state = startRun(state, pool);   // entra nel run: calcola voto + primo avversario
