@@ -82,12 +82,40 @@ correttivo · `reb` da rimbalzi per minuto · `reg` da assist per minuto meno pa
 perse. Poi **percentile dentro la stagione** con una soglia minima di minuti, così
 i 4 minuti a partita non producono mostri.
 
-### B - simulazione partita (`game/partita.js`)
-`simulaPartita({tuoi, loro, coachTuo, coachLoro, rng})` → `{punti, quarti[],
-cronaca[], vincitore}`. Possessi dal ritmo dei due coach; efficienza offensiva dai
-reparti d'attacco contro quelli difensivi avversari; punti per quarto con varianza;
-overtime se pari. **RNG iniettabile** per avere test deterministici.
-Calibrazione al banco su ~1000 partite simulate: media ~110, coda bassa fino a ~90.
+### B - simulazione partita - FATTO (2026-08-17)
+
+`game/partita.js` + `game/partita.test.js` (27 test). Firma:
+`simulaPartita({casa, ospite, rng})` → `{punti, possessi, quarti[], cronaca[],
+vincitore}`. Ogni squadra è `{nome, reparti, ritmo}`: il coach non entra ancora,
+ci pensa la tappa C a tradurre plus/malus in reparti spostati e ritmo.
+
+Il modello sta su tre regole:
+1. **punti = possessi × efficienza**. Il ritmo (-1..+1) decide i possessi
+   (89 lenta · 99 neutra · 109 corsa), i reparti decidono quanto rendono.
+2. **i rimbalzi danno possessi, non efficienza** (scelta di Tomas): chi domina a
+   rimbalzo tira più volte. Una squadra di lunghi che tira male può vincere lo
+   stesso.
+3. **varianza legata all'equilibrio**: nel 4° quarto la deviazione sale del 50%
+   sotto i 5 punti di scarto, del 20% sotto i 10, e non sale affatto se la
+   partita è scappata.
+
+Calibrazione: l'outsider da -6 di reparti vince **1 volta su 4** (scelta di
+Tomas, come la NBA vera).
+
+Difetti trovati al banco sulle carte vere - non dai test, che usavano squadre
+finte tutte a 50:
+- partite da **54 punti** e margini da **72**: cinque riserve contro cinque
+  stelle davano scarti da 40 punti di reparto, che nella NBA non esistono.
+  Corretto con `satura()` (tanh): sotto i 22 punti di scarto passa tutto, sopra
+  si appiattisce. Al banco: media 104, p5 87, max 145, margine medio 11.4,
+  overtime 2.1% - tutti dentro i valori NBA;
+- la cronaca scriveva "prende il largo" a una squadra sotto di un punto:
+  l'allungo va controllato **dopo** il parziale di chi insegue, non prima;
+- tre quarti in equilibrio stampavano tre volte la stessa frase.
+
+Nota: al banco, in una partita su tre vince la squadra con l'OVR medio più
+basso. Non è un difetto, è il punto: la partita non la decide più l'overall 2K,
+la decidono i reparti.
 
 ### C - motore (`rating.js`, `coach.js`, `run.js`)
 `applyCoach` non moltiplica più un voto unico: applica plus/malus ai reparti della
