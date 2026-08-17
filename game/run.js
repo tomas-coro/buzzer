@@ -3,12 +3,14 @@ import { teamRating, DEFAULT_K } from "./rating.js";
 import { applyCoach } from "./coach.js";
 import { pickOpponent } from "./opponents.js";
 import { DIFFICULTIES } from "./difficulty.js";
+import { simulaPartita, rngSeed } from "./partita.js";
 
-export function newRun({ formato, difficolta, k = DEFAULT_K }) {
+export function newRun({ formato, difficolta, k = DEFAULT_K, seme = semeCasuale() }) {
   const d = DIFFICULTIES[difficolta];
   if (!d) throw new Error(`Difficoltà inesistente: ${difficolta}`);
+  if (!Number.isInteger(seme)) throw new Error("newRun: il seme deve essere un intero");
   return {
-    formato, difficolta, k,
+    formato, difficolta, k, seme,
     quintetto: emptyQuintet(),
     coach: null,
     aids: { ...d.aids },
@@ -58,22 +60,59 @@ export function startRun(state, pool) {
   return { ...state, voto, round, avversario, pool, stato: "run" };
 }
 
+// Seme di partenza di una corsa. Non è un fallback che nasconde un errore: è la
+// pallina della roulette, e chi vuole una corsa riproducibile (test, replay,
+// "sfida del giorno" uguale per tutti) lo passa a newRun.
+function semeCasuale() {
+  return Math.floor(Math.random() * 2 ** 31);
+}
+
+// La partita del round: funzione PURA dello stato, non tocca niente.
+//
+// Il seme del round nasce da `seme + round`, e questo è il punto: la UI può
+// chiamarla per mostrare il tabellone che si riempie DURANTE l'animazione, e
+// resolveRound rigiocherà esattamente la stessa partita quando applica il
+// risultato. Senza il seme derivato servirebbe passarsi il risultato tra
+// schermate, oppure - peggio - si simulerebbe due volte con due esiti diversi.
+export function partitaRound(state) {
+  if (state.stato !== "run") throw new Error("partitaRound: run non attivo");
+  return simulaPartita({
+    casa: {
+      nome: "La tua squadra",
+      reparti: state.voto.reparti,
+      ritmo: state.voto.ritmo ?? 0,
+    },
+    ospite: {
+      nome: state.avversario.team,
+      reparti: state.avversario.voto.reparti,
+      // Ritmo neutro: il coach avversario reale è rimandato (serve uno scraper
+      // per sapere chi allenava quella squadra in quella stagione).
+      ritmo: 0,
+    },
+    rng: rngSeed(state.seme + state.round),
+  });
+}
+
 // Esito del round corrente, senza toccare lo stato. Serve alla UI, che deve
 // mostrare il verdetto DURANTE l'animazione del buzzer, cioè prima di applicare
 // resolveRound. Sta qui e non nella schermata perché la regola di chi vince deve
 // restare una sola: se un domani cambia (pareggi, tie-break), cambia in un posto.
 export function esitoRound(state) {
   if (state.stato !== "run") throw new Error("esitoRound: run non attivo");
-  return state.voto.ovr >= state.avversario.voto.ovr;
+  return partitaRound(state).vincitore === "casa";
 }
 
 export function resolveRound(state) {
   if (state.stato !== "run") throw new Error("resolveRound: run non attivo");
   const d = DIFFICULTIES[state.difficolta];
-  const vinto = esitoRound(state);
+  const partita = partitaRound(state);
+  const vinto = partita.vincitore === "casa";
   const storia = [...state.storia, {
     round: state.round, avversario: state.avversario.team, vinto,
     tuo: state.voto.ovr, loro: state.avversario.voto.ovr,
+    // Il punteggio vero e la cronaca: servono alla schermata esito e al
+    // tabellone di fine corsa, che prima potevano mostrare solo due voti.
+    punti: partita.punti, quarti: partita.quarti, cronaca: partita.cronaca,
   }];
   if (!vinto) {
     return { ...state, storia, stato: "finito", esito: "sconfitta" };

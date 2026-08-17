@@ -33,14 +33,14 @@ test("il quintetto prende i 5 OVR più alti", () => {
 });
 
 test("pickOpponent sceglie il voto più vicino alla soglia crescente del round", () => {
+  // I voti sono sulla scala nativa dei reparti (percentili): i quintetti storici
+  // veri stanno tra 40 e 74, non sulla scala 2K. Vedi difficulty.js.
+  const d = DIFFICULTIES.incubo;
   const pool = [
-    { team: "A", season: "x", quintet: [], voto: { att: 0, dif: 0, ovr: 72 } },
-    { team: "B", season: "x", quintet: [], voto: { att: 0, dif: 0, ovr: 88 } },
-    { team: "C", season: "x", quintet: [], voto: { att: 0, dif: 0, ovr: 99 } },
+    { team: "A", season: "x", quintet: [], voto: { ovr: 40 } },
+    { team: "B", season: "x", quintet: [], voto: { ovr: d.oppMin } },
+    { team: "C", season: "x", quintet: [], voto: { ovr: d.oppMax } },
   ];
-  const d = DIFFICULTIES.incubo; // oppMin 88, oppMax 99, N 10
-  const primo = pickOpponent(pool, 1, d);   // soglia = 88 → B
-  const ultimo = pickOpponent(pool, 10, d);  // soglia = 99 → C
-  assert.equal(primo.team, "B");
-  assert.equal(ultimo.team, "C");
+  assert.equal(pickOpponent(pool, 1, d).team, "B", "il primo round punta a oppMin");
+  assert.equal(pickOpponent(pool, d.N, d).team, "C", "l'ultimo round punta a oppMax");
 });

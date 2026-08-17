@@ -5,7 +5,10 @@ import { topFive, spinRoster, opponentPool } from "./pool.js";
 // fixture: carte con ruolo noto
 function card(name, ovr, primary, secondary = null, season = "2015-16", team = "X") {
   return { player_id: name, name, season, team, team_abbr: team, ovr,
-    pos: { primary, secondary }, att: [70,70,70,70,70,70,70], def: [52,52,52,52,52], estimated: false };
+    pos: { primary, secondary }, att: [70,70,70,70,70,70,70], def: [52,52,52,52,52], estimated: false,
+    // I reparti sono quello che il motore valuta davvero (game/rating.js): senza,
+    // teamRating non può costruire il voto dell'avversario.
+    reparti: { t3: ovr - 30, fin: ovr - 30, dif: ovr - 30, reb: ovr - 30, reg: ovr - 30 } };
 }
 const KEY = "X|2015-16";
 const byKey = {

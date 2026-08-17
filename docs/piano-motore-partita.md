@@ -117,10 +117,58 @@ Nota: al banco, in una partita su tre vince la squadra con l'OVR medio più
 basso. Non è un difetto, è il punto: la partita non la decide più l'overall 2K,
 la decidono i reparti.
 
-### C - motore (`rating.js`, `coach.js`, `run.js`)
-`applyCoach` non moltiplica più un voto unico: applica plus/malus ai reparti della
-squadra. `esitoRound` chiama la simulazione. `storia` salva il punteggio vero.
-Test di `rating`/`coach`/`run` da riscrivere.
+### C - motore - FATTO (2026-08-17)
+
+Nato da un'obiezione di Tomas: "non voglio perdere per RNG di OVR". Scomponendo
+il 33% di partite in cui la squadra con l'OVR medio più alto perdeva:
+
+- **25,4%** caso puro (l'1-su-4 scelto nella tappa B);
+- **19,9%** divergenza: OVR alto ma reparti peggiori. La correlazione tra media
+  OVR e forza vera nei reparti era **0,50**.
+
+Non era emozione, era una trappola: si draftava su un numero e se ne subiva un
+altro. Deciso di togliere la divergenza alla radice.
+
+- `rating.js`: il voto non è più la media degli overall 2K, è la sintesi pesata
+  dei cinque reparti. **I pesi non sono a occhio**: escono dall'impatto che un
+  punto di reparto ha sul margine in `partita.js`, chiedendolo alle costanti vere
+  (attacco 39,7% · difesa 39,7% · rimbalzi 22,4%). Se si tara il motore, i pesi
+  si spostano da soli. Aggiunta `votoCarta` per il numero grande della scheda.
+- `coach.js`: **ponte** verso la tappa D. I voti A-F restano ma agiscono sui
+  reparti (attacco muove t3/fin/reg, difesa muove dif/reb), e `champ_bonus` entra
+  nei reparti invece di essere sommato a un voto che la partita non guarda.
+- `run.js`: `partitaRound(state)` è una funzione **pura** dello stato - il seme
+  del round nasce da `seme + round`, quindi la UI può animare il tabellone e
+  `resolveRound` rigioca esattamente la stessa partita. `storia` salva punteggio,
+  quarti e cronaca. `newRun({seme})` rende una corsa riproducibile.
+- `display.js`: il voto nativo è un percentile (50 = mediano), quindi si rimappa
+  su **60-99** per il display - riserva ~63, titolare mediano ~77, quintetto
+  storico mediano ~81, fuoriclasse ~96. Estremi misurati sulle 2412 carte.
+
+Controllo di sanità: le carte col voto più alto sono Westbrook 2016-17, Durant
+2016-17, Giannis 2019-20, Jokic 2017-18. Sono le stagioni giuste.
+
+### C2 - taratura della difficoltà - FATTO (2026-08-17)
+
+Col voto sui reparti, le vecchie soglie `oppMin/oppMax` (70-99, scala 2K)
+cadevano tutte **sopra il massimo del pool** (i 180 quintetti storici stanno tra
+40 e 74): ogni round pescava lo stesso quintetto, il più forte di sempre.
+
+Nato `tools/banco-corse.mjs`: simula corse intere (draft + coach + 16 partite)
+con un giocatore competente e misura quante finiscono imbattute. Bersagli
+concordati con Tomas e raggiunti (1000 corse per livello):
+
+| livello | soglie | 16-0 | bersaglio | vittorie medie |
+|---|---|---|---|---|
+| facile | 44-66 | 41,9% | 40% | 12,4 |
+| normale | 45-72 | 11,3% | 12% | 9,5 |
+| difficile | 45-74 | 2,6% | 3% | 7,2 |
+| incubo | 54-74 | 0,5% | 0,5% | 4,4 |
+
+Due cose emerse dal banco: in Facile il tetto è 66, quindi le squadre leggendarie
+non si incontrano proprio; e buona parte del salto tra livelli **non** viene dalle
+soglie ma dagli **aiuti**, che cambiano quanto forte è la squadra che riesci a
+draftare (voto medio 81 in Facile, 68 in Incubo).
 
 ### D - coach (`prototype/imbattuto/coaches.js`)
 Conversione dei 12 + 18 nuovi, ognuno con 2 plus, 1 malus e il ritmo.
@@ -129,6 +177,11 @@ Conversione dei 12 + 18 nuovi, ognuno con 2 plus, 1 malus e il ritmo.
 Mockup nuovo del tabellone: punteggio che sale a quarti, riga di cronaca, tempo,
 selettore velocità. 2-3 direzioni per il blocco cronaca. Poi `screens/run.js` e
 `screens/coach.js` (scheda coach con plus/malus e anteprima sui tuoi reparti).
+
+**Aggiunto dopo la tappa C**: nel draft il numero grande della carta deve passare
+da `card.ovr` (2K) a `toDisplayOvr(votoCarta(card))`. Il motore è già pronto, ma
+è una modifica visiva, quindi passa da un mockup prima dell'app vera. L'OVR 2K
+resta in scheda come dato reale, in secondo piano.
 
 ## Stime
 

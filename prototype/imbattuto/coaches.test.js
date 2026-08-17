@@ -50,15 +50,19 @@ test("pickCoaches cambia terna tra una run e l'altra", () => {
   assert.ok(terne.size > 1, "la terna è sempre identica: manca la rigiocabilità");
 });
 
+// Il rating che applyCoach si aspetta ora porta i reparti, non solo un numero:
+// il coach agisce su quelli, perché sono l'unica cosa che la partita legge.
+const RATING = { ovr: 60, reparti: { t3: 60, fin: 60, dif: 60, reb: 60, reg: 60 } };
+
 test("toEngineCoach produce la forma che applyCoach si aspetta", () => {
   const c = toEngineCoach(COACHES.find((x) => x.id === "jackson"));
-  const voto = applyCoach({ ovr: 85 }, c);
-  // 85 * (1.06 + 1.03) / 2 = 88.825, + 2 di bonus → 91
-  assert.equal(voto.ovr, 91);
+  const voto = applyCoach(RATING, c);
+  assert.ok(voto.ovr > RATING.ovr, "Jackson (A/B + 2 anelli) deve alzare il voto");
+  assert.ok(voto.reparti.t3 > 60 && voto.reparti.dif > 60, "deve muovere i reparti");
 });
 
 test("un coach offensivo puro vale meno di uno pluri-titolato", () => {
-  const dantoni = applyCoach({ ovr: 85 }, toEngineCoach(COACHES.find((x) => x.id === "dantoni")));
-  const jackson = applyCoach({ ovr: 85 }, toEngineCoach(COACHES.find((x) => x.id === "jackson")));
+  const dantoni = applyCoach(RATING, toEngineCoach(COACHES.find((x) => x.id === "dantoni")));
+  const jackson = applyCoach(RATING, toEngineCoach(COACHES.find((x) => x.id === "jackson")));
   assert.ok(jackson.ovr > dantoni.ovr, "il bonus anelli non si vede nel voto");
 });

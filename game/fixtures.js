@@ -6,6 +6,9 @@ export function card(over = {}) {
     season: over.season ?? "2015-16",
     team: over.team ?? "GSW",
     ovr: over.ovr ?? 80,
+    // Reparti al valore mediano: una carta "media" della sua stagione. I test
+    // che vogliono un profilo (tiratore, lungo) li passano espliciti.
+    reparti: over.reparti ?? { t3: 50, fin: 50, dif: 50, reb: 50, reg: 50 },
     pos: over.pos ?? { primary: "PG", secondary: null },
     att: over.att ?? [70, 70, 70, 70, 70, 70, 70],
     // def centrata sulla media di lega (mediaDefW=52): carta realistica.
