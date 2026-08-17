@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { newRun, draftPick, useAid, chooseCoach, startRun, resolveRound } from "./run.js";
 import { ROLES } from "./roster.js";
+import { DIFFICULTIES } from "./difficulty.js";
 import { card } from "./fixtures.js";
 
 function fullDraft(state, ovr = 80) {
@@ -46,7 +47,7 @@ test("chooseCoach/startRun fuori dalla fase coach lanciano", () => {
   let s = fullDraft(newRun({ formato: "playoff", difficolta: "normale" }), 90);
   s = chooseCoach(s, COACH);
   s = startRun(s, poolAt(60));
-  s = resolveRound(s); // 1 vittoria, run ancora attivo (N=6)
+  s = resolveRound(s); // 1 vittoria, run ancora attivo (N=16)
   assert.equal(s.stato, "run");
   assert.throws(() => chooseCoach(s, COACH), /non in fase coach/);
   assert.throws(() => startRun(s, poolAt(60)), /non in fase coach/);
@@ -91,11 +92,12 @@ test("resolveRound: perdo se voto < avversario → run finito, sconfitta", () =>
 });
 
 test("raggiungere N vittorie chiude come imbattuto", () => {
-  let s = fullDraft(newRun({ formato: "playoff", difficolta: "normale" }), 99); // N = 6
+  const N = DIFFICULTIES.normale.N; // 16 (target playoff, uguale in ogni difficoltà)
+  let s = fullDraft(newRun({ formato: "playoff", difficolta: "normale" }), 99);
   s = chooseCoach(s, COACH);
   s = startRun(s, poolAt(50));
-  for (let i = 0; i < 6; i++) s = resolveRound(s);
+  for (let i = 0; i < N; i++) s = resolveRound(s);
   assert.equal(s.stato, "finito");
   assert.equal(s.esito, "imbattuto");
-  assert.equal(s.vittorie, 6);
+  assert.equal(s.vittorie, N);
 });

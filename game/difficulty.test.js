@@ -27,10 +27,15 @@ test("Facile ha switch liberi", () => {
   assert.equal(DIFFICULTIES.facile.freeSwitch, true);
 });
 
-test("la difficoltà cresce: N e banda avversari non calano", () => {
+test("il target è sempre 16-0, in ogni difficoltà", () => {
+  for (const key of Object.keys(DIFFICULTIES)) {
+    assert.equal(DIFFICULTIES[key].N, 16, `${key}: N deve essere 16`);
+  }
+});
+
+test("la difficoltà cresce: la banda avversari non cala (N resta costante)", () => {
   const order = ["facile", "normale", "difficile", "incubo"];
   for (let i = 1; i < order.length; i++) {
-    assert.ok(DIFFICULTIES[order[i]].N >= DIFFICULTIES[order[i - 1]].N);
     assert.ok(DIFFICULTIES[order[i]].oppMax >= DIFFICULTIES[order[i - 1]].oppMax);
   }
 });

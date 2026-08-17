@@ -58,10 +58,19 @@ export function startRun(state, pool) {
   return { ...state, voto, round, avversario, pool, stato: "run" };
 }
 
+// Esito del round corrente, senza toccare lo stato. Serve alla UI, che deve
+// mostrare il verdetto DURANTE l'animazione del buzzer, cioè prima di applicare
+// resolveRound. Sta qui e non nella schermata perché la regola di chi vince deve
+// restare una sola: se un domani cambia (pareggi, tie-break), cambia in un posto.
+export function esitoRound(state) {
+  if (state.stato !== "run") throw new Error("esitoRound: run non attivo");
+  return state.voto.ovr >= state.avversario.voto.ovr;
+}
+
 export function resolveRound(state) {
   if (state.stato !== "run") throw new Error("resolveRound: run non attivo");
   const d = DIFFICULTIES[state.difficolta];
-  const vinto = state.voto.ovr >= state.avversario.voto.ovr;
+  const vinto = esitoRound(state);
   const storia = [...state.storia, {
     round: state.round, avversario: state.avversario.team, vinto,
     tuo: state.voto.ovr, loro: state.avversario.voto.ovr,
