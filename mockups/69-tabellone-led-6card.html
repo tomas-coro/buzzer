@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tabellone LED - PRO & 6 card · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  :root{ --lbl:#adaee0; }
+  body{background:#07071a}
+  .mkbar{position:sticky;top:0;z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;background:#0c0d24;border-bottom:1px solid var(--line)}
+  .mkbar .lbl{font-family:var(--body);font-weight:800;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+  .mkbar button{font-family:var(--body);font-weight:700;font-size:.72rem;color:var(--bone-dim);
+    background:#171636;border:1px solid var(--line);border-radius:9px;padding:9px 13px;min-height:44px;cursor:pointer}
+  .mkbar button[aria-pressed="true"]{background:var(--brass);color:#0a0a18;border-color:var(--brass)}
+  .mkbar .hint{font-family:var(--body);font-size:.66rem;color:var(--bone-dim);margin-left:auto;max-width:46ch;text-align:right}
+
+  .stage{display:flex;justify-content:center;padding:26px 16px 60px}
+  .phone{width:390px;max-width:100%;height:788px;border-radius:44px;border:11px solid #000;
+    background:var(--ink);overflow:hidden;position:relative;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.9), inset 0 0 0 2px #23234f}
+  .phone::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:118px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:20}
+  .scr{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .scr::-webkit-scrollbar{display:none}
+  .draft{max-width:none!important;padding:34px 15px 16px!important}
+
+  .mono-badge{display:grid;place-items:center;border-radius:9px;font-family:var(--arcade);color:#fff;
+    background:linear-gradient(158deg,#1D428A,#0d1f45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09)}
+
+  /* ===================== V1 · TABELLONE LED PRO ===================== */
+  .p-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,#191a3d,#111230);box-shadow:0 16px 34px -22px rgba(0,0,0,.85)}
+  .p-hero{position:relative;display:flex;gap:13px;padding:14px 15px 13px}
+  /* ritratto grande valorizzato */
+  .p-port{position:relative;width:92px;height:112px;flex:none;border-radius:12px;overflow:hidden;
+    background:linear-gradient(158deg,#1D428A,#0b1c40);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+  .p-port .ini{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--arcade);
+    font-size:1.9rem;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+  .p-port .jsy{position:absolute;right:6px;bottom:4px;font-family:var(--arcade);font-size:2.7rem;
+    line-height:1;color:rgba(255,255,255,.1)}
+  .p-id{flex:1;min-width:0;display:flex;flex-direction:column;padding-right:62px}
+  .p-id .nm{font-family:var(--arcade);font-size:1.08rem;line-height:1.02;color:var(--bone)}
+  .p-id .sub{font-family:var(--body);font-weight:800;font-size:.54rem;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--lbl);margin-top:6px}
+  .p-tag{align-self:flex-start;margin-top:9px;font-family:var(--body);font-weight:800;font-size:.5rem;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--yellow);
+    background:rgba(255,207,51,.11);border:1px solid rgba(255,207,51,.34);border-radius:6px;padding:4px 8px}
+  .p-ovr{position:absolute;top:12px;right:14px;text-align:center}
+  .p-ovr b{display:block;font-family:var(--led);font-weight:900;font-size:2.9rem;line-height:.74;color:var(--yellow);
+    text-shadow:0 0 16px rgba(255,207,51,.32)}
+  .p-ovr small{font-family:var(--body);font-weight:800;font-size:.42rem;letter-spacing:.15em;text-transform:uppercase;color:var(--lbl)}
+  .p-big{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:rgba(0,0,0,.16)}
+  .p-big .cell{padding:12px 6px;text-align:center;border-left:1px solid rgba(255,255,255,.05)}
+  .p-big .cell:first-child{border-left:0}
+  .p-big .cell b{display:block;font-family:var(--led);font-weight:900;font-size:1.7rem;line-height:1;color:var(--brass)}
+  .p-big .cell small{display:block;font-family:var(--body);font-weight:800;font-size:.46rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--lbl);margin-top:6px}
+  .p-bars{padding:12px 15px 5px;display:grid;gap:9px}
+  .p-bar{display:grid;grid-template-columns:52px 1fr 42px;align-items:center;gap:10px}
+  .p-bar .k{font-family:var(--body);font-weight:800;font-size:.56rem;letter-spacing:.05em;text-transform:uppercase;color:var(--lbl)}
+  .p-bar .track{height:8px;border-radius:5px;background:#0c0d22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);overflow:hidden}
+  .p-bar .fill{display:block;height:100%;border-radius:5px}
+  .p-bar .v{font-family:var(--led);font-weight:900;font-size:.92rem;text-align:right;color:var(--bone)}
+  .p-def{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);margin-top:10px}
+  .p-def .cell{padding:9px 4px;text-align:center;border-left:1px solid rgba(255,255,255,.05)}
+  .p-def .cell:first-child{border-left:0}
+  .p-def .cell b{display:block;font-family:var(--led);font-weight:700;font-size:.92rem;color:var(--bone);line-height:1}
+  .p-def .cell small{display:block;font-family:var(--body);font-weight:800;font-size:.42rem;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--lbl);margin-top:5px}
+  .p-foot{display:flex;justify-content:space-between;padding:8px 15px;border-top:1px solid var(--line);
+    font-family:var(--body);font-weight:800;font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--lbl)}
+  .p-foot .gp-lo{color:var(--red)}
+  /* shortlist 6 */
+  .p-short{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:11px 0 2px}
+  .p-chip{border:1px solid var(--line);border-radius:11px;padding:8px 3px 7px;text-align:center;
+    background:#161638;cursor:pointer;min-height:44px}
+  .p-chip.on{border-color:var(--yellow);background:rgba(255,207,51,.12)}
+  .p-chip .mono-badge{width:30px;height:30px;font-size:.6rem;margin:0 auto 5px;border-radius:8px}
+  .p-chip .cn{display:block;font-family:var(--body);font-weight:800;font-size:.44rem;color:var(--bone);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-transform:uppercase;letter-spacing:.03em}
+  .p-chip .co{display:block;font-family:var(--led);font-weight:900;font-size:.8rem;color:var(--yellow);margin-top:2px}
+
+  /* ===================== V2 · TABELLONE A 6 ===================== */
+  .g-list{display:grid;gap:7px}
+  .g-row{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:11px;
+    border:1px solid var(--line);border-radius:12px;padding:9px 12px;background:#161638;cursor:pointer;
+    box-shadow:0 8px 20px -18px rgba(0,0,0,.9)}
+  .g-row.on{border-color:var(--yellow);background:linear-gradient(180deg,#20214a,#15153a);
+    box-shadow:0 0 0 1px rgba(255,207,51,.25),0 10px 24px -16px rgba(0,0,0,.9)}
+  .g-ov{text-align:center}
+  .g-ov b{display:block;font-family:var(--led);font-weight:900;font-size:1.55rem;line-height:.9;color:var(--brass)}
+  .g-row.on .g-ov b{color:var(--yellow);text-shadow:0 0 12px rgba(255,207,51,.3)}
+  .g-ov small{font-family:var(--body);font-weight:800;font-size:.36rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl)}
+  .g-id{min-width:0}
+  .g-id .nm{display:block;font-family:var(--body);font-weight:800;font-size:.82rem;color:var(--bone);line-height:1.05;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .g-id .sub{display:flex;align-items:center;gap:6px;margin-top:5px}
+  .g-id .pos{font-family:var(--arcade);font-size:.44rem;letter-spacing:.02em;color:var(--bone-dim);
+    background:#22224d;border:1px solid var(--line);border-radius:5px;padding:2px 5px}
+  .g-shot{display:flex;gap:3px;align-items:center}
+  .g-shot i{width:16px;height:5px;border-radius:3px;background:#0c0d22;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);overflow:hidden;display:block;position:relative}
+  .g-shot i b{position:absolute;inset:0;border-radius:3px}
+  .g-stats{display:flex;gap:13px}
+  .g-stats span{text-align:center;min-width:26px}
+  .g-stats b{display:block;font-family:var(--led);font-weight:900;font-size:.92rem;color:var(--bone);line-height:1}
+  .g-stats small{display:block;font-family:var(--body);font-weight:800;font-size:.4rem;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--lbl);margin-top:4px}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <span class="lbl">Vista</span>
+  <button data-s="P" aria-pressed="true">1 · Tabellone LED PRO</button>
+  <button data-s="G" aria-pressed="false">2 · Tabellone a 6 (tutte visibili)</button>
+  <span class="hint">6 candidati, niente swipe. Stat reali + OVR 2K. Telefono 390px, skin Cabina 90s.</span>
+</div>
+
+<div class="stage">
+  <div class="phone"><div class="scr" id="scr"></div></div>
+</div>
+
+<script type="module">
+const ROLES=["PG","SG","SF","PF","C"];
+const CARDS=[
+  {n:"Stephen Curry",  ini:"SC",jsy:30,pos:"PG",tag:"MVP unanime '16",ovr:94,s:{pts:30.1,reb:5.4,ast:6.7,stl:2.1,blk:0.2,tov:3.3,fg:50.4,tp:45.4,ft:90.8,gp:79,min:34.2}},
+  {n:"Klay Thompson",  ini:"KT",jsy:11,pos:"SG",tag:"Splash Brother",ovr:90,s:{pts:22.1,reb:3.8,ast:2.1,stl:0.8,blk:0.6,tov:1.7,fg:47.0,tp:42.5,ft:87.3,gp:80,min:33.3}},
+  {n:"Draymond Green", ini:"DG",jsy:23,pos:"PF",tag:"Motore difensivo",ovr:90,s:{pts:14.0,reb:9.5,ast:7.4,stl:1.5,blk:1.4,tov:3.2,fg:49.0,tp:38.8,ft:69.6,gp:81,min:34.7}},
+  {n:"Andre Iguodala", ini:"AI",jsy:9, pos:"SF",tag:"6º uomo Finals",ovr:81,s:{pts:7.0, reb:4.0,ast:3.4,stl:1.1,blk:0.3,tov:1.2,fg:47.8,tp:35.1,ft:61.4,gp:65,min:26.6}},
+  {n:"Harrison Barnes",ini:"HB",jsy:40,pos:"SF",tag:"Ala atletica",ovr:79,s:{pts:11.7,reb:4.9,ast:1.8,stl:0.6,blk:0.2,tov:0.9,fg:46.6,tp:38.3,ft:76.0,gp:66,min:30.0}},
+  {n:"Andrew Bogut",   ini:"AB",jsy:12,pos:"C", tag:"Muro in area",ovr:77,s:{pts:5.4, reb:7.0,ast:2.3,stl:0.5,blk:1.6,tov:1.2,fg:62.7,tp:0,  ft:48.0,gp:70,min:20.7}},
+];
+let struct="P", focus=0;
+
+const FLAME=`<svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`;
+const PLUS=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>`;
+const last=n=>n.split(" ").pop();
+const gpTxt=s=>`${s.gp<70?`<span class="gp-lo">${s.gp} partite</span>`:`${s.gp} partite`} · ${s.min} min`;
+const shotTier=(v,g,ok)=> v>=g?"var(--green)": v>=ok?"var(--yellow)":"var(--red)";
+
+function shell(bodyHTML){
+  const court=ROLES.map(r=>
+    (r==="PG")
+      ? `<span class="cc target"><span class="face"><span class="phplus">+</span><span class="fbadge"><span class="r">PG</span><span class="o">?</span></span></span></span>`
+      : `<span class="cc empty"><span class="face"><span class="mono">${r}</span></span></span>`
+  ).join("");
+  return `<section class="screen draft">
+    <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill"><span class="mp-ico">${FLAME}</span><span class="mp-txt">Normale</span></div></div>
+    <div class="court-block">
+      <div class="seclab"><span>Il tuo quintetto · 0/5</span></div>
+      <div class="court">${court}</div>
+    </div>
+    <div class="cand-block">
+      <div class="seclab"><span>Candidati PG · 6</span>
+        <div class="aidz"><button class="aid" type="button">re-spin <b>2</b></button><button class="aid" type="button">↺ squadra <b>1</b></button></div>
+      </div>
+      ${bodyHTML}
+      <button class="cta" type="button">${PLUS} Metti ${last(CARDS[focus].n)} nel quintetto</button>
+    </div>
+    <p class="src">Da <b>Golden State Warriors</b> · 2015-16</p>
+  </section>`;
+}
+
+// -------- V1 · PRO --------
+function bodyP(){
+  const c=CARDS[focus], s=c.s;
+  const bar=(k,v,g,ok)=>`<div class="p-bar"><span class="k">${k}</span>
+    <span class="track"><span class="fill" style="width:${Math.min(v,100)}%;background:${shotTier(v,g,ok)}"></span></span>
+    <span class="v">${v}</span></div>`;
+  const hero=`<div class="p-card">
+    <div class="p-hero">
+      <span class="p-port"><span class="ini">${c.ini}</span><span class="jsy">${c.jsy}</span></span>
+      <span class="p-id">
+        <span class="nm">${c.n}</span>
+        <span class="sub">${c.pos} · Golden State · '15-16</span>
+        <span class="p-tag">${c.tag}</span>
+      </span>
+      <span class="p-ovr"><b>${c.ovr}</b><small>OVR 2K</small></span>
+    </div>
+    <div class="p-big">
+      <span class="cell"><b>${s.pts}</b><small>Punti</small></span>
+      <span class="cell"><b>${s.reb}</b><small>Rimbalzi</small></span>
+      <span class="cell"><b>${s.ast}</b><small>Assist</small></span>
+    </div>
+    <div class="p-bars">
+      ${bar("FG%",s.fg,50,44)}
+      ${bar("Da 3",s.tp,38,33)}
+      ${bar("Liberi",s.ft,80,70)}
+    </div>
+    <div class="p-def">
+      <span class="cell"><b>${s.stl}</b><small>Rubate</small></span>
+      <span class="cell"><b>${s.blk}</b><small>Stoppate</small></span>
+      <span class="cell"><b>${s.tov}</b><small>Palle perse</small></span>
+    </div>
+    <div class="p-foot"><span>${gpTxt(s)}</span><span>'15-16 · GSW</span></div>
+  </div>
+  <div class="p-short">
+    ${CARDS.map((x,i)=>`<button class="p-chip ${i===focus?"on":""}" data-i="${i}" type="button" aria-label="${x.n}">
+      <span class="mono-badge">${x.ini}</span><span class="cn">${last(x.n)}</span><span class="co">${x.ovr}</span></button>`).join("")}
+  </div>`;
+  return hero;
+}
+
+// -------- V2 · 6 CARD --------
+function bodyG(){
+  const seg=(v,g,ok)=>`<i><b style="width:${Math.min(v,100)}%;background:${shotTier(v,g,ok)}"></b></i>`;
+  const row=(c,i)=>{const s=c.s;return `<div class="g-row ${i===focus?"on":""}" data-i="${i}" role="button" tabindex="0">
+    <span class="g-ov"><b>${c.ovr}</b><small>OVR</small></span>
+    <span class="g-id">
+      <span class="nm">${c.n}</span>
+      <span class="sub">
+        <span class="pos">${c.pos}</span>
+        <span class="g-shot" title="FG · 3P · TL">${seg(s.fg,50,44)}${seg(s.tp,38,33)}${seg(s.ft,80,70)}</span>
+      </span>
+    </span>
+    <span class="g-stats">
+      <span><b>${s.pts}</b><small>PT</small></span>
+      <span><b>${s.reb}</b><small>RB</small></span>
+      <span><b>${s.ast}</b><small>AS</small></span>
+    </span>
+  </div>`;};
+  return `<div class="g-list">${CARDS.map(row).join("")}</div>`;
+}
+
+function render(){
+  const scr=document.getElementById("scr");
+  scr.innerHTML=shell(struct==="P"?bodyP():bodyG());
+  const sel = struct==="P" ? ".p-chip" : ".g-row";
+  scr.querySelectorAll(sel).forEach(el=>el.onclick=()=>{focus=+el.dataset.i;render();});
+}
+
+document.querySelectorAll(".mkbar button").forEach(b=>{
+  b.onclick=()=>{struct=b.dataset.s; focus=0;
+    document.querySelectorAll(".mkbar button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    render();};
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Animazione inserimento - 3 direzioni · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  :root{ --lbl:#adaee0; }
+  body{background:#07071a}
+  .mkbar{position:sticky;top:0;z-index:30;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;background:#0c0d24;border-bottom:1px solid var(--line)}
+  .mkbar .lbl{font-family:var(--body);font-weight:800;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+  .chips{display:flex;gap:6px}
+  .chip{font-family:var(--body);font-weight:800;font-size:.66rem;letter-spacing:.02em;color:var(--bone-dim);
+    background:#141539;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;transition:.15s}
+  .chip.on{color:#0c0d22;background:var(--yellow);border-color:var(--yellow)}
+  .mkbar .hint{font-family:var(--body);font-size:.66rem;color:var(--bone-dim);margin-left:auto;max-width:46ch;text-align:right}
+
+  .stage{display:flex;justify-content:center;padding:24px 16px 60px}
+  .phone{width:390px;max-width:100%;height:788px;border-radius:44px;border:11px solid #000;
+    background:var(--ink);overflow:hidden;position:relative;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.9), inset 0 0 0 2px #23234f}
+  .phone::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:118px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:40}
+  .scr{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative}
+  .scr::-webkit-scrollbar{display:none}
+  .draft{max-width:none!important;padding:30px 14px 14px!important}
+
+  /* ===== quintetto / court ===== */
+  .court-block{margin-bottom:12px}
+  .court{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+  .slot{position:relative;aspect-ratio:1/1.18;border-radius:12px;border:1.5px dashed #34356a;
+    background:linear-gradient(160deg,#141539,#0f1030);display:grid;place-items:center;overflow:hidden;
+    transition:transform .16s var(--ease,ease),box-shadow .16s,border-color .16s}
+  .slot .role{font-family:var(--arcade);font-size:.62rem;color:#5d5e93;letter-spacing:.04em}
+  .slot .filled{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:var(--sg,linear-gradient(160deg,#1D428A,#0b1c40));border-radius:11px}
+  .slot .filled .ini{font-family:var(--arcade);font-size:.74rem;color:#fff}
+  .slot .filled .rl{font-family:var(--body);font-weight:800;font-size:.42rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.72)}
+  .slot.full{border-style:solid;border-color:transparent}
+  .slot.full .role{display:none}
+  .slot.full .filled{display:flex}
+  /* slot idoneo acceso */
+  .slot.elig{border-color:var(--yellow);border-style:solid;cursor:pointer;
+    box-shadow:0 0 0 1px var(--yellow),0 0 22px -4px var(--yellow);animation:eligpulse 1s ease-in-out infinite}
+  @keyframes eligpulse{0%,100%{box-shadow:0 0 0 1px var(--yellow),0 0 16px -4px var(--yellow)}50%{box-shadow:0 0 0 2px var(--yellow),0 0 30px 0 var(--yellow)}}
+  .slot.dim{opacity:.4}
+
+  /* direzione 1: mirino */
+  .reticle{position:absolute;inset:5px;display:none;pointer-events:none}
+  .reticle::before,.reticle::after{content:"";position:absolute;width:11px;height:11px;border:2px solid var(--yellow)}
+  .reticle::before{top:0;left:0;border-right:0;border-bottom:0}
+  .reticle::after{bottom:0;right:0;border-left:0;border-top:0}
+  .dir1 .slot.elig .reticle{display:block;animation:retico .8s ease-in-out infinite}
+  @keyframes retico{0%,100%{inset:5px}50%{inset:2px}}
+  /* direzione 3: fantasma preview */
+  .ghost{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:var(--sg);opacity:.24;border-radius:11px;pointer-events:none}
+  .ghost .ini{font-family:var(--arcade);font-size:.74rem;color:#fff}
+  .dir3 .slot.elig .ghost{display:flex;animation:ghostbob 1s ease-in-out infinite}
+  @keyframes ghostbob{0%,100%{opacity:.18}50%{opacity:.34}}
+
+  .counter b{color:var(--yellow)}
+
+  /* ===== righe candidato (stile 70) ===== */
+  .rlist{display:grid;gap:6px}
+  .crd{position:relative;border:1px solid var(--line);border-radius:13px;overflow:hidden;cursor:pointer;
+    background:linear-gradient(100deg,#191a3d,#141336);transition:transform .12s var(--ease,ease),box-shadow .12s,opacity .3s}
+  .crd::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc,#3a3a6e)}
+  .crd:hover{transform:translateX(1px)}
+  .crd.sel{border-color:var(--acc,var(--yellow));background:linear-gradient(100deg,#232349,#181740);
+    box-shadow:0 0 0 1px var(--acc,var(--yellow)),0 14px 30px -18px rgba(0,0,0,.9)}
+  .crd.gone{opacity:0;transform:translateX(40px) scale(.9);pointer-events:none;height:0;margin:-3px 0;padding:0;border:0}
+  .r-top{display:grid;grid-template-columns:36px 40px 1fr auto;align-items:center;gap:9px;padding:7px 12px 7px 14px}
+  .r-port{width:36px;height:40px;border-radius:8px;position:relative;overflow:hidden;display:grid;place-items:center;
+    font-family:var(--arcade);font-size:.66rem;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+  .r-ovr{text-align:center}
+  .r-ovr b{display:block;font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:.86;color:var(--tier,var(--brass))}
+  .r-ovr small{font-family:var(--body);font-weight:800;font-size:.36rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl)}
+  .r-id{min-width:0}
+  .r-id .nm{display:block;font-family:var(--display);font-weight:800;font-size:.9rem;color:var(--bone);line-height:1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+  .r-id .sub{display:flex;align-items:center;gap:6px;margin-top:6px;min-width:0}
+  .r-id .pos{font-family:var(--arcade);font-size:.44rem;letter-spacing:.02em;color:#0c0d22;
+    background:var(--acc,#6b6ba0);border-radius:5px;padding:2px 6px;flex:none}
+  .r-id .pos.two{background:linear-gradient(90deg,var(--acc),#7a7ac0)}
+  .r-role{font-family:var(--body);font-weight:700;font-size:.56rem;color:var(--lbl);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .r-stats{display:flex;gap:9px}
+  .r-stats span{text-align:center;min-width:22px;position:relative}
+  .r-stats b{display:block;font-family:var(--led);font-weight:900;font-size:.94rem;color:var(--bone);line-height:1}
+  .r-stats small{display:block;font-family:var(--body);font-weight:800;font-size:.38rem;letter-spacing:.06em;text-transform:uppercase;color:var(--lbl);margin-top:4px}
+  .r-stats span.sig b{color:var(--acc);text-shadow:0 0 12px color-mix(in srgb,var(--acc) 60%,transparent)}
+  .r-stats span.sig small{color:var(--acc)}
+
+  /* clone volante */
+  .flyer{position:fixed;z-index:60;pointer-events:none;border-radius:10px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;box-shadow:0 18px 40px -12px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.14)}
+  .flyer .ini{font-family:var(--arcade);font-size:.9rem;color:#fff}
+  .flyer .rl{font-family:var(--body);font-weight:800;font-size:.44rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+  /* binario dir2 */
+  .rail{position:fixed;z-index:55;height:3px;transform-origin:left center;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--yellow));box-shadow:0 0 12px var(--yellow);opacity:0}
+  /* anello impatto */
+  .ring{position:fixed;z-index:58;border-radius:50%;border:3px solid var(--yellow);pointer-events:none;opacity:0}
+  /* timbro dir3 */
+  .stamp{position:absolute;z-index:5;font-family:var(--arcade);font-size:.6rem;color:#0c0d22;background:var(--yellow);
+    padding:3px 7px;border-radius:5px;transform:rotate(-8deg) scale(0);opacity:0;top:-8px;left:50%;margin-left:-24px}
+
+  .prompt{margin:10px 2px 4px;font-family:var(--body);font-weight:700;font-size:.72rem;color:var(--lbl);text-align:center;min-height:1.1em}
+  .prompt b{color:var(--yellow)}
+  .barbtn{display:flex;gap:8px;justify-content:center;margin-top:14px}
+  .barbtn button{font-family:var(--body);font-weight:800;font-size:.72rem;letter-spacing:.02em;cursor:pointer;
+    border-radius:10px;padding:9px 16px;border:1px solid var(--line);background:#161638;color:var(--bone)}
+  .barbtn button.primary{background:var(--yellow);color:#0c0d22;border-color:var(--yellow)}
+
+  .shake{animation:shk .3s ease}
+  @keyframes shk{0%,100%{transform:translate(0,0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-2px,1px)}80%{transform:translate(2px,0)}}
+
+  @media (prefers-reduced-motion:reduce){ *{animation-duration:.001s!important;transition-duration:.001s!important} }
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <span class="lbl">Inserimento · doppio ruolo</span>
+  <div class="chips" id="chips">
+    <button class="chip on" data-dir="1">1 · Mirino + snap</button>
+    <button class="chip" data-dir="2">2 · Binario + slam</button>
+    <button class="chip" data-dir="3">3 · Fantasma + timbro</button>
+  </div>
+  <span class="hint">Tocca un candidato: si accendono SOLO gli slot dove può giocare. Tocca lo slot: ci vola dentro. Arcade punchy, telefono 390px.</span>
+</div>
+
+<div class="stage"><div class="phone"><div class="scr" id="scr"></div></div></div>
+
+<script type="module">
+const GSW="#ffc72c", GSWg="linear-gradient(158deg,#1D428A,#0b1c40)";
+// pos: [primario, secondario|null] - sfrutta il doppio ruolo
+const POOL0=[
+  {n:"Stephen Curry",  ini:"SC",pos:["PG",null],role:"Tiratore élite",sig:"pts",ovr:94,acc:GSW,grad:GSWg,s:{pts:30.1,reb:5.4,ast:6.7}},
+  {n:"Klay Thompson",  ini:"KT",pos:["SG",null],role:"Bombardiere",  sig:"pts",ovr:90,acc:GSW,grad:GSWg,s:{pts:22.1,reb:3.8,ast:2.1}},
+  {n:"Draymond Green", ini:"DG",pos:["PF","C"], role:"Motore-regia", sig:"ast",ovr:90,acc:GSW,grad:GSWg,s:{pts:14.0,reb:9.5,ast:7.4}},
+  {n:"Andre Iguodala", ini:"AI",pos:["SF","SG"],role:"Jolly Finals",  sig:"ast",ovr:81,acc:GSW,grad:GSWg,s:{pts:7.0, reb:4.0,ast:3.4}},
+  {n:"Harrison Barnes",ini:"HB",pos:["SF","PF"],role:"Ala atletica",  sig:"pts",ovr:79,acc:GSW,grad:GSWg,s:{pts:11.7,reb:4.9,ast:1.8}},
+  {n:"Andrew Bogut",   ini:"AB",pos:["C",null], role:"Muro in area",  sig:"reb",ovr:77,acc:GSW,grad:GSWg,s:{pts:5.4, reb:7.0,ast:2.3}},
+];
+const ROLES=["PG","SG","SF","PF","C"];
+const last=n=>n.split(" ").pop();
+const tier=v=> v>=88?"var(--yellow)": v>=82?"#cdd6ea":"#e08a4a";
+let dir=1, sel=null, quint={}, busy=false;
+let POOL=POOL0.slice();   // copia di lavoro: i piazzati escono da qui, POOL0 resta per il reset
+
+function slotHTML(r){
+  const f=quint[r];
+  return `<div class="slot ${f?"full":""}" data-role="${r}" style="--sg:${f?f.grad:""}">
+    <span class="role">${r}</span>
+    <span class="reticle"></span>
+    <span class="ghost"><span class="ini"></span></span>
+    <span class="filled"><span class="ini">${f?f.ini:""}</span><span class="rl">${r}</span></span>
+    <span class="stamp">${r} OK</span>
+  </div>`;
+}
+function rowHTML(c){
+  const s=c.s, two=c.pos[1];
+  const st=(v,l,k)=>`<span class="${c.sig===k?"sig":""}"><b>${v}</b><small>${l}</small></span>`;
+  return `<div class="crd" data-id="${c.ini}" style="--acc:${c.acc};--tier:${tier(c.ovr)}">
+    <div class="r-top">
+      <span class="r-port" style="background:${c.grad}">${c.ini}</span>
+      <span class="r-ovr"><b>${c.ovr}</b><small>OVR</small></span>
+      <span class="r-id"><span class="nm">${last(c.n)}</span>
+        <span class="sub"><span class="pos ${two?"two":""}">${c.pos[0]}${two?" · "+two:""}</span><span class="r-role">${c.role}</span></span></span>
+      <span class="r-stats">${st(s.pts,"PT","pts")}${st(s.reb,"RB","reb")}${st(s.ast,"AS","ast")}</span>
+    </div></div>`;
+}
+function nFilled(){ return ROLES.filter(r=>quint[r]).length; }
+function render(){
+  const scr=document.getElementById("scr");
+  scr.className="scr dir"+dir;
+  scr.innerHTML=`<section class="screen draft">
+    <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill"><span class="mp-txt">Draft</span></div></div>
+    <div class="court-block">
+      <div class="seclab counter"><span>Il tuo quintetto · <b>${nFilled()}</b>/5</span></div>
+      <div class="court">${ROLES.map(slotHTML).join("")}</div>
+    </div>
+    <p class="prompt" id="prompt">Tocca un candidato per iniziare</p>
+    <div class="cand-block">
+      <div class="seclab"><span>Candidati · ${POOL.length}</span></div>
+      <div class="rlist">${POOL.map(rowHTML).join("")}</div>
+    </div>
+    <div class="barbtn"><button class="primary" id="reset">↺ Ricomincia</button></div>
+  </section>`;
+  scr.querySelectorAll(".crd").forEach(el=>el.onclick=()=>selectCand(el.dataset.id));
+  scr.querySelectorAll(".slot").forEach(el=>el.onclick=()=>placeIn(el.dataset.role));
+  document.getElementById("reset").onclick=resetBoard;
+}
+function setPrompt(h){ const p=document.getElementById("prompt"); if(p) p.innerHTML=h; }
+function resetBoard(){ POOL=POOL0.slice(); quint={}; sel=null; busy=false; render(); }
+
+function selectCand(id){
+  if(busy) return;
+  const c=POOL.find(x=>x.ini===id); if(!c) return;
+  sel=c;
+  document.querySelectorAll(".crd").forEach(el=>el.classList.toggle("sel",el.dataset.id===id));
+  // idoneità: ruoli del giocatore che sono ancora liberi
+  const elig=c.pos.filter(Boolean).filter(r=>!quint[r]);
+  document.querySelectorAll(".slot").forEach(el=>{
+    const r=el.dataset.role, ok=elig.includes(r);
+    el.classList.toggle("elig",ok);
+    el.classList.toggle("dim",!ok && !quint[r]);   // spegni solo gli slot vuoti non idonei, non i pieni
+    if(dir===3 && ok){ el.querySelector(".ghost .ini").textContent=c.ini; el.style.setProperty("--sg",c.grad); }
+  });
+  if(elig.length===0){ setPrompt(`<b>${last(c.n)}</b>: nessuno slot libero per i suoi ruoli`); }
+  else if(elig.length===1){ setPrompt(`<b>${last(c.n)}</b> può fare <b>${elig[0]}</b> - tocca lo slot`); }
+  else { setPrompt(`<b>${last(c.n)}</b> può fare <b>${elig.join(" o ")}</b> - scegli lo slot`); }
+}
+function clearElig(){ document.querySelectorAll(".slot").forEach(el=>el.classList.remove("elig","dim")); }
+
+function placeIn(role){
+  if(busy || !sel) return;
+  const slot=document.querySelector(`.slot[data-role="${role}"]`);
+  if(!slot.classList.contains("elig")) return;
+  busy=true;
+  const c=sel;
+  const row=document.querySelector(`.crd[data-id="${c.ini}"]`);
+  clearElig();
+  document.querySelectorAll(".crd").forEach(el=>el.classList.remove("sel"));
+  const from=(row||slot).getBoundingClientRect();
+  const to=slot.getBoundingClientRect();
+  runFlight(c,role,from,to,slot,row);
+}
+
+function runFlight(c,role,from,to,slot,row){
+  const fly=document.createElement("div");
+  fly.className="flyer";
+  fly.style.background=c.grad;
+  fly.innerHTML=`<span class="ini">${c.ini}</span><span class="rl">${role}</span>`;
+  document.body.appendChild(fly);
+  const set=(x,y,w,h,extra="")=>{fly.style.left=x+"px";fly.style.top=y+"px";fly.style.width=w+"px";fly.style.height=h+"px";fly.style.transform=extra;};
+  set(from.left,from.top,from.width,Math.min(from.height,52));
+  const finish=()=>{
+    fly.remove();
+    quint[role]=c;
+    // riempi lo slot SUL POSTO: niente full re-render, quindi nessun frame vuoto
+    slot.style.setProperty("--sg",c.grad);
+    slot.querySelector(".filled .ini").textContent=c.ini;
+    slot.querySelector(".filled .rl").textContent=role;
+    slot.classList.remove("dim","elig"); slot.classList.add("full","shake");
+    setTimeout(()=>slot.classList.remove("shake"),320);
+    const cb=document.querySelector(".counter b"); if(cb) cb.textContent=nFilled();
+    if(dir===3){ const st=slot.querySelector(".stamp"); if(st) st.animate([{transform:"rotate(-8deg) scale(1.6)",opacity:1},{transform:"rotate(-8deg) scale(1)",opacity:1},{transform:"rotate(-8deg) scale(1)",opacity:0}],{duration:700,easing:"ease-out"}); }
+    // togli la riga candidato con animazione d'uscita, poi aggiorna il contatore candidati
+    POOL=POOL.filter(x=>x!==c);
+    if(row){ row.classList.add("gone"); setTimeout(()=>{ row.remove(); const cc=document.querySelector(".cand-block .seclab span"); if(cc) cc.textContent=`Candidati · ${POOL.length}`; },320); }
+    sel=null; busy=false;
+    setPrompt("Tocca un candidato per iniziare");
+  };
+
+  if(dir===1){ // mirino + snap: passi netti, flash slot
+    fly.animate([
+      {left:from.left+"px",top:from.top+"px",width:from.width+"px",height:"52px",offset:0},
+      {left:(to.left-6)+"px",top:(to.top-6)+"px",width:(to.width+12)+"px",height:(to.height+12)+"px",offset:.55,easing:"steps(4,end)"},
+      {left:to.left+"px",top:to.top+"px",width:to.width+"px",height:to.height+"px",offset:1,easing:"cubic-bezier(.2,1.5,.4,1)"}
+    ],{duration:360,fill:"forwards"}).onfinish=()=>{ slot.animate([{boxShadow:"0 0 0 3px #fff,0 0 40px 4px var(--yellow)"},{boxShadow:"0 0 0 0 transparent"}],{duration:280}); finish(); };
+  } else if(dir===2){ // binario + slam
+    const rail=document.createElement("div"); rail.className="rail"; document.body.appendChild(rail);
+    const x1=from.left+from.width/2, y1=from.top+26, x2=to.left+to.width/2, y2=to.top+to.height/2;
+    const len=Math.hypot(x2-x1,y2-y1), ang=Math.atan2(y2-y1,x2-x1)*180/Math.PI;
+    rail.style.left=x1+"px"; rail.style.top=y1+"px"; rail.style.width=len+"px"; rail.style.transform=`rotate(${ang}deg)`;
+    rail.animate([{opacity:0},{opacity:1}],{duration:120,fill:"forwards"});
+    fly.animate([
+      {left:from.left+"px",top:from.top+"px",width:from.width+"px",height:"52px",offset:0,easing:"cubic-bezier(.7,0,.9,.3)"},
+      {left:to.left+"px",top:to.top+"px",width:to.width+"px",height:to.height+"px",offset:1}
+    ],{duration:300,fill:"forwards"}).onfinish=()=>{
+      rail.animate([{opacity:1},{opacity:0}],{duration:200,fill:"forwards"}).onfinish=()=>rail.remove();
+      // anello impatto
+      const ring=document.createElement("div"); ring.className="ring"; document.body.appendChild(ring);
+      const cx=to.left+to.width/2, cy=to.top+to.height/2;
+      ring.style.left=(cx-10)+"px"; ring.style.top=(cy-10)+"px"; ring.style.width="20px"; ring.style.height="20px";
+      ring.animate([{opacity:1,transform:"scale(.4)"},{opacity:0,transform:"scale(3.2)"}],{duration:420,easing:"ease-out"}).onfinish=()=>ring.remove();
+      finish();
+    };
+  } else { // dir3 fantasma + timbro: caduta con rimbalzo
+    fly.animate([
+      {left:from.left+"px",top:from.top+"px",width:from.width+"px",height:"52px",offset:0},
+      {left:to.left+"px",top:(to.top-30)+"px",width:to.width+"px",height:to.height+"px",offset:.6,easing:"ease-in"},
+      {left:to.left+"px",top:(to.top+6)+"px",width:to.width+"px",height:to.height+"px",offset:.8},
+      {left:to.left+"px",top:to.top+"px",width:to.width+"px",height:to.height+"px",offset:1,easing:"cubic-bezier(.3,1.6,.5,1)"}
+    ],{duration:460,fill:"forwards"}).onfinish=finish;
+  }
+}
+
+document.getElementById("chips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  dir=+b.dataset.dir; resetBoard();   // ogni direzione parte da board pulito
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  SCOCCA FISSA: sostituito SOLO #panels + <title>/#mockTitle + fonts extra.
+-->
+<title>Draft · zona candidati · iterazione · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- fonts extra per le direzioni -->
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@500;700;900&family=IBM+Plex+Mono:wght@500;600;700&family=Archivo:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:56ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+
+  /* ══════════════════════════════════════════════════════════════════
+     STILI DELLE DIREZIONI (zona candidati del Draft)
+     Ogni pannello è un "modulo" ~340px centrato: mini-court + eroe +
+     shortlist + CTA, nella pelle della direzione. Dati finti Lakers 19-20.
+     ══════════════════════════════════════════════════════════════════ */
+  .mock{width:340px;max-width:100%;margin:0 auto}
+  .mock *{box-sizing:border-box}
+  .seclab{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
+  .seclab .s{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800}
+
+  /* segnaposto faccia condiviso (iniziali + gradiente squadra) */
+  .face{position:relative;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#3a2d5e),var(--tc2,#211636))}
+  .face .mono{font-family:"Bungee";color:rgba(255,255,255,.92);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .face::before{content:"";position:absolute;inset:0;opacity:.5;
+    background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),
+      repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+
+  /* ═══════════ 1 · CABINA 90s (ATTUALE, com'è in app) ═══════════ */
+  .m-cab{--yellow:#ffcf33;--orange:#ff5b1e;--dim:#8a8bc0;--hair:#2c2a63;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;
+    background:radial-gradient(120% 80% at 50% -10%,#20206a,#15163a 55%,#0d0e29);border:1px solid var(--hair);
+    border-radius:16px;padding:14px;color:#e9e4d8}
+  .m-cab .seclab .s{color:var(--dim)}
+  .m-cab .court{display:flex;gap:5px;background:linear-gradient(180deg,#1a1640,#120f33);border:1px solid var(--hair);border-radius:12px;padding:8px;margin-bottom:12px}
+  .m-cab .cc{flex:1}
+  .m-cab .cc .face{aspect-ratio:3/4}
+  .m-cab .cc .face .mono{font-size:1rem}
+  .m-cab .cc .fbadge{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;padding:2px 4px;
+    background:linear-gradient(180deg,transparent,rgba(5,3,15,.85));font-size:.44rem;font-weight:800;z-index:2}
+  .m-cab .cc .fbadge .r{color:var(--cream)}.m-cab .cc .fbadge .o{font-family:"Doto";font-weight:900;color:var(--yellow)}
+  .m-cab .cc.tgt .face{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--orange);background:#211435}
+  .m-cab .cc.tgt .face::before{display:none}
+  .m-cab .cc.tgt .plus{font-family:"Bungee";font-size:1.1rem;color:var(--orange)}
+
+  .m-cab .hero{background:linear-gradient(180deg,#241a3e,#141538);border:1px solid #3a2a66;border-radius:12px;padding:12px}
+  .m-cab .inhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .m-cab .inlab{font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+  .m-cab .nchip{font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#ffb0a6;
+    background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.4);border-radius:99px;padding:3px 8px}
+  .m-cab .hmain{display:flex;gap:11px;align-items:flex-start}
+  .m-cab .hmain .face{width:80px;height:98px;flex:none}
+  .m-cab .hmain .face .mono{font-size:1.4rem}
+  .m-cab .hmain .face .obadge{position:absolute;bottom:0;left:0;right:0;text-align:right;padding:2px 5px;
+    background:linear-gradient(180deg,transparent,rgba(5,3,15,.85));font-family:"Doto";font-weight:900;color:var(--yellow);font-size:.7rem;z-index:2}
+  .m-cab .hinfo{flex:1;min-width:0}
+  .m-cab .hinfo .nm{font-family:"Bungee";font-size:.82rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .m-cab .hinfo .pos{font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:4px 0 8px}
+  .m-cab .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 11px}
+  .m-cab .st .stl{display:flex;justify-content:space-between;font-size:.44rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-bottom:3px}
+  .m-cab .st .stnum{font-family:"Doto";font-weight:900;color:var(--cream)}
+  .m-cab .trk{display:block;height:6px;border-radius:99px;background:#211f55;overflow:hidden}
+  .m-cab .fil{display:block;height:100%;border-radius:99px;background:var(--green)}
+  .m-cab .fil.md{background:var(--yellow)}.m-cab .fil.lo{background:var(--red)}
+
+  .m-cab .short{display:flex;gap:6px;margin-top:11px}
+  .m-cab .sh{flex:1;position:relative;cursor:pointer;border-radius:9px;overflow:hidden;border:1px solid var(--hair);background:none;padding:0;transition:transform .1s}
+  .m-cab .sh .face{aspect-ratio:1/1;border-radius:0}
+  .m-cab .sh .face .mono{font-size:.7rem}
+  .m-cab .sh .sn{position:absolute;bottom:0;left:0;right:0;font-size:.4rem;font-weight:800;text-align:center;padding:2px 1px;
+    background:linear-gradient(180deg,transparent,rgba(5,3,15,.9));color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .m-cab .sh .sn em{font-style:normal;color:var(--yellow)}
+  .m-cab .sh.on{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow) inset}
+  .m-cab .sh:hover{transform:translateY(-2px)}
+
+  .m-cab .cta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;cursor:pointer;margin-top:12px;
+    font-family:"Bungee";font-size:.74rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:13px;min-height:46px;box-shadow:0 4px 0 #b8901f;border:0}
+  .m-cab .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .m-cab .cta svg{width:15px;height:15px;fill:currentColor}
+
+  /* ═══════════ 2 · CABINA 90s RIFINITA (VARIANTE +) ═══════════
+     Riprende la pelle attuale e applica: OVR display con ombra offset (7a0),
+     stato-selezionato pieno giallo/testo-scuro (Era Ball), court-formazione,
+     stella "best". Stessa griglia, gerarchia più decisa. */
+  .m-plus{--yellow:#ffcf33;--orange:#ff5b1e;--dim:#8a8bc0;--hair:#2c2a63;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;
+    background:radial-gradient(120% 80% at 50% -10%,#20206a,#15163a 55%,#0d0e29);border:1px solid var(--hair);
+    border-radius:16px;padding:14px;color:#e9e4d8}
+  .m-plus .seclab .s{color:var(--dim)}
+  .m-plus .court{display:flex;gap:5px;background:linear-gradient(180deg,#1a1640,#120f33);border:1px solid var(--hair);border-radius:12px;padding:8px;margin-bottom:12px}
+  .m-plus .cc{flex:1;position:relative}
+  .m-plus .cc .face{aspect-ratio:3/4}
+  .m-plus .cc .face .mono{font-size:1rem}
+  .m-plus .cc .rl{position:absolute;top:3px;left:3px;font-family:"Bungee";font-size:.4rem;color:var(--yellow);background:rgba(5,3,15,.6);border-radius:4px;padding:1px 3px;z-index:2}
+  .m-plus .cc.tgt .face{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--orange);background:#211435;animation:pulse 1.6s ease-in-out infinite}
+  .m-plus .cc.tgt .face::before{display:none}
+  .m-plus .cc.tgt .plus{font-family:"Bungee";font-size:1.1rem;color:var(--orange)}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,91,30,.5)}50%{box-shadow:0 0 0 4px rgba(255,91,30,0)}}
+
+  .m-plus .hero{position:relative;background:linear-gradient(180deg,#241a3e,#141538);border:1px solid #3a2a66;border-radius:12px;padding:12px}
+  .m-plus .inhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .m-plus .inlab{font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+  .m-plus .nchip{font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#ffb0a6;
+    background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.4);border-radius:99px;padding:3px 8px}
+  .m-plus .hmain{display:flex;gap:11px;align-items:flex-start}
+  .m-plus .hmain .face{width:74px;height:92px;flex:none}
+  .m-plus .hmain .face .mono{font-size:1.35rem}
+  .m-plus .hinfo{flex:1;min-width:0}
+  .m-plus .topline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .m-plus .hinfo .nm{font-family:"Bungee";font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* OVR display con ombra offset (cue 7a0) - LA cosa memorabile */
+  .m-plus .ovrBig{font-family:"Bungee";font-size:2.1rem;line-height:.82;color:var(--yellow);flex:none;
+    text-shadow:2px 2px 0 #b8901f, 4px 4px 0 rgba(0,0,0,.45)}
+  .m-plus .hinfo .pos{font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:4px 0 8px}
+  .m-plus .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 11px}
+  .m-plus .st .stl{display:flex;justify-content:space-between;font-size:.44rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-bottom:3px}
+  .m-plus .st .stnum{font-family:"Doto";font-weight:900;color:var(--cream)}
+  .m-plus .trk{display:block;height:6px;border-radius:99px;background:#211f55;overflow:hidden}
+  .m-plus .fil{display:block;height:100%;border-radius:99px;background:var(--green)}
+  .m-plus .fil.md{background:var(--yellow)}.m-plus .fil.lo{background:var(--red)}
+
+  .m-plus .short{display:flex;gap:6px;margin-top:11px}
+  .m-plus .sh{flex:1;position:relative;cursor:pointer;border-radius:9px;overflow:hidden;border:1px solid var(--hair);background:none;padding:0;transition:transform .12s}
+  .m-plus .sh .face{aspect-ratio:1/1;border-radius:0}
+  .m-plus .sh .face .mono{font-size:.7rem}
+  .m-plus .sh .star{position:absolute;top:2px;right:3px;color:var(--yellow);font-size:.6rem;z-index:2;filter:drop-shadow(0 1px 0 rgba(0,0,0,.5))}
+  .m-plus .sh .sn{position:absolute;bottom:0;left:0;right:0;font-size:.42rem;font-weight:800;text-align:center;padding:2px 1px;
+    background:linear-gradient(180deg,transparent,rgba(5,3,15,.9));color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .m-plus .sh .sn em{font-style:normal;color:var(--yellow)}
+  /* Era Ball: attivo = pieno giallo, testo scuro, sollevato */
+  .m-plus .sh.on{border-color:var(--yellow);transform:translateY(-4px);box-shadow:0 5px 12px rgba(0,0,0,.45)}
+  .m-plus .sh.on .sn{background:var(--yellow);color:#1a1206}
+  .m-plus .sh.on .sn em{color:#6b4d08}
+  .m-plus .sh:hover{transform:translateY(-2px)}
+
+  .m-plus .cta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;cursor:pointer;margin-top:12px;
+    font-family:"Bungee";font-size:.76rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:14px;min-height:48px;box-shadow:0 4px 0 #b8901f;border:0}
+  .m-plus .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .m-plus .cta svg{width:15px;height:15px;fill:currentColor}
+
+  /* ═══════════ 3 · PROVINO A MANO (figurina / hand of cards) ═══════════
+     Rottura totale: tavolo verde-feltro, eroe come figurina verticale
+     grande, gli altri 4 come carte piccole "in mano" in basso. Nome in
+     serif editoriale (Bodoni), oro come stato/pregio. Mood Panini/Upper-Deck. */
+  .m-card{--felt1:#134e3a;--felt2:#0c3227;--gold:#e8c37a;--gold2:#b8923f;--ivory:#f4efe2;--dim:#9fb3a8;
+    background:
+      radial-gradient(120% 70% at 50% 0,rgba(232,195,122,.1),transparent 55%),
+      repeating-linear-gradient(45deg,rgba(0,0,0,.05) 0 6px,transparent 6px 12px),
+      linear-gradient(180deg,var(--felt1),var(--felt2));
+    border:1px solid #1c6a4f;border-radius:16px;padding:14px;color:var(--ivory)}
+  .m-card .seclab .s{color:var(--gold);font-family:"Bricolage Grotesque"}
+  .m-card .seclab .re{font-size:.5rem;font-weight:700;color:#0c3227;background:var(--gold);border-radius:6px;padding:4px 8px;text-transform:uppercase;letter-spacing:.04em}
+  /* figurina eroe */
+  .m-card .fig{position:relative;border-radius:14px;padding:5px;background:linear-gradient(150deg,var(--gold),#7c6329);box-shadow:0 10px 26px rgba(0,0,0,.4)}
+  .m-card .fig-in{position:relative;border-radius:11px;overflow:hidden;background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447));padding:12px 12px 13px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+  .m-card .fig-in::before{content:"";position:absolute;inset:0;opacity:.5;background:radial-gradient(70% 40% at 50% 6%,rgba(255,255,255,.2),transparent 60%),repeating-linear-gradient(115deg,rgba(0,0,0,.08) 0 2px,transparent 2px 8px)}
+  .m-card .fig-top{position:relative;display:flex;justify-content:space-between;align-items:flex-start;z-index:2}
+  .m-card .fig-pos{font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--gold)}
+  .m-card .fig-ovr{font-family:"Bricolage Grotesque";font-weight:700;font-size:2rem;line-height:.8;color:var(--ivory);text-shadow:2px 2px 0 rgba(0,0,0,.35)}
+  .m-card .fig-mono{position:relative;z-index:2;text-align:center;font-family:"Bricolage Grotesque";font-weight:700;font-size:2.6rem;color:rgba(255,255,255,.9);text-shadow:0 3px 0 rgba(0,0,0,.3);letter-spacing:.02em;margin:6px 0}
+  .m-card .fig-nm{position:relative;z-index:2;font-family:"Bodoni Moda",serif;font-style:italic;font-weight:500;font-size:1.35rem;line-height:1.05;color:var(--ivory)}
+  .m-card .fig-sub{position:relative;z-index:2;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(244,239,226,.72);font-weight:600;margin-top:2px}
+  .m-card .fig-bars{position:relative;z-index:2;display:flex;gap:5px;margin-top:9px}
+  .m-card .fb{flex:1;text-align:center}
+  .m-card .fb i{display:block;font-style:normal;font-size:.4rem;letter-spacing:.03em;text-transform:uppercase;color:rgba(244,239,226,.7);font-weight:800;margin-bottom:2px}
+  .m-card .fb b{display:block;font-family:"Bricolage Grotesque";font-weight:700;font-size:.72rem;color:var(--ivory)}
+  .m-card .fb b.hi{color:#7be0a8}.m-card .fb b.lo{color:#ff9a86}
+
+  /* la "mano": 4 carte piccole */
+  .m-card .hand{display:flex;gap:6px;margin-top:12px}
+  .m-card .hc{flex:1;position:relative;cursor:pointer;border-radius:9px;overflow:hidden;padding:4px;
+    background:linear-gradient(150deg,#3c5a4f,#22382f);border:1px solid #2c5546;transition:transform .12s}
+  .m-card .hc-in{position:relative;border-radius:6px;overflow:hidden;background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447));aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .m-card .hc-mono{font-family:"Bricolage Grotesque";font-weight:700;font-size:1rem;color:rgba(255,255,255,.92)}
+  .m-card .hc-ovr{font-family:"Bricolage Grotesque";font-weight:700;font-size:.6rem;color:var(--gold)}
+  .m-card .hc-nm{display:block;text-align:center;font-family:"Bodoni Moda",serif;font-size:.5rem;color:var(--ivory);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .m-card .hc.on{transform:translateY(-6px);background:linear-gradient(150deg,var(--gold),#7c6329)}
+  .m-card .hc.on .hc-nm{color:var(--gold)}
+  .m-card .hc:hover{transform:translateY(-3px)}
+
+  .m-card .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;margin-top:12px;
+    font-family:"Bricolage Grotesque";font-weight:700;font-size:.86rem;color:#0c3227;
+    background:linear-gradient(180deg,var(--gold),#c99f4e);border:0;border-radius:11px;padding:14px;min-height:48px;box-shadow:0 4px 0 #7c6329}
+  .m-card .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #7c6329}
+
+  /* ═══════════ 4 · TERMINALE SCOUT (Football Manager / declassificato) ═══════════
+     Densità totale: i 5 provini a colonne, confronto mele-con-mele. Mono +
+     ambra su acciaio. Selezione = colonna evidenziata. Ogni pixel ha un dato. */
+  .m-term{--amber:#ffb43a;--steel:#0f141b;--steel2:#161d27;--grid:#2a3542;--ink:#c7d2df;--dim:#7c8a9a;--hi:#57d98a;--lo:#ff6a5a;
+    background:var(--steel);border:1px solid var(--grid);border-radius:14px;padding:0;color:var(--ink);overflow:hidden;font-family:"IBM Plex Mono",monospace}
+  .m-term .thd{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-bottom:1px solid var(--grid);
+    background:repeating-linear-gradient(90deg,rgba(255,180,58,.05) 0 3px,transparent 3px 6px)}
+  .m-term .thd .tt{font-family:"Archivo";font-weight:800;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+  .m-term .thd .tm{font-size:.54rem;letter-spacing:.08em;color:var(--dim)}
+  .m-term .tgrid{display:grid;grid-template-columns:repeat(5,1fr)}
+  .m-term .tcol{position:relative;cursor:pointer;background:none;border:0;border-right:1px solid var(--grid);padding:9px 4px 10px;text-align:center;color:var(--ink);transition:background .12s}
+  .m-term .tcol:last-child{border-right:0}
+  .m-term .tcol .rnk{font-size:.5rem;color:var(--dim);letter-spacing:.05em}
+  .m-term .tcol .ci{width:34px;height:34px;margin:4px auto 3px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    font-family:"Archivo";font-weight:800;font-size:.8rem;color:#fff;background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447))}
+  .m-term .tcol .cn{font-family:"Archivo";font-weight:700;font-size:.56rem;text-transform:uppercase;letter-spacing:.02em;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .m-term .tcol .cp{font-size:.46rem;color:var(--dim);letter-spacing:.04em}
+  .m-term .tcol .cov{font-family:"Archivo";font-weight:800;font-size:1.15rem;color:var(--amber);line-height:1;margin:4px 0 6px}
+  .m-term .tcol .rows{display:flex;flex-direction:column;gap:4px}
+  .m-term .tcol .r{display:grid;grid-template-columns:20px 1fr;gap:4px;align-items:center}
+  .m-term .tcol .r i{font-style:normal;font-size:.42rem;color:var(--dim);text-align:left;letter-spacing:.02em}
+  .m-term .tcol .r .bar{position:relative;height:5px;border-radius:2px;background:#22303c;overflow:hidden}
+  .m-term .tcol .r .bar::after{content:"";position:absolute;inset:0;width:var(--v,50%);border-radius:2px;background:var(--amber)}
+  .m-term .tcol .r .bar.hi::after{background:var(--hi)}.m-term .tcol .r .bar.lo::after{background:var(--lo)}
+  .m-term .tcol.on{background:linear-gradient(180deg,rgba(255,180,58,.14),rgba(255,180,58,.04))}
+  .m-term .tcol.on::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--amber)}
+  .m-term .tcol.on .cn{color:var(--amber)}
+  .m-term .tcol:hover{background:rgba(255,255,255,.03)}
+  .m-term .tfoot{padding:10px 12px 12px}
+  .m-term .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;
+    font-family:"Archivo";font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);
+    background:var(--amber);border:0;border-radius:8px;padding:13px;min-height:46px}
+  .m-term .cta:active{filter:brightness(.92)}
+  .m-term .tnote{font-size:.5rem;color:var(--dim);text-align:center;margin-top:7px;letter-spacing:.03em}
+
+  /* hint interazione (comune) */
+  .picknote{max-width:340px;margin:11px auto 0;font-size:.62rem;color:var(--bone-dim);line-height:1.45;text-align:center}
+  .picknote b{color:var(--brass)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Draft · zona candidati · iterazione</div>
+    <h1 id="mockTitle">Come mostro i 5 candidati (motore intatto)</h1>
+    <p class="lead">Base = direzione <b>C</b> già in app. Stessa interazione ovunque: <b>tocca un provino</b> per portarlo a fuoco, poi <b>conferma</b>. Cambia solo la pelle della zona candidati. Dati finti Lakers 2019-20.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ═══════════ 1 · ATTUALE ═══════════ -->
+      <section class="dir-panel" data-name="Cabina 90s" data-mood="viola-navy · giallo insegna · com'è in app" data-why="È già in app e verificata: eroe grande + 5 sempre visibili. Base di partenza." data-role="Attuale">
+        <div class="mock m-cab">
+          <div class="seclab"><span class="s">Il tuo quintetto · 4/5</span></div>
+          <div class="court">
+            <span class="cc" style="--tc1:#1d428a;--tc2:#0f2350"><span class="face"><span class="mono">SC</span><span class="fbadge"><span class="r">PG</span><span class="o">94</span></span></span></span>
+            <span class="cc" style="--tc1:#007a33;--tc2:#00401b"><span class="face"><span class="mono">JT</span><span class="fbadge"><span class="r">SG</span><span class="o">91</span></span></span></span>
+            <span class="cc tgt"><span class="face"><span class="plus">+</span><span class="fbadge"><span class="r">PF</span><span class="o">?</span></span></span></span>
+            <span class="cc" style="--tc1:#ce1141;--tc2:#6e0a23"><span class="face"><span class="mono">JB</span><span class="fbadge"><span class="r">SF</span><span class="o">89</span></span></span></span>
+            <span class="cc" style="--tc1:#006bb6;--tc2:#003a63"><span class="face"><span class="mono">JE</span><span class="fbadge"><span class="r">C</span><span class="o">96</span></span></span></span>
+          </div>
+          <div class="seclab"><span class="s">Candidati PF · 5</span></div>
+          <div class="hero" data-hero>
+            <div class="inhd"><span class="inlab">Candidato a fuoco</span><span class="nchip">tiro da 3</span></div>
+            <div class="hmain">
+              <span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono" data-hmono>AD</span><span class="obadge" data-hovr>95</span></span>
+              <span class="hinfo">
+                <span class="nm" data-hnm>Anthony Davis</span>
+                <div class="pos" data-hpos>Ala grande · PF · 2019-20</div>
+                <span class="stats" data-hbars>
+                  <span class="st"><span class="stl"><span>Tiro</span><span class="stnum">74</span></span><span class="trk"><i class="fil md" style="width:74%"></i></span></span>
+                  <span class="st"><span class="stl"><span>Fisico</span><span class="stnum">88</span></span><span class="trk"><i class="fil" style="width:88%"></i></span></span>
+                  <span class="st"><span class="stl"><span>Difesa</span><span class="stnum">90</span></span><span class="trk"><i class="fil" style="width:90%"></i></span></span>
+                  <span class="st"><span class="stl"><span>Regia</span><span class="stnum">60</span></span><span class="trk"><i class="fil lo" style="width:60%"></i></span></span>
+                </span>
+              </span>
+            </div>
+          </div>
+          <div class="short">
+            <button class="sh" type="button" data-pick data-nm="LeBron James" data-last="James" data-mono="LJ" data-ovr="97" data-pos="Ala piccola · SF · 2019-20" data-chip="regia" data-bars="90,85,80,88"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">LJ</span></span><span class="sn">James <em>97</em></span></button>
+            <button class="sh on" type="button" data-pick data-nm="Anthony Davis" data-last="Davis" data-mono="AD" data-ovr="95" data-pos="Ala grande · PF · 2019-20" data-chip="tiro da 3" data-bars="74,88,90,60"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">AD</span></span><span class="sn">Davis <em>95</em></span></button>
+            <button class="sh" type="button" data-pick data-nm="Dwight Howard" data-last="Howard" data-mono="DH" data-ovr="78" data-pos="Centro · C · 2019-20" data-chip="rimbalzi" data-bars="40,86,80,35"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">DH</span></span><span class="sn">Howard <em>78</em></span></button>
+            <button class="sh" type="button" data-pick data-nm="JaVale McGee" data-last="McGee" data-mono="JM" data-ovr="78" data-pos="Centro · C · 2019-20" data-chip="stoppate" data-bars="45,82,78,38"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">JM</span></span><span class="sn">McGee <em>78</em></span></button>
+            <button class="sh" type="button" data-pick data-nm="Danny Green" data-last="Green" data-mono="DG" data-ovr="76" data-pos="Ala · SF · 2019-20" data-chip="difesa" data-bars="78,70,80,55"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">DG</span></span><span class="sn">Green <em>76</em></span></button>
+          </div>
+          <button class="cta" type="button" data-cta><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti <span data-ctaname>Davis</span> nel quintetto</button>
+        </div>
+      </section>
+
+      <!-- ═══════════ 2 · VARIANTE + ═══════════ -->
+      <section class="dir-panel" data-name="Cabina rifinita" data-mood="stessa pelle · OVR gigante + selezione piena giallo" data-why="Un OVR memorabile (ombra offset, spunto 7a0) e una selezione piena giallo (Era Ball) rendono ovvio chi è a fuoco. Ritocco, non rifacimento." data-role="Variante +" hidden>
+        <div class="mock m-plus">
+          <div class="seclab"><span class="s">Il tuo quintetto · 4/5</span></div>
+          <div class="court">
+            <span class="cc" style="--tc1:#1d428a;--tc2:#0f2350"><span class="rl">PG</span><span class="face"><span class="mono">SC</span></span></span>
+            <span class="cc" style="--tc1:#007a33;--tc2:#00401b"><span class="rl">SG</span><span class="face"><span class="mono">JT</span></span></span>
+            <span class="cc tgt"><span class="rl">PF</span><span class="face"><span class="plus">+</span></span></span>
+            <span class="cc" style="--tc1:#ce1141;--tc2:#6e0a23"><span class="rl">SF</span><span class="face"><span class="mono">JB</span></span></span>
+            <span class="cc" style="--tc1:#006bb6;--tc2:#003a63"><span class="rl">C</span><span class="face"><span class="mono">JE</span></span></span>
+          </div>
+          <div class="seclab"><span class="s">Candidati PF · 5</span></div>
+          <div class="hero" data-hero>
+            <div class="inhd"><span class="inlab">Candidato a fuoco</span><span class="nchip">tiro da 3</span></div>
+            <div class="hmain">
+              <span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono" data-hmono>AD</span></span>
+              <span class="hinfo">
+                <div class="topline"><span class="nm" data-hnm>Anthony Davis</span><span class="ovrBig" data-hovr>95</span></div>
+                <div class="pos" data-hpos>Ala grande · PF · 2019-20</div>
+                <span class="stats" data-hbars>
+                  <span class="st"><span class="stl"><span>Tiro</span><span class="stnum">74</span></span><span class="trk"><i class="fil md" style="width:74%"></i></span></span>
+                  <span class="st"><span class="stl"><span>Fisico</span><span class="stnum">88</span></span><span class="trk"><i class="fil" style="width:88%"></i></span></span>
+                  <span class="st"><span class="stl"><span>Difesa</span><span class="stnum">90</span></span><span class="trk"><i class="fil" style="width:90%"></i></span></span>
+                  <span class="st"><span class="stl"><span>Regia</span><span class="stnum">60</span></span><span class="trk"><i class="fil lo" style="width:60%"></i></span></span>
+                </span>
+              </span>
+            </div>
+          </div>
+          <div class="short">
+            <button class="sh" type="button" data-pick data-nm="LeBron James" data-last="James" data-mono="LJ" data-ovr="97" data-pos="Ala piccola · SF · 2019-20" data-chip="regia" data-bars="90,85,80,88"><span class="star">★</span><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">LJ</span></span><span class="sn">James <em>97</em></span></button>
+            <button class="sh on" type="button" data-pick data-nm="Anthony Davis" data-last="Davis" data-mono="AD" data-ovr="95" data-pos="Ala grande · PF · 2019-20" data-chip="tiro da 3" data-bars="74,88,90,60"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">AD</span></span><span class="sn">Davis <em>95</em></span></button>
+            <button class="sh" type="button" data-pick data-nm="Dwight Howard" data-last="Howard" data-mono="DH" data-ovr="78" data-pos="Centro · C · 2019-20" data-chip="rimbalzi" data-bars="40,86,80,35"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">DH</span></span><span class="sn">Howard <em>78</em></span></button>
+            <button class="sh" type="button" data-pick data-nm="JaVale McGee" data-last="McGee" data-mono="JM" data-ovr="78" data-pos="Centro · C · 2019-20" data-chip="stoppate" data-bars="45,82,78,38"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">JM</span></span><span class="sn">McGee <em>78</em></span></button>
+            <button class="sh" type="button" data-pick data-nm="Danny Green" data-last="Green" data-mono="DG" data-ovr="76" data-pos="Ala · SF · 2019-20" data-chip="difesa" data-bars="78,70,80,55"><span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">DG</span></span><span class="sn">Green <em>76</em></span></button>
+          </div>
+          <button class="cta" type="button" data-cta><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti <span data-ctaname>Davis</span> nel quintetto</button>
+        </div>
+      </section>
+
+      <!-- ═══════════ 3 · PROVINO A MANO ═══════════ -->
+      <section class="dir-panel" data-name="Provino a mano" data-mood="feltro verde · oro · figurina alla Panini/Upper-Deck" data-why="La scelta diventa fisica: peschi una figurina dalla mano. Nome serif e cornice oro danno valore da collezione, tono diverso dall'arcade." data-role="" hidden>
+        <div class="mock m-card">
+          <div class="seclab"><span class="s">Provini PF · pesca 1 di 5</span><span class="re">re-spin 1</span></div>
+          <div class="fig" data-hero>
+            <div class="fig-in" style="--tc1:#552583;--tc2:#2f1447">
+              <div class="fig-top"><span class="fig-pos" data-hpos>Ala grande · PF</span><span class="fig-ovr" data-hovr>95</span></div>
+              <div class="fig-mono" data-hmono>AD</div>
+              <div>
+                <div class="fig-nm" data-hnm>Anthony Davis</div>
+                <div class="fig-sub">Lakers · 2019-20 · 208 cm</div>
+                <div class="fig-bars" data-hbars>
+                  <span class="fb"><i>Tiro</i><b class="md">74</b></span>
+                  <span class="fb"><i>Fisico</i><b class="hi">88</b></span>
+                  <span class="fb"><i>Difesa</i><b class="hi">90</b></span>
+                  <span class="fb"><i>Regia</i><b class="lo">60</b></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="hand">
+            <button class="hc" type="button" data-pick data-nm="LeBron James" data-last="James" data-mono="LJ" data-ovr="97" data-pos="Ala piccola · SF" data-chip="regia" data-bars="90,85,80,88"><span class="hc-in" style="--tc1:#552583;--tc2:#2f1447"><span class="hc-mono">LJ</span><span class="hc-ovr">97</span></span><span class="hc-nm">James</span></button>
+            <button class="hc on" type="button" data-pick data-nm="Anthony Davis" data-last="Davis" data-mono="AD" data-ovr="95" data-pos="Ala grande · PF" data-chip="tiro da 3" data-bars="74,88,90,60"><span class="hc-in" style="--tc1:#552583;--tc2:#2f1447"><span class="hc-mono">AD</span><span class="hc-ovr">95</span></span><span class="hc-nm">Davis</span></button>
+            <button class="hc" type="button" data-pick data-nm="Dwight Howard" data-last="Howard" data-mono="DH" data-ovr="78" data-pos="Centro · C" data-chip="rimbalzi" data-bars="40,86,80,35"><span class="hc-in" style="--tc1:#552583;--tc2:#2f1447"><span class="hc-mono">DH</span><span class="hc-ovr">78</span></span><span class="hc-nm">Howard</span></button>
+            <button class="hc" type="button" data-pick data-nm="JaVale McGee" data-last="McGee" data-mono="JM" data-ovr="78" data-pos="Centro · C" data-chip="stoppate" data-bars="45,82,78,38"><span class="hc-in" style="--tc1:#552583;--tc2:#2f1447"><span class="hc-mono">JM</span><span class="hc-ovr">78</span></span><span class="hc-nm">McGee</span></button>
+            <button class="hc" type="button" data-pick data-nm="Danny Green" data-last="Green" data-mono="DG" data-ovr="76" data-pos="Ala · SF" data-chip="difesa" data-bars="78,70,80,55"><span class="hc-in" style="--tc1:#552583;--tc2:#2f1447"><span class="hc-mono">DG</span><span class="hc-ovr">76</span></span><span class="hc-nm">Green</span></button>
+          </div>
+          <button class="cta" type="button" data-cta>Schiera <span data-ctaname>Davis</span> da PF</button>
+        </div>
+      </section>
+
+      <!-- ═══════════ 4 · TERMINALE SCOUT ═══════════ -->
+      <section class="dir-panel" data-name="Terminale Scout" data-mood="acciaio · ambra · mono, denso alla Football Manager" data-why="Confronto mele-con-mele: i 5 provini fianco a fianco, ogni pixel un dato. Per chi decide sui numeri, non sull'estetica. Densità massima." data-role="" hidden>
+        <div class="mock m-term">
+          <div class="thd"><span class="tt">Scout · PF</span><span class="tm">5 provini · re-spin 1</span></div>
+          <div class="tgrid">
+            <button class="tcol" type="button" data-pick data-nm="LeBron James" data-last="James" data-mono="LJ" data-ovr="97" data-pos="SF" data-chip="regia" data-bars="90,85,80,88">
+              <span class="rnk">#1</span><span class="ci" style="--tc1:#552583;--tc2:#2f1447">LJ</span><span class="cn">James</span><span class="cp">SF</span><span class="cov">97</span>
+              <span class="rows"><span class="r"><i>TIR</i><span class="bar hi" style="--v:90%"></span></span><span class="r"><i>FIS</i><span class="bar hi" style="--v:85%"></span></span><span class="r"><i>DIF</i><span class="bar" style="--v:80%"></span></span><span class="r"><i>REG</i><span class="bar hi" style="--v:88%"></span></span></span>
+            </button>
+            <button class="tcol on" type="button" data-pick data-nm="Anthony Davis" data-last="Davis" data-mono="AD" data-ovr="95" data-pos="PF" data-chip="tiro da 3" data-bars="74,88,90,60">
+              <span class="rnk">#2</span><span class="ci" style="--tc1:#552583;--tc2:#2f1447">AD</span><span class="cn">Davis</span><span class="cp">PF</span><span class="cov">95</span>
+              <span class="rows"><span class="r"><i>TIR</i><span class="bar" style="--v:74%"></span></span><span class="r"><i>FIS</i><span class="bar hi" style="--v:88%"></span></span><span class="r"><i>DIF</i><span class="bar hi" style="--v:90%"></span></span><span class="r"><i>REG</i><span class="bar lo" style="--v:60%"></span></span></span>
+            </button>
+            <button class="tcol" type="button" data-pick data-nm="Dwight Howard" data-last="Howard" data-mono="DH" data-ovr="78" data-pos="C" data-chip="rimbalzi" data-bars="40,86,80,35">
+              <span class="rnk">#3</span><span class="ci" style="--tc1:#552583;--tc2:#2f1447">DH</span><span class="cn">Howard</span><span class="cp">C</span><span class="cov">78</span>
+              <span class="rows"><span class="r"><i>TIR</i><span class="bar lo" style="--v:40%"></span></span><span class="r"><i>FIS</i><span class="bar hi" style="--v:86%"></span></span><span class="r"><i>DIF</i><span class="bar" style="--v:80%"></span></span><span class="r"><i>REG</i><span class="bar lo" style="--v:35%"></span></span></span>
+            </button>
+            <button class="tcol" type="button" data-pick data-nm="JaVale McGee" data-last="McGee" data-mono="JM" data-ovr="78" data-pos="C" data-chip="stoppate" data-bars="45,82,78,38">
+              <span class="rnk">#4</span><span class="ci" style="--tc1:#552583;--tc2:#2f1447">JM</span><span class="cn">McGee</span><span class="cp">C</span><span class="cov">78</span>
+              <span class="rows"><span class="r"><i>TIR</i><span class="bar lo" style="--v:45%"></span></span><span class="r"><i>FIS</i><span class="bar" style="--v:82%"></span></span><span class="r"><i>DIF</i><span class="bar" style="--v:78%"></span></span><span class="r"><i>REG</i><span class="bar lo" style="--v:38%"></span></span></span>
+            </button>
+            <button class="tcol" type="button" data-pick data-nm="Danny Green" data-last="Green" data-mono="DG" data-ovr="76" data-pos="SF" data-chip="difesa" data-bars="78,70,80,55">
+              <span class="rnk">#5</span><span class="ci" style="--tc1:#552583;--tc2:#2f1447">DG</span><span class="cn">Green</span><span class="cp">SF</span><span class="cov">76</span>
+              <span class="rows"><span class="r"><i>TIR</i><span class="bar" style="--v:78%"></span></span><span class="r"><i>FIS</i><span class="bar" style="--v:70%"></span></span><span class="r"><i>DIF</i><span class="bar" style="--v:80%"></span></span><span class="r"><i>REG</i><span class="bar lo" style="--v:55%"></span></span></span>
+            </button>
+          </div>
+          <div class="tfoot">
+            <button class="cta" type="button" data-cta>▸ Ingaggia <span data-ctaname>Davis</span></button>
+            <div class="tnote">TIR tiro · FIS fisico · DIF difesa · REG regia — verde ≥83 · ambra 70-82 · rosso &lt;70</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica del template (chip auto, un pannello alla volta) ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button'; b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+  show(0);
+})();
+
+// ── Interazione dei pannelli: scegli un provino → aggiorna eroe + CTA ──
+// (additivo, non tocca la scocca sopra). Delega su tutto il documento.
+(function(){
+  const LAB = ["Tiro","Fisico","Difesa","Regia"];
+  const cls = (v)=> v>=83 ? "" : v>=70 ? "md" : "lo";
+  document.addEventListener('click', (e)=>{
+    const pick = e.target.closest('[data-pick]');
+    if(!pick) return;
+    const mock = pick.closest('.mock');
+    if(!mock) return;
+
+    // stato selezionato dentro questo modulo
+    mock.querySelectorAll('[data-pick]').forEach(el=>el.classList.remove('on'));
+    pick.classList.add('on');
+
+    const d = pick.dataset;
+    // CTA (cognome)
+    mock.querySelectorAll('[data-ctaname]').forEach(el=>el.textContent = d.last);
+
+    // eroe / figurina
+    const hero = mock.querySelector('[data-hero]');
+    if(hero){
+      const set=(sel,val)=>{const n=hero.querySelector(sel); if(n) n.textContent=val;};
+      set('[data-hmono]', d.mono);
+      set('[data-hnm]', d.nm);
+      set('[data-hovr]', d.ovr);
+      set('[data-hpos]', d.pos);
+      const chip = hero.querySelector('.nchip'); if(chip) chip.textContent = d.chip;
+      const bars = (d.bars||'').split(',').map(Number);
+      const box = hero.querySelector('[data-hbars]');
+      if(box && bars.length===4){
+        // stile "cabina/plus": .st con .stnum + .fil
+        const sts = box.querySelectorAll('.st');
+        if(sts.length===4){
+          sts.forEach((st,i)=>{
+            const num=st.querySelector('.stnum'); if(num) num.textContent=bars[i];
+            const fil=st.querySelector('.fil'); if(fil){ fil.className='fil '+cls(bars[i]); fil.style.width=bars[i]+'%'; }
+          });
+        }
+        // stile "figurina": .fb b
+        const fbs = box.querySelectorAll('.fb b');
+        if(fbs.length===4){
+          fbs.forEach((b,i)=>{ b.textContent=bars[i]; b.className = bars[i]>=83?'hi':(bars[i]>=70?'md':'lo'); });
+        }
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

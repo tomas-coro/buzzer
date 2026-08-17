@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scheda carta - stats vere · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&family=Bungee&family=Doto:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:56ch}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-body{padding:22px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+
+  /* ============ stili condivisi delle direzioni carta ============ */
+  /* switch di versione (radio CSS-only) */
+  .vsw{position:absolute;opacity:0;pointer-events:none;width:0;height:0}
+  .vswitch{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+  .vswitch label{
+    font:inherit;font-weight:700;font-size:.72rem;letter-spacing:.02em;
+    color:var(--bone-dim);background:var(--ink-3);border:1px solid var(--line);
+    border-radius:9px;padding:8px 12px;min-height:44px;display:flex;align-items:center;cursor:pointer;
+    transition:color .15s ease,border-color .15s ease,background .15s ease;
+  }
+  .vswitch label:hover{color:var(--bone)}
+  .vcards{display:grid}
+  .vcard{display:none;grid-column:1;grid-row:1}
+  .arcbadge{display:inline-flex;align-items:center;gap:5px;font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:6px}
+  .arcbadge.gp-ok{color:var(--ok);background:rgba(127,181,154,.12);border:1px solid #3f5a4f}
+  .arcbadge.gp-lo{color:#ff8a6a;background:rgba(255,80,56,.13);border:1px solid #7a3a2f}
+  .noterow{margin-top:16px;font-size:.76rem;color:var(--bone-dim);border-top:1px dashed var(--line);padding-top:12px;line-height:1.5}
+  .noterow b{color:var(--bone)}
+
+  /* ---------- D1 · Tabellone Arcade ---------- */
+  #v1a:checked ~ .vswitch label[for="v1a"],
+  #v1b:checked ~ .vswitch label[for="v1b"],
+  #v1c:checked ~ .vswitch label[for="v1c"]{background:#ff5b1e;color:#0a0a18;border-color:#ff5b1e}
+  #v1a:checked ~ .vcards .vcard[data-v="a"],
+  #v1b:checked ~ .vcards .vcard[data-v="b"],
+  #v1c:checked ~ .vcards .vcard[data-v="c"]{display:block}
+  .d1{background:linear-gradient(180deg,#151737 0,#0d0e29 100%);border:1px solid #2c2a63;border-radius:14px;padding:18px;box-shadow:inset 0 0 0 2px rgba(255,207,51,.05)}
+  .d1-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2px solid rgba(255,91,30,.35);padding-bottom:12px}
+  .d1-name{font-family:"Bungee";font-size:1.15rem;line-height:1;letter-spacing:.01em;text-transform:uppercase;color:#fdf2dd}
+  .d1-meta{font-family:"Bungee";font-size:.56rem;letter-spacing:.06em;color:#8d8fc4;margin-top:7px;text-transform:uppercase}
+  .d1-ovr{text-align:center;flex:none}
+  .d1-ovr .n{font-family:"Doto";font-weight:900;font-size:3.1rem;line-height:.8;color:#ffcf33;text-shadow:0 0 14px rgba(255,207,51,.35)}
+  .d1-ovr .l{font-family:"Bungee";font-size:.5rem;letter-spacing:.14em;color:#8d8fc4;text-transform:uppercase;margin-top:4px}
+  .d1-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+  .d1-trio .cell{background:rgba(0,0,0,.32);border:1px solid #2c2a63;border-radius:9px;padding:10px 4px;text-align:center}
+  .d1-trio .v{font-family:"Doto";font-weight:900;font-size:1.7rem;line-height:1;color:#ff5b1e}
+  .d1-trio .k{font-family:"Bungee";font-size:.5rem;letter-spacing:.1em;color:#8d8fc4;text-transform:uppercase;margin-top:5px}
+  .d1-sec{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .d1-sec .cell{background:rgba(0,0,0,.2);border:1px solid #232150;border-radius:7px;padding:8px 2px;text-align:center}
+  .d1-sec .v{font-family:"Doto";font-weight:700;font-size:1rem;color:#fdf2dd;line-height:1}
+  .d1-sec .k{font-family:"Bungee";font-size:.42rem;letter-spacing:.05em;color:#6f6fa8;text-transform:uppercase;margin-top:5px}
+  .d1-gp{margin-top:12px;display:flex;justify-content:flex-end}
+
+  /* ---------- D2 · Figurina Bodoni ---------- */
+  #v2a:checked ~ .vswitch label[for="v2a"],
+  #v2b:checked ~ .vswitch label[for="v2b"],
+  #v2c:checked ~ .vswitch label[for="v2c"]{background:#e9e4d8;color:#151737;border-color:#e9e4d8}
+  #v2a:checked ~ .vcards .vcard[data-v="a"],
+  #v2b:checked ~ .vcards .vcard[data-v="b"],
+  #v2c:checked ~ .vcards .vcard[data-v="c"]{display:block}
+  .d2{background:#12132e;border:1px solid #2c2a63;border-radius:12px;padding:0;overflow:hidden;max-width:340px;margin:0 auto}
+  .d2-band{background:linear-gradient(90deg,#ff5b1e,#c2480c);padding:14px 16px 12px;position:relative}
+  .d2-name{font-family:"Bricolage Grotesque";font-weight:700;font-size:1.35rem;line-height:1;color:#0a0a18;letter-spacing:-.01em}
+  .d2-meta{font-family:"Bricolage Grotesque";font-weight:600;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(10,10,24,.72);margin-top:6px}
+  .d2-ovr{position:absolute;top:10px;right:14px;text-align:center}
+  .d2-ovr .n{font-family:"Bodoni Moda",serif;font-weight:700;font-size:2.5rem;line-height:.85;color:#0a0a18}
+  .d2-ovr .l{font-family:"Bricolage Grotesque";font-size:.44rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(10,10,24,.7)}
+  .d2-body{padding:16px}
+  .d2-trio{display:flex;justify-content:space-between;text-align:center;padding-bottom:14px;border-bottom:1px solid #2c2a63}
+  .d2-trio .v{font-family:"Bodoni Moda",serif;font-weight:700;font-size:2rem;line-height:.9;color:#fdf2dd}
+  .d2-trio .k{font-family:"Bricolage Grotesque";font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:#8d8fc4;margin-top:6px}
+  .d2-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin-top:12px}
+  .d2-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dotted #2c2a63}
+  .d2-row .k{font-size:.72rem;color:#8d8fc4;letter-spacing:.03em}
+  .d2-row .v{font-family:"Bodoni Moda",serif;font-weight:500;font-size:1.05rem;color:#fdf2dd}
+  .d2-gp{margin-top:14px;display:flex;justify-content:center}
+
+  /* ---------- D3 · Dossier Terminale (FM) ---------- */
+  #v3a:checked ~ .vswitch label[for="v3a"],
+  #v3b:checked ~ .vswitch label[for="v3b"],
+  #v3c:checked ~ .vswitch label[for="v3c"]{background:#7fb59a;color:#0a0a18;border-color:#7fb59a}
+  #v3a:checked ~ .vcards .vcard[data-v="a"],
+  #v3b:checked ~ .vcards .vcard[data-v="b"],
+  #v3c:checked ~ .vcards .vcard[data-v="c"]{display:block}
+  .d3{background:#0f1220;border:1px solid #2c2a63;border-radius:10px;padding:0;overflow:hidden}
+  .d3-top{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#191c33;padding:12px 14px;border-bottom:1px solid #2c2a63}
+  .d3-name{font-family:"Hanken Grotesk";font-weight:700;font-size:1.02rem;letter-spacing:-.01em;color:#fdf2dd}
+  .d3-meta{font-family:"Doto";font-weight:700;font-size:.66rem;letter-spacing:.08em;color:#8d8fc4;text-transform:uppercase;margin-top:3px}
+  .d3-ovr{font-family:"Doto";font-weight:900;font-size:2.2rem;line-height:.8;color:#7fb59a;text-align:center}
+  .d3-ovr small{display:block;font-family:"Hanken Grotesk";font-weight:700;font-size:.42rem;letter-spacing:.16em;color:#6f6fa8;text-transform:uppercase;margin-top:3px}
+  .d3-rows{padding:6px 14px 12px}
+  .d3-row{display:grid;grid-template-columns:38px 40px 1fr;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(44,42,99,.5)}
+  .d3-row .k{font-family:"Doto";font-weight:700;font-size:.64rem;letter-spacing:.06em;color:#8d8fc4;text-transform:uppercase}
+  .d3-row .v{font-family:"Doto";font-weight:900;font-size:.98rem;color:#fdf2dd;text-align:right}
+  .d3-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
+  .d3-bar span{display:block;height:100%;border-radius:99px}
+  .b-hi{background:#7fb59a}.b-mid{background:#ffcf33}.b-lo{background:#ff5b1e}
+  .d3-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#191c33;border-top:1px solid #2c2a63}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto</div>
+    <h1 id="mockTitle">Scheda carta - stats vere (stile eraball)</h1>
+    <p class="lead">Stesso contenuto in tutte: stats reali di stagione + overall <b>derivato dalle stats</b> (bozza). Usa lo <b>switch di versione</b> in ogni carta: la stessa Curry cambia da mostro '15-16 ad annata rotta '19-20 (5 partite).</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <!-- ============ D1 · Tabellone Arcade ============ -->
+      <section class="dir-panel" data-name="Tabellone Arcade" data-mood="LED su indaco · alla NBA Jam / cabina 90s" data-why="I numeri LED giganti gridano la forza a colpo d'occhio: al draft decidi in un secondo. È già la lingua del tuo proto (Doto/Bungee)." data-role="">
+        <input class="vsw" type="radio" name="v1" id="v1a" checked>
+        <input class="vsw" type="radio" name="v1" id="v1b">
+        <input class="vsw" type="radio" name="v1" id="v1c">
+        <div class="vswitch">
+          <label for="v1a">'15-16</label>
+          <label for="v1b">'16-17</label>
+          <label for="v1c">'19-20</label>
+        </div>
+        <div class="vcards">
+          <article class="vcard" data-v="a">
+            <div class="d1">
+              <div class="d1-top">
+                <div><div class="d1-name">Stephen Curry</div><div class="d1-meta">GSW · 2015-16 · PG</div></div>
+                <div class="d1-ovr"><div class="n">84</div><div class="l">Overall</div></div>
+              </div>
+              <div class="d1-trio">
+                <div class="cell"><div class="v">30.1</div><div class="k">Punti</div></div>
+                <div class="cell"><div class="v">5.4</div><div class="k">Rimb.</div></div>
+                <div class="cell"><div class="v">6.7</div><div class="k">Assist</div></div>
+              </div>
+              <div class="d1-sec">
+                <div class="cell"><div class="v">50.4</div><div class="k">FG%</div></div>
+                <div class="cell"><div class="v">45.4</div><div class="k">3P%</div></div>
+                <div class="cell"><div class="v">90.8</div><div class="k">FT%</div></div>
+                <div class="cell"><div class="v">2.1</div><div class="k">Rub.</div></div>
+                <div class="cell"><div class="v">0.2</div><div class="k">Stop.</div></div>
+              </div>
+              <div class="d1-gp"><span class="arcbadge gp-ok">79 partite</span></div>
+            </div>
+          </article>
+          <article class="vcard" data-v="b">
+            <div class="d1">
+              <div class="d1-top">
+                <div><div class="d1-name">Stephen Curry</div><div class="d1-meta">GSW · 2016-17 · PG</div></div>
+                <div class="d1-ovr"><div class="n">77</div><div class="l">Overall</div></div>
+              </div>
+              <div class="d1-trio">
+                <div class="cell"><div class="v">25.3</div><div class="k">Punti</div></div>
+                <div class="cell"><div class="v">4.5</div><div class="k">Rimb.</div></div>
+                <div class="cell"><div class="v">6.6</div><div class="k">Assist</div></div>
+              </div>
+              <div class="d1-sec">
+                <div class="cell"><div class="v">46.8</div><div class="k">FG%</div></div>
+                <div class="cell"><div class="v">41.1</div><div class="k">3P%</div></div>
+                <div class="cell"><div class="v">89.8</div><div class="k">FT%</div></div>
+                <div class="cell"><div class="v">1.8</div><div class="k">Rub.</div></div>
+                <div class="cell"><div class="v">0.2</div><div class="k">Stop.</div></div>
+              </div>
+              <div class="d1-gp"><span class="arcbadge gp-ok">79 partite</span></div>
+            </div>
+          </article>
+          <article class="vcard" data-v="c">
+            <div class="d1">
+              <div class="d1-top">
+                <div><div class="d1-name">Stephen Curry</div><div class="d1-meta">GSW · 2019-20 · PG</div></div>
+                <div class="d1-ovr"><div class="n">68</div><div class="l">Overall</div></div>
+              </div>
+              <div class="d1-trio">
+                <div class="cell"><div class="v">20.8</div><div class="k">Punti</div></div>
+                <div class="cell"><div class="v">5.2</div><div class="k">Rimb.</div></div>
+                <div class="cell"><div class="v">6.6</div><div class="k">Assist</div></div>
+              </div>
+              <div class="d1-sec">
+                <div class="cell"><div class="v">40.2</div><div class="k">FG%</div></div>
+                <div class="cell"><div class="v">24.5</div><div class="k">3P%</div></div>
+                <div class="cell"><div class="v">100</div><div class="k">FT%</div></div>
+                <div class="cell"><div class="v">1.0</div><div class="k">Rub.</div></div>
+                <div class="cell"><div class="v">0.4</div><div class="k">Stop.</div></div>
+              </div>
+              <div class="d1-gp"><span class="arcbadge gp-lo">solo 5 partite · infortunio</span></div>
+            </div>
+          </article>
+        </div>
+        <div class="noterow">L'annata rotta '19-20 crolla a <b>68</b> di overall (5 partite, 24% da 3): al draft è la trappola che ti tocca. <b>Giannis</b> fa 61→87 dal 2015 al 2020, <b>Kawhi</b> 78 (Toronto '19) vs 66 (infortunato '18).</div>
+      </section>
+
+      <!-- ============ D2 · Figurina Bodoni ============ -->
+      <section class="dir-panel" data-name="Figurina Bodoni" data-mood="serif alto contrasto · Panini incontra Monocle" data-why="La faccia è editoriale e collezionabile: i numeri Bodoni danno peso, la fascia arancio dà identità squadra. Più 'oggetto da collezione' che cruscotto." data-role="" hidden>
+        <input class="vsw" type="radio" name="v2" id="v2a" checked>
+        <input class="vsw" type="radio" name="v2" id="v2b">
+        <input class="vsw" type="radio" name="v2" id="v2c">
+        <div class="vswitch">
+          <label for="v2a">'15-16</label>
+          <label for="v2b">'16-17</label>
+          <label for="v2c">'19-20</label>
+        </div>
+        <div class="vcards">
+          <article class="vcard" data-v="a">
+            <div class="d2">
+              <div class="d2-band">
+                <div class="d2-name">Stephen Curry</div>
+                <div class="d2-meta">Golden State · 2015-16 · PG</div>
+                <div class="d2-ovr"><div class="n">84</div><div class="l">OVR</div></div>
+              </div>
+              <div class="d2-body">
+                <div class="d2-trio">
+                  <div><div class="v">30.1</div><div class="k">Punti</div></div>
+                  <div><div class="v">5.4</div><div class="k">Rimb.</div></div>
+                  <div><div class="v">6.7</div><div class="k">Assist</div></div>
+                </div>
+                <div class="d2-grid">
+                  <div class="d2-row"><span class="k">Tiro FG</span><span class="v">50.4%</span></div>
+                  <div class="d2-row"><span class="k">Da 3</span><span class="v">45.4%</span></div>
+                  <div class="d2-row"><span class="k">Liberi</span><span class="v">90.8%</span></div>
+                  <div class="d2-row"><span class="k">Rubate</span><span class="v">2.1</span></div>
+                  <div class="d2-row"><span class="k">Stoppate</span><span class="v">0.2</span></div>
+                  <div class="d2-row"><span class="k">Palle perse</span><span class="v">3.3</span></div>
+                </div>
+                <div class="d2-gp"><span class="arcbadge gp-ok">79 partite giocate</span></div>
+              </div>
+            </div>
+          </article>
+          <article class="vcard" data-v="b">
+            <div class="d2">
+              <div class="d2-band">
+                <div class="d2-name">Stephen Curry</div>
+                <div class="d2-meta">Golden State · 2016-17 · PG</div>
+                <div class="d2-ovr"><div class="n">77</div><div class="l">OVR</div></div>
+              </div>
+              <div class="d2-body">
+                <div class="d2-trio">
+                  <div><div class="v">25.3</div><div class="k">Punti</div></div>
+                  <div><div class="v">4.5</div><div class="k">Rimb.</div></div>
+                  <div><div class="v">6.6</div><div class="k">Assist</div></div>
+                </div>
+                <div class="d2-grid">
+                  <div class="d2-row"><span class="k">Tiro FG</span><span class="v">46.8%</span></div>
+                  <div class="d2-row"><span class="k">Da 3</span><span class="v">41.1%</span></div>
+                  <div class="d2-row"><span class="k">Liberi</span><span class="v">89.8%</span></div>
+                  <div class="d2-row"><span class="k">Rubate</span><span class="v">1.8</span></div>
+                  <div class="d2-row"><span class="k">Stoppate</span><span class="v">0.2</span></div>
+                  <div class="d2-row"><span class="k">Palle perse</span><span class="v">3.0</span></div>
+                </div>
+                <div class="d2-gp"><span class="arcbadge gp-ok">79 partite giocate</span></div>
+              </div>
+            </div>
+          </article>
+          <article class="vcard" data-v="c">
+            <div class="d2">
+              <div class="d2-band">
+                <div class="d2-name">Stephen Curry</div>
+                <div class="d2-meta">Golden State · 2019-20 · PG</div>
+                <div class="d2-ovr"><div class="n">68</div><div class="l">OVR</div></div>
+              </div>
+              <div class="d2-body">
+                <div class="d2-trio">
+                  <div><div class="v">20.8</div><div class="k">Punti</div></div>
+                  <div><div class="v">5.2</div><div class="k">Rimb.</div></div>
+                  <div><div class="v">6.6</div><div class="k">Assist</div></div>
+                </div>
+                <div class="d2-grid">
+                  <div class="d2-row"><span class="k">Tiro FG</span><span class="v">40.2%</span></div>
+                  <div class="d2-row"><span class="k">Da 3</span><span class="v">24.5%</span></div>
+                  <div class="d2-row"><span class="k">Liberi</span><span class="v">100%</span></div>
+                  <div class="d2-row"><span class="k">Rubate</span><span class="v">1.0</span></div>
+                  <div class="d2-row"><span class="k">Stoppate</span><span class="v">0.4</span></div>
+                  <div class="d2-row"><span class="k">Palle perse</span><span class="v">3.2</span></div>
+                </div>
+                <div class="d2-gp"><span class="arcbadge gp-lo">solo 5 partite · infortunio</span></div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="noterow">Le % raccontano il "tipo": 45% da 3 = tiratore letale ('15-16), 24% = annata storta ('19-20). La <b>faccia figurina</b> invita a collezionare le versioni.</div>
+      </section>
+
+      <!-- ============ D3 · Dossier Terminale (FM) ============ -->
+      <section class="dir-panel" data-name="Dossier Terminale" data-mood="griglia densa + micro-barre · alla Football Manager" data-why="Massima densità: ogni stat ha barra colorata per fascia, confronti le versioni a occhio. Per chi non conosce il giocatore, la barra dice subito dov'è forte." data-role="" hidden>
+        <input class="vsw" type="radio" name="v3" id="v3a" checked>
+        <input class="vsw" type="radio" name="v3" id="v3b">
+        <input class="vsw" type="radio" name="v3" id="v3c">
+        <div class="vswitch">
+          <label for="v3a">'15-16</label>
+          <label for="v3b">'16-17</label>
+          <label for="v3c">'19-20</label>
+        </div>
+        <div class="vcards">
+          <article class="vcard" data-v="a">
+            <div class="d3">
+              <div class="d3-top">
+                <div><div class="d3-name">Stephen Curry</div><div class="d3-meta">GSW · 2015-16 · PG</div></div>
+                <div class="d3-ovr">84<small>Overall</small></div>
+              </div>
+              <div class="d3-rows">
+                <div class="d3-row"><span class="k">PTS</span><span class="v">30.1</span><span class="d3-bar"><span class="b-hi" style="width:86%"></span></span></div>
+                <div class="d3-row"><span class="k">REB</span><span class="v">5.4</span><span class="d3-bar"><span class="b-lo" style="width:36%"></span></span></div>
+                <div class="d3-row"><span class="k">AST</span><span class="v">6.7</span><span class="d3-bar"><span class="b-mid" style="width:56%"></span></span></div>
+                <div class="d3-row"><span class="k">FG%</span><span class="v">50.4</span><span class="d3-bar"><span class="b-hi" style="width:78%"></span></span></div>
+                <div class="d3-row"><span class="k">3P%</span><span class="v">45.4</span><span class="d3-bar"><span class="b-hi" style="width:91%"></span></span></div>
+                <div class="d3-row"><span class="k">STL</span><span class="v">2.1</span><span class="d3-bar"><span class="b-hi" style="width:70%"></span></span></div>
+                <div class="d3-row"><span class="k">BLK</span><span class="v">0.2</span><span class="d3-bar"><span class="b-lo" style="width:7%"></span></span></div>
+              </div>
+              <div class="d3-foot"><span class="arcbadge gp-ok">79 partite</span><span style="font-family:Doto;font-weight:700;font-size:.66rem;color:#8d8fc4">34.2 min</span></div>
+            </div>
+          </article>
+          <article class="vcard" data-v="b">
+            <div class="d3">
+              <div class="d3-top">
+                <div><div class="d3-name">Stephen Curry</div><div class="d3-meta">GSW · 2016-17 · PG</div></div>
+                <div class="d3-ovr">77<small>Overall</small></div>
+              </div>
+              <div class="d3-rows">
+                <div class="d3-row"><span class="k">PTS</span><span class="v">25.3</span><span class="d3-bar"><span class="b-mid" style="width:72%"></span></span></div>
+                <div class="d3-row"><span class="k">REB</span><span class="v">4.5</span><span class="d3-bar"><span class="b-lo" style="width:30%"></span></span></div>
+                <div class="d3-row"><span class="k">AST</span><span class="v">6.6</span><span class="d3-bar"><span class="b-mid" style="width:55%"></span></span></div>
+                <div class="d3-row"><span class="k">FG%</span><span class="v">46.8</span><span class="d3-bar"><span class="b-mid" style="width:72%"></span></span></div>
+                <div class="d3-row"><span class="k">3P%</span><span class="v">41.1</span><span class="d3-bar"><span class="b-hi" style="width:82%"></span></span></div>
+                <div class="d3-row"><span class="k">STL</span><span class="v">1.8</span><span class="d3-bar"><span class="b-mid" style="width:60%"></span></span></div>
+                <div class="d3-row"><span class="k">BLK</span><span class="v">0.2</span><span class="d3-bar"><span class="b-lo" style="width:7%"></span></span></div>
+              </div>
+              <div class="d3-foot"><span class="arcbadge gp-ok">79 partite</span><span style="font-family:Doto;font-weight:700;font-size:.66rem;color:#8d8fc4">33.4 min</span></div>
+            </div>
+          </article>
+          <article class="vcard" data-v="c">
+            <div class="d3">
+              <div class="d3-top">
+                <div><div class="d3-name">Stephen Curry</div><div class="d3-meta">GSW · 2019-20 · PG</div></div>
+                <div class="d3-ovr">68<small>Overall</small></div>
+              </div>
+              <div class="d3-rows">
+                <div class="d3-row"><span class="k">PTS</span><span class="v">20.8</span><span class="d3-bar"><span class="b-mid" style="width:59%"></span></span></div>
+                <div class="d3-row"><span class="k">REB</span><span class="v">5.2</span><span class="d3-bar"><span class="b-lo" style="width:35%"></span></span></div>
+                <div class="d3-row"><span class="k">AST</span><span class="v">6.6</span><span class="d3-bar"><span class="b-mid" style="width:55%"></span></span></div>
+                <div class="d3-row"><span class="k">FG%</span><span class="v">40.2</span><span class="d3-bar"><span class="b-mid" style="width:62%"></span></span></div>
+                <div class="d3-row"><span class="k">3P%</span><span class="v">24.5</span><span class="d3-bar"><span class="b-lo" style="width:49%"></span></span></div>
+                <div class="d3-row"><span class="k">STL</span><span class="v">1.0</span><span class="d3-bar"><span class="b-lo" style="width:33%"></span></span></div>
+                <div class="d3-row"><span class="k">BLK</span><span class="v">0.4</span><span class="d3-bar"><span class="b-lo" style="width:13%"></span></span></div>
+              </div>
+              <div class="d3-foot"><span class="arcbadge gp-lo">solo 5 partite</span><span style="font-family:Doto;font-weight:700;font-size:.66rem;color:#8d8fc4">27.9 min</span></div>
+            </div>
+          </article>
+        </div>
+        <div class="noterow">Le barre cambiano a vista tra le versioni: nel '19-20 il 3P% passa da barra verde a rossa. Verde = forte · giallo = medio · arancio = debole (fascia illustrativa).</div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">&#10038;&nbsp;<span><b>Perch&eacute;:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

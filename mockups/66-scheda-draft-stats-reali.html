@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scheda draft - punteggi reali · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,600;0,6..96,700;1,6..96,600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<!-- LOOK VERO: linko lo styles.css del proto, niente estetica nuova -->
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  /* barra di confronto struttura: SOLO chrome del mockup, non fa parte dell'app */
+  .mkbar{position:sticky;top:0;z-index:20;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;background:#0c0d24;border-bottom:1px solid var(--line)}
+  .mkbar .lbl{font-family:var(--body);font-weight:800;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+  .mkbar button{font-family:var(--body);font-weight:700;font-size:.72rem;color:var(--bone-dim);
+    background:#171636;border:1px solid var(--line);border-radius:9px;padding:9px 13px;min-height:44px;cursor:pointer}
+  .mkbar button[aria-pressed="true"]{background:var(--brass);color:#0a0a18;border-color:var(--brass)}
+  .mkbar .hint{font-family:var(--body);font-size:.66rem;color:var(--bone-dim);margin-left:auto;max-width:34ch;text-align:right}
+
+  /* ---- STRUTTURE (solo layout, token dello skin) ---- */
+  /* A · numeri box (eraball puro) */
+  .mv-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .mv-trio .c{background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;padding:9px 4px;text-align:center}
+  .mv-trio .c b{display:block;font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:1;color:var(--brass)}
+  .mv-trio .c small{display:block;font-size:.46rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);font-weight:800;margin-top:5px}
+  .mv-sec{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}
+  .mv-sec .c{background:rgba(0,0,0,.18);border:1px solid #211f55;border-radius:8px;padding:7px 2px;text-align:center}
+  .mv-sec .c b{display:block;font-family:var(--led);font-weight:700;font-size:.86rem;line-height:1;color:var(--bone)}
+  .mv-sec .c small{display:block;font-size:.42rem;letter-spacing:.06em;text-transform:uppercase;color:#6f6fa8;font-weight:800;margin-top:4px}
+  /* C · ibrido: mini-barre tiro */
+  .mv-mini{margin-top:10px}
+  .mv-mini .cap{font-size:.46rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);font-weight:800;margin-bottom:6px}
+  .mv-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .mv-two .c{text-align:center;background:rgba(0,0,0,.18);border:1px solid #211f55;border-radius:8px;padding:7px 2px}
+  .mv-two .c b{display:block;font-family:var(--led);font-weight:700;font-size:.9rem;color:var(--bone)}
+  .mv-two .c small{display:block;font-size:.42rem;letter-spacing:.06em;text-transform:uppercase;color:#6f6fa8;font-weight:800;margin-top:4px}
+  /* badge partite giocate */
+  .gpb{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:.5rem;font-weight:800;
+    letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:6px}
+  .gpb.ok{color:var(--green);background:rgba(92,207,142,.12);border:1px solid #2f5a47}
+  .gpb.lo{color:var(--red);background:rgba(255,80,56,.14);border:1px solid #7a3a2f}
+  /* riga sorgente stagione già esiste (.src). sheet full line */
+  .sheet-line{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .sheet-line .c{background:rgba(0,0,0,.24);border:1px solid var(--line);border-radius:9px;padding:9px 4px;text-align:center}
+  .sheet-line .c b{display:block;font-family:var(--led);font-weight:900;font-size:1.15rem;color:var(--bone)}
+  .sheet-line .c small{display:block;font-size:.46rem;letter-spacing:.08em;text-transform:uppercase;color:var(--bone-dim);font-weight:800;margin-top:5px}
+  .sheet-meta{margin-top:12px;font-size:.66rem;color:var(--bone-dim);text-align:center;letter-spacing:.04em}
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <span class="lbl">Struttura scheda</span>
+  <button data-s="A" aria-pressed="true">A · Numeri box</button>
+  <button data-s="B" aria-pressed="false">B · Barre sui medi</button>
+  <button data-s="C" aria-pressed="false">C · Ibrido</button>
+  <span class="hint">Stesso look Cabina 90s. Cambia solo come impagino i punteggi medi veri. Clicca la faccia per la scheda piena.</span>
+</div>
+
+<main id="app" aria-live="polite"></main>
+
+<script type="module">
+// ---- dati veri GSW 2015-16 (overall = derivato dalle stats, bozza) ----
+const GSW = "linear-gradient(158deg,#1D428A,#0d1f45)";
+const ROLES = ["PG","SG","SF","PF","C"];
+const CARDS = [
+  {n:"Stephen Curry",   ini:"SC", pos:"PG", ovr:84, s:{pts:30.1,reb:5.4,ast:6.7,stl:2.1,blk:0.2,tov:3.3,fg:50.4,tp:45.4,ft:90.8,gp:79,min:34.2}},
+  {n:"Klay Thompson",   ini:"KT", pos:"SG", ovr:69, s:{pts:22.1,reb:3.8,ast:2.1,stl:0.8,blk:0.6,tov:1.7,fg:47.0,tp:42.5,ft:87.3,gp:80,min:33.3}},
+  {n:"Draymond Green",  ini:"DG", pos:"PF", ovr:74, s:{pts:14.0,reb:9.5,ast:7.4,stl:1.5,blk:1.4,tov:3.2,fg:49.0,tp:38.8,ft:69.6,gp:81,min:34.7}},
+  {n:"Harrison Barnes", ini:"HB", pos:"SF", ovr:59, s:{pts:11.7,reb:4.9,ast:1.8,stl:0.6,blk:0.2,tov:0.9,fg:46.6,tp:38.3,ft:76.1,gp:66,min:30.9}},
+  {n:"Andrew Bogut",    ini:"AB", pos:"C",  ovr:69, s:{pts:5.4, reb:7.0,ast:2.3,stl:0.5,blk:1.6,tov:1.2,fg:62.7,tp:0,  ft:48.0,gp:70,min:20.7}},
+];
+
+let struct = "A";
+let focus = 0;
+
+const FLAME = `<svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`;
+const PLUS = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>`;
+
+const face = (c,{ovr=null,role=null,hidden=false}={}) => {
+  const badge = (ovr!=null||role!=null)
+    ? `<span class="fbadge">${role?`<span class="r">${role}</span>`:""}${ovr!=null?`<span class="o">${ovr}</span>`:""}</span>` : "";
+  return `<span class="face" style="--tc1:#1D428A;--tc2:#0d1f45;background:${GSW}"><span class="mono">${hidden?"?":c.ini}</span>${badge}</span>`;
+};
+
+// normalizza uno stat su una barra 0..100 con tetto plausibile
+const CAP = {pts:35,reb:15,ast:12,fg:65,tp:50,ft:100,stl:3,blk:3};
+const fill = (v,k)=>Math.max(4,Math.min(100,Math.round(v/CAP[k]*100)));
+const tier = (p)=> p>=66 ? "" : p>=40 ? "md" : "lo";
+const bar = (lab,val,k,disp)=>{
+  const p = fill(val,k);
+  return `<span class="st"><span class="stl"><span>${lab}</span><span class="stnum">${disp}</span></span>
+    <span class="trk"><i class="fil ${tier(p)}" style="width:${p}%"></i></span></span>`;
+};
+
+function statsBlock(c){
+  const s = c.s;
+  if(struct==="A"){
+    return `
+      <div class="mv-trio">
+        <span class="c"><b>${s.pts}</b><small>Punti</small></span>
+        <span class="c"><b>${s.reb}</b><small>Rimb.</small></span>
+        <span class="c"><b>${s.ast}</b><small>Assist</small></span>
+      </div>
+      <div class="mv-sec">
+        <span class="c"><b>${s.fg}</b><small>FG%</small></span>
+        <span class="c"><b>${s.tp}</b><small>3P%</small></span>
+        <span class="c"><b>${s.ft}</b><small>FT%</small></span>
+        <span class="c"><b>${s.stl}</b><small>Rub.</small></span>
+        <span class="c"><b>${s.blk}</b><small>Stop.</small></span>
+      </div>`;
+  }
+  if(struct==="B"){
+    return `<span class="stats">
+      ${bar("Punti",s.pts,"pts",s.pts)}
+      ${bar("Rimbalzi",s.reb,"reb",s.reb)}
+      ${bar("Assist",s.ast,"ast",s.ast)}
+      ${bar("Tiro FG",s.fg,"fg",s.fg+"%")}
+      ${bar("Da 3",s.tp,"tp",s.tp+"%")}
+      ${bar("Rubate",s.stl,"stl",s.stl)}
+    </span>`;
+  }
+  // C · ibrido
+  return `
+    <div class="mv-trio">
+      <span class="c"><b>${s.pts}</b><small>Punti</small></span>
+      <span class="c"><b>${s.reb}</b><small>Rimb.</small></span>
+      <span class="c"><b>${s.ast}</b><small>Assist</small></span>
+    </div>
+    <div class="mv-mini">
+      <div class="cap">Tiro</div>
+      <span class="stats" style="grid-template-columns:1fr 1fr 1fr">
+        ${bar("FG",s.fg,"fg",s.fg+"%")}
+        ${bar("3P",s.tp,"tp",s.tp+"%")}
+        ${bar("FT",s.ft,"ft",s.ft+"%")}
+      </span>
+    </div>
+    <div class="mv-two">
+      <span class="c"><b>${s.stl}</b><small>Rubate</small></span>
+      <span class="c"><b>${s.blk}</b><small>Stoppate</small></span>
+    </div>`;
+}
+
+function gpBadge(c){
+  const lo = c.s.gp < 15;
+  return `<span class="gpb ${lo?"lo":"ok"}">${lo?"solo ":""}${c.s.gp} partite · ${c.s.min} min</span>`;
+}
+
+function render(){
+  const app = document.getElementById("app");
+  const c = CARDS[focus];
+  const court = ROLES.map(r=>{
+    if(r==="PG" && focus===0) return `<span class="cc target"><span class="face"><span class="phplus">+</span><span class="fbadge"><span class="r">PG</span><span class="o">?</span></span></span></span>`;
+    return `<span class="cc empty"><span class="face"><span class="mono">${r}</span></span></span>`;
+  }).join("");
+
+  app.innerHTML = `
+  <section class="screen draft">
+    <div class="apphd">
+      <div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill"><span class="mp-ico">${FLAME}</span><span class="mp-txt">Normale</span></div>
+    </div>
+    <div class="court-block">
+      <div class="seclab"><span>Il tuo quintetto · 0/5</span></div>
+      <div class="court">${court}</div>
+    </div>
+    <div class="cand-block">
+      <div class="seclab"><span>Candidati PG · 5</span>
+        <div class="aidz">
+          <button class="aid" type="button">re-spin <b>2</b></button>
+          <button class="aid" type="button">↺ squadra <b>1</b></button>
+        </div>
+      </div>
+      <div class="incoming" id="hero"></div>
+      <div class="short" id="short"></div>
+      <button class="cta" id="confirm" type="button">${PLUS} Metti ${c.n.split(" ").pop()} nel quintetto</button>
+    </div>
+    <p class="src">Da <b>Golden State Warriors</b> · 2015-16</p>
+  </section>`;
+
+  document.getElementById("hero").innerHTML = `
+    <div class="inhd"><span class="inlab">Candidato a fuoco</span><span class="nchip">GSW</span></div>
+    <button class="cand-face" data-sheet type="button" aria-label="Scheda ${c.n}">${face(c,{ovr:c.ovr})}</button>
+    <div class="cand-body">
+      <span class="nm">${c.n}</span>
+      <span class="pos">${c.pos} · 2015-16</span>
+      ${statsBlock(c)}
+      ${gpBadge(c)}
+    </div>`;
+
+  document.getElementById("short").innerHTML = CARDS.map((x,i)=>`
+    <button class="sh ${i===focus?"on":""}" data-i="${i}" type="button" aria-label="${x.n}">
+      ${face(x)}
+      <span class="sn">${x.n.split(" ").pop()} <em>${x.ovr}</em></span>
+    </button>`).join("");
+
+  document.querySelectorAll(".sh").forEach(b=>b.onclick=()=>{focus=Number(b.dataset.i);render();});
+  document.querySelector("[data-sheet]").onclick=()=>openSheet(c);
+}
+
+function openSheet(c){
+  let dlg=document.getElementById("player-sheet");
+  if(!dlg){dlg=document.createElement("dialog");dlg.id="player-sheet";dlg.className="sheet";document.body.appendChild(dlg);}
+  const s=c.s;
+  dlg.innerHTML=`
+    <div class="sheet-hd">
+      ${face(c,{ovr:c.ovr})}
+      <div><span class="nm">${c.n}</span><span class="pos">${c.pos} · Golden State · 2015-16</span></div>
+      <button class="sheet-x" id="sheet-x" type="button" aria-label="Chiudi">×</button>
+    </div>
+    <div class="sheet-line">
+      <span class="c"><b>${s.pts}</b><small>Punti</small></span>
+      <span class="c"><b>${s.reb}</b><small>Rimbalzi</small></span>
+      <span class="c"><b>${s.ast}</b><small>Assist</small></span>
+      <span class="c"><b>${s.fg}%</b><small>Tiro FG</small></span>
+      <span class="c"><b>${s.tp}%</b><small>Da 3</small></span>
+      <span class="c"><b>${s.ft}%</b><small>Liberi</small></span>
+      <span class="c"><b>${s.stl}</b><small>Rubate</small></span>
+      <span class="c"><b>${s.blk}</b><small>Stoppate</small></span>
+      <span class="c"><b>${s.tov}</b><small>Palle perse</small></span>
+    </div>
+    <p class="sheet-meta">${s.gp} partite · ${s.min} min a partita · Overall ${c.ovr} (derivato dalle stats)</p>`;
+  dlg.querySelector("#sheet-x").onclick=()=>dlg.close();
+  dlg.onclick=(e)=>{if(e.target===dlg)dlg.close();};
+  dlg.showModal();
+}
+
+document.querySelectorAll(".mkbar button").forEach(b=>{
+  b.onclick=()=>{
+    struct=b.dataset.s;
+    document.querySelectorAll(".mkbar button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    render();
+  };
+});
+
+render();
+</script>
+</body>
+</html>

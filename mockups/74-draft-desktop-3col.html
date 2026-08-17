@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>74 - Draft desktop a 3 colonne</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   74 - DRAFT: layout desktop a 3 colonne (riferimento: 7a0, schermata di gioco).
+   Regola portante: STESSO HTML, CSS diverso. Sotto i 1024px il markup si comporta
+   esattamente come il mobile di oggi (righe candidato, quintetto in orizzontale).
+   Sopra i 1024px le stesse scatole si dispongono su tre colonne simultanee:
+     sinistra = quello che costruisci · centro = la decisione · destra = la corsa.
+   Nessun ramo JS sul layout: se lo facessi, avrei due interfacce da mantenere.
+   Token della pelle Cabina 90s presi da prototype/imbattuto/styles.css.
+   ========================================================================== */
+:root{
+  --ink:#15163a; --ink-2:#1d1e4a; --ink-3:#2a2a63; --line:#2c2a63;
+  --bone:#f4eee0; --bone-dim:#8a8bc0;
+  --brass:#ff5b1e; --brass-deep:#c2480c; --yellow:#ffcf33;
+  --green:#5ccf8e; --red:#ff5038;
+  --display:"Bricolage Grotesque",system-ui,sans-serif;
+  --arcade:"Bungee",system-ui,sans-serif;
+  --led:"Doto",ui-monospace,monospace;
+  --body:"Hanken Grotesk",system-ui,sans-serif;
+  --radius:14px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --col-side:300px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--bone);font-family:var(--body);-webkit-font-smoothing:antialiased}
+body{
+  min-height:100dvh;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(255,91,30,.12), transparent 55%),
+    radial-gradient(90% 70% at 50% 120%, rgba(13,14,41,.8), transparent 60%),
+    var(--ink);
+}
+/* Grana leggera: da' materia al fondo piatto, non e' decorazione a caso. */
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.35;
+  background-image:radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size:22px 22px;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ---------------------------------------------------------------- guscio -- */
+.app{position:relative;z-index:1;min-height:100dvh;padding:20px 20px 64px;margin:0 auto;max-width:720px;
+     display:flex;flex-direction:column;gap:18px}
+
+/* Testata: logo a sinistra, riassunto configurazione, pillola difficolta. */
+.apphd{display:flex;align-items:center;gap:14px}
+.wm{font-family:var(--arcade);font-size:1.15rem;letter-spacing:.02em;color:var(--yellow)}
+.wm b{color:var(--brass);font-weight:400}
+.hd-conf{display:none;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.hd-conf b{color:var(--bone);font-weight:600}
+.hd-sp{flex:1}
+.mode-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:999px;
+  border:1px solid var(--line);background:var(--ink-2);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase}
+.mode-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--brass);box-shadow:0 0 10px var(--brass)}
+
+/* Etichetta di sezione, comune alle tre colonne. */
+/* Su mobile titolo e aiuti vanno a capo su due righe invece di comprimersi:
+   le pillole schiacciate su tre righe erano illeggibili. */
+.seclab{display:flex;align-items:baseline;justify-content:space-between;gap:8px 12px;
+  margin-bottom:10px;flex-wrap:wrap}
+.seclab h2{margin:0;font-family:var(--display);font-weight:800;font-size:.78rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--bone-dim)}
+.seclab .cnt{font-family:var(--led);font-weight:700;font-size:.9rem;color:var(--yellow)}
+
+/* --------------------------------------------------------------- QUINTETTO -- */
+/* Mobile: 5 slot affiancati (com'e' oggi). Desktop: 5 righe impilate. */
+.dcourt{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+  padding:12px;border:1px solid var(--line);border-radius:var(--radius);background:rgba(29,30,74,.55)}
+.dslot{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  min-height:96px;border-radius:10px;border:1px dashed var(--line);background:rgba(21,22,58,.6);
+  transition:border-color .2s var(--ease),background .2s var(--ease)}
+.dslot .ds-role{font-family:var(--led);font-weight:700;font-size:1rem;color:var(--bone-dim);letter-spacing:.08em}
+.dslot .ds-name,.dslot .ds-ovr{display:none}
+.dslot.full{border-style:solid;border-color:var(--line);background:var(--ink-2)}
+.dslot.full .ds-role{display:none}
+
+.face{display:grid;place-items:center;width:38px;height:38px;border-radius:9px;
+  background:linear-gradient(158deg,var(--tc1),var(--tc2));font-family:var(--display);font-weight:800;
+  font-size:.82rem;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);flex:none}
+
+/* ------------------------------------------------------------------- ROSA -- */
+.prompt{margin:0;text-align:center;font-size:.9rem;color:var(--bone-dim)}
+.prompt b{color:var(--bone)}
+.aidz{display:flex;gap:6px;flex:1 0 100%;justify-content:flex-start}
+.aid{padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--ink-2);
+  font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;transition:border-color .18s var(--ease)}
+.aid:hover:not([disabled]){border-color:var(--yellow);color:var(--yellow)}
+.aid b{font-family:var(--led);font-weight:700;color:var(--yellow);margin-left:4px}
+.aid[disabled]{opacity:.35;cursor:not-allowed}
+
+.rlist{display:grid;gap:10px}
+
+/* LA CARTA CANDIDATO - un solo componente, due forme.
+   Mobile: riga orizzontale (identica a oggi). Desktop: carta verticale vera. */
+/* Budget orizzontale su 393px: faccia 38 + OVR 38 + stats ~110 + info 24 e i
+   gap lasciano circa 115px al nome. Serve a non troncare mai il cognome:
+   e' il dato su cui decidi. A cedere, semmai, e' l'archetipo. */
+.pcard{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:12px;
+  border:1px solid var(--line);background:var(--ink-2);position:relative;overflow:hidden;
+  transition:border-color .18s var(--ease),transform .18s var(--ease)}
+.pcard::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;
+  background:linear-gradient(180deg,var(--tc1),var(--tc2))}
+.pcard:hover{border-color:var(--bone-dim);transform:translateY(-1px)}
+.pcard.sel{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow)}
+
+/* Su mobile .p-head non deve esistere come scatola: faccia e OVR sono figli
+   diretti della riga. display:contents lo dissolve, e la stessa marcatura
+   torna a essere la riga di oggi senza aggiungere elementi. */
+.p-head{display:contents}
+.p-ovr{display:flex;flex-direction:column;align-items:center;line-height:1;flex:none;width:38px}
+.p-ovr b{font-family:var(--led);font-weight:900;font-size:1.55rem}
+.p-ovr small{font-size:.52rem;letter-spacing:.12em;color:var(--bone-dim);margin-top:2px}
+.p-ovr.oro b{color:var(--yellow);text-shadow:0 0 14px rgba(255,207,51,.5)}
+.p-ovr.arg b{color:#d8dcf0}
+.p-ovr.brz b{color:#d98a5a}
+
+.p-id{min-width:0;flex:1 1 auto;overflow:hidden}
+.p-name{display:block;font-family:var(--display);font-weight:700;font-size:1.02rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Una riga sola, senza andare a capo: il ritorno a capo faceva sbordare
+   l'archetipo sopra le statistiche. Chi non ci sta viene troncato, non sovrapposto. */
+.p-sub{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:nowrap;min-width:0;overflow:hidden}
+.p-pos{font-family:var(--led);font-weight:700;font-size:.62rem;padding:2px 6px;border-radius:5px;
+  background:var(--ink-3);color:var(--bone-dim);letter-spacing:.06em;flex:none;white-space:nowrap}
+/* L'archetipo NON compare su mobile, e non e' una rinuncia: l'etichetta e'
+   calcolata dalla stat dominante, e quella stat e' gia' accesa in arancio nel
+   box a destra. Su 393px il nome piu' la posizione mangiano tutta la riga, e
+   "REALIZZATORE" si riduceva a "RE...", che non informa nessuno. Nella carta
+   desktop lo spazio c'e' e la parola torna. */
+.p-arch{display:none;font-size:.6rem;letter-spacing:.03em;text-transform:uppercase;color:var(--brass);
+  font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+/* Squadra e stagione sono identiche per tutte e cinque le carte e stanno gia'
+   nel titolo "Rosa · BKN · 2019-20": su mobile ripeterle e' solo rumore. */
+.p-team{display:none;font-size:.66rem;color:var(--bone-dim);letter-spacing:.04em;flex:none}
+
+.p-box{display:flex;gap:8px;flex:none}
+.p-box .bx{display:flex;flex-direction:column;align-items:center;line-height:1}
+.p-box .bx b{font-family:var(--led);font-weight:700;font-size:.92rem;color:var(--bone-dim)}
+.p-box .bx i{font-style:normal;font-size:.5rem;letter-spacing:.1em;color:var(--bone-dim);margin-top:3px}
+.p-box .bx.sig b{color:var(--brass)}
+
+.p-info{flex:none;width:24px;height:24px;border-radius:7px;border:1px solid var(--line);
+  font-family:var(--display);font-weight:700;font-size:.78rem;color:var(--bone-dim);
+  display:grid;place-items:center}
+.p-info:hover{border-color:var(--yellow);color:var(--yellow)}
+
+/* ---------------------------------------------------------------- LA CORSA -- */
+/* Su mobile questa colonna non esiste: le sue informazioni sono gia' nella
+   pillola difficolta e nei contatori degli aiuti. Su desktop diventa il tabellone. */
+.runbox{display:none}
+.rb-panel{border:1px solid var(--line);border-radius:var(--radius);background:rgba(29,30,74,.55);padding:16px}
+.rb-goal{text-align:center;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.rb-goal .lab{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim)}
+.rb-goal .big{font-family:var(--led);font-weight:900;font-size:3.1rem;line-height:1;color:var(--yellow);
+  text-shadow:0 0 22px rgba(255,207,51,.4);margin-top:6px}
+.rb-goal .note{font-size:.72rem;color:var(--bone-dim);margin-top:6px}
+
+.rb-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:11px 0;
+  border-bottom:1px solid rgba(44,42,99,.5)}
+.rb-row:last-child{border-bottom:0}
+.rb-row .k{font-size:.68rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim)}
+.rb-row .v{font-family:var(--led);font-weight:700;font-size:1.05rem;color:var(--bone)}
+.rb-row .v.dim{color:var(--bone-dim)}
+.rb-row .v.warn{color:var(--brass)}
+
+/* Voto squadra dal vivo: sale a ogni carta piazzata. E' la ricompensa visiva
+   del draft. Rispetta il reveal: a Difficile/Incubo resta al buio, altrimenti
+   il numero tradirebbe le carte coperte. */
+.rb-team{text-align:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.rb-team .lab{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim)}
+.rb-team .num{font-family:var(--led);font-weight:900;font-size:2.6rem;line-height:1;margin-top:4px;color:var(--bone)}
+.rb-team .num.blind{color:var(--bone-dim);font-size:1.6rem}
+.rb-team .prog{display:flex;gap:4px;justify-content:center;margin-top:10px}
+.rb-team .tick{width:22px;height:4px;border-radius:2px;background:var(--ink-3)}
+.rb-team .tick.on{background:var(--yellow);box-shadow:0 0 8px rgba(255,207,51,.6)}
+
+/* Soglia avversari: dice che numero devi battere. Trasforma la colonna
+   da vetrina a strumento di strategia. */
+.rb-band{padding:14px 0 4px}
+.rb-band .lab{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim);display:block;margin-bottom:9px}
+.rb-bar{position:relative;height:8px;border-radius:4px;background:var(--ink-3);overflow:hidden}
+.rb-bar .zone{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,var(--brass-deep),var(--brass));opacity:.85}
+.rb-scale{display:flex;justify-content:space-between;margin-top:7px;font-family:var(--led);font-weight:700;
+  font-size:.68rem;color:var(--bone-dim)}
+.rb-band .hint{display:block;margin-top:9px;font-size:.72rem;line-height:1.45;color:var(--bone-dim)}
+.rb-band .hint b{color:var(--brass)}
+
+.src{margin:0;text-align:center;font-size:.76rem;color:var(--bone-dim)}
+.src b{color:var(--bone)}
+
+/* ============================================================================
+   DESKTOP - da 1024px in su. Le stesse scatole, tre colonne simultanee.
+   ========================================================================== */
+@media (min-width:1024px){
+  .app{
+    max-width:1360px;
+    padding:22px 32px 40px;
+    display:grid;
+    grid-template-columns:var(--col-side) minmax(0,1fr) var(--col-side);
+    grid-template-areas:
+      "hd    hd     hd"
+      "team  prompt run"
+      "team  pool   run";
+    grid-template-rows:auto auto 1fr;
+    align-content:start;
+    column-gap:28px; row-gap:18px;
+  }
+  .apphd{grid-area:hd;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  .hd-conf{display:block}
+  .court-block{grid-area:team;align-self:start}
+  .cand-block{grid-area:pool;min-width:0;align-self:start}
+  .runbox{grid-area:run;align-self:start;display:block}
+  /* Il prompt sta sopra la rosa, non appeso in fondo alla pagina:
+     e' la riga di stato di quella colonna, come su mobile. */
+  .prompt{grid-area:prompt;align-self:center;text-align:left;font-size:.95rem}
+  .src{display:none}
+  /* Qui lo spazio c'e': titolo e aiuti tornano sulla stessa riga. */
+  .cand-block .seclab{margin-top:0;flex-wrap:nowrap}
+  .aidz{flex:0 0 auto;justify-content:flex-end}
+
+  /* Quintetto: da 5 caselle affiancate a 5 righe impilate, sempre sott'occhio. */
+  .dcourt{grid-template-columns:1fr;gap:7px;padding:10px}
+  .dslot{flex-direction:row;justify-content:flex-start;gap:11px;min-height:70px;padding:0 13px;text-align:left}
+  .dslot .ds-role{display:block;width:26px;flex:none;font-size:.9rem;text-align:center}
+  .dslot.full .ds-role{display:block;color:var(--bone-dim)}
+  .dslot .ds-name{display:block;flex:1;min-width:0;font-family:var(--display);font-weight:700;font-size:.92rem;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dslot.full .ds-ovr{display:block;font-family:var(--led);font-weight:900;font-size:1.15rem;color:var(--yellow)}
+  .dslot:not(.full) .face{display:none}
+  .dslot.elig{border-color:var(--yellow);background:rgba(255,207,51,.07)}
+
+  /* Rosa: la griglia di carte vere. Tre per riga a 1440px, due sotto i 1200px. */
+  .rlist{grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px;align-content:start}
+
+  /* La riga diventa carta: stessa marcatura, disposizione verticale. */
+  .pcard{flex-direction:column;align-items:stretch;gap:0;padding:0;text-align:center}
+  .pcard::before{inset:0 0 auto 0;width:auto;height:3px;
+    background:linear-gradient(90deg,var(--tc1),var(--tc2))}
+  /* Testa della carta: campitura col colore squadra, faccia grande, OVR in evidenza. */
+  .pcard .p-head{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 14px 14px;
+    background:linear-gradient(180deg,rgba(255,255,255,.05),transparent)}
+  .pcard .face{width:64px;height:64px;border-radius:14px;font-size:1.25rem}
+  .p-ovr{width:auto;flex-direction:row;align-items:baseline;gap:6px}
+  .p-ovr b{font-size:2.5rem}
+  .p-ovr small{margin-top:0}
+  .p-id{flex:none;width:100%;padding:0 12px;overflow:visible}
+  .p-name{font-size:1.12rem}
+  /* Nella carta lo spazio c'e': l'archetipo va a capo e la squadra ricompare. */
+  .p-sub{justify-content:center;gap:6px;margin-top:6px;flex-wrap:wrap;overflow:visible}
+  .p-team{display:block;flex-basis:100%;text-align:center}
+  .p-arch{display:block;font-size:.64rem;letter-spacing:.1em}
+  .p-info{width:26px;height:26px}
+  .p-box{justify-content:space-around;padding:14px 12px;margin-top:14px;
+    border-top:1px solid var(--line);background:rgba(21,22,58,.45)}
+  .p-box .bx b{font-size:1.15rem}
+  .p-info{position:absolute;top:10px;right:10px}
+  .pcard:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.35)}
+}
+
+/* Su schermi molto larghi le colonne laterali respirano un po' di piu'. */
+@media (min-width:1600px){ :root{ --col-side:340px } }
+
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .pcard:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= TESTATA ================= -->
+  <header class="apphd">
+    <div class="wm">BU<b>ZZ</b>ER</div>
+    <div class="hd-conf">L'IMBATTUTO · <b>16-0</b> · NORMALE · <b>2/5</b> PIAZZATI</div>
+    <div class="hd-sp"></div>
+    <div class="mode-pill"><span class="dot"></span> Normale</div>
+  </header>
+
+  <!-- ================= COLONNA 1 · IL QUINTETTO ================= -->
+  <section class="court-block">
+    <div class="seclab"><h2>Il tuo quintetto</h2><span class="cnt">2/5</span></div>
+    <div class="dcourt">
+
+      <div class="dslot full" style="--tc1:#1d428a;--tc2:#0a1f45">
+        <span class="ds-role">PG</span>
+        <span class="face">KI</span>
+        <span class="ds-name">Irving</span>
+        <span class="ds-ovr">90</span>
+      </div>
+
+      <span class="dslot elig">
+        <span class="ds-role">SG</span>
+        <span class="ds-name" style="color:var(--yellow)">libero · può giocarci</span>
+      </span>
+
+      <span class="dslot">
+        <span class="ds-role">SF</span>
+        <span class="ds-name" style="color:var(--bone-dim)">libero</span>
+      </span>
+
+      <span class="dslot">
+        <span class="ds-role">PF</span>
+        <span class="ds-name" style="color:var(--bone-dim)">libero</span>
+      </span>
+
+      <div class="dslot full" style="--tc1:#c8102e;--tc2:#5c0714">
+        <span class="ds-role">C</span>
+        <span class="face">JA</span>
+        <span class="ds-name">Allen</span>
+        <span class="ds-ovr">81</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Ordine del DOM identico al prototipo: header, quintetto, prompt, rosa, nota.
+       Su desktop e' la griglia a ricollocarli, non il markup. -->
+  <p class="prompt"><b>LeVert</b> può fare <b>SG</b> - tocca lo slot</p>
+
+  <!-- ================= COLONNA 2 · LA ROSA ================= -->
+  <section class="cand-block">
+    <div class="seclab">
+      <h2>Rosa · BKN · 2019-20</h2>
+      <div class="aidz">
+        <button class="aid" type="button">re-spin <b>1</b></button>
+        <button class="aid" type="button">↺ squadra <b>2</b></button>
+        <button class="aid" type="button">↺ stagione <b>2</b></button>
+      </div>
+    </div>
+
+    <div class="rlist">
+
+      <div class="pcard sel" style="--tc1:#1d428a;--tc2:#0a1f45">
+        <div class="p-head">
+          <span class="face">CL</span>
+          <span class="p-ovr arg"><b>83</b><small>OVR</small></span>
+        </div>
+        <span class="p-id">
+          <span class="p-name">LeVert</span>
+          <span class="p-sub">
+            <span class="p-pos">SG · SF</span>
+            <span class="p-arch">Realizzatore</span>
+            <span class="p-team">BKN · 2019-20</span>
+          </span>
+        </span>
+        <span class="p-box">
+          <span class="bx sig"><b>18.7</b><i>PT</i></span>
+          <span class="bx"><b>4.2</b><i>RB</i></span>
+          <span class="bx"><b>4.4</b><i>AS</i></span>
+        </span>
+        <button class="p-info" type="button" aria-label="Scheda LeVert">i</button>
+      </div>
+
+      <div class="pcard" style="--tc1:#1d428a;--tc2:#0a1f45">
+        <div class="p-head">
+          <span class="face">SD</span>
+          <span class="p-ovr arg"><b>83</b><small>OVR</small></span>
+        </div>
+        <span class="p-id">
+          <span class="p-name">Dinwiddie</span>
+          <span class="p-sub">
+            <span class="p-pos">PG</span>
+            <span class="p-arch">Realizzatore</span>
+            <span class="p-team">BKN · 2019-20</span>
+          </span>
+        </span>
+        <span class="p-box">
+          <span class="bx sig"><b>20.6</b><i>PT</i></span>
+          <span class="bx"><b>3.5</b><i>RB</i></span>
+          <span class="bx"><b>6.8</b><i>AS</i></span>
+        </span>
+        <button class="p-info" type="button" aria-label="Scheda Dinwiddie">i</button>
+      </div>
+
+      <div class="pcard" style="--tc1:#c8102e;--tc2:#5c0714">
+        <div class="p-head">
+          <span class="face">DJ</span>
+          <span class="p-ovr brz"><b>80</b><small>OVR</small></span>
+        </div>
+        <span class="p-id">
+          <span class="p-name">Jordan</span>
+          <span class="p-sub">
+            <span class="p-pos">C</span>
+            <span class="p-arch">Rimbalzista</span>
+            <span class="p-team">BKN · 2019-20</span>
+          </span>
+        </span>
+        <span class="p-box">
+          <span class="bx"><b>8.3</b><i>PT</i></span>
+          <span class="bx sig"><b>10.0</b><i>RB</i></span>
+          <span class="bx"><b>1.9</b><i>AS</i></span>
+        </span>
+        <button class="p-info" type="button" aria-label="Scheda Jordan">i</button>
+      </div>
+
+      <div class="pcard" style="--tc1:#00538c;--tc2:#00285a">
+        <div class="p-head">
+          <span class="face">JH</span>
+          <span class="p-ovr brz"><b>79</b><small>OVR</small></span>
+        </div>
+        <span class="p-id">
+          <span class="p-name">Harris</span>
+          <span class="p-sub">
+            <span class="p-pos">SF · SG</span>
+            <span class="p-arch">Tiratore</span>
+            <span class="p-team">BKN · 2019-20</span>
+          </span>
+        </span>
+        <span class="p-box">
+          <span class="bx sig"><b>14.5</b><i>PT</i></span>
+          <span class="bx"><b>4.3</b><i>RB</i></span>
+          <span class="bx"><b>2.4</b><i>AS</i></span>
+        </span>
+        <button class="p-info" type="button" aria-label="Scheda Harris">i</button>
+      </div>
+
+      <div class="pcard" style="--tc1:#7a4b2a;--tc2:#3d2413">
+        <div class="p-head">
+          <span class="face">TP</span>
+          <span class="p-ovr brz"><b>76</b><small>OVR</small></span>
+        </div>
+        <span class="p-id">
+          <span class="p-name">Prince</span>
+          <span class="p-sub">
+            <span class="p-pos">PF · SF</span>
+            <span class="p-arch">Lungo</span>
+            <span class="p-team">BKN · 2019-20</span>
+          </span>
+        </span>
+        <span class="p-box">
+          <span class="bx sig"><b>13.0</b><i>PT</i></span>
+          <span class="bx"><b>4.3</b><i>RB</i></span>
+          <span class="bx"><b>1.5</b><i>AS</i></span>
+        </span>
+        <button class="p-info" type="button" aria-label="Scheda Prince">i</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= COLONNA 3 · LA CORSA ================= -->
+  <aside class="runbox">
+    <div class="seclab"><h2>La corsa</h2></div>
+    <div class="rb-panel">
+
+      <div class="rb-goal">
+        <span class="lab">Obiettivo</span>
+        <div class="big">16-0</div>
+        <p class="note">Sedici vittorie di fila. Nessuna sconfitta ammessa.</p>
+      </div>
+
+      <div class="rb-team">
+        <span class="lab">Voto squadra</span>
+        <div class="num">86</div>
+        <div class="prog">
+          <span class="tick on"></span><span class="tick"></span><span class="tick"></span>
+          <span class="tick"></span><span class="tick on"></span>
+        </div>
+      </div>
+
+      <div class="rb-band">
+        <span class="lab">Fascia avversari</span>
+        <!-- Scala 60-99. Normale = 76-88, cioe' 41% - 72% della barra. -->
+        <div class="rb-bar"><span class="zone" style="left:41%;right:28%"></span></div>
+        <div class="rb-scale"><span>60</span><span>76 - 88</span><span>99</span></div>
+        <span class="hint">A Normale peschi avversari fra <b>76</b> e <b>88</b>. Sotto 88 qualche
+          partita la giochi col fiato corto.</span>
+      </div>
+
+      <div class="rb-row"><span class="k">Re-spin</span><span class="v">1</span></div>
+      <div class="rb-row"><span class="k">↺ Squadra</span><span class="v">2</span></div>
+      <div class="rb-row"><span class="k">↺ Stagione</span><span class="v">2</span></div>
+      <div class="rb-row"><span class="k">Cosa vedi</span><span class="v warn">OVR + stats</span></div>
+      <div class="rb-row"><span class="k">Coach</span><span class="v dim">-</span></div>
+
+    </div>
+  </aside>
+
+  <p class="src">Slot liberi: <b>3</b> · piazza dove vuoi</p>
+
+</div>
+
+<script>
+// Interazione minima, solo per rendere il mockup toccabile: selezione candidato
+// e accensione degli slot compatibili. La logica vera vive in game/roster.js.
+const RUOLI = { LeVert:["SG","SF"], Dinwiddie:["PG"], Jordan:["C"], Harris:["SF","SG"], Prince:["PF","SF"] };
+const slots = [...document.querySelectorAll(".dslot")];
+const prompt = document.querySelector(".prompt");
+
+document.querySelectorAll(".pcard").forEach((card) => {
+  card.addEventListener("click", (e) => {
+    if (e.target.closest(".p-info")) return;
+    const nome = card.querySelector(".p-name").textContent.trim();
+    const ammessi = (RUOLI[nome] || []).filter((r) => {
+      const s = slots.find((x) => x.querySelector(".ds-role").textContent.trim() === r);
+      return s && !s.classList.contains("full");
+    });
+
+    document.querySelectorAll(".pcard").forEach((c) => c.classList.toggle("sel", c === card));
+    slots.forEach((s) => {
+      const r = s.querySelector(".ds-role").textContent.trim();
+      const libero = !s.classList.contains("full");
+      s.classList.toggle("elig", ammessi.includes(r));
+      const et = s.querySelector(".ds-name");
+      if (libero && et) {
+        const ok = ammessi.includes(r);
+        et.textContent = ok ? "libero · può giocarci" : "libero";
+        et.style.color = ok ? "var(--yellow)" : "var(--bone-dim)";
+      }
+    });
+
+    prompt.innerHTML = ammessi.length === 0
+      ? `<b>${nome}</b>: i suoi ruoli sono già coperti - scegline un altro`
+      : `<b>${nome}</b> può fare <b>${ammessi.join(" o ")}</b> - tocca lo slot`;
+  });
+});
+</script>
+
+</body>
+</html>

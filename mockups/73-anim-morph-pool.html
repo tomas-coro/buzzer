@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Animazione morph pool - re-spin / squadra / annata · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  :root{ --lbl:#adaee0; }
+  body{background:#07071a}
+  .mkbar{position:sticky;top:0;z-index:30;display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;background:#0c0d24;border-bottom:1px solid var(--line)}
+  .mkbar .lbl{font-family:var(--body);font-weight:800;font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+  .chips{display:flex;gap:6px}
+  .chip{font-family:var(--body);font-weight:800;font-size:.66rem;color:var(--bone-dim);
+    background:#141539;border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;transition:.15s}
+  .chip.on{color:#0c0d22;background:var(--yellow);border-color:var(--yellow)}
+  .mkbar .hint{font-family:var(--body);font-size:.66rem;color:var(--bone-dim);margin-left:auto;max-width:44ch;text-align:right}
+
+  .stage{display:flex;justify-content:center;padding:24px 16px 60px}
+  .phone{width:390px;max-width:100%;height:788px;border-radius:44px;border:11px solid #000;
+    background:var(--ink);overflow:hidden;position:relative;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.9), inset 0 0 0 2px #23234f}
+  .phone::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:118px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:40}
+  .scr{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:relative}
+  .scr::-webkit-scrollbar{display:none}
+  .draft{max-width:none!important;padding:30px 14px 14px!important}
+
+  /* ===== testata pool: TEAM + STAGIONE (la portata del morph si legge qui) ===== */
+  .poolhd{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:14px;margin-bottom:11px;
+    background:linear-gradient(120deg,#16173a,#101030);border:1px solid var(--line);position:relative;overflow:hidden}
+  .poolhd::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--acc)}
+  .poolhd .abbr{font-family:var(--arcade);font-size:1.15rem;color:var(--acc);text-shadow:0 0 16px color-mix(in srgb,var(--acc) 55%,transparent);letter-spacing:.02em}
+  .poolhd .tname{display:block;font-family:var(--display);font-weight:800;font-size:.82rem;color:var(--bone);line-height:1.05;letter-spacing:-.01em}
+  .poolhd .tsub{font-family:var(--body);font-weight:700;font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--lbl)}
+  .poolhd .season{margin-left:auto;text-align:right}
+  .poolhd .season b{display:block;font-family:var(--led);font-weight:900;font-size:1.35rem;color:var(--bone);line-height:.9}
+  .poolhd .season small{font-family:var(--body);font-weight:800;font-size:.44rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl)}
+  .hd-flash{animation:hdflash .7s ease}
+  @keyframes hdflash{0%{box-shadow:0 0 0 2px var(--yellow),0 0 26px -2px var(--yellow)}100%{box-shadow:none}}
+  .lit{color:var(--yellow)!important;text-shadow:0 0 14px var(--yellow)!important}
+
+  /* aiuti */
+  .aidz3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:2px 0 6px}
+  .aidz3 button{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;
+    font-family:var(--body);font-weight:800;font-size:.62rem;color:var(--bone);letter-spacing:.02em;
+    background:#161638;border:1px solid var(--line);border-radius:11px;padding:8px 4px;transition:.14s}
+  .aidz3 button:hover{border-color:var(--yellow);transform:translateY(-1px)}
+  .aidz3 button:disabled{opacity:.45;cursor:default;transform:none;border-color:var(--line)}
+  .aidz3 button small{font-family:var(--body);font-weight:700;font-size:.44rem;letter-spacing:.03em;color:var(--lbl);text-transform:uppercase}
+  .aidz3 button b.cnt{color:var(--yellow)}
+  .scopehint{font-family:var(--body);font-size:.56rem;color:var(--bone-dim);text-align:center;margin:0 2px 10px;line-height:1.5}
+  .scopehint em{color:var(--yellow);font-style:normal;font-weight:800}
+
+  /* ===== righe candidato (stile 70) ===== */
+  .rlist{display:grid;gap:6px;position:relative}
+  .crd{position:relative;border:1px solid var(--line);border-radius:13px;overflow:hidden;
+    background:linear-gradient(100deg,#191a3d,#141336);will-change:transform,opacity,filter}
+  .crd::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc,#3a3a6e)}
+  .r-top{display:grid;grid-template-columns:36px 40px 1fr auto;align-items:center;gap:9px;padding:7px 12px 7px 14px}
+  .r-port{width:36px;height:40px;border-radius:8px;display:grid;place-items:center;
+    font-family:var(--arcade);font-size:.66rem;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+  .r-ovr{text-align:center}
+  .r-ovr b{display:block;font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:.86;color:var(--tier,var(--brass))}
+  .r-ovr small{font-family:var(--body);font-weight:800;font-size:.36rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl)}
+  .r-id{min-width:0}
+  .r-id .nm{display:block;font-family:var(--display);font-weight:800;font-size:.9rem;color:var(--bone);line-height:1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+  .r-id .sub{display:flex;align-items:center;gap:6px;margin-top:6px;min-width:0}
+  .r-id .pos{font-family:var(--arcade);font-size:.44rem;color:#0c0d22;background:var(--acc,#6b6ba0);border-radius:5px;padding:2px 6px;flex:none}
+  .r-id .pos.two{background:linear-gradient(90deg,var(--acc),#7a7ac0)}
+  .r-role{font-family:var(--body);font-weight:700;font-size:.56rem;color:var(--lbl);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .r-stats{display:flex;gap:9px}
+  .r-stats span{text-align:center;min-width:22px}
+  .r-stats b{display:block;font-family:var(--led);font-weight:900;font-size:.94rem;color:var(--bone);line-height:1}
+  .r-stats small{display:block;font-family:var(--body);font-weight:800;font-size:.38rem;letter-spacing:.06em;text-transform:uppercase;color:var(--lbl);margin-top:4px}
+  .r-stats span.sig b{color:var(--acc);text-shadow:0 0 12px color-mix(in srgb,var(--acc) 60%,transparent)}
+  .r-stats span.sig small{color:var(--acc)}
+
+  /* overlay scanline per glitch CRT */
+  .crt{position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;mix-blend-mode:screen;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 1px,transparent 1px 3px)}
+
+  .barbtn{display:flex;gap:8px;justify-content:center;margin-top:14px}
+  .barbtn button{font-family:var(--body);font-weight:800;font-size:.72rem;cursor:pointer;border-radius:10px;padding:9px 16px;border:1px solid var(--line);background:#161638;color:var(--bone)}
+
+  @media (prefers-reduced-motion:reduce){ *{animation-duration:.001s!important} }
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <span class="lbl">Morph pool · portata aiuti</span>
+  <div class="chips" id="chips">
+    <button class="chip on" data-dir="1">1 · Reel slot-machine</button>
+    <button class="chip" data-dir="2">2 · Deal di carte</button>
+    <button class="chip" data-dir="3">3 · Glitch CRT</button>
+  </div>
+  <span class="hint">3 aiuti = stesso morph, portata diversa. Guarda la testata: cosa cambia (squadra / anno / entrambi).</span>
+</div>
+
+<div class="stage"><div class="phone"><div class="scr" id="scr"></div></div></div>
+
+<script type="module">
+const last=n=>n.split(" ").pop();
+const tier=v=> v>=88?"var(--yellow)": v>=82?"#cdd6ea":"#e08a4a";
+// gradienti squadra
+const G={
+  GSW:"linear-gradient(158deg,#1D428A,#0b1c40)", CLE:"linear-gradient(158deg,#6f263d,#3a0f1f)",
+  CHI:"linear-gradient(158deg,#ce1141,#5c0a1e)",  LAL:"linear-gradient(158deg,#552583,#2a1145)",
+  MIA:"linear-gradient(158deg,#98002e,#4a0018)"
+};
+const A={GSW:"#ffc72c",CLE:"#e6b64a",CHI:"#ff5a78",LAL:"#f7c948",MIA:"#f5486f"};
+// p:[primario,secondario|null]
+function mk(ini,n,p,role,sig,ovr,pts,reb,ast){return {ini,n,p,role,sig,ovr,s:{pts,reb,ast}};}
+const TEAMS=[
+  {team:"Golden State Warriors",abbr:"GSW",season:"2015-16",roster:[
+    mk("SC","Stephen Curry",["PG",null],"Tiratore élite","pts",94,30.1,5.4,6.7),
+    mk("KT","Klay Thompson",["SG",null],"Bombardiere","pts",90,22.1,3.8,2.1),
+    mk("DG","Draymond Green",["PF","C"],"Motore-regia","ast",90,14.0,9.5,7.4),
+    mk("AI","Andre Iguodala",["SF","SG"],"Jolly Finals","ast",81,7.0,4.0,3.4),
+    mk("HB","Harrison Barnes",["SF","PF"],"Ala atletica","pts",79,11.7,4.9,1.8),
+    mk("AB","Andrew Bogut",["C",null],"Muro in area","reb",77,5.4,7.0,2.3)]},
+  {team:"Cleveland Cavaliers",abbr:"CLE",season:"2015-16",roster:[
+    mk("LJ","LeBron James",["SF","PF"],"Fuoriclasse","pts",96,25.3,7.4,6.8),
+    mk("KI","Kyrie Irving",["PG",null],"Manovratore","pts",89,19.6,3.0,4.7),
+    mk("KL","Kevin Love",["PF","C"],"Stretch big","reb",84,16.0,9.9,2.4),
+    mk("TT","Tristan Thompson",["C",null],"Rimbalzista","reb",78,7.8,9.0,0.8),
+    mk("JS","J.R. Smith",["SG","SF"],"Tiratore","pts",76,12.4,2.8,1.7),
+    mk("IS","Iman Shumpert",["SG","PG"],"Difensore","ast",72,5.4,2.9,1.7)]},
+  {team:"Golden State Warriors",abbr:"GSW",season:"2018-19",roster:[
+    mk("KD","Kevin Durant",["SF","PF"],"Killer offensivo","pts",96,26.0,6.4,5.9),
+    mk("SC","Stephen Curry",["PG",null],"Tiratore élite","pts",95,27.3,5.3,5.2),
+    mk("KT","Klay Thompson",["SG",null],"Bombardiere","pts",90,21.5,3.8,2.4),
+    mk("DG","Draymond Green",["PF","C"],"Motore-regia","ast",88,7.4,7.3,6.9),
+    mk("DC","DeMarcus Cousins",["C",null],"Centro totale","reb",80,16.3,8.2,3.6),
+    mk("AI","Andre Iguodala",["SF","SG"],"Jolly Finals","ast",79,5.7,3.7,3.2)]},
+  {team:"Chicago Bulls",abbr:"CHI",season:"1995-96",roster:[
+    mk("MJ","Michael Jordan",["SG","SF"],"Il migliore","pts",99,30.4,6.6,4.3),
+    mk("SP","Scottie Pippen",["SF","PF"],"Coltello svizzero","ast",92,19.4,6.4,5.9),
+    mk("DR","Dennis Rodman",["PF","C"],"Divoratore","reb",82,5.5,14.9,2.5),
+    mk("TK","Toni Kukoc",["SF","PF"],"Sesto uomo","pts",80,13.1,4.0,3.5),
+    mk("RH","Ron Harper",["PG","SG"],"Difensore lungo","ast",76,7.4,2.7,2.6),
+    mk("SK","Steve Kerr",["PG",null],"Cecchino","pts",74,8.4,1.3,2.3)]},
+  {team:"Los Angeles Lakers",abbr:"LAL",season:"2000-01",roster:[
+    mk("SO","Shaquille O'Neal",["C",null],"Colosso","pts",98,28.7,12.7,3.7),
+    mk("KB","Kobe Bryant",["SG","SF"],"Assassino","pts",94,28.5,5.9,5.0),
+    mk("RH","Robert Horry",["PF","SF"],"Big Shot","reb",78,7.0,5.4,2.2),
+    mk("DF","Derek Fisher",["PG",null],"Regista","ast",76,11.5,3.0,4.6),
+    mk("RF","Rick Fox",["SF","PF"],"Ala completa","ast",75,9.6,4.4,3.1),
+    mk("HG","Horace Grant",["PF","C"],"Operaio","reb",74,8.5,7.2,1.9)]},
+  {team:"Miami Heat",abbr:"MIA",season:"2012-13",roster:[
+    mk("LJ","LeBron James",["SF","PF"],"MVP totale","pts",98,26.8,8.0,7.3),
+    mk("DW","Dwyane Wade",["SG","PG"],"Flash","pts",90,21.2,5.0,5.1),
+    mk("CB","Chris Bosh",["PF","C"],"Big moderno","reb",84,16.6,6.8,1.7),
+    mk("RA","Ray Allen",["SG",null],"Tiratore eterno","pts",80,10.9,2.7,1.7),
+    mk("MC","Mario Chalmers",["PG",null],"Play di sistema","ast",74,8.6,2.3,3.5),
+    mk("SB","Shane Battier",["SF","PF"],"3&D","ast",74,6.6,2.6,1.4)]},
+];
+const byTeam=t=>TEAMS.filter(x=>x.abbr===t);
+const bySeason=s=>TEAMS.filter(x=>x.season===s);
+
+let dir=1, cur=TEAMS[0], busy=false;
+const rnd=arr=>arr[Math.floor(Math.random()*arr.length)];
+
+function rowHTML(c){
+  const two=c.p[1], s=c.s, acc=A[cur.abbr]; // acc/grad presi dalla squadra corrente
+  const st=(v,l,k)=>`<span class="${c.sig===k?"sig":""}"><b>${v}</b><small>${l}</small></span>`;
+  return `<div class="crd" style="--acc:${A[curAbbrOf(c)]};--tier:${tier(c.ovr)}">
+    <div class="r-top">
+      <span class="r-port" style="background:${G[curAbbrOf(c)]}">${c.ini}</span>
+      <span class="r-ovr"><b>${c.ovr}</b><small>OVR</small></span>
+      <span class="r-id"><span class="nm">${last(c.n)}</span>
+        <span class="sub"><span class="pos ${two?"two":""}">${c.p[0]}${two?" · "+two:""}</span><span class="r-role">${c.role}</span></span></span>
+      <span class="r-stats">${st(s.pts,"PT","pts")}${st(s.reb,"RB","reb")}${st(s.ast,"AS","ast")}</span>
+    </div></div>`;
+}
+// il gradiente/acc riga segue la squadra mostrata in testata (cur.abbr)
+let _renderAbbr="GSW";
+function curAbbrOf(){ return _renderAbbr; }
+
+function listHTML(t){ _renderAbbr=t.abbr; return t.roster.map(rowHTML).join(""); }
+function headHTML(t){
+  return `<div class="poolhd" id="poolhd" style="--acc:${A[t.abbr]}">
+    <span class="abbr" id="hAbbr">${t.abbr}</span>
+    <span><span class="tname" id="hName">${t.team}</span><span class="tsub">Team · Stagione</span></span>
+    <span class="season"><b id="hSeason">${t.season}</b><small>Stagione</small></span>
+  </div>`;
+}
+function render(){
+  const scr=document.getElementById("scr");
+  scr.className="scr dir"+dir;
+  scr.innerHTML=`<section class="screen draft">
+    <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div><div class="mode-pill"><span class="mp-txt">Draft</span></div></div>
+    ${headHTML(cur)}
+    <div class="aidz3">
+      <button data-aid="respin">⟳ RE-SPIN<small>squadra+anno</small></button>
+      <button data-aid="squadra">⤭ SQUADRA<small>stesso anno</small></button>
+      <button data-aid="annata">⌛ ANNATA<small>stessa squadra</small></button>
+    </div>
+    <p class="scopehint">Cambia: <em>RE-SPIN</em> tutto · <em>SQUADRA</em> tiene l'anno · <em>ANNATA</em> tiene i colori</p>
+    <div class="cand-block">
+      <div class="rlist" id="rlist">${listHTML(cur)}<span class="crt" id="crt"></span></div>
+    </div>
+    <div class="barbtn"><button id="reset">↺ Torna a GSW '15-16</button></div>
+  </section>`;
+  scr.querySelectorAll(".aidz3 button").forEach(b=>b.onclick=()=>doAid(b.dataset.aid));
+  document.getElementById("reset").onclick=()=>{cur=TEAMS[0];render();};
+}
+
+// costruisce il target secondo la portata dell'aiuto
+function targetFor(aid){
+  if(aid==="respin"){                        // tutto nuovo: squadra E annata diverse
+    const opts=TEAMS.filter(t=>t.abbr!==cur.abbr);
+    const t=rnd(opts);
+    return {t, chg:{team:true,season:true}};
+  }
+  if(aid==="squadra"){                        // stesso anno, altra squadra (colori nuovi, anno resta)
+    let opts=bySeason(cur.season).filter(t=>t.abbr!==cur.abbr);
+    if(!opts.length) opts=TEAMS.filter(t=>t.abbr!==cur.abbr); // fallback mockup
+    const src=rnd(opts);
+    const t={team:src.team,abbr:src.abbr,season:cur.season,roster:src.roster}; // anno TENUTO
+    return {t, chg:{team:true,season:false}};
+  }
+  // annata: stessa squadra, altro anno (colori restano, anno cambia)
+  let opts=byTeam(cur.abbr).filter(t=>t.season!==cur.season);
+  if(opts.length){ const src=rnd(opts); return {t:src, chg:{team:false,season:true}}; }
+  // fallback: nessun'altra annata in dati -> sintetizzo un anno diverso, stessa squadra
+  const yr=parseInt(cur.season)+ (Math.random()<.5?-3:3);
+  const src=rnd(TEAMS.filter(t=>t.abbr!==cur.abbr));
+  const t={team:cur.team,abbr:cur.abbr,season:`${yr}-${String((yr+1)%100).padStart(2,"0")}`,roster:src.roster};
+  return {t, chg:{team:false,season:true}};
+}
+
+function doAid(aid){
+  if(busy) return; busy=true;
+  const {t,chg}=targetFor(aid);
+  const rlist=document.getElementById("rlist");
+  const rows=[...rlist.querySelectorAll(".crd")];
+  const crt=document.getElementById("crt");
+
+  const swap=()=>{
+    // sostituisci righe (in-place, la testata resta finché non aggiorno le label)
+    rlist.innerHTML=listHTML(t)+`<span class="crt" id="crt"></span>`;
+    updateHead(t,chg);
+    cur=t;
+    animIn([...rlist.querySelectorAll(".crd")]);
+  };
+
+  if(dir===1) reelOut(rows,swap);
+  else if(dir===2) dealOut(rows,swap);
+  else glitch(rlist,crt,swap);
+}
+
+function animIn(rows){
+  const inKF = dir===1
+    ? [{opacity:0,filter:"blur(7px)",transform:"translateY(20px)"},{opacity:1,filter:"blur(0)",transform:"none"}]
+    : [{opacity:0,transform:"translateY(-34px) rotate(-4deg)"},{opacity:1,transform:"none"}];
+  rows.forEach((r,i)=>r.animate(inKF,{duration:dir===1?260:300,delay:i*55,easing:dir===2?"cubic-bezier(.2,1.4,.4,1)":"ease-out",fill:"backwards"})
+    .onfinish=()=>{ if(i===rows.length-1) busy=false; });
+  if(!rows.length) busy=false;
+}
+function reelOut(rows,done){
+  let n=rows.length;
+  rows.forEach((r,i)=>{
+    const a=r.animate([{opacity:1,filter:"blur(0)",transform:"none"},{opacity:0,filter:"blur(7px)",transform:"translateY(-20px)"}],
+      {duration:200,delay:i*40,fill:"forwards"});
+    a.onfinish=()=>{ if(--n===0) done(); };
+  });
+  if(!rows.length) done();
+}
+function dealOut(rows,done){
+  let n=rows.length;
+  rows.forEach((r,i)=>{
+    const a=r.animate([{opacity:1,transform:"none"},{opacity:0,transform:"translateX(70px) rotate(5deg)"}],
+      {duration:220,delay:i*35,easing:"cubic-bezier(.6,0,.9,.3)",fill:"forwards"});
+    a.onfinish=()=>{ if(--n===0) done(); };
+  });
+  if(!rows.length) done();
+}
+function glitch(rlist,crt,done){
+  crt.animate([{opacity:0},{opacity:.9},{opacity:.2},{opacity:.8},{opacity:0}],{duration:520,easing:"steps(5,end)"});
+  const a=rlist.animate([
+    {filter:"none",transform:"none"},
+    {filter:"contrast(1.5) saturate(1.4) hue-rotate(12deg)",transform:"translateX(-4px) skewX(-2deg)"},
+    {filter:"contrast(.8) hue-rotate(-14deg)",transform:"translateX(5px) skewX(2deg)"},
+    {filter:"none",transform:"translateX(-2px)"}
+  ],{duration:260,easing:"steps(4,end)"});
+  a.onfinish=()=>{
+    done();
+    // secondo glitch breve in entrata
+    const r2=document.getElementById("rlist");
+    r2.animate([{filter:"contrast(1.6) hue-rotate(20deg)",transform:"translateX(4px) skewX(2deg)"},{filter:"none",transform:"none"}],
+      {duration:200,easing:"steps(3,end)"});
+    document.getElementById("crt").animate([{opacity:.8},{opacity:0}],{duration:220});
+  };
+}
+
+function updateHead(t,chg){
+  const hd=document.getElementById("poolhd");
+  hd.style.setProperty("--acc",A[t.abbr]);
+  const abbr=document.getElementById("hAbbr"), name=document.getElementById("hName"), sea=document.getElementById("hSeason");
+  abbr.textContent=t.abbr; name.textContent=t.team; sea.textContent=t.season;
+  hd.classList.remove("hd-flash"); void hd.offsetWidth; hd.classList.add("hd-flash");
+  // accendi la label che è cambiata
+  [abbr,name,sea].forEach(e=>e.classList.remove("lit"));
+  if(chg.team){ abbr.classList.add("lit"); name.classList.add("lit"); }
+  if(chg.season){ sea.classList.add("lit"); }
+  setTimeout(()=>[abbr,name,sea].forEach(e=>e.classList.remove("lit")),700);
+}
+
+document.getElementById("chips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip"); if(!b) return;
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  dir=+b.dataset.dir; cur=TEAMS[0]; busy=false; render();
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  62-radar-apertura-attributi · visualizzatore di direzioni (skill `mockup`) · ITERAZIONE
+  Fuoco: la direzione "Radar orbitale" (mockup 61-A) resa a misura di TELEFONO vero.
+  Stessa prima schermata in ogni tile (mele con mele); cambia SOLO come si aprono i
+  20 attributi: in linea vs a tutto schermo vs pagina dedicata. Skin Cabina 90s costante.
+-->
+<title>Radar orbitale · come aprire i 20 attributi · mobile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:60ch}
+  .lead b{color:var(--bone);font-weight:600}
+
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  .resahint{font-size:.74rem;color:var(--bone-dim);margin:0 0 18px;display:flex;align-items:center;gap:7px}
+  .resahint .badge{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:var(--brass);border:1px solid var(--brass-deep);border-radius:6px;padding:2px 7px}
+
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px;display:flex;flex-direction:column;align-items:center}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+
+  /* ═══════════════ Telefono (resa mobile reale) ═══════════════ */
+  .scheda{--yellow:#ffcf33;--orange:#ff8a3d;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5f45;
+    --purple:#c9a8ff;--dim:#9a99c6;--dim2:#7a7ab0;--hair:#2c2a63;--e:cubic-bezier(.16,1,.3,1);
+    --fam-att:#ffcf33;--fam-fis:#ff8a3d;--fam-dif:#5ccf8e;--fam-men:#c9a8ff}
+  .pchips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+  .pchip{font:inherit;cursor:pointer;font-size:.7rem;font-weight:700;color:var(--bone-dim);
+    background:var(--ink-3);border:1px solid var(--line);border-radius:10px;padding:8px 14px;min-height:44px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.1;transition:.15s ease}
+  .pchip b{font-family:"Bungee";font-size:.6rem}
+  .pchip span{font-size:.55rem;color:var(--bone-dim);opacity:.8}
+  .pchip:hover{color:var(--bone);border-color:#4a4790}
+  .pchip[aria-pressed="true"]{border-color:var(--yellow);color:var(--cream);background:#2a2416}
+  .pchip[aria-pressed="true"] span{color:var(--yellow);opacity:1}
+
+  /* frame telefono ~ 360px = larghezza reale iPhone medio */
+  .ph{width:360px;max-width:100%;border:10px solid #05030f;border-radius:38px;background:#05030f;box-shadow:0 22px 52px rgba(0,0,0,.55)}
+  .scr{position:relative;overflow:hidden;border-radius:28px;height:660px;
+    background:radial-gradient(130% 80% at 50% -8%,#20206a 0,#15163a 52%,#0d0e29 100%)}
+  /* notch */
+  .scr::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);width:104px;height:24px;background:#05030f;border-radius:0 0 14px 14px;z-index:40}
+
+  .scrtop{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 6px}
+  .scrtop .back{display:flex;align-items:center;gap:5px;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .scrtop .back svg{width:13px;height:13px;fill:none;stroke:var(--dim);stroke-width:2.4}
+  .scrx{width:28px;height:28px;border-radius:9px;border:1px solid var(--hair);background:#141238;color:var(--dim);
+    display:flex;align-items:center;justify-content:center;font-size:1.05rem;line-height:1;cursor:pointer}
+
+  /* prima schermata condivisa */
+  .head{display:flex;gap:11px;align-items:flex-start;padding:2px 16px 0}
+  .face{position:relative;flex:none;width:66px;height:88px;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#2a2450),var(--tc2,#191436))}
+  .face::before{content:"";position:absolute;inset:0;opacity:.5;
+    background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .face .mono{font-family:"Bungee";font-size:1.15rem;color:rgba(255,255,255,.92);text-shadow:0 2px 0 rgba(0,0,0,.3);position:relative}
+  .face .rl{position:absolute;top:5px;left:5px;font-family:"Bungee";font-size:.42rem;color:var(--yellow);background:rgba(5,3,15,.62);border-radius:5px;padding:2px 5px;z-index:3}
+  .hi{flex:1;min-width:0}
+  .nm{font-family:"Bricolage Grotesque";font-weight:700;font-size:1.05rem;letter-spacing:-.01em;line-height:1.08}
+  .sub{font-size:.58rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:3px}
+  .ovrRow{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .ovr{font-family:"Bungee";font-size:1.6rem;line-height:.8;color:var(--yellow);text-shadow:2px 2px 0 #b8901f}
+  .arch{font-size:.56rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;padding:4px 9px;border-radius:99px;border:1px solid var(--hair);background:#1a1640;color:var(--cream)}
+
+  .radarwrap{text-align:center;margin:6px 6px 0}
+  .radar{width:100%;max-width:262px;height:auto;animation:rpop .55s var(--e) both}
+  @keyframes rpop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+  .ring{fill:none;stroke:#2c2a63;stroke-width:.7}.ring.out{stroke:#3a3570}
+  .axis{stroke:#2c2a63;stroke-width:.6}
+  .dpoly{fill:rgba(255,207,51,.15);stroke:var(--yellow);stroke-width:1.7;stroke-linejoin:round}
+  .dot{fill:var(--green)}.dot.md{fill:var(--yellow)}.dot.lo{fill:var(--red)}
+  .rlab{fill:var(--dim);font-family:"Hanken Grotesk";font-size:6.4px;font-weight:800;text-transform:uppercase}
+
+  .fams{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:8px 16px 0}
+  .fam{border:1px solid var(--hair);border-radius:11px;padding:8px 5px 7px;text-align:center;background:#161340}
+  .fam .fl{font-size:.46rem;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--dim)}
+  .fam .fv{font-family:"Doto";font-weight:900;font-size:1.1rem;line-height:1;margin-top:2px}
+  .fam .fbar{height:4px;border-radius:99px;background:#221f52;overflow:hidden;margin-top:6px}
+  .fam .fbar i{display:block;height:100%;border-radius:99px}
+  .fam[data-f="att"] .fv{color:var(--fam-att)} .fam[data-f="att"] .fbar i{background:var(--fam-att)}
+  .fam[data-f="fis"] .fv{color:var(--fam-fis)} .fam[data-f="fis"] .fbar i{background:var(--fam-fis)}
+  .fam[data-f="dif"] .fv{color:var(--fam-dif)} .fam[data-f="dif"] .fbar i{background:var(--fam-dif)}
+  .fam[data-f="men"] .fv{color:var(--fam-men)} .fam[data-f="men"] .fbar i{background:var(--fam-men)}
+
+  /* striscia spunti (riempie l'aria della prima schermata con densità utile) */
+  .spunti{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 16px 0}
+  .sp{border:1px solid var(--hair);border-radius:11px;padding:9px 11px;background:#161340}
+  .sp .spt{font-size:.48rem;letter-spacing:.12em;text-transform:uppercase;font-weight:800;margin-bottom:6px}
+  .sp.up .spt{color:var(--green)}.sp.dn .spt{color:var(--red)}
+  .sp .it{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.64rem;color:var(--cream);margin:3px 0}
+  .sp .it i{font-style:normal;font-family:"Doto";font-weight:900;font-size:.66rem;color:var(--dim)}
+
+  /* CTA principale "vedi tutti i 20" */
+  .cta{display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;
+    font-family:"Bungee";font-size:.6rem;letter-spacing:.02em;color:#1a1206;background:var(--yellow);
+    border:0;border-radius:11px;padding:13px;min-height:48px;box-shadow:0 3px 0 #b8901f;
+    margin:14px 16px 0;width:calc(100% - 32px)}
+  .cta:active{transform:translateY(2px);box-shadow:0 1px 0 #b8901f}
+  .cta svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4}
+
+  /* righe attributo */
+  .arow{display:grid;grid-template-columns:1fr 52px 24px;align-items:center;gap:9px;padding:3px 0}
+  .arow .l{font-size:.62rem;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .arow .t{height:6px;border-radius:99px;background:#221f52;overflow:hidden}
+  .arow .t i{display:block;height:100%;border-radius:99px;background:var(--green)}
+  .arow .t i.md{background:var(--yellow)}.arow .t i.lo{background:var(--red)}
+  .arow .v{font-family:"Doto";font-weight:900;font-size:.7rem;color:var(--cream);text-align:right}
+  .grp{margin-top:11px}
+  .grp .gh{font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin:0 0 4px;display:flex;align-items:center;gap:7px}
+  .grp .gh::after{content:"";flex:1;height:1px;background:var(--hair)}
+  .grp.att .gh{color:var(--fam-att)}.grp.fis .gh{color:var(--fam-fis)}
+  .grp.dif .gh{color:var(--fam-dif)}.grp.men .gh{color:var(--fam-men)}
+
+  /* corpo scrollabile della prima schermata (solo dir A che cresce) */
+  .page1{position:absolute;inset:0;overflow-y:auto;padding-bottom:16px;-webkit-overflow-scrolling:touch}
+
+  /* ── DIR A: espansione IN LINEA (attuale) ── */
+  .dA .detail{max-height:0;overflow:hidden;transition:max-height .4s var(--e);padding:0 16px}
+  .dA .detail.open{max-height:900px}
+  .dA .detail .inner{padding:12px 0 2px;border-top:1px solid var(--hair);margin-top:14px}
+
+  /* ── DIR B: SHEET a tutto schermo ── */
+  .sheet{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;
+    background:linear-gradient(180deg,#171436 0,#0e0d28 100%);
+    transform:translateY(100%);transition:transform .42s var(--e);visibility:hidden}
+  .sheet.open{transform:none;visibility:visible}
+  .sheetbar{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 12px;border-bottom:1px solid var(--hair);flex:none}
+  .sheetbar .st{font-family:"Bricolage Grotesque";font-weight:700;font-size:1.05rem}
+  .sheetbar .ss{font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:1px}
+  .sheetbody{flex:1;overflow-y:auto;padding:6px 16px 20px;-webkit-overflow-scrolling:touch}
+  .sheet .miniid{display:flex;align-items:center;gap:9px;padding:12px 0 4px}
+  .sheet .miniid .face{width:38px;height:48px;border-radius:9px}.sheet .miniid .face .mono{font-size:.72rem}
+  .sheet .miniid .mn{font-family:"Bricolage Grotesque";font-weight:700;font-size:.82rem;line-height:1}
+  .sheet .miniid .ms{font-size:.52rem;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-weight:700;margin-top:2px}
+  .sheet .miniid .mo{margin-left:auto;font-family:"Bungee";font-size:1.3rem;color:var(--yellow);text-shadow:1.5px 1.5px 0 #b8901f}
+
+  /* ── DIR C: PAGINA dedicata (push da destra) ── */
+  .pageC{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;
+    background:radial-gradient(120% 60% at 50% 0,#1b1a44 0,#100f2c 60%,#0a0920 100%);
+    transform:translateX(100%);transition:transform .4s var(--e);visibility:hidden}
+  .pageC.open{transform:none;visibility:visible}
+  .pageChd{display:flex;align-items:center;gap:12px;padding:18px 16px 12px;border-bottom:1px solid var(--hair);flex:none}
+  .pageChd .bk{width:30px;height:30px;border-radius:9px;border:1px solid var(--hair);background:#141238;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+  .pageChd .bk svg{width:14px;height:14px;fill:none;stroke:var(--cream);stroke-width:2.4}
+  .pageChd .pt{font-family:"Bricolage Grotesque";font-weight:700;font-size:.95rem;line-height:1}
+  .pageChd .ps{font-size:.52rem;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-weight:700;margin-top:2px}
+  .pageChd .po{margin-left:auto;font-family:"Bungee";font-size:1.4rem;color:var(--yellow);text-shadow:1.5px 1.5px 0 #b8901f}
+  .pageCbd{flex:1;overflow-y:auto;padding:6px 16px 20px;-webkit-overflow-scrolling:touch}
+  .pcTop{display:flex;align-items:center;gap:6px;padding:4px 0 10px;margin-bottom:8px;border-bottom:1px solid var(--hair)}
+  .pcRadar{flex:none;width:150px}
+  .pcRadar .radar{max-width:150px;animation:none}
+  .pcTop .fams{flex:1;grid-template-columns:1fr 1fr;padding:0;gap:7px}
+  .pageCbd .cols{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .pageCbd .arow{grid-template-columns:1fr 34px 20px;gap:6px;padding:5px 0}
+  .pageCbd .arow .l{font-size:.56rem}
+  .pageCbd .arow .v{font-size:.62rem}
+  .pageCbd .grp{margin-top:6px}
+  .pcFoot{margin-top:14px;padding-top:10px;border-top:1px dashed var(--hair);
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:.5rem;color:var(--dim);letter-spacing:.02em}
+  .pcFoot .k{display:inline-flex;align-items:center;gap:5px}
+  .pcFoot .sw{width:9px;height:9px;border-radius:2px}
+
+  @media (max-width:400px){ .ph{width:100%;border-width:0;border-radius:0} .scr{border-radius:0} }
+  @media (prefers-reduced-motion:reduce){
+    .radar{animation:none!important}
+    .sheet,.pageC,.dA .detail{transition:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Radar orbitale · resa mobile · come aprire i 20</div>
+    <h1 id="mockTitle">La scheda sul telefono, per davvero</h1>
+    <p class="lead">Il frame qui sotto è a <b>~360px</b>, la larghezza reale di un telefono: così vedi la <b>resa vera</b>, non la card che galleggia nel desktop. La prima schermata (radar + 4 sintesi) è <b>identica</b> in ogni opzione; cambia solo <b>come si aprono i 20 attributi</b>. Premi <b>"Vedi tutti i 20"</b> in ognuna.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+  <p class="resahint"><span class="badge">1:1</span> Frame a misura di telefono - quello che vedi è quello che avresti in mano.</p>
+
+  <main id="stage">
+    <div id="panels">
+
+      <section class="dir-panel" data-name="In linea" data-mood="la card cresce · attuale (mockup 61)" data-why="Zero cambi di schermata, ma su un telefono i 20 restano stretti e devi scrollare dentro una card già piena: dimostra il limite." data-role="Attuale">
+        <div class="scheda dA" data-dir="A">
+          <div class="pchips" role="group" aria-label="Campione"></div>
+          <div class="ph"><div class="scr"><div class="page1 mount"></div></div></div>
+        </div>
+      </section>
+
+      <section class="dir-panel" data-name="A tutto schermo" data-mood="sheet che sale · sfondo fermo" data-why="I 20 attributi hanno TUTTO lo schermo: righe grandi, leggibili, raggruppate. È il gesto giusto su mobile e lo sfondo resta bloccato dietro." data-role="" hidden>
+        <div class="scheda dB" data-dir="B">
+          <div class="pchips" role="group" aria-label="Campione"></div>
+          <div class="ph"><div class="scr"><div class="mount"></div></div></div>
+        </div>
+      </section>
+
+      <section class="dir-panel" data-name="Pagina dedicata" data-mood="scheda completa · push da destra" data-why="Diventa una schermata a sé (come aprire un giocatore in Football Manager): radar in testa piccolo, 20 in due colonne larghe. Torni indietro con la freccia." data-role="" hidden>
+        <div class="scheda dC" data-dir="C">
+          <div class="pchips" role="group" aria-label="Campione"></div>
+          <div class="ph"><div class="scr"><div class="mount"></div></div></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica (INVARIATA dal template) ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div><div class="dir-name">${p.dataset.name||'Direzione'}</div>
+          <div class="dir-mood">${p.dataset.mood||''}</div></div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">&#10038;&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button'; b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+  show(0);
+})();
+
+// ═══════════════ Contenuto (20 attributi veri) ═══════════════
+(function(){
+  const FAM = {
+    fis:{lab:"Fisico", labs:["Velocità","Forza","Elevazione","Resistenza","Integrità"]},
+    att:{lab:"Attacco",labs:["Tiro 3","Tiro medio","Finalizzazione","Tiro libero","Palleggio","Playmaking","Senza palla"]},
+    dif:{lab:"Difesa", labs:["Dif. perimetro","Dif. interna","Palle rubate","Stoppate","Rimbalzi"]},
+    men:{lab:"Mentale",labs:["QI cestistico","Costanza","Leadership"]},
+  };
+  const PLAYERS = [
+    {mono:"SC", nm:"Stephen Curry", pos:{p:"PG",s:"SG"}, ovr:95, team:"GSW", season:"2015-16", tc:["#1d428a","#0f2350"],
+      fis:[84,55,70,88,80], att:[99,90,74,96,92,90,88], dif:[70,45,72,30,42], men:[96,94,88]},
+    {mono:"GA", nm:"Giannis Antetokounmpo", pos:{p:"PF",s:"C"}, ovr:96, team:"MIL", season:"2019-20", tc:["#00471b","#062f12"],
+      fis:[92,96,99,90,88], att:[58,60,92,65,72,72,68], dif:[84,90,72,80,92], men:[80,78,90]},
+    {mono:"RG", nm:"Rudy Gobert", pos:{p:"C",s:null}, ovr:84, team:"UTA", season:"2020-21", tc:["#002b5c","#001a38"],
+      fis:[66,90,88,84,86], att:[28,36,80,58,30,34,58], dif:[68,99,42,96,95], men:[74,70,64]},
+  ];
+  const CHIP_LABELS = ["Curry","Giannis","Gobert"];
+  const ROLE_FULL = {PG:"Playmaker",SG:"Guardia",SF:"Ala piccola",PF:"Ala grande",C:"Centro"};
+  const avg = a => Math.round(a.reduce((s,x)=>s+x,0)/a.length);
+  const tier = v => v>=83 ? "" : v>=70 ? "md" : "lo";
+  const fs = (pl,f) => avg(pl[f]);
+
+  function archetype(pl){
+    const A=fs(pl,"att"),F=fs(pl,"fis"),D=fs(pl,"dif");
+    const big=pl.pos.p==="C"||pl.pos.p==="PF";
+    if(A>=88&&pl.att[0]>=90) return "Cecchino";
+    if(big&&D>=85&&A<60) return "Muro difensivo";
+    if(F>=90&&D>=80) return "Forza della natura";
+    if(A>=80&&D>=80) return "Tuttofare";
+    if(pl.att[5]>=85) return "Regista";
+    if(big&&A>=78) return "Lungo moderno";
+    if(D>=82) return "Mastino";
+    if(A>=80) return "Bocca di fuoco";
+    return "Gregario";
+  }
+  function radarVals(pl){
+    const atl=Math.round((pl.fis[0]+pl.fis[2])/2);
+    return [pl.att[0],pl.att[5],pl.att[2],atl,pl.dif[0],pl.dif[1],pl.dif[4],fs(pl,"men")];
+  }
+  const RADAR_LAB=["Tiro","Regia","Finaliz.","Atlet.","Dif.Est","Dif.Int","Rimb.","Testa"];
+
+  function radarSVG(vals,labels){
+    const cx=120,cy=100,R=64,LR=82,n=vals.length;
+    const pt=(r,k)=>{const a=(k*(360/n)-90)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];};
+    const poly=r=>Array.from({length:n},(_,k)=>pt(r,k).map(v=>v.toFixed(1)).join(',')).join(' ');
+    let rings='';[0.25,0.5,0.75,1].forEach((f,i)=>{rings+=`<polygon points="${poly(R*f)}" class="ring${i===3?' out':''}"/>`;});
+    let axes='',labs='';
+    for(let k=0;k<n;k++){
+      const [x,y]=pt(R,k);
+      axes+=`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="axis"/>`;
+      const [lx,ly]=pt(LR,k);
+      const anchor=Math.abs(lx-cx)<1?'middle':(lx>cx?'start':'end');
+      const dy=Math.abs(ly-cy)<2?(ly<cy?-3:8):2.4;
+      labs+=`<text x="${lx.toFixed(1)}" y="${(ly+dy).toFixed(1)}" text-anchor="${anchor}" class="rlab">${labels[k]}</text>`;
+    }
+    const dp=vals.map((v,k)=>pt(R*Math.max(6,Math.min(99,v))/99,k).map(x=>x.toFixed(1)).join(',')).join(' ');
+    let dots='';vals.forEach((v,k)=>{const [x,y]=pt(R*Math.max(6,Math.min(99,v))/99,k);dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" class="dot ${tier(v)}"/>`;});
+    return `<svg viewBox="0 0 240 200" class="radar" role="img" aria-label="Profilo a 8 assi">${rings}${axes}<polygon points="${dp}" class="dpoly"/>${dots}${labs}</svg>`;
+  }
+  function attrRows(f,vals){
+    return vals.map((v,i)=>`<div class="arow"><span class="l">${FAM[f].labs[i]}</span>
+      <span class="t"><i class="${tier(v)}" style="width:${v}%"></i></span><span class="v">${v}</span></div>`).join('');
+  }
+  function grpAll(pl){
+    return ["fis","att","dif","men"].map(f=>`<div class="grp ${f}"><div class="gh">${FAM[f].lab}</div>${attrRows(f,pl[f])}</div>`).join('');
+  }
+  // 4 dial-famiglia (riuso in prima schermata e pagina dedicata)
+  function famDials(pl){
+    return ["fis","att","dif","men"].map(f=>{const v=fs(pl,f);
+      return `<div class="fam" data-f="${f}"><div class="fl">${FAM[f].lab}</div>
+        <div class="fv">${v}</div><div class="fbar"><i style="width:${v}%"></i></div></div>`;}).join('');
+  }
+  // top 3 forze / 2 nei dai 20 (riempie l'aria della prima schermata)
+  function highlights(pl){
+    const all=[];
+    ["fis","att","dif","men"].forEach(f=>pl[f].forEach((v,i)=>all.push({l:FAM[f].labs[i],v})));
+    const up=[...all].sort((a,b)=>b.v-a.v).slice(0,3);
+    const dn=[...all].sort((a,b)=>a.v-b.v).slice(0,2);
+    return {up,dn};
+  }
+  // prima schermata condivisa (header + radar + dial famiglie + CTA)
+  function firstScreen(pl,ctaLabel){
+    const a=archetype(pl), role2=pl.pos.p+(pl.pos.s?"/"+pl.pos.s:"");
+    return `
+      <div class="scrtop">
+        <span class="back"><svg viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"/></svg>Provino</span>
+        <span class="scrx" aria-hidden="true">&times;</span>
+      </div>
+      <div class="head" style="--tc1:${pl.tc[0]};--tc2:${pl.tc[1]}">
+        <span class="face"><span class="rl">${role2}</span><span class="mono">${pl.mono}</span></span>
+        <div class="hi">
+          <div class="nm">${pl.nm}</div>
+          <div class="sub">${ROLE_FULL[pl.pos.p]} · ${pl.team} ${pl.season}</div>
+          <div class="ovrRow"><span class="ovr">${pl.ovr}</span><span class="arch">${a}</span></div>
+        </div>
+      </div>
+      <div class="radarwrap">${radarSVG(radarVals(pl),RADAR_LAB)}</div>
+      <div class="fams">${famDials(pl)}</div>
+      ${(()=>{const {up,dn}=highlights(pl);const li=arr=>arr.map(x=>`<div class="it"><span>${x.l}</span><i>${x.v}</i></div>`).join('');
+        return `<div class="spunti"><div class="sp up"><div class="spt">Punti forti</div>${li(up)}</div>
+        <div class="sp dn"><div class="spt">Da nascondere</div>${li(dn)}</div></div>`;})()}
+      <button class="cta" type="button" data-open>
+        <svg viewBox="0 0 24 24"><path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3M3 12h18"/></svg>${ctaLabel}
+      </button>`;
+  }
+  function miniId(pl){
+    const role2=pl.pos.p+(pl.pos.s?"/"+pl.pos.s:"");
+    return `<div class="miniid" style="--tc1:${pl.tc[0]};--tc2:${pl.tc[1]}">
+      <span class="face"><span class="mono">${pl.mono}</span></span>
+      <div><div class="mn">${pl.nm}</div><div class="ms">${role2} · ${pl.team} ${pl.season}</div></div>
+      <span class="mo">${pl.ovr}</span></div>`;
+  }
+
+  // ── RENDER A: in linea ──
+  function renderA(pl){
+    return firstScreen(pl,"Vedi tutti i 20") + `
+      <div class="detail"><div class="inner">${grpAll(pl)}</div></div>`;
+  }
+  // ── RENDER B: sheet a tutto schermo ──
+  function renderB(pl){
+    return `<div class="page1">${firstScreen(pl,"Vedi tutti i 20")}</div>
+      <div class="sheet">
+        <div class="sheetbar">
+          <div><div class="st">20 attributi</div><div class="ss">Referto scout completo</div></div>
+          <span class="scrx" data-close>&times;</span>
+        </div>
+        <div class="sheetbody">${miniId(pl)}${grpAll(pl)}</div>
+      </div>`;
+  }
+  // ── RENDER C: pagina dedicata ──
+  function renderC(pl){
+    const role2=pl.pos.p+(pl.pos.s?"/"+pl.pos.s:"");
+    return `<div class="page1">${firstScreen(pl,"Apri scheda completa")}</div>
+      <div class="pageC">
+        <div class="pageChd">
+          <span class="bk" data-close><svg viewBox="0 0 24 24"><path d="M14 6l-6 6 6 6"/></svg></span>
+          <div><div class="pt">${pl.nm}</div><div class="ps">${role2} · ${pl.team} ${pl.season}</div></div>
+          <span class="po">${pl.ovr}</span>
+        </div>
+        <div class="pageCbd">
+          <div class="pcTop">
+            <div class="pcRadar">${radarSVG(radarVals(pl),RADAR_LAB)}</div>
+            <div class="fams">${famDials(pl)}</div>
+          </div>
+          <div class="cols">
+          <div><div class="grp att"><div class="gh">Attacco</div>${attrRows("att",pl.att)}</div>
+               <div class="grp dif"><div class="gh">Difesa</div>${attrRows("dif",pl.dif)}</div></div>
+          <div><div class="grp fis"><div class="gh">Fisico</div>${attrRows("fis",pl.fis)}</div>
+               <div class="grp men"><div class="gh">Mentale</div>${attrRows("men",pl.men)}</div></div>
+          </div>
+          <div class="pcFoot">
+            <span class="k"><span class="sw" style="background:var(--green)"></span>&ge;83</span>
+            <span class="k"><span class="sw" style="background:var(--yellow)"></span>70-82</span>
+            <span class="k"><span class="sw" style="background:var(--red)"></span>&lt;70</span>
+            <span style="margin-left:auto">20/20 attributi · scala 25-99</span>
+          </div>
+        </div>
+      </div>`;
+  }
+  const RENDER={A:renderA,B:renderB,C:renderC};
+
+  document.querySelectorAll('.scheda[data-dir]').forEach(scheda=>{
+    scheda.querySelector('.pchips').innerHTML = PLAYERS.map((pl,i)=>{
+      const a=archetype(pl);
+      return `<button class="pchip" type="button" data-i="${i}" aria-pressed="${i===0}"><b>${a}</b><span>${CHIP_LABELS[i]}</span></button>`;
+    }).join('');
+    scheda.dataset.p="0";
+    paint(scheda);
+  });
+  function paint(scheda){
+    const pl=PLAYERS[+scheda.dataset.p];
+    scheda.querySelector('.mount').innerHTML = RENDER[scheda.dataset.dir](pl);
+    scheda.querySelectorAll('.pchip').forEach(c=>c.setAttribute('aria-pressed', c.dataset.i===scheda.dataset.p));
+  }
+
+  document.addEventListener('click', e=>{
+    const chip=e.target.closest('.pchip');
+    if(chip){const s=chip.closest('.scheda');s.dataset.p=chip.dataset.i;paint(s);return;}
+    const open=e.target.closest('[data-open]');
+    if(open){const s=open.closest('.scheda');const dir=s.dataset.dir;
+      if(dir==="A"){const d=s.querySelector('.detail');d.classList.toggle('open');
+        open.querySelector('svg').nextSibling && (open.childNodes[open.childNodes.length-1].textContent = d.classList.contains('open')?'Nascondi i 20':'Vedi tutti i 20');}
+      else if(dir==="B"){s.querySelector('.sheet').classList.add('open');}
+      else if(dir==="C"){s.querySelector('.pageC').classList.add('open');}
+      return;}
+    const close=e.target.closest('[data-close]');
+    if(close){const s=close.closest('.scheda');
+      s.querySelector('.sheet')?.classList.remove('open');
+      s.querySelector('.pageC')?.classList.remove('open');return;}
+  });
+})();
+</script>
+</body>
+</html>

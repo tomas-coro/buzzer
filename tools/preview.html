@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buzzer - anteprima mobile + desktop</title>
+<style>
+  /* Strumento di sviluppo: volutamente neutro, non deve competere col gioco.
+     Il trucco chiave: ogni iframe ha la LARGHEZZA VERA del dispositivo (es. 393px),
+     cosi le media query e i clamp() dentro il gioco vedono la misura giusta.
+     Il ridimensionamento a schermo avviene dopo, con transform: scale(). */
+  :root {
+    --bg: #14161c;
+    --panel: #1c1f27;
+    --line: #2c313d;
+    --ink: #e6e8ee;
+    --dim: #8b93a5;
+    --acc: #ffc93c;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 12px 18px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+  }
+  header .brand { font-weight: 700; color: var(--acc); letter-spacing: .06em; }
+  header .grow { flex: 1; }
+
+  label { color: var(--dim); font-size: 12px; }
+  select, input[type=text], button {
+    font: inherit;
+    background: #252a34;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+  }
+  input[type=text] { min-width: 340px; }
+  button { cursor: pointer; }
+  button:hover { border-color: var(--acc); color: var(--acc); }
+  button:active { transform: translateY(1px); }
+
+  .toggles { display: flex; gap: 4px; }
+  .toggles button[aria-pressed="true"] { border-color: var(--acc); color: var(--acc); }
+
+  main {
+    display: flex; gap: 40px; align-items: flex-start; justify-content: center;
+    padding: 32px 24px 64px;
+    flex-wrap: wrap;
+  }
+  section { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  section[hidden] { display: none; }
+
+  .cap {
+    display: flex; gap: 10px; align-items: baseline;
+    color: var(--dim); font-size: 12px; letter-spacing: .05em; text-transform: uppercase;
+  }
+  .cap b { color: var(--ink); font-weight: 600; letter-spacing: 0; text-transform: none; }
+
+  /* Il wrapper riserva lo spazio REALE occupato dopo lo scale,
+     altrimenti i due riquadri si sovrappongono. Lo imposta il JS. */
+  .stage { position: relative; }
+  .stage > .frame { position: absolute; top: 0; left: 0; transform-origin: top left; }
+
+  .frame { background: #000; overflow: hidden; }
+  .frame iframe { display: block; border: 0; background: #000; }
+
+  /* Telefono: cornice, angoli tondi, tacca. Non e' vezzo: serve a ricordare
+     che in alto e in basso il sistema mangia spazio. */
+  .phone {
+    border: 10px solid #33383f;
+    border-radius: 44px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.6);
+  }
+  .phone .notch {
+    position: absolute; z-index: 2;
+    top: 10px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 26px;
+    background: #33383f;
+    border-radius: 0 0 16px 16px;
+  }
+  .phone iframe { border-radius: 34px; }
+
+  .laptop {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.55);
+  }
+
+  .hint { padding: 0 24px 40px; text-align: center; color: var(--dim); font-size: 12px; }
+  .hint code { color: var(--acc); }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="brand">BUZZER · ANTEPRIMA</span>
+
+  <label for="url">URL</label>
+  <input type="text" id="url" value="../prototype/imbattuto/index.html">
+
+  <label for="device">Telefono</label>
+  <select id="device"></select>
+
+  <div class="toggles">
+    <button id="t-phone" aria-pressed="true">Telefono</button>
+    <button id="t-desk" aria-pressed="true">Desktop</button>
+  </div>
+
+  <span class="grow"></span>
+  <button id="reload">Ricarica tutto</button>
+</header>
+
+<main>
+  <section id="sec-phone">
+    <div class="cap">Telefono · <b id="cap-phone"></b></div>
+    <div class="stage" id="stage-phone">
+      <div class="frame phone" id="frame-phone">
+        <div class="notch"></div>
+        <iframe id="if-phone" title="Anteprima telefono"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <section id="sec-desk">
+    <div class="cap">Desktop · <b id="cap-desk"></b></div>
+    <div class="stage" id="stage-desk">
+      <div class="frame laptop" id="frame-desk">
+        <iframe id="if-desk" title="Anteprima desktop"></iframe>
+      </div>
+    </div>
+  </section>
+</main>
+
+<p class="hint">
+  Serve un server locale: <code>python3 -m http.server 8791</code> dalla cartella del progetto,
+  poi apri <code>http://localhost:8791/tools/preview.html</code>.
+  Aprendo il file con <code>file://</code> gli iframe restano neri (i moduli JS sono bloccati).
+</p>
+
+<script>
+// Dispositivi reali, in pixel CSS (non pixel fisici). Sono le misure che
+// le media query del gioco vedono davvero su quel telefono.
+const DEVICES = [
+  { id: "ip15pro", nome: "iPhone 15 Pro",   w: 393, h: 852 },
+  { id: "ip15pm",  nome: "iPhone 15 Pro Max", w: 430, h: 932 },
+  { id: "ipse",    nome: "iPhone SE (piccolo)", w: 375, h: 667 },
+  { id: "px8",     nome: "Pixel 8",         w: 412, h: 915 },
+  { id: "ipmini",  nome: "iPad mini",       w: 744, h: 1133 },
+];
+
+const DESKTOP = { w: 1440, h: 900 };
+
+const $ = (id) => document.getElementById(id);
+const selDevice = $("device");
+const inpUrl = $("url");
+
+// Si puo' puntare il preview su un file qualsiasi passandolo nell'indirizzo:
+//   preview.html?url=../mockups/74-draft-desktop-3col.html
+const urlIniziale = new URLSearchParams(location.search).get("url");
+if (urlIniziale) inpUrl.value = urlIniziale;
+
+DEVICES.forEach((d) => {
+  const o = document.createElement("option");
+  o.value = d.id;
+  o.textContent = `${d.nome} - ${d.w}x${d.h}`;
+  selDevice.appendChild(o);
+});
+
+// Applica una misura reale all'iframe, poi lo rimpicciolisce con scale()
+// per farlo stare in pagina. Lo "stage" riserva lo spazio dopo lo scale.
+function fitFrame(stage, frame, iframe, w, h, maxW, maxH) {
+  iframe.width = w;
+  iframe.height = h;
+  iframe.style.width = w + "px";
+  iframe.style.height = h + "px";
+
+  const bordo = frame.classList.contains("phone") ? 20 : 2; // bordi della cornice
+  const scala = Math.min(1, maxW / (w + bordo), maxH / (h + bordo));
+
+  frame.style.transform = `scale(${scala})`;
+  stage.style.width  = Math.round((w + bordo) * scala) + "px";
+  stage.style.height = Math.round((h + bordo) * scala) + "px";
+  return scala;
+}
+
+function render() {
+  const d = DEVICES.find((x) => x.id === selDevice.value) || DEVICES[0];
+  const spazioAltezza = window.innerHeight - 190;
+
+  const sPhone = fitFrame($("stage-phone"), $("frame-phone"), $("if-phone"),
+                          d.w, d.h, 520, spazioAltezza);
+  const sDesk  = fitFrame($("stage-desk"), $("frame-desk"), $("if-desk"),
+                          DESKTOP.w, DESKTOP.h, window.innerWidth - 640, spazioAltezza);
+
+  $("cap-phone").textContent = `${d.w} x ${d.h} px  (vista al ${Math.round(sPhone * 100)}%)`;
+  $("cap-desk").textContent  = `${DESKTOP.w} x ${DESKTOP.h} px  (vista al ${Math.round(sDesk * 100)}%)`;
+}
+
+function carica() {
+  const url = inpUrl.value.trim();
+  if (!url) return;
+  $("if-phone").src = url;
+  $("if-desk").src = url;
+}
+
+function toggle(btn, sec) {
+  const acceso = btn.getAttribute("aria-pressed") === "true";
+  btn.setAttribute("aria-pressed", String(!acceso));
+  sec.hidden = acceso;
+  render();
+}
+
+selDevice.addEventListener("change", render);
+inpUrl.addEventListener("change", carica);
+$("reload").addEventListener("click", carica);
+$("t-phone").addEventListener("click", () => toggle($("t-phone"), $("sec-phone")));
+$("t-desk").addEventListener("click", () => toggle($("t-desk"), $("sec-desk")));
+window.addEventListener("resize", render);
+
+render();
+carica();
+</script>
+
+</body>
+</html>

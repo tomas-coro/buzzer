@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft · rosa profonda (5 titolari + panchina) · Cabina 90s · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,#1d2230 0,transparent 60%),#14171e;
+    color:#e9e4d8;font-family:"Hanken Grotesk",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:22px 16px 60px}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  .intro{position:relative;z-index:1;text-align:center;max-width:520px;margin-bottom:18px}
+  .intro .eyebrow{font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:#e0a96d;font-weight:700}
+  .intro h1{font-family:"Bricolage Grotesque";font-weight:700;font-size:clamp(1.2rem,4vw,1.7rem);margin:.3rem 0 0;letter-spacing:-.015em}
+  .intro p{color:#a6a2c4;font-size:.82rem;margin:.4rem 0 0}
+  .intro b{color:#ffcf33;font-weight:600}
+
+  /* ── phone ── */
+  .phone{position:relative;z-index:1;width:372px;max-width:100%;border:9px solid #05030f;border-radius:36px;background:#05030f;box-shadow:0 26px 60px rgba(0,0,0,.6)}
+  .screen{position:relative;overflow:hidden;border-radius:27px;padding:15px 14px 16px;
+    background:radial-gradient(130% 80% at 50% -8%,#20206a 0,#15163a 52%,#0d0e29 100%)}
+
+  :root{--yellow:#ffcf33;--orange:#ff5b1e;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;
+    --dim:#9a99c6;--dim2:#7a7ab0;--hair:#2c2a63;--panel:#1a1640;--panel2:#120f33;
+    --z-toast:60;
+    --e-out:cubic-bezier(.16,1,.3,1)}
+
+  /* ── header ── */
+  .apphd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .wm{font-family:"Bungee";font-size:.9rem;color:var(--yellow);line-height:1}
+  .wm b{color:var(--orange)}
+  .mode-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:9px;padding:5px 10px}
+  .mode-pill svg{width:13px;height:13px}
+  .mode-pill .f1{fill:var(--orange)}.mode-pill .f2{fill:var(--yellow)}
+  .mode-pill .mp{font-family:"Bungee";font-size:.56rem;color:var(--cream);letter-spacing:.02em}
+
+  /* ── section label + depth switch ── */
+  .seclab{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}
+  .seclab .s{font-size:.56rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .seclab .s em{font-style:normal;color:var(--yellow)}
+  .depth{display:flex;gap:3px;background:#100e2c;border:1px solid var(--hair);border-radius:8px;padding:2px}
+  .depth button{font-family:"Bungee";font-size:.42rem;letter-spacing:.01em;color:var(--dim);background:none;border:0;border-radius:6px;padding:4px 6px;cursor:pointer;transition:color .15s,background .15s}
+  .depth button:hover{color:var(--cream)}
+  .depth button.on{color:#1a1206;background:var(--yellow)}
+
+  /* ── roster board ── */
+  .board{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--hair);border-radius:14px;padding:10px;
+    background-image:radial-gradient(120% 90% at 50% 0,rgba(255,91,30,.09),transparent 58%)}
+  .five{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .slot{position:relative;display:block;border:0;background:none;padding:0;cursor:default}
+  .slot .face{position:relative;width:100%;aspect-ratio:3/4;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#2a2450),var(--tc2,#191436))}
+  .slot .face .mono{font-family:"Bungee";font-size:1rem;color:rgba(255,255,255,.92);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .slot .face::before{content:"";position:absolute;inset:0;opacity:.5;
+    background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.15),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .slot .rl{position:absolute;top:4px;left:4px;font-family:"Bungee";font-size:.42rem;color:var(--yellow);background:rgba(5,3,15,.6);border-radius:5px;padding:2px 4px;z-index:3;letter-spacing:.02em}
+  .slot .ov{position:absolute;bottom:0;left:0;right:0;text-align:right;padding:2px 5px;z-index:3;
+    background:linear-gradient(180deg,transparent,rgba(5,3,15,.88));font-family:"Doto";font-weight:900;font-size:.72rem;color:var(--yellow)}
+  .slot.empty .face{background:#181433;border:1.5px dashed #3a3570}
+  .slot.empty .face::before{display:none}
+  .slot.empty .ph{font-family:"Bungee";font-size:.72rem;color:#4f4a86}
+  .slot.elig{cursor:pointer}
+  .slot.elig .face{border:1.5px solid var(--yellow);background:#241b12;animation:glow 1.4s var(--e-out) infinite}
+  .slot.elig .ph{color:var(--yellow)}
+  .slot.elig::after{content:"metti";position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    font-family:"Bungee";font-size:.4rem;letter-spacing:.04em;color:#1a1206;background:var(--yellow);padding:2px 5px;border-radius:6px;z-index:4;white-space:nowrap;box-shadow:0 2px 0 #b8901f}
+  @keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,207,51,.0)}50%{box-shadow:0 0 0 3px rgba(255,207,51,.28)}}
+  .slot.just .face{animation:drop .42s var(--e-out)}
+  @keyframes drop{from{transform:translateY(-9px);opacity:0}to{transform:none;opacity:1}}
+
+  /* ── bench (subordinato ai 5) ── */
+  .bench{display:flex;align-items:stretch;gap:9px;margin-top:9px;padding-top:9px;border-top:1px dashed #3a3570}
+  .benchtiles{display:flex;gap:5px;flex:none}
+  .slot.bx{width:42px}
+  .slot.bx .face{border-radius:8px;filter:saturate(.82)}
+  .slot.bx .rl{font-size:.36rem;top:3px;left:3px;padding:1px 3px;color:#ffd9a0;background:rgba(5,3,15,.66)}
+  .slot.bx .ov{font-size:.58rem;padding:1px 4px}
+  .slot.bx.empty .ph{font-size:.56rem;color:#5a5698}
+  .slot.bx .bw{position:absolute;top:3px;right:3px;font-family:"Doto";font-weight:900;font-size:.4rem;color:#ffe08a;background:rgba(5,3,15,.62);border-radius:4px;padding:1px 3px;z-index:3}
+  .slot.bx .bw.waste{color:#ff8a7a}
+  .slot.bx .face::before{opacity:.4}
+
+  /* ── readout bisogni squadra ── */
+  .needs{margin-top:10px;background:linear-gradient(180deg,#191540,#120f31);border:1px solid var(--hair);border-radius:12px;padding:9px 11px}
+  .needshd{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .needshd span:first-child{font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .needshd .live{font-size:.46rem;color:var(--dim2);letter-spacing:.02em}
+  .needbars{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+  .nb{display:flex;align-items:center;gap:6px}
+  .nbl{flex:none;width:36px;font-size:.46rem;letter-spacing:.03em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .nbt{flex:1;height:6px;border-radius:99px;background:#211f55;overflow:hidden}
+  .nbf{display:block;height:100%;border-radius:99px;background:var(--green);transition:width .35s var(--e-out)}
+  .nbf.md{background:var(--yellow)}.nbf.lo{background:var(--red)}
+  .nbv{flex:none;width:15px;text-align:right;font-family:"Doto";font-weight:900;font-size:.56rem;color:var(--cream)}
+  .flags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .flag{font-size:.46rem;font-weight:800;letter-spacing:.02em;padding:3px 7px;border-radius:99px;text-transform:uppercase}
+  .flag.bad{color:#ffb0a6;background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.33)}
+  .flag.warn{color:#ffd9a0;background:rgba(255,91,30,.14);border:1px solid rgba(255,91,30,.4)}
+  .flag.good{color:#bfeecf;background:rgba(92,207,142,.14);border:1px solid rgba(92,207,142,.4)}
+  .benchside{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+  .benchside .tt{font-family:"Bungee";font-size:.5rem;color:var(--orange);letter-spacing:.03em}
+  .benchside .dd{font-size:.55rem;color:var(--dim2);line-height:1.32;margin-top:3px}
+  .benchside .dd b{color:var(--cream);font-weight:700}
+
+  /* ── source + aids ── */
+  .srcrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 8px}
+  .src{font-size:.58rem;color:var(--dim);letter-spacing:.04em}
+  .src b{font-family:"Bungee";font-size:.56rem;color:var(--cream);letter-spacing:.01em}
+  .aidz{display:flex;gap:5px}
+  .aid{font-family:"Bungee";font-size:.44rem;letter-spacing:.02em;color:var(--dim);background:#141238;border:1px solid var(--hair);border-radius:7px;padding:5px 7px;cursor:pointer;transition:color .15s,border-color .15s}
+  .aid b{color:var(--yellow)}
+  .aid:hover{color:var(--cream);border-color:#4a4790}
+  .aid:disabled{opacity:.4;cursor:not-allowed}
+  .aid:active{transform:translateY(1px)}
+
+  /* ── hero candidate ── */
+  .hero{position:relative;background:linear-gradient(180deg,#241a3e,#141538);border:1px solid #3a2a66;border-radius:13px;padding:12px}
+  .inhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .inlab{font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+  .nchip{font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#ffd9a0;
+    background:rgba(255,91,30,.14);border:1px solid rgba(255,91,30,.42);border-radius:99px;padding:3px 8px}
+  .hmain{display:flex;gap:11px;align-items:flex-start}
+  .hface{position:relative;width:74px;height:99px;flex:none;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447))}
+  .hface::before{content:"";position:absolute;inset:0;opacity:.5;background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .hface .rl{position:absolute;top:5px;left:5px;font-family:"Bungee";font-size:.44rem;color:var(--yellow);background:rgba(5,3,15,.62);border-radius:5px;padding:2px 5px;z-index:3}
+  .hface .mono{font-family:"Bungee";font-size:1.4rem;color:rgba(255,255,255,.92);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .hinfo{flex:1;min-width:0}
+  .topline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .hnm{font-family:"Bungee";font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ovrBig{font-family:"Bungee";font-size:2.05rem;line-height:.8;color:var(--yellow);flex:none;text-shadow:2px 2px 0 #b8901f,4px 4px 0 rgba(0,0,0,.45)}
+  .hpos{font-size:.52rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:5px 0 8px}
+  .hpos .sec{color:var(--dim2)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 11px}
+  .st .stl{display:flex;justify-content:space-between;font-size:.44rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-bottom:3px}
+  .st .stnum{font-family:"Doto";font-weight:900;color:var(--cream)}
+  .trk{display:block;height:6px;border-radius:99px;background:#211f55;overflow:hidden}
+  .fil{display:block;height:100%;border-radius:99px;background:var(--green);transition:width .4s var(--e-out)}
+  .fil.md{background:var(--yellow)}.fil.lo{background:var(--red)}
+  .hero.blocked{border-color:#5a2a2a}
+  .blockmsg{margin-top:9px;font-size:.6rem;color:#ffb0a6;background:rgba(255,80,56,.1);border:1px solid rgba(255,80,56,.3);border-radius:8px;padding:7px 9px;line-height:1.35}
+  .blockmsg b{color:#fff}
+
+  /* ── shortlist ── */
+  .short{display:flex;gap:6px;margin-top:11px}
+  .sh{flex:1;position:relative;cursor:pointer;border-radius:9px;overflow:hidden;border:1px solid var(--hair);background:none;padding:0;transition:transform .14s var(--e-out);
+    animation:rise .34s var(--e-out) both;animation-delay:calc(var(--i)*45ms)}
+  @keyframes rise{from{transform:translateY(7px);opacity:0}to{transform:none;opacity:1}}
+  .sh .f{position:relative;width:100%;aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447))}
+  .sh .f::before{content:"";position:absolute;inset:0;opacity:.5;background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.14),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .sh .f .mono{font-family:"Bungee";font-size:.82rem;color:rgba(255,255,255,.92)}
+  .sh .rl{position:absolute;top:3px;left:3px;font-family:"Bungee";font-size:.36rem;color:var(--yellow);background:rgba(5,3,15,.62);border-radius:4px;padding:1px 3px;z-index:2;letter-spacing:.01em}
+  .sh .sn{position:relative;z-index:2;display:block;font-size:.42rem;font-weight:800;text-align:center;padding:2px 1px;
+    background:#161238;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh .sn em{font-style:normal;color:var(--yellow)}
+  .sh:hover{transform:translateY(-2px)}
+  .sh.on{border-color:var(--yellow);transform:translateY(-4px);box-shadow:0 6px 13px rgba(0,0,0,.45)}
+  .sh.on .sn{background:var(--yellow);color:#1a1206}
+  .sh.on .sn em{color:#6b4d08}
+  .sh.off{opacity:.42;filter:grayscale(.5)}
+  .sh.off .sn em{color:var(--dim)}
+  .sh.taken .sn{color:var(--green);font-size:.4rem}
+
+  /* ── cta ── */
+  .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;margin-top:12px;
+    font-family:"Bungee";font-size:.76rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:14px;min-height:48px;border:0;box-shadow:0 4px 0 #b8901f;
+    transition:transform .12s var(--e-out),box-shadow .12s var(--e-out)}
+  .cta svg{width:15px;height:15px;fill:currentColor}
+  .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .cta:disabled{background:#3a3763;color:#7a77a8;box-shadow:0 4px 0 #232152;cursor:not-allowed}
+  .cta.go{background:linear-gradient(180deg,#66e0a0,#3fb87e);box-shadow:0 4px 0 #2b7d55;color:#08301f}
+
+  /* ── complete state ── */
+  .done{text-align:center;padding:6px 4px 2px;animation:rise .4s var(--e-out) both}
+  .done .big{font-family:"Bungee";font-size:1rem;color:var(--green);letter-spacing:.01em}
+  .done p{font-size:.66rem;color:var(--dim);margin:.35rem 0 0}
+  .done p b{color:var(--cream)}
+
+  /* toast */
+  .toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%) translateY(8px);z-index:var(--z-toast);
+    font-family:"Bungee";font-size:.56rem;color:#1a1206;background:var(--yellow);padding:8px 13px;border-radius:9px;box-shadow:0 6px 16px rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transition:opacity .25s var(--e-out),transform .25s var(--e-out)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .foot{position:relative;z-index:1;max-width:520px;margin-top:18px;font-size:.64rem;color:#8a89b4;line-height:1.5;text-align:center}
+  .foot b{color:#ffcf33}
+  .reset{margin-top:10px;font:inherit;font-size:.7rem;color:#cfcbea;background:#1b1f28;border:1px solid #323a4a;border-radius:9px;padding:9px 16px;cursor:pointer}
+  .reset:hover{border-color:#4a4790}
+
+  /* ── archetipo: colore = famiglia (ruolo, non decorazione) ── */
+  .nchip.att{color:#ffe08a;background:rgba(255,207,51,.14);border-color:rgba(255,207,51,.42)}
+  .nchip.reg{color:#ffd9a0;background:rgba(255,91,30,.14);border-color:rgba(255,91,30,.42)}
+  .nchip.dif{color:#bfeecf;background:rgba(92,207,142,.15);border-color:rgba(92,207,142,.42)}
+  .nchip.nrg{color:#cfcdec;background:rgba(154,153,198,.14);border-color:rgba(154,153,198,.36)}
+
+  /* ── hero tappabile ── */
+  .hero{cursor:pointer;transition:border-color .16s var(--e-out)}
+  .hero:hover{border-color:#5a3f96}
+  .hero:hover.blocked{border-color:#7a3a3a}
+  .seemore{position:absolute;right:12px;bottom:10px;font-family:"Bungee";font-size:.4rem;letter-spacing:.04em;
+    color:var(--dim2);pointer-events:none;transition:color .16s var(--e-out)}
+  .hero:hover .seemore{color:var(--yellow)}
+  .slot.filled{cursor:pointer}
+
+  /* ── scheda giocatore (bottom-sheet) ── */
+  .detail{position:absolute;inset:0;z-index:70;display:none}
+  .detail.show{display:block}
+  .detail .backdrop{position:absolute;inset:0;background:rgba(5,3,15,.72);backdrop-filter:blur(3px);
+    -webkit-backdrop-filter:blur(3px);animation:dfade .2s var(--e-out)}
+  @keyframes dfade{from{opacity:0}to{opacity:1}}
+  .sheet{position:absolute;left:0;right:0;bottom:0;max-height:95%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    background:linear-gradient(180deg,#221b48,#110e2e);border-top:1px solid #3a2a66;border-radius:20px 20px 27px 27px;
+    padding:12px 14px 20px;box-shadow:0 -16px 44px rgba(0,0,0,.6);animation:sheetup .36s var(--e-out)}
+  @keyframes sheetup{from{transform:translateY(102%)}to{transform:none}}
+  .sheet .grab{width:38px;height:4px;border-radius:99px;background:#4a4790;margin:2px auto 12px}
+  .dclose{position:absolute;top:10px;right:12px;width:28px;height:28px;border-radius:8px;border:1px solid var(--hair);
+    background:#141238;color:var(--dim);font-size:1.05rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;transition:color .15s,border-color .15s}
+  .dclose:hover{color:var(--cream);border-color:#4a4790}
+
+  .dhd{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px;padding-right:30px}
+  .dface{position:relative;width:80px;height:106px;flex:none;border-radius:11px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447))}
+  .dface::before{content:"";position:absolute;inset:0;opacity:.5;background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .dface .rl{position:absolute;top:5px;left:5px;font-family:"Bungee";font-size:.44rem;color:var(--yellow);background:rgba(5,3,15,.62);border-radius:5px;padding:2px 5px;z-index:3;letter-spacing:.01em}
+  .dface .mono{font-family:"Bungee";font-size:1.5rem;color:rgba(255,255,255,.92);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .dinfo{flex:1;min-width:0}
+  .dtop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .dnm{font-family:"Bungee";font-size:.8rem;line-height:1.12}
+  .dovr{font-family:"Bungee";font-size:2rem;line-height:.78;color:var(--yellow);flex:none;text-shadow:2px 2px 0 #b8901f,4px 4px 0 rgba(0,0,0,.45)}
+  .dpos{font-size:.52rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:6px 0 8px}
+  .dpos .sec{color:var(--dim2)}
+  .darch{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .darchd{font-size:.56rem;color:var(--dim2);line-height:1.3}
+
+  .dgroup{margin-top:13px}
+  .dgh{display:flex;align-items:center;gap:8px;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;font-weight:800;margin-bottom:9px}
+  .dgh.att{color:var(--yellow)} .dgh.dif{color:var(--green)}
+  .dgh::after{content:"";flex:1;height:1px;background:var(--hair)}
+  .drows{display:grid;gap:7px}
+  .drow{display:grid;grid-template-columns:84px 1fr 20px;align-items:center;gap:9px}
+  .drow .l{font-size:.5rem;letter-spacing:.02em;text-transform:uppercase;color:var(--dim);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .drow .t{height:7px;border-radius:99px;background:#211f55;overflow:hidden}
+  .drow .t i{display:block;height:100%;border-radius:99px;background:var(--green);animation:dgrow .55s var(--e-out) both}
+  .drow .t i.md{background:var(--yellow)} .drow .t i.lo{background:var(--red)}
+  @keyframes dgrow{from{width:0}to{width:var(--w)}}
+  .drow .v{font-family:"Doto";font-weight:900;font-size:.62rem;color:var(--cream);text-align:right}
+  .dnote{margin-top:14px;font-size:.5rem;color:var(--dim2);line-height:1.45;text-align:center}
+  .dnote b{color:var(--dim);font-weight:700}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .drow .t i{width:var(--w)}
+  }
+</style>
+</head>
+<body>
+
+  <div class="intro">
+    <div class="eyebrow">Draft · rosa profonda</div>
+    <h1>5 titolari + panchina</h1>
+    <p>Il draft ora dura di più: <b>5 titolari</b> (grandi) più una <b>panchina</b> di jolly. Prova le tre profondità col toggle in alto e senti quale dura giusto. <b>Clicca davvero</b>.</p>
+  </div>
+
+  <div class="phone"><div class="screen" id="screen">
+
+    <div class="apphd">
+      <div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>
+        <span class="mp">Normale</span>
+      </div>
+    </div>
+
+    <div class="seclab">
+      <span class="s">Squadra · <em id="count">0</em>/<span id="total">8</span></span>
+      <div class="depth" id="depth" role="group" aria-label="Profondità rosa">
+        <button type="button" data-b="2">5+2</button>
+        <button type="button" data-b="3" class="on">5+3</button>
+        <button type="button" data-b="5">5+5</button>
+      </div>
+    </div>
+
+    <div class="board">
+      <div class="five" id="five"></div>
+      <div class="bench">
+        <div class="benchtiles" id="benchtiles"></div>
+        <div class="benchside">
+          <div class="tt">PANCHINA</div>
+          <div class="dd" id="benchdd">Jolly: <b>qualsiasi ruolo</b>. Minuti ridotti, pesano <b>0.55&times;</b> sul voto. Anche gli avversari ne hanno.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="needs" id="needs"></div>
+
+    <div id="draftZone">
+      <div class="srcrow">
+        <span class="src">Provini da <b id="srcTeam">-</b> · <span id="srcSeason">-</span></span>
+        <div class="aidz">
+          <button class="aid" id="aRespin" type="button">re-spin <b>2</b></button>
+          <button class="aid" id="aTeam" type="button">↺ squadra <b>2</b></button>
+        </div>
+      </div>
+
+      <div class="hero" id="hero"></div>
+      <div class="short" id="short"></div>
+      <button class="cta" id="cta" type="button"></button>
+    </div>
+
+    <div class="detail" id="detail" aria-hidden="true"></div>
+    <div class="toast" id="toast"></div>
+  </div></div>
+
+  <p class="foot">Mockup cliccabile - <b>motore non toccato qui</b>. Profondità rosa, peso panchina <b>a minuti-per-ruolo</b> (un doppione rende ~zero) e readout bisogni sono la modifica concordata a <b>rating.js/run.js/opponents.js</b>, da fare nell'app vera dopo l'ok. La faccia è un <b>segnaposto</b> pronto per la foto.</p>
+  <button class="reset" id="reset" type="button">↺ Ricomincia il draft</button>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  DATI FINTI - pool di team-stagioni (top-5 ciascuna).
+//  pos: {p:primario, s:secondario|null}. bars: [Tiro,Fisico,Difesa,Regia].
+//  tc: colori squadra (presentazione, come team-colors.js nell'app).
+// ─────────────────────────────────────────────────────────────
+const TEAMS = {
+  "GSW|2016-17":{tc:["#1d428a","#0f2350"],cards:[
+    {mono:"KD",nm:"Kevin Durant",pos:{p:"SF",s:"PF"},ovr:96,chip:"morte lenta",bars:[88,84,82,80]},
+    {mono:"SC",nm:"Stephen Curry",pos:{p:"PG",s:"SG"},ovr:95,chip:"tiro da 3",bars:[96,68,74,92]},
+    {mono:"KT",nm:"Klay Thompson",pos:{p:"SG",s:"SF"},ovr:90,chip:"3&D",bars:[92,74,82,64]},
+    {mono:"DG",nm:"Draymond Green",pos:{p:"PF",s:"C"},ovr:88,chip:"difesa",bars:[70,82,90,84]},
+    {mono:"ZP",nm:"Zaza Pachulia",pos:{p:"C",s:null},ovr:74,chip:"spalla",bars:[40,80,74,44]},
+  ]},
+  "LAL|2019-20":{tc:["#552583","#2f1447"],cards:[
+    {mono:"LJ",nm:"LeBron James",pos:{p:"SF",s:"PG"},ovr:97,chip:"regia",bars:[82,86,84,95]},
+    {mono:"AD",nm:"Anthony Davis",pos:{p:"PF",s:"C"},ovr:95,chip:"stoppate",bars:[74,88,90,60]},
+    {mono:"DH",nm:"Dwight Howard",pos:{p:"C",s:null},ovr:78,chip:"rimbalzi",bars:[40,86,80,35]},
+    {mono:"DG",nm:"Danny Green",pos:{p:"SG",s:"SF"},ovr:76,chip:"angolo",bars:[80,68,80,54]},
+    {mono:"AC",nm:"Alex Caruso",pos:{p:"PG",s:"SG"},ovr:74,chip:"garra",bars:[70,70,84,68]},
+  ]},
+  "CHI|1995-96":{tc:["#ce1141","#6e0a23"],cards:[
+    {mono:"MJ",nm:"Michael Jordan",pos:{p:"SG",s:"SF"},ovr:98,chip:"killer",bars:[92,86,88,84]},
+    {mono:"SP",nm:"Scottie Pippen",pos:{p:"SF",s:"PF"},ovr:93,chip:"point-forward",bars:[80,84,90,86]},
+    {mono:"DR",nm:"Dennis Rodman",pos:{p:"PF",s:"C"},ovr:82,chip:"rimbalzi",bars:[30,86,86,40]},
+    {mono:"TK",nm:"Toni Kukoc",pos:{p:"SF",s:"PF"},ovr:82,chip:"jolly",bars:[82,72,70,80]},
+    {mono:"RH",nm:"Ron Harper",pos:{p:"PG",s:"SG"},ovr:79,chip:"difesa",bars:[70,74,82,72]},
+  ]},
+  "BOS|2007-08":{tc:["#007a33","#00401b"],cards:[
+    {mono:"KG",nm:"Kevin Garnett",pos:{p:"PF",s:"C"},ovr:93,chip:"intimidatore",bars:[78,86,92,72]},
+    {mono:"PP",nm:"Paul Pierce",pos:{p:"SF",s:"SG"},ovr:91,chip:"the truth",bars:[86,78,78,80]},
+    {mono:"RA",nm:"Ray Allen",pos:{p:"SG",s:null},ovr:89,chip:"tiro",bars:[92,70,74,66]},
+    {mono:"RR",nm:"Rajon Rondo",pos:{p:"PG",s:null},ovr:82,chip:"assist",bars:[58,74,84,90]},
+    {mono:"KP",nm:"Kendrick Perkins",pos:{p:"C",s:null},ovr:76,chip:"muro",bars:[36,82,80,38]},
+  ]},
+  "MIA|2012-13":{tc:["#98002e","#4d0017"],cards:[
+    {mono:"LJ",nm:"LeBron James",pos:{p:"SF",s:"PF"},ovr:98,chip:"onnisciente",bars:[86,88,90,92]},
+    {mono:"DW",nm:"Dwyane Wade",pos:{p:"SG",s:"PG"},ovr:92,chip:"flash",bars:[82,80,84,82]},
+    {mono:"CB",nm:"Chris Bosh",pos:{p:"C",s:"PF"},ovr:86,chip:"spazio",bars:[80,76,78,64]},
+    {mono:"RA",nm:"Ray Allen",pos:{p:"SG",s:null},ovr:82,chip:"angolo",bars:[90,64,68,60]},
+    {mono:"MC",nm:"Mario Chalmers",pos:{p:"PG",s:"SG"},ovr:76,chip:"gregario",bars:[72,66,74,74]},
+  ]},
+  "SAS|2013-14":{tc:["#5a5a5a","#232323"],cards:[
+    {mono:"TD",nm:"Tim Duncan",pos:{p:"C",s:"PF"},ovr:90,chip:"fondamentale",bars:[66,84,90,74]},
+    {mono:"TP",nm:"Tony Parker",pos:{p:"PG",s:null},ovr:89,chip:"tear-drop",bars:[78,74,74,88]},
+    {mono:"KL",nm:"Kawhi Leonard",pos:{p:"SF",s:"SG"},ovr:86,chip:"the claw",bars:[78,82,92,64]},
+    {mono:"MG",nm:"Manu Ginobili",pos:{p:"SG",s:"PG"},ovr:84,chip:"eurostep",bars:[82,72,78,84]},
+    {mono:"TS",nm:"Tiago Splitter",pos:{p:"C",s:"PF"},ovr:76,chip:"pick&roll",bars:[48,80,76,52]},
+  ]},
+  "DET|2003-04":{tc:["#c8102e","#1d428a"],cards:[
+    {mono:"BW",nm:"Ben Wallace",pos:{p:"C",s:"PF"},ovr:87,chip:"muro",bars:[34,88,94,42]},
+    {mono:"CB",nm:"Chauncey Billups",pos:{p:"PG",s:"SG"},ovr:85,chip:"mr big shot",bars:[84,74,78,86]},
+    {mono:"RH",nm:"Richard Hamilton",pos:{p:"SG",s:"SF"},ovr:83,chip:"motore",bars:[86,72,74,66]},
+    {mono:"RW",nm:"Rasheed Wallace",pos:{p:"PF",s:"C"},ovr:83,chip:"stretch",bars:[80,80,84,62]},
+    {mono:"TP",nm:"Tayshaun Prince",pos:{p:"SF",s:"PF"},ovr:78,chip:"braccia",bars:[70,74,82,58]},
+  ]},
+  "PHO|2004-05":{tc:["#e56020","#1d1160"],cards:[
+    {mono:"SN",nm:"Steve Nash",pos:{p:"PG",s:null},ovr:90,chip:"direttore",bars:[86,62,64,98]},
+    {mono:"AS",nm:"Amar'e Stoudemire",pos:{p:"PF",s:"C"},ovr:88,chip:"pick&roll",bars:[76,88,68,52]},
+    {mono:"SM",nm:"Shawn Marion",pos:{p:"SF",s:"PF"},ovr:85,chip:"the matrix",bars:[78,84,82,64]},
+    {mono:"JJ",nm:"Joe Johnson",pos:{p:"SG",s:"SF"},ovr:80,chip:"iso",bars:[84,74,70,72]},
+    {mono:"QR",nm:"Quentin Richardson",pos:{p:"SG",s:"SF"},ovr:75,chip:"bombe",bars:[82,72,66,52]},
+  ]},
+};
+const ROLES = ["PG","SG","SF","PF","C"];
+const ROLE_FULL = {PG:"Playmaker",SG:"Guardia",SF:"Ala piccola",PF:"Ala grande",C:"Centro"};
+const BAR_LAB = ["Tiro","Fisico","Difesa","Regia"];
+
+// ── Archetipo: etichetta DERIVATA dalle 4 macro-stat (coerente, auto-esplicativa) ──
+// Sostituisce il vecchio "chip" a testo libero: un vocabolario unico di 8 tag,
+// ognuno con una famiglia (colore = ruolo) e una riga di senso per la scheda.
+const ARCH = {
+  Bomber:     {fam:"att", d:"Tiro d'élite dall'arco"},
+  Tiratore:   {fam:"att", d:"Buona mano dalla distanza"},
+  Regista:    {fam:"reg", d:"Crea gioco e manda a canestro gli altri"},
+  Motore:     {fam:"reg", d:"Solido un po' ovunque, non spicca in nulla"},
+  Mastino:    {fam:"dif", d:"Difensore perimetrale, marca le guardie"},
+  Stoppatore: {fam:"dif", d:"Protegge il ferro sotto canestro"},
+  Rimbalzista:{fam:"dif", d:"Domina i tabelloni"},
+  Energia:    {fam:"nrg", d:"Cambio di ritmo dalla panchina"},
+};
+function archetype(card){
+  const [tiro,fis,dif,reg] = card.bars, ovr = card.ovr;
+  const big = card.pos.p==="C" || card.pos.p==="PF";
+  const mx = Math.max(tiro,fis,dif,reg);
+  if(reg===mx  && reg>=84)         return "Regista";
+  if(tiro===mx && tiro>=88)        return "Bomber";
+  if(dif===mx  && dif>=84)         return big ? "Stoppatore" : "Mastino";
+  if(fis===mx  && fis>=82 && big)  return "Rimbalzista";
+  if(tiro>=84)                     return "Tiratore";
+  if(dif>=80 && !big)              return "Mastino";
+  if(fis>=82 && big)               return "Rimbalzista";
+  if(ovr>=82)                      return "Motore";
+  return "Energia";
+}
+
+// ── Scheda: 12 attributi come nel motore (OFF_LABELS/DEF_LABELS di fase1) ──
+// Nel mockup li derivo dalle 4 macro con un jitter deterministico (seed sul nome),
+// così ogni giocatore ha un profilo stabile e credibile senza scrivere 480 numeri.
+const OFF_LAB = ["Tiro 3","Tiro medio","Finalizzazione","Tiro libero","Palleggio","Playmaking","Senza palla"];
+const DEF_LAB = ["Dif. perimetro","Dif. interna","Palle rubate","Stoppate","Rimbalzi"];
+function seedRnd(str){ let h=2166136261; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619); }
+  return ()=>{ h=Math.imul(h^h>>>15,2246822507); return ((h>>>0)%1000)/1000; }; }
+const clampAtt = v => Math.max(30,Math.min(99,Math.round(v)));
+function deriveAttrs(card){
+  const [T,F,D,R] = card.bars, rnd = seedRnd(card.nm+card.mono);
+  const j = (base,amp=5) => clampAtt(base + (rnd()*2-1)*amp);
+  const off = [ j(T+3), j(.7*T+.3*F), j(.62*F+.38*T), j(.6*T+.4*R), j(.72*R+.28*T), j(R), j(.55*T+.25*F+.2*R) ];
+  const def = [ j(.7*D+.3*R), j(.6*D+.4*F), j(.6*D+.4*R), j(.55*F+.45*D), j(F) ];
+  return {off, def};
+}
+
+let BENCH = 3;                                   // slot panchina (variabile col toggle)
+const benchTokens = () => Array.from({length:BENCH},(_,i)=>"B"+i);
+const allSlots = () => [...ROLES, ...benchTokens()];
+const isBench = t => t[0]==="B";
+const benchOrd = t => (6 + (+t.slice(1))) + "°";  // B0->6°, B1->7°, ...
+const fmtW = w => (w>=0.995 ? "1×" : w.toFixed(2).replace(/^0/,"")+"×");   // 0.35 -> ".35×"
+
+// ── Modello minuti (fix A) ──
+// Ogni ruolo ha una quota di minuti "backup" oltre al titolare. I panchinari
+// attingono dalla quota del LORO ruolo (primario, poi secondario se pieno).
+// Un doppione trova la quota esaurita e rende quasi zero: stackare lo stesso
+// ruolo in panchina è inutile, senza vietarlo. (titolare = 1.0)
+const BACKUP_POOL = 0.35;   // minuti backup per ruolo, relativi al titolare
+const WASTE = 0.04;         // resa minima di un doppione
+function computeWeights(){
+  const w = {};
+  const used = {PG:0,SG:0,SF:0,PF:0,C:0};
+  ROLES.forEach(r=>{ if(slots[r]) w[r]=1.0; });               // titolari: carico pieno
+  benchTokens().forEach(t=>{                                   // 6°,7°,8°... in ordine
+    const c = slots[t]; if(!c) return;
+    let p = c.pos.p, remain = BACKUP_POOL - used[p];
+    if(remain <= 0 && c.pos.s){ p = c.pos.s; remain = BACKUP_POOL - used[p]; } // versatile
+    const give = Math.max(0, Math.min(BACKUP_POOL, remain));
+    used[p] += give;
+    w[t] = give > 0.001 ? give : WASTE;
+  });
+  return w;
+}
+let curW = {};   // ultima mappa pesi (per slotHTML + readout)
+
+const canPlay = (card, tok) => isBench(tok) ? true : (card.pos.p===tok || card.pos.s===tok);
+const tier = v => v>=83 ? "" : v>=70 ? "md" : "lo";
+const lastName = nm => nm.split(" ").slice(-1)[0];
+
+// ── STATO ──
+let slots, spinKey, focus, aids, lastKey, drafted;
+function fresh(){
+  slots = {};
+  allSlots().forEach(t=>slots[t]=null);
+  aids = {respin:2, team:2};
+  lastKey = null;
+  drafted = new Set();   // nomi già pescati: niente stesso giocatore due volte
+  newSpin();
+}
+
+const openSlots = () => allSlots().filter(t=>!slots[t]);
+const isTaken = c => drafted.has(c.nm);
+function usefulKey(key){
+  const open = openSlots();
+  return TEAMS[key].cards.some(c => !isTaken(c) && open.some(t=>canPlay(c,t)));
+}
+function newSpin(){
+  const keys = Object.keys(TEAMS).filter(k=>k!==lastKey && usefulKey(k));
+  const pick = (keys.length?keys:Object.keys(TEAMS).filter(usefulKey));
+  spinKey = pick[Math.floor(Math.random()*pick.length)];
+  lastKey = spinKey;
+  const cards = TEAMS[spinKey].cards;
+  const idx = cards.findIndex(c => !isTaken(c) && openSlots().some(t=>canPlay(c,t)));
+  focus = idx<0 ? cards.findIndex(c=>!isTaken(c)) : idx;
+  if(focus<0) focus = 0;
+}
+
+// ── DOM refs (solo i nodi stabili nella board; hero/short/cta vengono
+//    ricreati dal toggle profondità, quindi si leggono freschi con $()) ──
+const $ = id => document.getElementById(id);
+const five=$("five"), benchtiles=$("benchtiles"), needs=$("needs"),
+      countEl=$("count"), totalEl=$("total"), benchdd=$("benchdd");
+
+function faceInner(card){ return `<span class="mono">${card.mono}</span>`; }
+
+// slot markup per un token (PG..C oppure B0,B1,..)
+function slotHTML(tok){
+  const c = slots[tok];
+  const b = isBench(tok);
+  const cls = "slot"+(b?" bx":"");
+  const ph = b ? benchOrd(tok) : tok;
+  if(c){
+    const [t1,t2]=c._tc;
+    const badge = b ? c.pos.p : tok;  // titolare: ruolo slot · panchina: ruolo primario (lascia spazio al chip peso; il doppio ruolo sta sulla card provino)
+    const wv = b ? curW[tok] : null;
+    const wtag = (wv!=null) ? `<span class="bw${wv<=WASTE+0.001?" waste":""}">${fmtW(wv)}</span>` : "";
+    return `<button class="${cls} filled" data-slot="${tok}" style="--tc1:${t1};--tc2:${t2}" aria-label="${c.nm}${b?' (panchina, peso '+(wv!=null?fmtW(wv):'?')+')':' in '+ROLE_FULL[tok]}">
+      <span class="face"><span class="rl">${badge}</span>${wtag}${faceInner(c)}<span class="ov">${c.ovr}</span></span></button>`;
+  }
+  return `<button class="${cls} empty" data-slot="${tok}" aria-label="Slot ${b?'panchina':ROLE_FULL[tok]} libero">
+    <span class="face"><span class="ph">${ph}</span></span></button>`;
+}
+
+let justSlot = null;
+
+function setBenchNote(){
+  benchdd.innerHTML = `Jolly: <b>qualsiasi ruolo</b>. Peso = <b>minuti liberi nel suo ruolo</b>: un titolare ne lascia pochi, un <b>doppione</b> trova la quota esaurita e rende quasi zero. Anche gli avversari.`;
+}
+
+// ── readout bisogni squadra (barre pesate + flag) ──
+function teamBars(){
+  const acc=[0,0,0,0]; let tot=0;
+  allSlots().forEach(t=>{ const c=slots[t]; if(!c)return; const ww=curW[t]||0; tot+=ww; c.bars.forEach((v,i)=>acc[i]+=v*ww); });
+  return acc.map(a=> tot? Math.round(a/tot):0);
+}
+function teamFlags(bars){
+  const out=[];
+  if(!allSlots().some(t=>slots[t])) return out;
+  bars.forEach((v,i)=>{ if(v<68) out.push({k:"bad",t:`${BAR_LAB[i]} debole`}); });
+  const mx=Math.max(...bars); if(mx>=86) out.push({k:"good",t:`${BAR_LAB[bars.indexOf(mx)]} d'élite`});
+  if(benchTokens().some(t=>slots[t] && curW[t]<=WASTE+0.001)) out.push({k:"warn",t:"panchina doppione"});
+  return out.slice(0,3);
+}
+function renderNeeds(){
+  const bars = teamBars();
+  const any = allSlots().some(t=>slots[t]);
+  const flags = teamFlags(bars);
+  needs.innerHTML = `
+    <div class="needshd"><span>Bisogni squadra</span><span class="live">aggiorna a ogni pick</span></div>
+    <div class="needbars">${BAR_LAB.map((l,i)=>`
+      <span class="nb"><span class="nbl">${l}</span>
+        <span class="nbt"><i class="nbf ${any?tier(bars[i]):''}" style="width:${any?bars[i]:0}%"></i></span>
+        <span class="nbv">${any?bars[i]:"–"}</span></span>`).join("")}</div>
+    ${flags.length?`<div class="flags">${flags.map(f=>`<span class="flag ${f.k}">${f.t}</span>`).join("")}</div>`:""}`;
+}
+
+function renderBoard(){
+  curW = computeWeights();
+  five.innerHTML = ROLES.map(slotHTML).join("");
+  benchtiles.innerHTML = benchTokens().map(slotHTML).join("");
+  setBenchNote();
+  renderNeeds();
+  countEl.textContent = allSlots().filter(t=>slots[t]).length;
+  totalEl.textContent = allSlots().length;
+  if(justSlot){
+    const node = document.querySelector(`[data-slot="${justSlot}"]`);
+    if(node) node.classList.add("just");
+    justSlot=null;
+  }
+}
+
+function eligibleFor(card){ return isTaken(card) ? [] : openSlots().filter(t=>canPlay(card,t)); }
+
+function paintDraft(){
+  const cards = TEAMS[spinKey].cards;
+  const [team,season]=spinKey.split("|");
+  $("srcTeam").textContent=team; $("srcSeason").textContent=season;
+  aidBtns();
+
+  const card = cards[focus];
+  const elig = eligibleFor(card);
+  const blocked = elig.length===0;
+
+  // hero
+  const hero=$("hero"), short=$("short"), cta=$("cta");
+  const [t1,t2]=TEAMS[spinKey].tc;
+  const aFocus = archetype(card), famFocus = ARCH[aFocus].fam;
+  const role2Focus = card.pos.p + (card.pos.s?"/"+card.pos.s:"");
+  hero.className = "hero"+(blocked?" blocked":"");
+  hero.innerHTML = `
+    <div class="inhd"><span class="inlab">Provino a fuoco</span><span class="nchip ${famFocus}">${aFocus}</span></div>
+    <div class="hmain">
+      <span class="hface" style="--tc1:${t1};--tc2:${t2}"><span class="rl">${role2Focus}</span><span class="mono">${card.mono}</span></span>
+      <span class="hinfo">
+        <div class="topline"><span class="hnm">${card.nm}</span><span class="ovrBig">${card.ovr}</span></div>
+        <div class="hpos">${ROLE_FULL[card.pos.p]}${card.pos.s?` <span class="sec">/ ${card.pos.s}</span>`:""} · ${season}</div>
+        <span class="stats">${card.bars.map((v,i)=>`
+          <span class="st"><span class="stl"><span>${BAR_LAB[i]}</span><span class="stnum">${v}</span></span>
+          <span class="trk"><i class="fil ${tier(v)}" style="width:${v}%"></i></span></span>`).join("")}</span>
+      </span>
+    </div>
+    ${blocked?`<div class="blockmsg">${isTaken(card)
+        ? `<b>${lastName(card.nm)}</b> è già nella tua squadra. Scegli un altro provino o fai <b>re-spin</b>.`
+        : `<b>${lastName(card.nm)}</b> non entra in nessuno slot libero (${card.pos.p}${card.pos.s?"/"+card.pos.s:""}). Scegli un altro provino o fai <b>re-spin</b>.`}</div>`:""}
+    <span class="seemore">tocca &middot; scheda &rsaquo;</span>`;
+
+  // shortlist
+  short.innerHTML = cards.map((c,i)=>{
+    const taken = isTaken(c);
+    const off = taken || eligibleFor(c).length===0;
+    const [tt1,tt2]=TEAMS[spinKey].tc;
+    const role2 = c.pos.p + (c.pos.s?"/"+c.pos.s:"");   // doppio ruolo visibile sulla card
+    return `<button class="sh ${i===focus?"on":""} ${off?"off":""} ${taken?"taken":""}" style="--i:${i};--tc1:${tt1};--tc2:${tt2}" data-i="${i}" type="button" aria-label="${c.nm}, ${role2}, generale ${c.ovr}${taken?", già preso":""}">
+      <span class="f">${taken?"":`<span class="rl">${role2}</span>`}<span class="mono">${c.mono}</span></span>
+      <span class="sn">${taken?"preso ✓":`${lastName(c.nm)} <em>${c.ovr}</em>`}</span></button>`;
+  }).join("");
+
+  // CTA - piazza nel primo slot compatibile (titolari prima, poi panchina)
+  if(blocked){
+    cta.disabled=true;
+    cta.innerHTML = `${lastName(card.nm)} non ha slot liberi`;
+  } else {
+    cta.disabled=false;
+    const target = elig[0];
+    const where = isBench(target) ? "panchina" : ROLE_FULL[target];
+    const multi = elig.length>1 ? ` <span style="font-weight:400;font-family:Hanken Grotesk;font-size:.6rem;opacity:.8">(o scegli slot ↑)</span>` : "";
+    cta.innerHTML = `<svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti ${lastName(card.nm)} · ${where}${multi}`;
+    cta.dataset.target = target;
+  }
+
+  // accendi gli slot idonei sulla board
+  document.querySelectorAll(".slot").forEach(s=>s.classList.remove("elig"));
+  if(!blocked){
+    elig.forEach(t=>{
+      const node=document.querySelector(`.slot[data-slot="${t}"]`);
+      if(node && !slots[t]) node.classList.add("elig");
+    });
+  }
+}
+
+function aidBtns(){
+  $("aRespin").innerHTML = `re-spin <b>${aids.respin}</b>`;
+  $("aTeam").innerHTML = `↺ squadra <b>${aids.team}</b>`;
+  $("aRespin").disabled = aids.respin<=0;
+  $("aTeam").disabled = aids.team<=0;
+}
+
+// ── AZIONI ──
+function place(tok){
+  const card = TEAMS[spinKey].cards[focus];
+  if(!card || slots[tok] || !canPlay(card,tok)) return;
+  slots[tok] = {...card, _tc:TEAMS[spinKey].tc};
+  drafted.add(card.nm);
+  justSlot = tok;
+  toast(`${lastName(card.nm)} → ${isBench(tok)?benchOrd(tok)+" panchina":tok}`);
+  renderBoard();
+  if(allSlots().every(t=>slots[t])){ complete(); return; }
+  newSpin();
+  paintDraft();
+}
+
+function complete(){
+  document.querySelectorAll(".slot").forEach(s=>s.classList.remove("elig"));
+  const n = allSlots().length;
+  $("draftZone").innerHTML = `
+    <div class="done">
+      <div class="big">Squadra al completo</div>
+      <p><b>${n} uomini</b> pescati (5 titolari + ${BENCH} di panchina). La panchina pesa 0.55 sul voto.</p>
+    </div>
+    <button class="cta go" id="goCoach" type="button">Vai al Coach →</button>`;
+  $("goCoach").onclick = ()=>toast("(demo) qui parte lo step Coach");
+}
+
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1400);
+}
+
+// ── SCHEDA GIOCATORE (modal, sfondo fermo) ──
+function detailRows(labs,vals){
+  return vals.map((v,i)=>`<div class="drow"><span class="l">${labs[i]}</span>
+    <span class="t"><i class="${tier(v)}" style="--w:${v}%"></i></span>
+    <span class="v">${v}</span></div>`).join("");
+}
+function openDetail(card){
+  if(!card) return;
+  const [t1,t2] = card._tc || TEAMS[spinKey].tc;
+  const a = archetype(card), fam = ARCH[a].fam;
+  const {off,def} = deriveAttrs(card);
+  const role2 = card.pos.p + (card.pos.s?"/"+card.pos.s:"");
+  $("detail").innerHTML = `
+    <div class="backdrop" data-close></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="Scheda ${card.nm}">
+      <button class="dclose" data-close type="button" aria-label="Chiudi">&times;</button>
+      <div class="grab"></div>
+      <div class="dhd">
+        <span class="dface" style="--tc1:${t1};--tc2:${t2}"><span class="rl">${role2}</span><span class="mono">${card.mono}</span></span>
+        <div class="dinfo">
+          <div class="dtop"><span class="dnm">${card.nm}</span><span class="dovr">${card.ovr}</span></div>
+          <div class="dpos">${ROLE_FULL[card.pos.p]}${card.pos.s?` <span class="sec">/ ${ROLE_FULL[card.pos.s]}</span>`:""}</div>
+          <div class="darch"><span class="nchip ${fam}">${a}</span><span class="darchd">${ARCH[a].d}</span></div>
+        </div>
+      </div>
+      <div class="dgroup"><div class="dgh att">Attacco</div><div class="drows">${detailRows(OFF_LAB,off)}</div></div>
+      <div class="dgroup"><div class="dgh dif">Difesa</div><div class="drows">${detailRows(DEF_LAB,def)}</div></div>
+      <div class="dnote">Scheda a 12 attributi come nel motore (<b>OFF_LABELS</b>/<b>DEF_LABELS</b>). I valori qui sono derivati dalle 4 macro solo per il mockup.</div>
+    </div>`;
+  const d=$("detail"); d.classList.add("show"); d.setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+}
+function closeDetail(){
+  const d=$("detail"); d.classList.remove("show"); d.setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+}
+
+// ── EVENTI (tutto per delega: hero/short/cta/aid vengono ricreati dal toggle) ──
+$("screen").addEventListener("click", e=>{
+  const sh = e.target.closest(".sh");
+  if(sh){ focus=+sh.dataset.i; paintDraft(); return; }
+  const slot = e.target.closest(".slot.elig");
+  if(slot){ place(slot.dataset.slot); return; }
+  const fslot = e.target.closest(".slot.filled");
+  if(fslot){ openDetail(slots[fslot.dataset.slot]); return; }
+  const hero = e.target.closest(".hero");
+  if(hero){ openDetail(TEAMS[spinKey].cards[focus]); return; }
+  const c = e.target.closest("#cta");
+  if(c){ if(!c.disabled) place(c.dataset.target); return; }
+  const ar = e.target.closest("#aRespin");
+  if(ar){ if(aids.respin<=0)return; aids.respin--; newSpin(); paintDraft(); toast("nuovi provini"); return; }
+  const at = e.target.closest("#aTeam");
+  if(at){ if(aids.team<=0)return; aids.team--; newSpin(); paintDraft(); toast("nuova squadra"); return; }
+});
+
+// toggle profondità: resetta il draft alla nuova dimensione
+$("depth").addEventListener("click", e=>{
+  const btn = e.target.closest("button[data-b]");
+  if(!btn) return;
+  BENCH = +btn.dataset.b;
+  [...$("depth").children].forEach(b=>b.classList.toggle("on", b===btn));
+  rebuildZone();
+  fresh(); renderBoard(); paintDraft();
+  toast(`rosa da ${5+BENCH}`);
+});
+
+function rebuildZone(){
+  draftZone.innerHTML = `
+    <div class="srcrow">
+      <span class="src">Provini da <b id="srcTeam">-</b> · <span id="srcSeason">-</span></span>
+      <div class="aidz">
+        <button class="aid" id="aRespin" type="button">re-spin <b>2</b></button>
+        <button class="aid" id="aTeam" type="button">↺ squadra <b>2</b></button>
+      </div>
+    </div>
+    <div class="hero" id="hero"></div>
+    <div class="short" id="short"></div>
+    <button class="cta" id="cta" type="button"></button>`;
+}
+
+$("detail").addEventListener("click", e=>{ if(e.target.closest("[data-close]")) closeDetail(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDetail(); });
+
+$("reset").addEventListener("click", ()=>{ location.reload(); });
+
+fresh();
+renderBoard();
+paintDraft();
+</script>
+</body>
+</html>

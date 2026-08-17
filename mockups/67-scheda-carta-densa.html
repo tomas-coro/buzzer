@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scheda carta densa - no modal · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,600;0,6..96,700;1,6..96,600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  :root{ --lbl:#adaee0; } /* etichette con contrasto migliore del bone-dim */
+  .mkbar{position:sticky;top:0;z-index:20;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;background:#0c0d24;border-bottom:1px solid var(--line)}
+  .mkbar .lbl{font-family:var(--body);font-weight:800;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+  .mkbar button{font-family:var(--body);font-weight:700;font-size:.72rem;color:var(--bone-dim);
+    background:#171636;border:1px solid var(--line);border-radius:9px;padding:9px 13px;min-height:44px;cursor:pointer}
+  .mkbar button[aria-pressed="true"]{background:var(--brass);color:#0a0a18;border-color:var(--brass)}
+  .mkbar .hint{font-family:var(--body);font-size:.66rem;color:var(--bone-dim);margin-left:auto;max-width:40ch;text-align:right}
+  #app{padding-top:26px}
+
+  /* monogramma compatto (segnaposto faccia, colore squadra) */
+  .mono-badge{display:grid;place-items:center;border-radius:10px;font-family:var(--arcade);color:#fff;
+    background:linear-gradient(158deg,#1D428A,#0d1f45);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+
+  /* ============ V1 · RIGA TABELLONE ============ */
+  .c1{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#191a3d,#111230);
+    box-shadow:0 18px 40px -24px rgba(0,0,0,.8);overflow:hidden}
+  .c1-head{display:flex;align-items:center;gap:14px;padding:16px 18px 14px}
+  .c1-head .mono-badge{width:56px;height:68px;font-size:1.15rem;flex:none}
+  .c1-id{min-width:0;flex:1}
+  .c1-id .nm{display:block;font-family:var(--arcade);font-size:1.15rem;line-height:1.05;color:var(--bone);letter-spacing:.01em}
+  .c1-id .sub{display:block;font-family:var(--body);font-weight:800;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--lbl);margin-top:7px}
+  .c1-ovr{text-align:right;flex:none}
+  .c1-ovr b{display:block;font-family:var(--led);font-weight:900;font-size:2.7rem;line-height:.78;color:var(--yellow);text-shadow:0 0 16px rgba(255,207,51,.28)}
+  .c1-ovr small{font-family:var(--body);font-weight:800;font-size:.46rem;letter-spacing:.16em;text-transform:uppercase;color:var(--lbl)}
+  .c1-strip{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:rgba(0,0,0,.16)}
+  .c1-strip .cell{padding:11px 6px;text-align:center;border-left:1px solid rgba(255,255,255,.05)}
+  .c1-strip .cell:first-child{border-left:0}
+  .c1-strip .cell b{display:block;font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:1;color:var(--brass)}
+  .c1-strip .cell small{display:block;font-family:var(--body);font-weight:800;font-size:.46rem;letter-spacing:.1em;text-transform:uppercase;color:var(--lbl);margin-top:6px}
+  .c1-sub{display:grid;grid-template-columns:repeat(6,1fr);border-top:1px solid var(--line)}
+  .c1-sub .cell{padding:9px 4px;text-align:center;border-left:1px solid rgba(255,255,255,.05)}
+  .c1-sub .cell:first-child{border-left:0}
+  .c1-sub .cell b{display:block;font-family:var(--led);font-weight:700;font-size:.9rem;color:var(--bone);line-height:1}
+  .c1-sub .cell small{display:block;font-family:var(--body);font-weight:800;font-size:.42rem;letter-spacing:.07em;text-transform:uppercase;color:var(--lbl);margin-top:5px}
+  .c1-foot{display:flex;justify-content:space-between;align-items:center;padding:9px 18px;border-top:1px solid var(--line);
+    font-family:var(--body);font-weight:800;font-size:.5rem;letter-spacing:.09em;text-transform:uppercase;color:var(--lbl)}
+  .c1-foot .gp-lo{color:var(--red)}
+
+  /* ============ V2 · OVR GIGANTE (cockpit) ============ */
+  .c2{display:grid;grid-template-columns:auto 1fr;gap:20px;border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(180deg,#191a3d,#111230);padding:18px;box-shadow:0 18px 40px -24px rgba(0,0,0,.8)}
+  .c2-left{display:flex;flex-direction:column;gap:12px;align-items:flex-start;min-width:118px}
+  .c2-ovr b{display:block;font-family:var(--led);font-weight:900;font-size:4.4rem;line-height:.72;color:var(--yellow);text-shadow:0 0 20px rgba(255,207,51,.3)}
+  .c2-ovr small{font-family:var(--body);font-weight:800;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--lbl)}
+  .c2-id .nm{display:block;font-family:var(--arcade);font-size:1rem;line-height:1.1;color:var(--bone)}
+  .c2-id .sub{display:block;font-family:var(--body);font-weight:800;font-size:.54rem;letter-spacing:.08em;text-transform:uppercase;color:var(--lbl);margin-top:6px}
+  .c2-chip{display:inline-flex;gap:6px;align-items:center;margin-top:2px;font-family:var(--body);font-weight:800;
+    font-size:.5rem;letter-spacing:.09em;text-transform:uppercase;padding:4px 8px;border-radius:6px;
+    color:var(--green);background:rgba(92,207,142,.12);border:1px solid #2f5a47}
+  .c2-chip.lo{color:var(--red);background:rgba(255,80,56,.13);border-color:#7a3a2f}
+  .c2-tbl{align-self:center;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+  .c2-row{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.07)}
+  .c2-row .k{font-family:var(--body);font-weight:800;font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;color:var(--lbl)}
+  .c2-row .v{font-family:var(--led);font-weight:900;font-size:1.05rem;color:var(--bone)}
+  .c2-row .v.hot{color:var(--brass)}
+
+  /* ============ V3 · FIGURINA PIENA ============ */
+  .c3{max-width:360px;margin:0 auto;border:1px solid var(--line);border-radius:16px;overflow:hidden;
+    background:#111230;box-shadow:0 18px 40px -24px rgba(0,0,0,.8)}
+  .c3-band{position:relative;display:flex;align-items:center;gap:12px;padding:14px 16px;
+    background:linear-gradient(120deg,#1D428A,#122a5c)}
+  .c3-band .mono-badge{width:46px;height:56px;font-size:.95rem;background:rgba(0,0,0,.22);flex:none}
+  .c3-who{flex:1;min-width:0}
+  .c3-band .nm{display:block;font-family:var(--arcade);font-size:1.1rem;line-height:1.05;color:#fff}
+  .c3-band .sub{display:block;font-family:var(--body);font-weight:800;font-size:.52rem;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.78);margin-top:6px}
+  .c3-band .ovr{margin-left:auto;text-align:center}
+  .c3-band .ovr b{display:block;font-family:var(--led);font-weight:900;font-size:2.3rem;line-height:.78;color:var(--yellow)}
+  .c3-band .ovr small{font-family:var(--body);font-weight:800;font-size:.42rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+  .c3-trio{display:grid;grid-template-columns:repeat(3,1fr)}
+  .c3-trio .cell{padding:14px 6px;text-align:center;border-left:1px solid rgba(255,255,255,.05)}
+  .c3-trio .cell:first-child{border-left:0}
+  .c3-trio .cell b{display:block;font-family:var(--led);font-weight:900;font-size:1.7rem;line-height:1;color:var(--brass)}
+  .c3-trio .cell small{display:block;font-family:var(--body);font-weight:800;font-size:.46rem;letter-spacing:.09em;text-transform:uppercase;color:var(--lbl);margin-top:6px}
+  .c3-line{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line);background:rgba(0,0,0,.18)}
+  .c3-line .cell{padding:10px 4px;text-align:center;border-left:1px solid rgba(255,255,255,.05)}
+  .c3-line .cell:first-child{border-left:0}
+  .c3-line .cell b{display:block;font-family:var(--led);font-weight:700;font-size:1rem;color:var(--bone);line-height:1}
+  .c3-line .cell small{display:block;font-family:var(--body);font-weight:800;font-size:.42rem;letter-spacing:.07em;text-transform:uppercase;color:var(--lbl);margin-top:5px}
+  .c3-def{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+  .c3-def .cell{padding:9px 4px;text-align:center;border-left:1px solid rgba(255,255,255,.05)}
+  .c3-def .cell:first-child{border-left:0}
+  .c3-def .cell b{display:block;font-family:var(--led);font-weight:700;font-size:.92rem;color:var(--bone);line-height:1}
+  .c3-def .cell small{display:block;font-family:var(--body);font-weight:800;font-size:.42rem;letter-spacing:.07em;text-transform:uppercase;color:var(--lbl);margin-top:5px}
+  .c3-foot{padding:9px 16px;border-top:1px solid var(--line);text-align:center;
+    font-family:var(--body);font-weight:800;font-size:.5rem;letter-spacing:.09em;text-transform:uppercase;color:var(--lbl)}
+  .c3-foot .gp-lo{color:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <span class="lbl">Layout carta</span>
+  <button data-s="1" aria-pressed="true">1 · Riga tabellone</button>
+  <button data-s="2" aria-pressed="false">2 · OVR gigante</button>
+  <button data-s="3" aria-pressed="false">3 · Figurina piena</button>
+  <span class="hint">Overall = 2K reale. Niente modal: tutto sulla carta. Clicca la shortlist per cambiare candidato.</span>
+</div>
+
+<main id="app" aria-live="polite"></main>
+
+<script type="module">
+const ROLES=["PG","SG","SF","PF","C"];
+const CARDS=[
+  {n:"Stephen Curry",  ini:"SC",pos:"PG",ovr:94,s:{pts:30.1,reb:5.4,ast:6.7,stl:2.1,blk:0.2,tov:3.3,fg:50.4,tp:45.4,ft:90.8,gp:79,min:34.2}},
+  {n:"Klay Thompson",  ini:"KT",pos:"SG",ovr:90,s:{pts:22.1,reb:3.8,ast:2.1,stl:0.8,blk:0.6,tov:1.7,fg:47.0,tp:42.5,ft:87.3,gp:80,min:33.3}},
+  {n:"Draymond Green", ini:"DG",pos:"PF",ovr:90,s:{pts:14.0,reb:9.5,ast:7.4,stl:1.5,blk:1.4,tov:3.2,fg:49.0,tp:38.8,ft:69.6,gp:81,min:34.7}},
+  {n:"Andre Iguodala", ini:"AI",pos:"SF",ovr:81,s:{pts:7.0, reb:4.0,ast:3.4,stl:1.1,blk:0.3,tov:1.2,fg:47.8,tp:35.1,ft:61.4,gp:65,min:26.6}},
+  {n:"Andrew Bogut",   ini:"AB",pos:"C", ovr:77,s:{pts:5.4, reb:7.0,ast:2.3,stl:0.5,blk:1.6,tov:1.2,fg:62.7,tp:0,  ft:48.0,gp:70,min:20.7}},
+];
+let struct="1", focus=0;
+
+const FLAME=`<svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`;
+const PLUS=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>`;
+const gpTxt=(s)=>`${s.gp<15?`<span class="gp-lo">solo ${s.gp} partite</span>`:`${s.gp} partite`} · ${s.min} min`;
+
+function cardHTML(c){
+  const s=c.s;
+  if(struct==="1"){
+    return `<div class="c1">
+      <div class="c1-head">
+        <span class="mono-badge">${c.ini}</span>
+        <span class="c1-id"><span class="nm">${c.n}</span><span class="sub">${c.pos} · Golden State · 2015-16</span></span>
+        <span class="c1-ovr"><b>${c.ovr}</b><small>Overall 2K</small></span>
+      </div>
+      <div class="c1-strip">
+        <span class="cell"><b>${s.pts}</b><small>Punti</small></span>
+        <span class="cell"><b>${s.reb}</b><small>Rimbalzi</small></span>
+        <span class="cell"><b>${s.ast}</b><small>Assist</small></span>
+      </div>
+      <div class="c1-sub">
+        <span class="cell"><b>${s.fg}</b><small>FG%</small></span>
+        <span class="cell"><b>${s.tp}</b><small>3P%</small></span>
+        <span class="cell"><b>${s.ft}</b><small>FT%</small></span>
+        <span class="cell"><b>${s.stl}</b><small>Rub.</small></span>
+        <span class="cell"><b>${s.blk}</b><small>Stop.</small></span>
+        <span class="cell"><b>${s.tov}</b><small>Persi</small></span>
+      </div>
+      <div class="c1-foot"><span>${gpTxt(s)}</span><span>2015-16 · GSW</span></div>
+    </div>`;
+  }
+  if(struct==="2"){
+    return `<div class="c2">
+      <div class="c2-left">
+        <span class="c2-ovr"><b>${c.ovr}</b><small>Overall 2K</small></span>
+        <span class="mono-badge" style="width:52px;height:64px;font-size:1.05rem">${c.ini}</span>
+        <span class="c2-id"><span class="nm">${c.n}</span><span class="sub">${c.pos} · 2015-16</span></span>
+        <span class="c2-chip ${s.gp<15?"lo":""}">${gpTxt(s)}</span>
+      </div>
+      <div class="c2-tbl">
+        <span class="c2-row"><span class="k">Punti</span><span class="v hot">${s.pts}</span></span>
+        <span class="c2-row"><span class="k">Tiro FG</span><span class="v">${s.fg}%</span></span>
+        <span class="c2-row"><span class="k">Rimbalzi</span><span class="v">${s.reb}</span></span>
+        <span class="c2-row"><span class="k">Da 3</span><span class="v">${s.tp}%</span></span>
+        <span class="c2-row"><span class="k">Assist</span><span class="v">${s.ast}</span></span>
+        <span class="c2-row"><span class="k">Liberi</span><span class="v">${s.ft}%</span></span>
+        <span class="c2-row"><span class="k">Rubate</span><span class="v">${s.stl}</span></span>
+        <span class="c2-row"><span class="k">Stoppate</span><span class="v">${s.blk}</span></span>
+        <span class="c2-row"><span class="k">Palle perse</span><span class="v">${s.tov}</span></span>
+        <span class="c2-row"><span class="k">Minuti</span><span class="v">${s.min}</span></span>
+      </div>
+    </div>`;
+  }
+  // V3
+  return `<div class="c3">
+    <div class="c3-band">
+      <span class="mono-badge">${c.ini}</span>
+      <span class="c3-who"><span class="nm">${c.n}</span><span class="sub">${c.pos} · Golden State</span></span>
+      <span class="ovr"><b>${c.ovr}</b><small>OVR 2K</small></span>
+    </div>
+    <div class="c3-trio">
+      <span class="cell"><b>${s.pts}</b><small>Punti</small></span>
+      <span class="cell"><b>${s.reb}</b><small>Rimbalzi</small></span>
+      <span class="cell"><b>${s.ast}</b><small>Assist</small></span>
+    </div>
+    <div class="c3-line">
+      <span class="cell"><b>${s.fg}%</b><small>Tiro FG</small></span>
+      <span class="cell"><b>${s.tp}%</b><small>Da 3</small></span>
+      <span class="cell"><b>${s.ft}%</b><small>Liberi</small></span>
+    </div>
+    <div class="c3-def">
+      <span class="cell"><b>${s.stl}</b><small>Rubate</small></span>
+      <span class="cell"><b>${s.blk}</b><small>Stoppate</small></span>
+      <span class="cell"><b>${s.tov}</b><small>Palle perse</small></span>
+    </div>
+    <div class="c3-foot">${gpTxt(s)} · 2015-16</div>
+  </div>`;
+}
+
+function render(){
+  const app=document.getElementById("app");
+  const c=CARDS[focus];
+  const court=ROLES.map(r=>{
+    if(r==="PG"&&focus===0) return `<span class="cc target"><span class="face"><span class="phplus">+</span><span class="fbadge"><span class="r">PG</span><span class="o">?</span></span></span></span>`;
+    return `<span class="cc empty"><span class="face"><span class="mono">${r}</span></span></span>`;
+  }).join("");
+
+  app.innerHTML=`
+  <section class="screen draft">
+    <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill"><span class="mp-ico">${FLAME}</span><span class="mp-txt">Normale</span></div></div>
+    <div class="court-block">
+      <div class="seclab"><span>Il tuo quintetto · 0/5</span></div>
+      <div class="court">${court}</div>
+    </div>
+    <div class="cand-block">
+      <div class="seclab"><span>Candidati PG · 5</span>
+        <div class="aidz"><button class="aid" type="button">re-spin <b>2</b></button><button class="aid" type="button">↺ squadra <b>1</b></button></div>
+      </div>
+      <div id="hero"></div>
+      <div class="short" id="short"></div>
+      <button class="cta" type="button">${PLUS} Metti ${c.n.split(" ").pop()} nel quintetto</button>
+    </div>
+    <p class="src">Da <b>Golden State Warriors</b> · 2015-16</p>
+  </section>`;
+
+  document.getElementById("hero").innerHTML=cardHTML(c);
+  document.getElementById("short").innerHTML=CARDS.map((x,i)=>`
+    <button class="sh ${i===focus?"on":""}" data-i="${i}" type="button" aria-label="${x.n}">
+      <span class="face" style="background:linear-gradient(158deg,#1D428A,#0d1f45)"><span class="mono">${x.ini}</span></span>
+      <span class="sn">${x.n.split(" ").pop()} <em>${x.ovr}</em></span>
+    </button>`).join("");
+  document.querySelectorAll(".sh").forEach(b=>b.onclick=()=>{focus=Number(b.dataset.i);render();});
+}
+
+document.querySelectorAll(".mkbar button").forEach(b=>{
+  b.onclick=()=>{struct=b.dataset.s;
+    document.querySelectorAll(".mkbar button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    render();};
+});
+render();
+</script>
+</body>
+</html>

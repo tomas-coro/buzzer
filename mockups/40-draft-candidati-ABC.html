@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft · candidati A/B/C · Cabina 90s · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,#1d2230 0,transparent 60%),#14171e;
+    color:#e9e4d8;font-family:"Hanken Grotesk",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .wrap{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:24px 18px 64px;text-align:center}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:#e0a96d;font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.3rem,4vw,1.9rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:#a39e93;font-size:.88rem;margin:.45rem auto 0;max-width:56ch}
+  .lead b{color:#ffcf33;font-weight:600}
+
+  /* chip switcher A/B/C */
+  .pick{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+  .chips{display:inline-flex;gap:8px;margin:20px auto 0;padding:5px;background:#141238;border:1px solid #2c2a63;border-radius:14px}
+  .chips label{display:flex;flex-direction:column;gap:1px;align-items:flex-start;text-align:left;cursor:pointer;
+    padding:8px 15px;border-radius:10px;transition:background .15s,color .15s}
+  .chips label .t{font-family:"Bungee";font-size:.72rem;color:#e9e4d8;line-height:1.1}
+  .chips label .d{font-size:.6rem;color:#8a8bc0;font-weight:600}
+  #pa:checked~.chips label[for=pa],#pb:checked~.chips label[for=pb],#pc:checked~.chips label[for=pc]{background:#ffcf33}
+  #pa:checked~.chips label[for=pa] .t,#pb:checked~.chips label[for=pb] .t,#pc:checked~.chips label[for=pc] .t{color:#1a1206}
+  #pa:checked~.chips label[for=pa] .d,#pb:checked~.chips label[for=pb] .d,#pc:checked~.chips label[for=pc] .d{color:#6b4d08}
+
+  .stagewrap{display:flex;justify-content:center;margin-top:22px}
+  .phone{width:340px;max-width:100%;border:9px solid #05030f;border-radius:34px;background:#05030f;box-shadow:0 22px 50px rgba(0,0,0,.55)}
+  .screen{position:relative;overflow:hidden;border-radius:25px;padding:14px;
+    background:radial-gradient(120% 80% at 50% -10%,#20206a 0,#15163a 55%,#0d0e29 100%);text-align:left}
+  .screen *{box-sizing:border-box}
+
+  :root{--orange:#ff5b1e;--yellow:#ffcf33;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;--dim:#8a8bc0;--hair:#2c2a63}
+
+  /* header */
+  .apphd{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+  .wm{font-family:"Bungee";font-size:.86rem;color:var(--yellow);line-height:1}
+  .wm b{color:var(--orange)}
+  .flame{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:9px;padding:4px 9px}
+  .flame svg{width:13px;height:13px;flex:none;opacity:.85}
+  .flame .ico1{fill:var(--orange)}.flame .ico2{fill:var(--yellow)}
+  .flame .fn{font-family:"Doto";font-weight:700;font-size:.76rem;color:var(--cream);line-height:1;letter-spacing:.04em}
+  .flame .fn i{font-style:normal;color:var(--dim);margin:0 .06em}
+  .flame .fs{font-size:.42rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:800;line-height:1}
+
+  .seclab{display:flex;align-items:center;justify-content:space-between;margin:2px 0 9px}
+  .seclab span{font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .seclab .aidz{display:flex;gap:5px}
+  .aid{font-family:"Bungee";font-size:.44rem;letter-spacing:.02em;color:var(--dim);background:#141238;border:1px solid var(--hair);border-radius:7px;padding:5px 7px;cursor:pointer}
+  .aid b{color:var(--yellow)}
+
+  /* ── PLACEHOLDER FACE (iniziali + colore squadra) ── */
+  .face{position:relative;border-radius:11px;overflow:hidden;flex:none;display:block;
+    background:linear-gradient(158deg,var(--tc1,#3a2d5e) 0,var(--tc2,#211636) 100%)}
+  .face .mono{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-family:"Bungee";color:rgba(255,255,255,.9);text-shadow:0 2px 0 rgba(0,0,0,.28);letter-spacing:.01em}
+  .face::before{content:"";position:absolute;inset:0;opacity:.5;
+    background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),
+      repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .face::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(255,91,30,.14))}
+  .fbadge{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-end;
+    padding:3px 5px;background:linear-gradient(180deg,transparent,rgba(5,3,15,.85));font-size:.5rem;font-weight:800;z-index:2}
+  .fbadge .r{color:var(--cream);letter-spacing:.04em}
+  .fbadge .o{font-family:"Doto";font-weight:900;color:var(--yellow)}
+
+  /* quintetto */
+  .court{display:flex;gap:5px;background:linear-gradient(180deg,#1a1640,#120f33);border:1px solid var(--hair);border-radius:14px;padding:9px;
+    background-image:radial-gradient(120% 90% at 50% 0,rgba(255,91,30,.1),transparent 60%)}
+  .cc{flex:1;display:block}
+  .cc .face{width:100%;aspect-ratio:3/4}
+  .cc .face .mono{font-size:1.15rem}
+  .cc.target .face{display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--orange);background:#211435}
+  .cc.target .face::before,.cc.target .face::after{display:none}
+  .cc.target .phplus{font-family:"Bungee";font-size:1.4rem;color:var(--orange)}
+
+  /* ladder */
+  .ladder{display:flex;gap:4px;background:#141238;border:1px solid var(--hair);border-radius:12px;padding:4px;margin:13px 0 12px}
+  .ladder label{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:44px;justify-content:center;border-radius:9px;
+    font-family:"Bungee";font-size:.54rem;color:var(--dim)}
+  .ladder label small{font-family:"Hanken Grotesk";font-weight:700;font-size:.38rem;text-transform:uppercase;color:#5a5a93}
+  .ladder label.on{background:var(--yellow);color:#1a1206;box-shadow:0 2px 0 #b8901f}
+  .ladder label.on small{color:#6b4d08}
+
+  /* candidate hero (riuso mockup 39) */
+  .incoming{background:linear-gradient(180deg,#241a3e,#141538);border:1px solid #3a2a66;border-radius:14px;padding:13px}
+  .inhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:8px}
+  .inlab{font-size:.54rem;letter-spacing:.13em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+  .nchip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:99px;background:rgba(255,80,56,.13);border:1px solid rgba(255,80,56,.4);color:#ffb0a6;font-weight:700;font-size:.55rem;text-transform:uppercase;letter-spacing:.04em}
+  .nchip::before{content:"";width:5px;height:5px;border-radius:99px;background:var(--red)}
+  .cand-top .nm{font-family:"Bungee";font-size:.9rem;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .pos{font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-weight:700;margin-top:5px}
+  .cand-main{display:flex;gap:12px;align-items:flex-start;margin-top:10px}
+  .cand-main .face{width:86px;height:104px}
+  .cand-main .face .mono{font-size:1.5rem}
+  .cand-main .stats{flex:1;min-width:0}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:7px 12px}
+  .st{display:block;min-width:0}
+  .st .stl{display:flex;justify-content:space-between;align-items:baseline;font-size:.46rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-bottom:3px}
+  .st .stnum{font-family:"Doto";font-weight:900;font-size:.7rem;color:var(--cream)}
+  .trk{display:block;height:7px;border-radius:99px;background:#211f55;overflow:hidden}
+  .fil{display:block;height:100%;border-radius:99px;background:var(--green)}
+  .fil.md{background:var(--yellow)}.fil.lo{background:var(--red)}
+
+  .cta{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;cursor:pointer;margin-top:13px;
+    font-family:"Bungee";font-size:.78rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:14px;min-height:48px;box-shadow:0 4px 0 #b8901f;border:0}
+  .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .cta svg{width:16px;height:16px;fill:currentColor}
+
+  /* ── zone candidati per direzione ── */
+  .zone{display:none}
+  #pa:checked~.stagewrap .zone.A,#pb:checked~.stagewrap .zone.B,#pc:checked~.stagewrap .zone.C{display:block}
+
+  /* A: griglia 5 tessere */
+  .grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .gcard{background:#1d1e4a;border:1px solid var(--hair);border-radius:11px;padding:6px 6px 8px;cursor:pointer;transition:transform .1s,border-color .1s}
+  .gcard.best{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange) inset}
+  .gcard:hover{transform:translateY(-2px)}
+  .gcard .face{width:100%;aspect-ratio:3/4}
+  .gcard .face .mono{font-size:1rem}
+  .gcard .gn{font-size:.5rem;font-weight:800;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--cream)}
+  .gcard .gp{font-size:.42rem;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);font-weight:700}
+
+  /* B: eroe + frecce + dots */
+  .heroWrap{position:relative}
+  .arrow{position:absolute;top:44%;transform:translateY(-50%);width:30px;height:30px;border-radius:99px;background:#241a3e;border:1px solid #3a2a66;color:var(--yellow);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:"Bungee";font-size:.8rem;z-index:3}
+  .arrow.l{left:-6px}.arrow.r{right:-6px}
+  .dots{display:flex;gap:6px;justify-content:center;margin-top:10px}
+  .dot{width:7px;height:7px;border-radius:99px;background:#3a3a70}
+  .dot.on{background:var(--yellow);width:18px}
+
+  /* C: eroe + shortlist */
+  .short{display:flex;gap:6px;margin-top:11px}
+  .sh{flex:1;position:relative;cursor:pointer;border-radius:9px;overflow:hidden;border:1px solid var(--hair);transition:transform .1s}
+  .sh .face{width:100%;aspect-ratio:1/1;border-radius:0}
+  .sh .face .mono{font-size:.72rem}
+  .sh .sn{position:absolute;bottom:0;left:0;right:0;font-size:.4rem;font-weight:800;text-align:center;padding:2px 1px;background:linear-gradient(180deg,transparent,rgba(5,3,15,.9));color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh.on{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow) inset}
+  .sh:hover{transform:translateY(-2px)}
+
+  .note{max-width:340px;margin:12px auto 0;font-size:.62rem;color:#8a8bc0;line-height:1.45}
+  .note b{color:#ffcf33}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Draft · zona candidati</div>
+  <h1>3 modi di scegliere tra i 5</h1>
+  <p class="lead">Stessa parte alta (marchio · quintetto · livelli). Cambia solo <b>come mostro i 5 candidati</b> del ruolo. Placeholder iniziali+colore squadra (qui Lakers 2019-20).</p>
+
+  <input class="pick" type="radio" name="dir" id="pa">
+  <input class="pick" type="radio" name="dir" id="pb">
+  <input class="pick" type="radio" name="dir" id="pc" checked>
+  <div class="chips">
+    <label for="pa"><span class="t">A</span><span class="d">griglia 5</span></label>
+    <label for="pb"><span class="t">B</span><span class="d">eroe + frecce</span></label>
+    <label for="pc"><span class="t">C</span><span class="d">eroe + shortlist</span></label>
+  </div>
+
+  <div class="stagewrap"><div class="phone"><div class="screen">
+
+    <div class="apphd">
+      <div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="flame">
+        <svg viewBox="0 0 24 24"><path class="ico1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="ico2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>
+        <span class="fn">6<i>–</i>0</span><span class="fs">imbattuto</span>
+      </div>
+    </div>
+
+    <div class="seclab"><span>Il tuo quintetto · 4/5</span></div>
+    <div class="court">
+      <div class="cc" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">LJ</span><span class="fbadge"><span class="r">PG</span><span class="o">88</span></span></span></div>
+      <div class="cc" style="--tc1:#1d428a;--tc2:#0f2350"><span class="face"><span class="mono">SC</span><span class="fbadge"><span class="r">SG</span><span class="o">94</span></span></span></div>
+      <div class="cc target"><span class="face"><span class="phplus">+</span><span class="fbadge"><span class="r">PF</span><span class="o">?</span></span></span></div>
+      <div class="cc" style="--tc1:#007a33;--tc2:#00401b"><span class="face"><span class="mono">JT</span><span class="fbadge"><span class="r">SF</span><span class="o">95</span></span></span></div>
+      <div class="cc" style="--tc1:#006bb6;--tc2:#003a63"><span class="face"><span class="mono">JE</span><span class="fbadge"><span class="r">C</span><span class="o">96</span></span></span></div>
+    </div>
+
+    <div class="ladder">
+      <label class="on">FAC<small>numeri</small></label>
+      <label>NOR<small>barre</small></label>
+      <label>DIF<small>no ovr</small></label>
+      <label>CLU<small>al buio</small></label>
+    </div>
+
+    <!-- ══════ A: griglia 5 ══════ -->
+    <div class="zone A">
+      <div class="seclab"><span>Candidati PF · 5</span><div class="aidz"><span class="aid">re-spin <b>1</b></span></div></div>
+      <div class="grid5">
+        <div class="gcard best" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">LJ</span><span class="fbadge"><span class="r">SF</span><span class="o">97</span></span></span><div class="gn">James</div><div class="gp">SF</div></div>
+        <div class="gcard" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">AD</span><span class="fbadge"><span class="r">PF</span><span class="o">95</span></span></span><div class="gn">Davis</div><div class="gp">PF</div></div>
+        <div class="gcard" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">DH</span><span class="fbadge"><span class="r">C</span><span class="o">78</span></span></span><div class="gn">Howard</div><div class="gp">C</div></div>
+        <div class="gcard" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">JM</span><span class="fbadge"><span class="r">C</span><span class="o">78</span></span></span><div class="gn">McGee</div><div class="gp">C</div></div>
+        <div class="gcard" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">DG</span><span class="fbadge"><span class="r">SF</span><span class="o">76</span></span></span><div class="gn">Green</div><div class="gp">SF</div></div>
+      </div>
+      <button class="cta"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Tocca una carta per metterla</button>
+    </div>
+
+    <!-- ══════ B: eroe + frecce ══════ -->
+    <div class="zone B">
+      <div class="seclab"><span>Candidati PF · 5</span><div class="aidz"><span class="aid">re-spin <b>1</b></span></div></div>
+      <div class="heroWrap">
+        <div class="arrow l">‹</div><div class="arrow r">›</div>
+        <div class="incoming">
+          <div class="inhd"><span class="inlab">Candidato · 1 di 5</span><span class="nchip">tiro da 3</span></div>
+          <span class="cand-top"><span class="nm">Anthony Davis</span></span>
+          <span class="pos" style="display:block">Ala grande · 208 cm · USA</span>
+          <div class="cand-main">
+            <span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">AD</span><span class="fbadge"><span class="o">95</span></span></span>
+            <span class="stats">
+              <span class="st"><span class="stl"><span>Tiro</span><span class="stnum">74</span></span><span class="trk"><i class="fil md" style="width:74%"></i></span></span>
+              <span class="st"><span class="stl"><span>Fisico</span><span class="stnum">88</span></span><span class="trk"><i class="fil" style="width:88%"></i></span></span>
+              <span class="st"><span class="stl"><span>Difesa</span><span class="stnum">90</span></span><span class="trk"><i class="fil" style="width:90%"></i></span></span>
+              <span class="st"><span class="stl"><span>Regia</span><span class="stnum">60</span></span><span class="trk"><i class="fil lo" style="width:60%"></i></span></span>
+            </span>
+          </div>
+        </div>
+        <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      </div>
+      <button class="cta"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti Davis nel quintetto</button>
+    </div>
+
+    <!-- ══════ C: eroe + shortlist ══════ -->
+    <div class="zone C">
+      <div class="seclab"><span>Candidati PF · 5</span><div class="aidz"><span class="aid">re-spin <b>1</b></span><span class="aid">↺ squadra <b>2</b></span><span class="aid">↺ stagione <b>2</b></span></div></div>
+      <div class="incoming">
+        <div class="inhd"><span class="inlab">Candidato a fuoco</span><span class="nchip">tiro da 3</span></div>
+        <span class="cand-top"><span class="nm">Anthony Davis</span></span>
+        <span class="pos" style="display:block">Ala grande · 208 cm · USA</span>
+        <div class="cand-main">
+          <span class="face" style="--tc1:#552583;--tc2:#2f1447"><span class="mono">AD</span><span class="fbadge"><span class="o">95</span></span></span>
+          <span class="stats">
+            <span class="st"><span class="stl"><span>Tiro</span><span class="stnum">74</span></span><span class="trk"><i class="fil md" style="width:74%"></i></span></span>
+            <span class="st"><span class="stl"><span>Fisico</span><span class="stnum">88</span></span><span class="trk"><i class="fil" style="width:88%"></i></span></span>
+            <span class="st"><span class="stl"><span>Difesa</span><span class="stnum">90</span></span><span class="trk"><i class="fil" style="width:90%"></i></span></span>
+            <span class="st"><span class="stl"><span>Regia</span><span class="stnum">60</span></span><span class="trk"><i class="fil lo" style="width:60%"></i></span></span>
+          </span>
+        </div>
+      </div>
+      <div class="short">
+        <div class="sh" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">LJ</span></span><span class="sn">James 97</span></div>
+        <div class="sh on" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">AD</span></span><span class="sn">Davis 95</span></div>
+        <div class="sh" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">DH</span></span><span class="sn">Howard 78</span></div>
+        <div class="sh" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">JM</span></span><span class="sn">McGee 78</span></div>
+        <div class="sh" style="--tc1:#552583;--tc2:#2f1447"><span class="face"><span class="mono">DG</span></span><span class="sn">Green 76</span></div>
+      </div>
+      <button class="cta"><svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti Davis nel quintetto</button>
+    </div>
+
+  </div></div></div>
+
+  <p class="note"><b>A</b> vede tutti in colpo d'occhio ma tessere piccole, niente barre. <b>B</b> eroe grande ma 4 candidati nascosti dietro le frecce. <b>C</b> eroe grande + tutti e 5 visibili nella striscia, tap per cambiare fuoco. Chip in alto per confrontare.</p>
+</div>
+</body>
+</html>

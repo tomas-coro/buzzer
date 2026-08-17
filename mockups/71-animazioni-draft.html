@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Animazioni draft - respin / squadra / inserimento · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  :root{ --lbl:#adaee0; }
+  body{background:#07071a}
+  .mkbar{position:sticky;top:0;z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;background:#0c0d24;border-bottom:1px solid var(--line)}
+  .mkbar .lbl{font-family:var(--body);font-weight:800;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+  .mkbar button{font-family:var(--body);font-weight:700;font-size:.72rem;color:var(--bone-dim);
+    background:#171636;border:1px solid var(--line);border-radius:9px;padding:9px 13px;min-height:44px;cursor:pointer}
+  .mkbar button:hover{border-color:var(--brass);color:var(--bone)}
+  .mkbar .hint{font-family:var(--body);font-size:.66rem;color:var(--bone-dim);margin-left:auto;max-width:48ch;text-align:right}
+
+  .stage{display:flex;justify-content:center;padding:26px 16px 60px}
+  .phone{width:390px;max-width:100%;height:788px;border-radius:44px;border:11px solid #000;
+    background:var(--ink);overflow:hidden;position:relative;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.9), inset 0 0 0 2px #23234f}
+  .phone::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:118px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:20}
+  .scr{height:100%;overflow:hidden;position:relative}
+  .draft{max-width:none!important;padding:30px 14px 14px!important;height:100%;box-sizing:border-box}
+  .draft .court-block{margin-bottom:12px}
+
+  .mono-badge{display:grid;place-items:center;border-radius:9px;font-family:var(--arcade);color:#fff;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+
+  /* riga candidato */
+  .rlist{display:grid;gap:6px;position:relative}
+  .crd{position:relative;border:1px solid var(--line);border-radius:13px;overflow:hidden;cursor:pointer;
+    background:linear-gradient(100deg,#191a3d,#141336);
+    transition:transform .12s var(--ease,ease),box-shadow .12s,opacity .2s}
+  .crd::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc,#3a3a6e)}
+  .crd.on{border-color:var(--acc,var(--yellow));background:linear-gradient(100deg,#232349,#181740);
+    box-shadow:0 0 0 1px var(--acc,var(--yellow)),0 10px 24px -18px rgba(0,0,0,.9),0 0 20px -8px var(--acc)}
+  .crd-top{display:grid;grid-template-columns:36px 40px 1fr auto;align-items:center;gap:9px;padding:8px 12px 8px 14px}
+  .crd-port{width:36px;height:42px;border-radius:8px;position:relative;overflow:hidden}
+  .crd-port .ini{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--arcade);font-size:.66rem;color:#fff}
+  .crd-ovr{text-align:center}
+  .crd-ovr b{display:block;font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:.86;color:var(--tier,var(--brass))}
+  .crd-ovr small{font-family:var(--body);font-weight:800;font-size:.34rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl)}
+  .crd-id{min-width:0}
+  .crd-id .nm{display:block;font-family:var(--display);font-weight:800;font-size:.9rem;color:var(--bone);line-height:1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+  .crd-id .sub{display:flex;align-items:center;gap:8px;margin-top:6px}
+  .crd-id .pos{font-family:var(--arcade);font-size:.44rem;color:#0c0d22;background:var(--acc,#6b6ba0);border-radius:5px;padding:2px 6px}
+  /* barre tiro ETICHETTATE */
+  .shot{display:flex;gap:9px}
+  .shot .s{display:flex;flex-direction:column;align-items:center;gap:3px}
+  .shot .s i{width:22px;height:5px;border-radius:3px;background:#0b0c20;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);overflow:hidden;display:block}
+  .shot .s i b{display:block;height:100%;border-radius:3px}
+  .shot .s em{font-family:var(--body);font-weight:800;font-size:.36rem;letter-spacing:.04em;color:var(--lbl);font-style:normal}
+  .crd-stats{display:flex;gap:9px}
+  .crd-stats span{text-align:center;min-width:22px}
+  .crd-stats b{display:block;font-family:var(--led);font-weight:900;font-size:.92rem;color:var(--bone);line-height:1}
+  .crd-stats small{display:block;font-family:var(--body);font-weight:800;font-size:.38rem;letter-spacing:.06em;text-transform:uppercase;color:var(--lbl);margin-top:4px}
+
+  /* ---- animazione RE-SPIN / SQUADRA: reel ---- */
+  .crd.spin-out{animation:spinOut .26s var(--ease,ease) forwards}
+  .crd.spin-in{animation:spinIn .34s cubic-bezier(.2,.8,.2,1) backwards}
+  @keyframes spinOut{to{opacity:0;transform:translateY(-16px) scaleY(.82);filter:blur(3px)}}
+  @keyframes spinIn{from{opacity:0;transform:translateY(26px) scaleY(.8);filter:blur(3px)}
+    to{opacity:1;transform:none;filter:none}}
+  .src-flash{animation:srcFlash .5s var(--ease,ease)}
+  @keyframes srcFlash{0%{color:var(--brass)}50%{color:var(--yellow);text-shadow:0 0 12px rgba(255,207,51,.5)}100%{}}
+
+  /* ---- clone volante inserimento ---- */
+  .flyer{position:absolute;z-index:40;pointer-events:none;border-radius:11px;overflow:hidden;
+    border:1px solid var(--acc,var(--yellow));background:linear-gradient(100deg,#232349,#181740);
+    box-shadow:0 18px 40px -12px rgba(0,0,0,.8),0 0 26px -6px var(--acc);
+    transition:transform .52s cubic-bezier(.5,0,.2,1),width .52s,height .52s,opacity .2s;transform-origin:top left}
+  .flyer .fbody{display:flex;align-items:center;gap:8px;padding:8px 10px}
+  .flyer .mono-badge{width:30px;height:34px;font-size:.62rem}
+  .flyer .fn{font-family:var(--display);font-weight:800;font-size:.8rem;color:var(--bone)}
+  .flyer .fo{margin-left:auto;font-family:var(--led);font-weight:900;font-size:1.1rem;color:var(--yellow)}
+
+  /* slot court riempito */
+  .cc.filled .face{border:1px solid var(--acc,var(--yellow))!important;background:var(--grad,#1D428A)!important;
+    animation:pop .3s cubic-bezier(.3,1.5,.5,1)}
+  .cc.filled .fill-ini{font-family:var(--arcade);font-size:.9rem;color:#fff}
+  .cc.filled .fill-ovr{position:absolute;right:3px;bottom:2px;font-family:var(--led);font-weight:900;font-size:.7rem;color:var(--yellow)}
+  @keyframes pop{0%{transform:scale(.7);opacity:.3}100%{transform:scale(1);opacity:1}}
+
+  .aidz .aid.busy{opacity:.5;pointer-events:none}
+  @media (prefers-reduced-motion:reduce){
+    .crd.spin-out,.crd.spin-in,.flyer,.cc.filled .face{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <span class="lbl">Animazioni</span>
+  <button id="b-respin" type="button">↻ Re-spin</button>
+  <button id="b-team" type="button">⇄ Cambia squadra</button>
+  <button id="b-add" type="button">＋ Metti in rosa</button>
+  <button id="b-reset" type="button">Reset</button>
+  <span class="hint">Barre tiro ora etichettate (FG/3P/TL). Prova i 3 gesti: rulla i candidati, cambia squadra sorgente, manda il selezionato nello slot.</span>
+</div>
+
+<div class="stage">
+  <div class="phone"><div class="scr" id="scr"></div></div>
+</div>
+
+<script type="module">
+const ROLES=["PG","SG","SF","PF","C"];
+// pool per squadra-stagione
+const TEAMS={
+  GSW:{name:"Golden State", season:"2015-16", acc:"#ffc72c", grad:"linear-gradient(158deg,#1D428A,#0b1c40)", pool:[
+    {n:"Stephen Curry",ini:"SC",pos:"PG",ovr:94,s:{pts:30.1,reb:5.4,ast:6.7,stl:2.1,blk:0.2,tov:3.3,fg:50.4,tp:45.4,ft:90.8}},
+    {n:"Klay Thompson",ini:"KT",pos:"SG",ovr:90,s:{pts:22.1,reb:3.8,ast:2.1,stl:0.8,blk:0.6,tov:1.7,fg:47.0,tp:42.5,ft:87.3}},
+    {n:"Draymond Green",ini:"DG",pos:"PF",ovr:90,s:{pts:14.0,reb:9.5,ast:7.4,stl:1.5,blk:1.4,tov:3.2,fg:49.0,tp:38.8,ft:69.6}},
+    {n:"Andre Iguodala",ini:"AI",pos:"SF",ovr:81,s:{pts:7.0,reb:4.0,ast:3.4,stl:1.1,blk:0.3,tov:1.2,fg:47.8,tp:35.1,ft:61.4}},
+    {n:"Harrison Barnes",ini:"HB",pos:"SF",ovr:79,s:{pts:11.7,reb:4.9,ast:1.8,stl:0.6,blk:0.2,tov:0.9,fg:46.6,tp:38.3,ft:76.0}},
+    {n:"Andrew Bogut",ini:"AB",pos:"C",ovr:77,s:{pts:5.4,reb:7.0,ast:2.3,stl:0.5,blk:1.6,tov:1.2,fg:62.7,tp:0,ft:48.0}},
+  ]},
+  GSW_B:{name:"Golden State", season:"2015-16", acc:"#ffc72c", grad:"linear-gradient(158deg,#1D428A,#0b1c40)", pool:[
+    {n:"Shaun Livingston",ini:"SL",pos:"PG",ovr:78,s:{pts:6.3,reb:2.1,ast:3.0,stl:0.6,blk:0.4,tov:1.1,fg:53.5,tp:0,ft:85.7}},
+    {n:"Leandro Barbosa",ini:"LB",pos:"SG",ovr:75,s:{pts:6.4,reb:1.4,ast:1.5,stl:0.5,blk:0.1,tov:0.7,fg:47.5,tp:37.7,ft:70.0}},
+    {n:"Festus Ezeli",ini:"FE",pos:"C",ovr:74,s:{pts:7.0,reb:5.6,ast:0.6,stl:0.3,blk:1.1,tov:1.1,fg:53.3,tp:0,ft:53.1}},
+    {n:"Marreese Speights",ini:"MS",pos:"C",ovr:73,s:{pts:7.1,reb:3.3,ast:0.7,stl:0.3,blk:0.3,tov:0.8,fg:44.5,tp:38.7,ft:77.8}},
+    {n:"Ian Clark",ini:"IC",pos:"SG",ovr:70,s:{pts:3.6,reb:1.1,ast:0.9,stl:0.3,blk:0.1,tov:0.5,fg:45.6,tp:35.3,ft:78.0}},
+    {n:"Brandon Rush",ini:"BR",pos:"SF",ovr:69,s:{pts:4.2,reb:2.0,ast:0.7,stl:0.5,blk:0.4,tov:0.5,fg:41.9,tp:41.4,ft:66.7}},
+  ]},
+  CLE:{name:"Cleveland", season:"2015-16", acc:"#fdbb30", grad:"linear-gradient(158deg,#6f263d,#3a1421)", pool:[
+    {n:"LeBron James",ini:"LJ",pos:"SF",ovr:96,s:{pts:25.3,reb:7.4,ast:6.8,stl:1.4,blk:0.6,tov:3.3,fg:52.0,tp:30.9,ft:73.1}},
+    {n:"Kyrie Irving",ini:"KI",pos:"PG",ovr:88,s:{pts:19.6,reb:3.0,ast:4.7,stl:1.1,blk:0.3,tov:2.3,fg:44.8,tp:32.1,ft:88.5}},
+    {n:"Kevin Love",ini:"KL",pos:"PF",ovr:85,s:{pts:16.0,reb:9.9,ast:2.4,stl:0.8,blk:0.5,tov:1.9,fg:41.9,tp:36.0,ft:82.2}},
+    {n:"Tristan Thompson",ini:"TT",pos:"C",ovr:79,s:{pts:7.8,reb:9.0,ast:0.8,stl:0.5,blk:0.6,tov:1.0,fg:58.8,tp:0,ft:63.6}},
+    {n:"J.R. Smith",ini:"JS",pos:"SG",ovr:78,s:{pts:12.4,reb:2.8,ast:1.7,stl:1.1,blk:0.3,tov:1.0,fg:41.5,tp:40.0,ft:63.9}},
+    {n:"Channing Frye",ini:"CF",pos:"PF",ovr:74,s:{pts:7.9,reb:3.5,ast:0.8,stl:0.4,blk:0.5,tov:0.6,fg:45.6,tp:39.6,ft:83.3}},
+  ]},
+};
+const ORDER=["GSW","GSW_B","GSW"]; // ciclo respin (stessa squadra, pool diversi)
+let curKey="GSW", respinIdx=0, focus=0, animating=false;
+let cards = TEAMS.GSW.pool.map(c=>({...c}));
+let team = TEAMS.GSW;
+const filled = {}; // role -> {ini,ovr,grad,acc}
+
+const PLUS=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>`;
+const FLAME=`<svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`;
+const last=n=>n.split(" ").pop();
+const tier=v=> v>=88?"var(--yellow)": v>=82?"#cdd6ea":"#e08a4a";
+const shotTier=(v,g,ok)=> v>=g?"var(--green)": v>=ok?"var(--yellow)":"var(--red)";
+const filledCount=()=>Object.keys(filled).length;
+
+function seg(lab,v,g,ok){return `<span class="s"><i><b style="width:${Math.min(v,100)}%;background:${shotTier(v,g,ok)}"></b></i><em>${lab}</em></span>`;}
+
+function rowHTML(c,i){
+  const s=c.s,on=i===focus;
+  return `<div class="crd ${on?"on":""}" data-i="${i}" style="--acc:${team.acc};--tier:${tier(c.ovr)}">
+    <div class="crd-top">
+      <span class="crd-port mono-badge" style="background:${team.grad}"><span class="ini">${c.ini}</span></span>
+      <span class="crd-ovr"><b>${c.ovr}</b><small>OVR</small></span>
+      <span class="crd-id"><span class="nm">${last(c.n)}</span>
+        <span class="sub"><span class="pos">${c.pos}</span>
+          <span class="shot">${seg("FG",s.fg,50,44)}${seg("3P",s.tp,38,33)}${seg("TL",s.ft,80,70)}</span></span></span>
+      <span class="crd-stats">
+        <span><b>${s.pts}</b><small>PT</small></span>
+        <span><b>${s.reb}</b><small>RB</small></span>
+        <span><b>${s.ast}</b><small>AS</small></span>
+      </span>
+    </div>
+  </div>`;
+}
+
+function courtHTML(){
+  return ROLES.map(r=>{
+    if(filled[r]){const f=filled[r];
+      return `<span class="cc filled" style="--acc:${f.acc};--grad:${f.grad}"><span class="face" style="position:relative">
+        <span class="fill-ini">${f.ini}</span><span class="fill-ovr">${f.ovr}</span></span></span>`;}
+    const isTarget = r===nextRole();
+    return isTarget
+      ? `<span class="cc target"><span class="face"><span class="phplus">+</span><span class="fbadge"><span class="r">${r}</span><span class="o">?</span></span></span></span>`
+      : `<span class="cc empty"><span class="face"><span class="mono">${r}</span></span></span>`;
+  }).join("");
+}
+function nextRole(){ return ROLES.find(r=>!filled[r]) || null; }
+
+function render(){
+  const scr=document.getElementById("scr");
+  scr.innerHTML=`<section class="screen draft">
+    <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill"><span class="mp-ico">${FLAME}</span><span class="mp-txt">Normale</span></div></div>
+    <div class="court-block">
+      <div class="seclab"><span>Il tuo quintetto · ${filledCount()}/5</span></div>
+      <div class="court" id="court">${courtHTML()}</div>
+    </div>
+    <div class="cand-block">
+      <div class="seclab"><span class="src-lab">Candidati · ${cards.length}</span>
+        <div class="aidz"><button class="aid" id="aid-respin" type="button">re-spin <b>2</b></button>
+          <button class="aid" id="aid-team" type="button">↺ squadra <b>1</b></button></div>
+      </div>
+      <div class="rlist" id="rlist">${cards.map(rowHTML).join("")}</div>
+      <button class="cta" id="cta" type="button">${PLUS} Metti ${cards[focus]?last(cards[focus].n):""} in ${nextRole()||"rosa"}</button>
+    </div>
+    <p class="src">Da <b class="team-name">${team.name}</b> · ${team.season}</p>
+  </section>`;
+  bind();
+}
+
+function bind(){
+  document.querySelectorAll(".crd").forEach(el=>el.onclick=()=>{if(animating)return;focus=+el.dataset.i;render();});
+  document.getElementById("cta").onclick=addToRoster;
+  document.getElementById("aid-respin").onclick=()=>reel("respin");
+  document.getElementById("aid-team").onclick=()=>reel("team");
+}
+
+// ---- RE-SPIN / SQUADRA : reel ----
+function reel(kind){
+  if(animating) return; animating=true;
+  const rows=[...document.querySelectorAll(".crd")];
+  const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  // scelta nuovo pool
+  if(kind==="team"){ curKey="CLE"; team=TEAMS.CLE; }
+  else { respinIdx=(respinIdx+1)%ORDER.length; const k=ORDER[respinIdx]; team=TEAMS[k]; curKey=k; }
+  const swap=()=>{ cards=team.pool.map(c=>({...c})); focus=0; render();
+    // entrata staggered
+    const nrows=[...document.querySelectorAll(".crd")];
+    if(!reduce) nrows.forEach((r,i)=>{r.classList.add("spin-in");r.style.animationDelay=(i*55)+"ms";
+      r.addEventListener("animationend",()=>{r.classList.remove("spin-in");r.style.animationDelay="";},{once:true});});
+    if(kind==="team"){const tn=document.querySelector(".team-name");if(tn)tn.classList.add("src-flash");}
+    setTimeout(()=>{animating=false;}, reduce?0:(nrows.length*55+340));
+  };
+  if(reduce){ swap(); return; }
+  rows.forEach((r,i)=>{r.classList.add("spin-out");r.style.animationDelay=(i*40)+"ms";});
+  setTimeout(swap, rows.length*40+230);
+}
+
+// ---- INSERIMENTO IN ROSA : clone volante ----
+function addToRoster(){
+  if(animating) return; const role=nextRole(); if(!role) return;
+  const c=cards[focus]; if(!c) return;
+  animating=true;
+  const reduce=matchMedia("(prefers-reduced-motion:reduce)").matches;
+  const scr=document.getElementById("scr");
+  const srcEl=document.querySelector(`.crd[data-i="${focus}"]`);
+  const court=document.getElementById("court");
+  const slotIdx=ROLES.indexOf(role);
+  const slotEl=court.children[slotIdx];
+  const scrBox=scr.getBoundingClientRect();
+  const sB=srcEl.getBoundingClientRect(), tB=slotEl.getBoundingClientRect();
+
+  const commit=()=>{
+    filled[role]={ini:c.ini,ovr:c.ovr,grad:team.grad,acc:team.acc};
+    cards=cards.filter((_,i)=>i!==focus); focus=0; render();
+    animating=false;
+  };
+  if(reduce){ commit(); return; }
+
+  // clone volante posizionato sopra la sorgente, poi transizione verso lo slot
+  const fly=document.createElement("div");
+  fly.className="flyer"; fly.style.setProperty("--acc",team.acc);
+  fly.style.left=(sB.left-scrBox.left)+"px"; fly.style.top=(sB.top-scrBox.top)+"px";
+  fly.style.width=sB.width+"px"; fly.style.height=sB.height+"px";
+  fly.innerHTML=`<div class="fbody"><span class="mono-badge" style="background:${team.grad}">${c.ini}</span>
+    <span class="fn">${last(c.n)}</span><span class="fo">${c.ovr}</span></div>`;
+  scr.appendChild(fly);
+  srcEl.style.opacity="0";
+  const dx=(tB.left-scrBox.left)-(sB.left-scrBox.left);
+  const dy=(tB.top-scrBox.top)-(sB.top-scrBox.top);
+  const sc=tB.width/sB.width;
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{
+    fly.style.transform=`translate(${dx}px,${dy}px) scale(${sc})`;
+    fly.style.width=sB.width+"px"; fly.style.height=sB.height+"px";
+    fly.style.opacity=".9";
+  });});
+  setTimeout(()=>{ fly.style.opacity="0"; }, 470);
+  setTimeout(()=>{ fly.remove(); commit(); }, 560);
+}
+
+document.getElementById("b-respin").onclick=()=>reel("respin");
+document.getElementById("b-team").onclick=()=>reel("team");
+document.getElementById("b-add").onclick=addToRoster;
+document.getElementById("b-reset").onclick=()=>{Object.keys(filled).forEach(k=>delete filled[k]);
+  team=TEAMS.GSW;curKey="GSW";respinIdx=0;cards=TEAMS.GSW.pool.map(c=>({...c}));focus=0;animating=false;render();};
+render();
+</script>
+</body>
+</html>

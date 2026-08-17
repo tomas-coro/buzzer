@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tabellone mix vivo - 6 card + carta PRO · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  :root{ --lbl:#adaee0; }
+  body{background:#07071a}
+  .mkbar{position:sticky;top:0;z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:12px 16px;background:#0c0d24;border-bottom:1px solid var(--line)}
+  .mkbar .lbl{font-family:var(--body);font-weight:800;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+  .mkbar .hint{font-family:var(--body);font-size:.66rem;color:var(--bone-dim);margin-left:auto;max-width:52ch;text-align:right}
+
+  .stage{display:flex;justify-content:center;padding:26px 16px 60px}
+  .phone{width:390px;max-width:100%;height:788px;border-radius:44px;border:11px solid #000;
+    background:var(--ink);overflow:hidden;position:relative;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.9), inset 0 0 0 2px #23234f}
+  .phone::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
+    width:118px;height:26px;background:#000;border-radius:0 0 16px 16px;z-index:20}
+  .scr{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .scr::-webkit-scrollbar{display:none}
+  .draft{max-width:none!important;padding:30px 14px 14px!important}
+  /* quintetto piu compatto per far spazio alle 6 righe */
+  .draft .court-block{margin-bottom:12px}
+
+  .mono-badge{display:grid;place-items:center;border-radius:9px;font-family:var(--arcade);color:#fff;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+
+  /* ===================== RIGA VIVA ===================== */
+  .rlist{display:grid;gap:6px}
+  .crd{position:relative;border:1px solid var(--line);border-radius:13px;overflow:hidden;cursor:pointer;
+    background:linear-gradient(100deg,#191a3d,#141336);transition:transform .12s var(--ease,ease),box-shadow .12s}
+  .crd::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc,#3a3a6e)}
+  .crd:hover{transform:translateX(1px)}
+  .crd.on{border-color:var(--acc,var(--yellow));
+    background:linear-gradient(100deg,#232349,#181740);
+    box-shadow:0 0 0 1px var(--acc,var(--yellow)),0 14px 30px -18px rgba(0,0,0,.9),0 0 22px -6px color-mix(in srgb,var(--acc) 55%,transparent)}
+  .r-top{display:grid;grid-template-columns:36px 40px 1fr auto;align-items:center;gap:9px;padding:7px 12px 7px 14px}
+  .r-port{width:36px;height:40px;border-radius:8px;position:relative;overflow:hidden}
+  .r-port .ini{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--arcade);font-size:.66rem;color:#fff}
+  .r-ovr{text-align:center}
+  .r-ovr b{display:block;font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:.86;color:var(--tier,var(--brass))}
+  .r-ovr small{font-family:var(--body);font-weight:800;font-size:.36rem;letter-spacing:.12em;text-transform:uppercase;color:var(--lbl)}
+  .r-id{min-width:0}
+  .r-id .nm{display:block;font-family:var(--display);font-weight:800;font-size:.9rem;color:var(--bone);line-height:1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+  .r-id .sub{display:flex;align-items:center;gap:7px;margin-top:6px;min-width:0}
+  .r-id .pos{font-family:var(--arcade);font-size:.44rem;letter-spacing:.02em;color:#0c0d22;
+    background:var(--acc,#6b6ba0);border-radius:5px;padding:2px 6px;flex:none}
+  .r-role{font-family:var(--body);font-weight:700;font-size:.56rem;letter-spacing:.02em;color:var(--lbl);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .r-stats{display:flex;gap:9px}
+  .r-stats span{text-align:center;min-width:22px;position:relative}
+  .r-stats b{display:block;font-family:var(--led);font-weight:900;font-size:.94rem;color:var(--bone);line-height:1}
+  .r-stats small{display:block;font-family:var(--body);font-weight:800;font-size:.38rem;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--lbl);margin-top:4px}
+  /* stat-firma: la specialita del giocatore si accende (regista sugli AS, rimbalzista sui RB) */
+  .r-stats span.sig b{color:var(--acc);text-shadow:0 0 12px color-mix(in srgb,var(--acc) 60%,transparent)}
+  .r-stats span.sig small{color:var(--acc)}
+  .r-stats span.sig::after{content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);
+    width:14px;height:2px;border-radius:2px;background:var(--acc)}
+
+  /* pannello espanso = mini-carta PRO */
+  .r-exp{max-height:0;overflow:hidden;transition:max-height .26s var(--ease,ease)}
+  .crd.on .r-exp{max-height:200px}
+  .r-panel{padding:1px 14px 11px;display:grid;gap:8px}
+  .r-full{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .r-full .fn{font-family:var(--display);font-weight:800;font-size:.98rem;color:var(--bone);letter-spacing:-.01em}
+  .r-tag{font-family:var(--body);font-weight:800;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--yellow);background:rgba(255,207,51,.1);border:1px solid rgba(255,207,51,.32);border-radius:6px;padding:3px 8px}
+  /* riga box vera (vale per ogni ruolo, niente barre-tiro fuorvianti) */
+  .r-line{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .r-line.def{border-top:1px solid var(--line);padding-top:8px}
+  .r-line span{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .r-line b{font-family:var(--led);font-weight:900;font-size:.86rem;color:var(--bone);line-height:1}
+  .r-line small{font-family:var(--body);font-weight:800;font-size:.4rem;letter-spacing:.06em;text-transform:uppercase;color:var(--lbl)}
+  .r-line span.lo b{color:var(--red)}
+  .r-line span.hot b{color:var(--green)}
+
+  @media (prefers-reduced-motion:reduce){ .crd,.r-exp{transition:none} }
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <span class="lbl">Mix 1+2 · tabellone vivo</span>
+  <span class="hint">Tutte e 6 sempre visibili. In riga: OVR a colore-fascia + PT/RB/AS con la stat-firma accesa (il regista sugli AS, il muro sui RB). Tocca un nome: si apre la riga box vera (FG/3P/TL/Min + difesa). Telefono 390px.</span>
+</div>
+
+<div class="stage">
+  <div class="phone"><div class="scr" id="scr"></div></div>
+</div>
+
+<script type="module">
+const ROLES=["PG","SG","SF","PF","C"];
+// acc = accento squadra (GSW oro), var per squadra in-game
+const GSW="#ffc72c", GSWg="linear-gradient(158deg,#1D428A,#0b1c40)";
+// sig = stat-firma evidenziata in riga (pts/reb/ast); role = archetipo breve
+const CARDS=[
+  {n:"Stephen Curry",  ini:"SC",pos:"PG",role:"Tiratore élite",  sig:"pts",tag:"MVP unanime '16",ovr:94,acc:GSW,grad:GSWg,s:{pts:30.1,reb:5.4,ast:6.7,stl:2.1,blk:0.2,tov:3.3,fg:50.4,tp:45.4,ft:90.8,gp:79,min:34.2}},
+  {n:"Klay Thompson",  ini:"KT",pos:"SG",role:"Bombardiere",     sig:"pts",tag:"Splash Brother",ovr:90,acc:GSW,grad:GSWg,s:{pts:22.1,reb:3.8,ast:2.1,stl:0.8,blk:0.6,tov:1.7,fg:47.0,tp:42.5,ft:87.3,gp:80,min:33.3}},
+  {n:"Draymond Green", ini:"DG",pos:"PF",role:"Motore-regia",    sig:"ast",tag:"Motore difensivo",ovr:90,acc:GSW,grad:GSWg,s:{pts:14.0,reb:9.5,ast:7.4,stl:1.5,blk:1.4,tov:3.2,fg:49.0,tp:38.8,ft:69.6,gp:81,min:34.7}},
+  {n:"Andre Iguodala", ini:"AI",pos:"SF",role:"Jolly Finals",    sig:"ast",tag:"6º uomo Finals",ovr:81,acc:GSW,grad:GSWg,s:{pts:7.0, reb:4.0,ast:3.4,stl:1.1,blk:0.3,tov:1.2,fg:47.8,tp:35.1,ft:61.4,gp:65,min:26.6}},
+  {n:"Harrison Barnes",ini:"HB",pos:"SF",role:"Ala atletica",    sig:"pts",tag:"Ala atletica",ovr:79,acc:GSW,grad:GSWg,s:{pts:11.7,reb:4.9,ast:1.8,stl:0.6,blk:0.2,tov:0.9,fg:46.6,tp:38.3,ft:76.0,gp:66,min:30.0}},
+  {n:"Andrew Bogut",   ini:"AB",pos:"C", role:"Muro in area",    sig:"reb",tag:"Muro in area",ovr:77,acc:GSW,grad:GSWg,s:{pts:5.4, reb:7.0,ast:2.3,stl:0.5,blk:1.6,tov:1.2,fg:62.7,tp:0,  ft:48.0,gp:70,min:20.7}},
+];
+let focus=0;
+
+const FLAME=`<svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`;
+const PLUS=`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg>`;
+const last=n=>n.split(" ").pop();
+// fascia OVR = scala cromatica verticale (oro/argento/bronzo)
+const tier=v=> v>=88?"var(--yellow)": v>=82?"#cdd6ea": "#e08a4a";
+
+function rowHTML(c,i){
+  const s=c.s, on=i===focus;
+  const st=(v,lab,key)=>`<span class="${c.sig===key?"sig":""}"><b>${v}</b><small>${lab}</small></span>`;
+  const pct=v=> v>0 ? v.toFixed(1) : "-";
+  const exp = on ? `<div class="r-exp"><div class="r-panel">
+    <div class="r-full"><span class="fn">${c.n}</span><span class="r-tag">${c.tag}</span></div>
+    <div class="r-line">
+      <span><b>${pct(s.fg)}</b><small>FG%</small></span>
+      <span><b>${pct(s.tp)}</b><small>3P%</small></span>
+      <span><b>${pct(s.ft)}</b><small>TL%</small></span>
+      <span><b>${s.min}</b><small>Min</small></span>
+    </div>
+    <div class="r-line def">
+      <span class="${s.stl>=1.4?"hot":""}"><b>${s.stl}</b><small>Rubate</small></span>
+      <span class="${s.blk>=1.3?"hot":""}"><b>${s.blk}</b><small>Stoppate</small></span>
+      <span class="${s.tov>=3?"lo":""}"><b>${s.tov}</b><small>Persi</small></span>
+      <span><b>${s.gp}</b><small>Partite</small></span>
+    </div>
+  </div></div>` : "";
+  return `<div class="crd ${on?"on":""}" data-i="${i}" role="button" tabindex="0"
+      style="--acc:${c.acc};--tier:${tier(c.ovr)}">
+    <div class="r-top">
+      <span class="r-port mono-badge" style="background:${c.grad}"><span class="ini">${c.ini}</span></span>
+      <span class="r-ovr"><b>${c.ovr}</b><small>OVR</small></span>
+      <span class="r-id">
+        <span class="nm">${last(c.n)}</span>
+        <span class="sub"><span class="pos">${c.pos}</span><span class="r-role">${c.role}</span></span>
+      </span>
+      <span class="r-stats">
+        ${st(s.pts,"PT","pts")}${st(s.reb,"RB","reb")}${st(s.ast,"AS","ast")}
+      </span>
+    </div>
+    ${exp}
+  </div>`;
+}
+
+function render(){
+  const scr=document.getElementById("scr");
+  const court=ROLES.map(r=>
+    (r==="PG")
+      ? `<span class="cc target"><span class="face"><span class="phplus">+</span><span class="fbadge"><span class="r">PG</span><span class="o">?</span></span></span></span>`
+      : `<span class="cc empty"><span class="face"><span class="mono">${r}</span></span></span>`
+  ).join("");
+  scr.innerHTML=`<section class="screen draft">
+    <div class="apphd"><div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill"><span class="mp-ico">${FLAME}</span><span class="mp-txt">Normale</span></div></div>
+    <div class="court-block">
+      <div class="seclab"><span>Il tuo quintetto · 0/5</span></div>
+      <div class="court">${court}</div>
+    </div>
+    <div class="cand-block">
+      <div class="seclab"><span>Candidati PG · 6</span>
+        <div class="aidz"><button class="aid" type="button">re-spin <b>2</b></button><button class="aid" type="button">↺ squadra <b>1</b></button></div>
+      </div>
+      <div class="rlist">${CARDS.map(rowHTML).join("")}</div>
+      <button class="cta" type="button">${PLUS} Metti ${last(CARDS[focus].n)} nel quintetto</button>
+    </div>
+    <p class="src">Da <b>Golden State Warriors</b> · 2015-16</p>
+  </section>`;
+  scr.querySelectorAll(".crd").forEach(el=>el.onclick=()=>{focus=+el.dataset.i;render();});
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft · scelta libera + 6° uomo · Cabina 90s · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:radial-gradient(1200px 600px at 80% -10%,#1d2230 0,transparent 60%),#14171e;
+    color:#e9e4d8;font-family:"Hanken Grotesk",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;
+    min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:22px 16px 60px}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  .intro{position:relative;z-index:1;text-align:center;max-width:520px;margin-bottom:18px}
+  .intro .eyebrow{font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:#e0a96d;font-weight:700}
+  .intro h1{font-family:"Bricolage Grotesque";font-weight:700;font-size:clamp(1.2rem,4vw,1.7rem);margin:.3rem 0 0;letter-spacing:-.015em}
+  .intro p{color:#a6a2c4;font-size:.82rem;margin:.4rem 0 0}
+  .intro b{color:#ffcf33;font-weight:600}
+
+  /* ── phone ── */
+  .phone{position:relative;z-index:1;width:372px;max-width:100%;border:9px solid #05030f;border-radius:36px;background:#05030f;box-shadow:0 26px 60px rgba(0,0,0,.6)}
+  .screen{position:relative;overflow:hidden;border-radius:27px;padding:15px 14px 16px;
+    background:radial-gradient(130% 80% at 50% -8%,#20206a 0,#15163a 52%,#0d0e29 100%)}
+
+  :root{--yellow:#ffcf33;--orange:#ff5b1e;--cream:#f4eee0;--green:#5ccf8e;--red:#ff5038;
+    --dim:#9a99c6;--dim2:#7a7ab0;--hair:#2c2a63;--panel:#1a1640;--panel2:#120f33;
+    --z-toast:60;
+    --e-out:cubic-bezier(.16,1,.3,1)}
+
+  /* ── header ── */
+  .apphd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .wm{font-family:"Bungee";font-size:.9rem;color:var(--yellow);line-height:1}
+  .wm b{color:var(--orange)}
+  .mode-pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:9px;padding:5px 10px}
+  .mode-pill svg{width:13px;height:13px}
+  .mode-pill .f1{fill:var(--orange)}.mode-pill .f2{fill:var(--yellow)}
+  .mode-pill .mp{font-family:"Bungee";font-size:.56rem;color:var(--cream);letter-spacing:.02em}
+
+  /* ── roster board ── */
+  .seclab{display:flex;align-items:center;justify-content:space-between;margin:0 0 8px}
+  .seclab .s{font-size:.56rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:800}
+  .seclab .s em{font-style:normal;color:var(--yellow)}
+  .board{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--hair);border-radius:14px;padding:10px;
+    background-image:radial-gradient(120% 90% at 50% 0,rgba(255,91,30,.09),transparent 58%)}
+  .five{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .slot{position:relative;display:block;border:0;background:none;padding:0;cursor:default}
+  .slot .face{position:relative;width:100%;aspect-ratio:3/4;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#2a2450),var(--tc2,#191436))}
+  .slot .face .mono{font-family:"Bungee";font-size:1rem;color:rgba(255,255,255,.92);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .slot .face::before{content:"";position:absolute;inset:0;opacity:.5;
+    background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.15),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .slot .rl{position:absolute;top:4px;left:4px;font-family:"Bungee";font-size:.42rem;color:var(--yellow);background:rgba(5,3,15,.6);border-radius:5px;padding:2px 4px;z-index:3;letter-spacing:.02em}
+  .slot .ov{position:absolute;bottom:0;left:0;right:0;text-align:right;padding:2px 5px;z-index:3;
+    background:linear-gradient(180deg,transparent,rgba(5,3,15,.88));font-family:"Doto";font-weight:900;font-size:.72rem;color:var(--yellow)}
+  /* empty slot */
+  .slot.empty .face{background:#181433;border:1.5px dashed #3a3570}
+  .slot.empty .face::before{display:none}
+  .slot.empty .ph{font-family:"Bungee";font-size:.78rem;color:#4f4a86}
+  /* target (ruolo dove sto per pescare in modello vecchio) - non usato qui, tenuto per stile */
+  /* eligible (uno slot dove il candidato a fuoco può andare) */
+  .slot.elig{cursor:pointer}
+  .slot.elig .face{border:1.5px solid var(--yellow);background:#241b12;animation:glow 1.4s var(--e-out) infinite}
+  .slot.elig .ph{color:var(--yellow)}
+  .slot.elig::after{content:"metti";position:absolute;top:-8px;left:50%;transform:translateX(-50%);
+    font-family:"Bungee";font-size:.4rem;letter-spacing:.04em;color:#1a1206;background:var(--yellow);padding:2px 5px;border-radius:6px;z-index:4;white-space:nowrap;box-shadow:0 2px 0 #b8901f}
+  @keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(255,207,51,.0)}50%{box-shadow:0 0 0 3px rgba(255,207,51,.28)}}
+  .slot.just .face{animation:drop .42s var(--e-out)}
+  @keyframes drop{from{transform:translateY(-9px);opacity:0}to{transform:none;opacity:1}}
+
+  /* bench / sesto uomo */
+  .benchrow{display:flex;align-items:center;gap:8px;margin-top:9px;padding-top:9px;border-top:1px dashed #3a3570}
+  .benchlab{flex:none;width:52px}
+  .benchlab .t{font-family:"Bungee";font-size:.5rem;color:var(--orange);line-height:1.1}
+  .benchlab .x{display:block;font-family:"Doto";font-weight:900;font-size:.5rem;color:var(--dim);margin-top:2px;letter-spacing:.02em}
+  .slot.sixth{flex:none;width:58px}
+  .slot.sixth .face{aspect-ratio:1/1}
+  .benchnote{flex:1;font-size:.54rem;color:var(--dim2);line-height:1.35}
+  .benchnote b{color:var(--cream);font-weight:700}
+
+  /* ── source + aids ── */
+  .srcrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 0 8px}
+  .src{font-size:.58rem;color:var(--dim);letter-spacing:.04em}
+  .src b{font-family:"Bungee";font-size:.56rem;color:var(--cream);letter-spacing:.01em}
+  .aidz{display:flex;gap:5px}
+  .aid{font-family:"Bungee";font-size:.44rem;letter-spacing:.02em;color:var(--dim);background:#141238;border:1px solid var(--hair);border-radius:7px;padding:5px 7px;cursor:pointer;transition:color .15s,border-color .15s}
+  .aid b{color:var(--yellow)}
+  .aid:hover{color:var(--cream);border-color:#4a4790}
+  .aid:disabled{opacity:.4;cursor:not-allowed}
+  .aid:active{transform:translateY(1px)}
+
+  /* ── hero candidate ── */
+  .hero{position:relative;background:linear-gradient(180deg,#241a3e,#141538);border:1px solid #3a2a66;border-radius:13px;padding:12px}
+  .inhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .inlab{font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--yellow);font-weight:800}
+  .nchip{font-size:.5rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#ffd9a0;
+    background:rgba(255,91,30,.14);border:1px solid rgba(255,91,30,.42);border-radius:99px;padding:3px 8px}
+  .hmain{display:flex;gap:11px;align-items:flex-start}
+  .hface{position:relative;width:74px;height:92px;flex:none;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447))}
+  .hface::before{content:"";position:absolute;inset:0;opacity:.5;background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .hface .mono{font-family:"Bungee";font-size:1.4rem;color:rgba(255,255,255,.92);text-shadow:0 2px 0 rgba(0,0,0,.3)}
+  .hinfo{flex:1;min-width:0}
+  .topline{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .hnm{font-family:"Bungee";font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ovrBig{font-family:"Bungee";font-size:2.05rem;line-height:.8;color:var(--yellow);flex:none;text-shadow:2px 2px 0 #b8901f,4px 4px 0 rgba(0,0,0,.45)}
+  .hpos{font-size:.52rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:5px 0 8px}
+  .hpos .sec{color:var(--dim2)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:6px 11px}
+  .st .stl{display:flex;justify-content:space-between;font-size:.44rem;letter-spacing:.05em;text-transform:uppercase;color:var(--dim);font-weight:800;margin-bottom:3px}
+  .st .stnum{font-family:"Doto";font-weight:900;color:var(--cream)}
+  .trk{display:block;height:6px;border-radius:99px;background:#211f55;overflow:hidden}
+  .fil{display:block;height:100%;border-radius:99px;background:var(--green);transition:width .4s var(--e-out)}
+  .fil.md{background:var(--yellow)}.fil.lo{background:var(--red)}
+  .hero.blocked{border-color:#5a2a2a}
+  .blockmsg{margin-top:9px;font-size:.6rem;color:#ffb0a6;background:rgba(255,80,56,.1);border:1px solid rgba(255,80,56,.3);border-radius:8px;padding:7px 9px;line-height:1.35}
+  .blockmsg b{color:#fff}
+
+  /* ── shortlist ── */
+  .short{display:flex;gap:6px;margin-top:11px}
+  .sh{flex:1;position:relative;cursor:pointer;border-radius:9px;overflow:hidden;border:1px solid var(--hair);background:none;padding:0;transition:transform .14s var(--e-out);
+    animation:rise .34s var(--e-out) both;animation-delay:calc(var(--i)*45ms)}
+  @keyframes rise{from{transform:translateY(7px);opacity:0}to{transform:none;opacity:1}}
+  .sh .f{position:relative;width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(158deg,var(--tc1,#552583),var(--tc2,#2f1447))}
+  .sh .f::before{content:"";position:absolute;inset:0;opacity:.5;background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.14),transparent 70%),repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+  .sh .f .mono{font-family:"Bungee";font-size:.72rem;color:rgba(255,255,255,.92)}
+  .sh .sn{position:relative;z-index:2;display:block;font-size:.42rem;font-weight:800;text-align:center;padding:2px 1px;
+    background:#161238;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sh .sn em{font-style:normal;color:var(--yellow)}
+  .sh:hover{transform:translateY(-2px)}
+  .sh.on{border-color:var(--yellow);transform:translateY(-4px);box-shadow:0 6px 13px rgba(0,0,0,.45)}
+  .sh.on .sn{background:var(--yellow);color:#1a1206}
+  .sh.on .sn em{color:#6b4d08}
+  .sh.off{opacity:.42;filter:grayscale(.5)}
+  .sh.off .sn em{color:var(--dim)}
+  .sh.taken .sn{color:var(--green);font-size:.4rem}
+
+  /* ── cta ── */
+  .cta{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;cursor:pointer;margin-top:12px;
+    font-family:"Bungee";font-size:.76rem;color:#1a1206;background:var(--yellow);border-radius:11px;padding:14px;min-height:48px;border:0;box-shadow:0 4px 0 #b8901f;
+    transition:transform .12s var(--e-out),box-shadow .12s var(--e-out)}
+  .cta svg{width:15px;height:15px;fill:currentColor}
+  .cta:active{transform:translateY(3px);box-shadow:0 1px 0 #b8901f}
+  .cta:disabled{background:#3a3763;color:#7a77a8;box-shadow:0 4px 0 #232152;cursor:not-allowed}
+  .cta.go{background:linear-gradient(180deg,#66e0a0,#3fb87e);box-shadow:0 4px 0 #2b7d55;color:#08301f}
+
+  /* ── complete state ── */
+  .done{text-align:center;padding:6px 4px 2px;animation:rise .4s var(--e-out) both}
+  .done .big{font-family:"Bungee";font-size:1rem;color:var(--green);letter-spacing:.01em}
+  .done p{font-size:.66rem;color:var(--dim);margin:.35rem 0 0}
+  .done p b{color:var(--cream)}
+
+  /* toast */
+  .toast{position:absolute;left:50%;bottom:14px;transform:translateX(-50%) translateY(8px);z-index:var(--z-toast);
+    font-family:"Bungee";font-size:.56rem;color:#1a1206;background:var(--yellow);padding:8px 13px;border-radius:9px;box-shadow:0 6px 16px rgba(0,0,0,.5);
+    opacity:0;pointer-events:none;transition:opacity .25s var(--e-out),transform .25s var(--e-out)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .foot{position:relative;z-index:1;max-width:520px;margin-top:18px;font-size:.64rem;color:#8a89b4;line-height:1.5;text-align:center}
+  .foot b{color:#ffcf33}
+  .reset{margin-top:10px;font:inherit;font-size:.7rem;color:#cfcbea;background:#1b1f28;border:1px solid #323a4a;border-radius:9px;padding:9px 16px;cursor:pointer}
+  .reset:hover{border-color:#4a4790}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+</style>
+</head>
+<body>
+
+  <div class="intro">
+    <div class="eyebrow">Draft · rebuild</div>
+    <h1>Scegli tu, slot per slot</h1>
+    <p>Niente ruolo forzato in ordine: <b>tocca un provino</b>, si accendono gli slot liberi dove può giocare, <b>tocchi lo slot</b>. Piu' il <b>6° uomo</b> (jolly, minuti ridotti). Clicca davvero: draft completo.</p>
+  </div>
+
+  <div class="phone"><div class="screen" id="screen">
+
+    <div class="apphd">
+      <div class="wm">BU<b>ZZ</b>ER</div>
+      <div class="mode-pill">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>
+        <span class="mp">Normale</span>
+      </div>
+    </div>
+
+    <div class="seclab"><span class="s">La tua squadra · <em id="count">0</em>/6</span></div>
+    <div class="board">
+      <div class="five" id="five"></div>
+      <div class="benchrow">
+        <div class="benchlab"><span class="t">6°<br>UOMO</span><span class="x">0.55&times;</span></div>
+        <div id="sixthWrap"></div>
+        <div class="benchnote" id="benchnote">Jolly: qualsiasi ruolo. Gioca <b>meno minuti</b>, pesa 0.55 sul voto. Anche gli avversari ne hanno uno.</div>
+      </div>
+    </div>
+
+    <div id="draftZone">
+      <div class="srcrow">
+        <span class="src">Provini da <b id="srcTeam">-</b> · <span id="srcSeason">-</span></span>
+        <div class="aidz">
+          <button class="aid" id="aRespin" type="button">re-spin <b>2</b></button>
+          <button class="aid" id="aTeam" type="button">↺ squadra <b>2</b></button>
+        </div>
+      </div>
+
+      <div class="hero" id="hero"></div>
+      <div class="short" id="short"></div>
+      <button class="cta" id="cta" type="button"></button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div></div>
+
+  <p class="foot">Mockup cliccabile - <b>motore non toccato qui</b>. Il 6° uomo che conta (peso minuti 0.55) e gli avversari col 6° sono la modifica contenuta a <b>rating.js/run.js/opponents.js</b> concordata, da fare nell'app vera solo dopo l'ok.</p>
+  <button class="reset" id="reset" type="button">↺ Ricomincia il draft</button>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+//  DATI FINTI - pool di team-stagioni (top-5 ciascuna).
+//  pos: {p:primario, s:secondario|null}. bars: [Tiro,Fisico,Difesa,Regia].
+//  tc: colori squadra (presentazione, come team-colors.js nell'app).
+// ─────────────────────────────────────────────────────────────
+const TEAMS = {
+  "GSW|2016-17":{tc:["#1d428a","#0f2350"],cards:[
+    {mono:"KD",nm:"Kevin Durant",pos:{p:"SF",s:"PF"},ovr:96,chip:"morte lenta",bars:[88,84,82,80]},
+    {mono:"SC",nm:"Stephen Curry",pos:{p:"PG",s:"SG"},ovr:95,chip:"tiro da 3",bars:[96,68,74,92]},
+    {mono:"KT",nm:"Klay Thompson",pos:{p:"SG",s:"SF"},ovr:90,chip:"3&D",bars:[92,74,82,64]},
+    {mono:"DG",nm:"Draymond Green",pos:{p:"PF",s:"C"},ovr:88,chip:"difesa",bars:[70,82,90,84]},
+    {mono:"ZP",nm:"Zaza Pachulia",pos:{p:"C",s:null},ovr:74,chip:"spalla",bars:[40,80,74,44]},
+  ]},
+  "LAL|2019-20":{tc:["#552583","#2f1447"],cards:[
+    {mono:"LJ",nm:"LeBron James",pos:{p:"SF",s:"PG"},ovr:97,chip:"regia",bars:[82,86,84,95]},
+    {mono:"AD",nm:"Anthony Davis",pos:{p:"PF",s:"C"},ovr:95,chip:"stoppate",bars:[74,88,90,60]},
+    {mono:"DH",nm:"Dwight Howard",pos:{p:"C",s:null},ovr:78,chip:"rimbalzi",bars:[40,86,80,35]},
+    {mono:"DG",nm:"Danny Green",pos:{p:"SG",s:"SF"},ovr:76,chip:"angolo",bars:[80,68,80,54]},
+    {mono:"AC",nm:"Alex Caruso",pos:{p:"PG",s:"SG"},ovr:74,chip:"garra",bars:[70,70,84,68]},
+  ]},
+  "CHI|1995-96":{tc:["#ce1141","#6e0a23"],cards:[
+    {mono:"MJ",nm:"Michael Jordan",pos:{p:"SG",s:"SF"},ovr:98,chip:"killer",bars:[92,86,88,84]},
+    {mono:"SP",nm:"Scottie Pippen",pos:{p:"SF",s:"PF"},ovr:93,chip:"point-forward",bars:[80,84,90,86]},
+    {mono:"DR",nm:"Dennis Rodman",pos:{p:"PF",s:"C"},ovr:82,chip:"rimbalzi",bars:[30,86,86,40]},
+    {mono:"TK",nm:"Toni Kukoc",pos:{p:"SF",s:"PF"},ovr:82,chip:"jolly",bars:[82,72,70,80]},
+    {mono:"RH",nm:"Ron Harper",pos:{p:"PG",s:"SG"},ovr:79,chip:"difesa",bars:[70,74,82,72]},
+  ]},
+  "BOS|2007-08":{tc:["#007a33","#00401b"],cards:[
+    {mono:"KG",nm:"Kevin Garnett",pos:{p:"PF",s:"C"},ovr:93,chip:"intimidatore",bars:[78,86,92,72]},
+    {mono:"PP",nm:"Paul Pierce",pos:{p:"SF",s:"SG"},ovr:91,chip:"the truth",bars:[86,78,78,80]},
+    {mono:"RA",nm:"Ray Allen",pos:{p:"SG",s:null},ovr:89,chip:"tiro",bars:[92,70,74,66]},
+    {mono:"RR",nm:"Rajon Rondo",pos:{p:"PG",s:null},ovr:82,chip:"assist",bars:[58,74,84,90]},
+    {mono:"KP",nm:"Kendrick Perkins",pos:{p:"C",s:null},ovr:76,chip:"muro",bars:[36,82,80,38]},
+  ]},
+  "MIA|2012-13":{tc:["#98002e","#4d0017"],cards:[
+    {mono:"LJ",nm:"LeBron James",pos:{p:"SF",s:"PF"},ovr:98,chip:"onnisciente",bars:[86,88,90,92]},
+    {mono:"DW",nm:"Dwyane Wade",pos:{p:"SG",s:"PG"},ovr:92,chip:"flash",bars:[82,80,84,82]},
+    {mono:"CB",nm:"Chris Bosh",pos:{p:"C",s:"PF"},ovr:86,chip:"spazio",bars:[80,76,78,64]},
+    {mono:"RA",nm:"Ray Allen",pos:{p:"SG",s:null},ovr:82,chip:"angolo",bars:[90,64,68,60]},
+    {mono:"MC",nm:"Mario Chalmers",pos:{p:"PG",s:"SG"},ovr:76,chip:"gregario",bars:[72,66,74,74]},
+  ]},
+  "SAS|2013-14":{tc:["#5a5a5a","#232323"],cards:[
+    {mono:"TD",nm:"Tim Duncan",pos:{p:"C",s:"PF"},ovr:90,chip:"fondamentale",bars:[66,84,90,74]},
+    {mono:"TP",nm:"Tony Parker",pos:{p:"PG",s:null},ovr:89,chip:"tear-drop",bars:[78,74,74,88]},
+    {mono:"KL",nm:"Kawhi Leonard",pos:{p:"SF",s:"SG"},ovr:86,chip:"the claw",bars:[78,82,92,64]},
+    {mono:"MG",nm:"Manu Ginobili",pos:{p:"SG",s:"PG"},ovr:84,chip:"eurostep",bars:[82,72,78,84]},
+    {mono:"TS",nm:"Tiago Splitter",pos:{p:"C",s:"PF"},ovr:76,chip:"pick&roll",bars:[48,80,76,52]},
+  ]},
+};
+const ROLES = ["PG","SG","SF","PF","C"];
+const ROLE_FULL = {PG:"Playmaker",SG:"Guardia",SF:"Ala piccola",PF:"Ala grande",C:"Centro",SIXTH:"6° uomo"};
+const BAR_LAB = ["Tiro","Fisico","Difesa","Regia"];
+
+const canPlay = (card, role) => role==="SIXTH" ? true : (card.pos.p===role || card.pos.s===role);
+const tier = v => v>=83 ? "" : v>=70 ? "md" : "lo";
+const lastName = nm => nm.split(" ").slice(-1)[0];
+
+// ── STATO ──
+let slots, spinKey, focus, aids, lastKey, drafted;
+function fresh(){
+  slots = {PG:null,SG:null,SF:null,PF:null,C:null,SIXTH:null};
+  aids = {respin:2, team:2};
+  lastKey = null;
+  drafted = new Set();   // nomi già pescati: niente stesso giocatore due volte
+  newSpin();
+}
+
+// Slot ancora liberi.
+const openSlots = () => [...ROLES,"SIXTH"].filter(r=>!slots[r]);
+const isTaken = c => drafted.has(c.nm);
+// Uno spin è "utile" se almeno una carta libera entra in almeno uno slot libero.
+function usefulKey(key){
+  const open = openSlots();
+  return TEAMS[key].cards.some(c => !isTaken(c) && open.some(r=>canPlay(c,r)));
+}
+function newSpin(){
+  const keys = Object.keys(TEAMS).filter(k=>k!==lastKey && usefulKey(k));
+  const pick = (keys.length?keys:Object.keys(TEAMS).filter(usefulKey));
+  spinKey = pick[Math.floor(Math.random()*pick.length)];
+  lastKey = spinKey;
+  // fuoco iniziale: prima carta libera e assegnabile, se no la prima.
+  const cards = TEAMS[spinKey].cards;
+  const idx = cards.findIndex(c => !isTaken(c) && openSlots().some(r=>canPlay(c,r)));
+  focus = idx<0 ? cards.findIndex(c=>!isTaken(c)) : idx;
+  if(focus<0) focus = 0;
+}
+
+// ── DOM refs ──
+const $ = id => document.getElementById(id);
+const five=$("five"), sixthWrap=$("sixthWrap"), hero=$("hero"), short=$("short"),
+      cta=$("cta"), draftZone=$("draftZone"), countEl=$("count"),
+      srcTeam=$("srcTeam"), srcSeason=$("srcSeason"), benchnote=$("benchnote");
+
+function faceInner(card){ return `<span class="mono">${card.mono}</span>`; }
+
+// slot markup (role tra PG..C oppure SIXTH)
+function slotHTML(role, isSixth){
+  const c = slots[role];
+  const cls = isSixth ? "slot sixth" : "slot";
+  if(c){
+    const [t1,t2]=c._tc;
+    return `<button class="${cls} filled" data-slot="${role}" style="--tc1:${t1};--tc2:${t2}" aria-label="${c.nm} in ${ROLE_FULL[role]}">
+      <span class="face">${isSixth?"":`<span class="rl">${role}</span>`}${faceInner(c)}<span class="ov">${c.ovr}</span></span></button>`;
+  }
+  return `<button class="${cls} empty" data-slot="${role}" aria-label="Slot ${ROLE_FULL[role]} libero">
+    <span class="face"><span class="ph">${isSixth?"6°":role}</span></span></button>`;
+}
+
+let justSlot = null; // per animazione drop una volta
+
+function renderBoard(){
+  five.innerHTML = ROLES.map(r=>slotHTML(r,false)).join("");
+  sixthWrap.innerHTML = slotHTML("SIXTH",true);
+  countEl.textContent = [...ROLES,"SIXTH"].filter(r=>slots[r]).length;
+  if(justSlot){
+    const node = document.querySelector(`[data-slot="${justSlot}"]`);
+    if(node) node.classList.add("just");
+    justSlot=null;
+  }
+}
+
+function eligibleFor(card){ return isTaken(card) ? [] : openSlots().filter(r=>canPlay(card,r)); }
+
+function paintDraft(){
+  const cards = TEAMS[spinKey].cards;
+  const [team,season]=spinKey.split("|");
+  srcTeam.textContent=team; srcSeason.textContent=season;
+  aidBtns();
+
+  const card = cards[focus];
+  const elig = eligibleFor(card);
+  const blocked = elig.length===0;
+
+  // hero
+  const [t1,t2]=TEAMS[spinKey].tc;
+  hero.className = "hero"+(blocked?" blocked":"");
+  hero.innerHTML = `
+    <div class="inhd"><span class="inlab">Provino a fuoco</span><span class="nchip">${card.chip}</span></div>
+    <div class="hmain">
+      <span class="hface" style="--tc1:${t1};--tc2:${t2}"><span class="mono">${card.mono}</span></span>
+      <span class="hinfo">
+        <div class="topline"><span class="hnm">${card.nm}</span><span class="ovrBig">${card.ovr}</span></div>
+        <div class="hpos">${ROLE_FULL[card.pos.p]}${card.pos.s?` <span class="sec">/ ${card.pos.s}</span>`:""} · ${season}</div>
+        <span class="stats">${card.bars.map((v,i)=>`
+          <span class="st"><span class="stl"><span>${BAR_LAB[i]}</span><span class="stnum">${v}</span></span>
+          <span class="trk"><i class="fil ${tier(v)}" style="width:${v}%"></i></span></span>`).join("")}</span>
+      </span>
+    </div>
+    ${blocked?`<div class="blockmsg">${isTaken(card)
+        ? `<b>${lastName(card.nm)}</b> è già nella tua squadra. Scegli un altro provino o fai <b>re-spin</b>.`
+        : `<b>${lastName(card.nm)}</b> non entra in nessuno slot libero (${card.pos.p}${card.pos.s?"/"+card.pos.s:""}). Scegli un altro provino o fai <b>re-spin</b>.`}</div>`:""}`;
+
+  // shortlist
+  short.innerHTML = cards.map((c,i)=>{
+    const taken = isTaken(c);
+    const off = taken || eligibleFor(c).length===0;
+    const [tt1,tt2]=TEAMS[spinKey].tc;
+    return `<button class="sh ${i===focus?"on":""} ${off?"off":""} ${taken?"taken":""}" style="--i:${i};--tc1:${tt1};--tc2:${tt2}" data-i="${i}" type="button" aria-label="${c.nm}, generale ${c.ovr}${taken?", già preso":""}">
+      <span class="f"><span class="mono">${c.mono}</span></span>
+      <span class="sn">${taken?"preso ✓":`${lastName(c.nm)} <em>${c.ovr}</em>`}</span></button>`;
+  }).join("");
+
+  // CTA - piazza nello slot "migliore" (primo ruolo compatibile, poi 6°)
+  if(blocked){
+    cta.disabled=true;
+    cta.innerHTML = `${lastName(card.nm)} non ha slot liberi`;
+  } else {
+    cta.disabled=false;
+    const target = elig[0];
+    const where = target==="SIXTH" ? "6° uomo" : ROLE_FULL[target];
+    const multi = elig.length>1 ? ` <span style="font-weight:400;font-family:Hanken Grotesk;font-size:.6rem;opacity:.8">(o scegli slot ↑)</span>` : "";
+    cta.innerHTML = `<svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z"/></svg> Metti ${lastName(card.nm)} · ${where}${multi}`;
+    cta.dataset.target = target;
+  }
+
+  // accendi gli slot idonei sulla board
+  document.querySelectorAll(".slot").forEach(s=>s.classList.remove("elig"));
+  if(!blocked){
+    elig.forEach(r=>{
+      const node=document.querySelector(`.slot[data-slot="${r}"]`);
+      if(node && !slots[r]) node.classList.add("elig");
+    });
+  }
+}
+
+function aidBtns(){
+  $("aRespin").innerHTML = `re-spin <b>${aids.respin}</b>`;
+  $("aTeam").innerHTML = `↺ squadra <b>${aids.team}</b>`;
+  $("aRespin").disabled = aids.respin<=0;
+  $("aTeam").disabled = aids.team<=0;
+}
+
+// ── AZIONI ──
+function place(role){
+  const card = TEAMS[spinKey].cards[focus];
+  if(!card || slots[role] || !canPlay(card,role)) return;
+  slots[role] = {...card, _tc:TEAMS[spinKey].tc};
+  drafted.add(card.nm);
+  justSlot = role;
+  toast(`${lastName(card.nm)} → ${role==="SIXTH"?"6° uomo":role}`);
+  renderBoard();
+  if([...ROLES,"SIXTH"].every(r=>slots[r])){ complete(); return; }
+  newSpin();
+  paintDraft();
+}
+
+function complete(){
+  document.querySelectorAll(".slot").forEach(s=>s.classList.remove("elig"));
+  draftZone.innerHTML = `
+    <div class="done">
+      <div class="big">Squadra al completo</div>
+      <p>6 uomini pescati da <b>6 franchigie diverse</b>. Il 6° pesa 0.55 sul voto.</p>
+    </div>
+    <button class="cta go" id="goCoach" type="button">Vai al Coach →</button>`;
+  $("goCoach").onclick = ()=>toast("(demo) qui parte lo step Coach");
+}
+
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),1400);
+}
+
+// ── EVENTI (delega) ──
+$("screen").addEventListener("click", e=>{
+  const sh = e.target.closest(".sh");
+  if(sh){ focus=+sh.dataset.i; paintDraft(); return; }
+  const slot = e.target.closest(".slot.elig");
+  if(slot){ place(slot.dataset.slot); return; }
+});
+cta.addEventListener("click", ()=>{ if(!cta.disabled) place(cta.dataset.target); });
+$("aRespin").addEventListener("click", ()=>{ if(aids.respin<=0)return; aids.respin--; newSpin(); paintDraft(); toast("nuovi provini"); });
+$("aTeam").addEventListener("click", ()=>{ if(aids.team<=0)return; aids.team--; newSpin(); paintDraft(); toast("nuova squadra"); });
+$("reset").addEventListener("click", ()=>{
+  draftZone.innerHTML = `
+    <div class="srcrow">
+      <span class="src">Provini da <b id="srcTeam">-</b> · <span id="srcSeason">-</span></span>
+      <div class="aidz">
+        <button class="aid" id="aRespin" type="button">re-spin <b>2</b></button>
+        <button class="aid" id="aTeam" type="button">↺ squadra <b>2</b></button>
+      </div>
+    </div>
+    <div class="hero" id="hero"></div>
+    <div class="short" id="short"></div>
+    <button class="cta" id="cta" type="button"></button>`;
+  location.reload();
+});
+
+fresh();
+renderBoard();
+paintDraft();
+</script>
+</body>
+</html>

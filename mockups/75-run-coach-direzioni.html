@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>75 - Run + Coach: 3 direzioni ciascuna · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   75 - RUN + COACH, 3 direzioni ciascuna.  Tappa 1 del refresh grafico.
+   File AUTONOMO: i token della pelle Cabina 90s sono ricopiati qui sotto e non
+   importo prototype/imbattuto/styles.css. Motivo: i mockup 70 e 73 si sono rotti
+   per collisioni di nomi-classe con la styles.css importata (.r -> .crd, .flash
+   -> .hd-flash). Qui ogni classe nuova ha prefisso `k-` (schermo) o `mk-` (barra
+   del mockup), così il porting nell'app non porta dietro sorprese.
+   Device: telefono 390px (deciso: mobile).
+   ========================================================================== */
+:root{
+  /* --- pelle Cabina 90s (identica a prototype/imbattuto/styles.css) --- */
+  --ink:#15163a; --ink-2:#1d1e4a; --ink-3:#2a2a63; --line:#2c2a63;
+  --bone:#f4eee0; --bone-dim:#8a8bc0;
+  --brass:#ff5b1e; --brass-deep:#c2480c; --yellow:#ffcf33;
+  --green:#5ccf8e; --red:#ff5038;
+  --deep:#0d0e29; --near-black:#0a0a18;
+  --arcade:"Bungee", system-ui, sans-serif;
+  --display:"Bricolage Grotesque", system-ui, sans-serif;
+  --led:"Doto", ui-monospace, monospace;
+  --body:"Hanken Grotesk", system-ui, sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-out-quint:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#07071a;color:var(--bone);font-family:var(--body);-webkit-font-smoothing:antialiased}
+
+/* ═══════════════ barra di controllo del mockup (non fa parte del design) ═══ */
+.mkbar{position:sticky;top:0;z-index:40;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  padding:12px 18px;background:#0c0d24;border-bottom:1px solid var(--line)}
+.mk-group{display:flex;align-items:center;gap:8px}
+.mk-lbl{font-weight:800;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.mk-chip{font-family:var(--body);font-weight:800;font-size:.68rem;letter-spacing:.01em;color:var(--bone-dim);
+  background:#141539;border:1px solid var(--line);border-radius:999px;padding:9px 15px;min-height:38px;cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s}
+.mk-chip:hover{color:var(--bone);border-color:var(--brass-deep)}
+.mk-chip[aria-pressed="true"]{color:#0c0d22;background:var(--yellow);border-color:var(--yellow)}
+.mk-chip:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mk-note{margin-left:auto;font-size:.66rem;line-height:1.45;color:var(--bone-dim);max-width:46ch;text-align:right;text-wrap:pretty}
+.mk-note b{color:var(--bone)}
+
+/* titolo della direzione, sopra il telefono */
+.mk-head{text-align:center;padding:22px 18px 4px}
+.mk-head h2{margin:0;font-family:var(--arcade);font-size:1.05rem;letter-spacing:.01em;color:var(--yellow)}
+.mk-head p{margin:9px auto 0;max-width:56ch;font-size:.78rem;line-height:1.55;color:var(--bone-dim);text-wrap:pretty}
+.mk-head p b{color:var(--bone)}
+
+/* ═══════════════ frame telefono ═══════════════ */
+.stage{display:flex;justify-content:center;padding:18px 16px 64px}
+/* 740px = altezza utile reale di un telefono in browser (iPhone 14 in Safari sta
+   sui ~715). I mockup vecchi usavano 788 e questo faceva progettare contro spazio
+   che sul telefono vero non esiste. */
+.phone{width:390px;max-width:100%;height:740px;border-radius:44px;border:11px solid #000;background:var(--ink);
+  overflow:hidden;position:relative;box-shadow:0 40px 90px -30px rgba(0,0,0,.9)}
+
+/* schermo: stessa atmosfera dell'app (grana a puntini + alone caldo dall'alto) */
+.k-scr{position:absolute;inset:0;display:flex;flex-direction:column;isolation:isolate;overflow:hidden;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+    radial-gradient(130% 80% at 50% 0%, #232463 0, var(--ink) 46%, var(--deep) 100%)}
+
+/* ---- header-cabina, condiviso da tutte le direzioni ---- */
+.k-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:20px 18px 0;flex:none}
+.k-wm{font-family:var(--arcade);font-size:1rem;line-height:1;color:var(--yellow)}
+.k-wm b{color:var(--brass)}
+.k-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
+  background:rgba(255,91,30,.12);border:1px solid var(--line)}
+.k-pill svg{width:13px;height:13px}
+.k-pill .f1{fill:var(--brass)} .k-pill .f2{fill:var(--yellow)}
+.k-pill span{font-family:var(--arcade);font-size:.58rem;letter-spacing:.04em;text-transform:uppercase;color:var(--bone)}
+
+/* corpo di ogni direzione: riempie l'altezza, la CTA resta in fondo */
+.k-body{flex:1;display:flex;flex-direction:column;min-height:0;padding:16px 18px 20px}
+
+/* ---- CTA arcade (stessa della home: giallo, bordo nero, ombra dura) ---- */
+.k-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;flex:none;
+  font-family:var(--arcade);font-size:1.02rem;letter-spacing:.03em;text-transform:uppercase;
+  color:var(--near-black);background:var(--yellow);border:2.5px solid var(--near-black);border-radius:15px;
+  box-shadow:5px 5px 0 var(--near-black);cursor:pointer;
+  transition:transform .1s var(--ease),box-shadow .1s var(--ease),background .2s,color .2s}
+.k-cta:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--near-black)}
+.k-cta:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--near-black)}
+.k-cta:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
+.k-cta svg{width:17px;height:17px;fill:currentColor}
+.k-cta[disabled]{background:var(--ink-3);color:var(--bone-dim);border-color:#000;box-shadow:3px 3px 0 #000;
+  cursor:default;transform:none}
+
+/* ---- facce segnaposto: gradiente colore squadra + iniziali (come nel draft) ---- */
+.k-face{position:relative;border-radius:9px;overflow:hidden;flex:none;display:block;
+  background:linear-gradient(158deg,var(--tc1,#3a2d5e) 0,var(--tc2,#211636) 100%)}
+.k-face::before{content:"";position:absolute;inset:0;opacity:.5;
+  background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),
+    repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+.k-face .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--arcade);color:rgba(255,255,255,.94);text-shadow:0 2px 0 rgba(0,0,0,.35)}
+
+/* ---- striscia quintetto (usata da A e C) ---- */
+.k-five{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;flex:none}
+.k-p{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 3px 8px;border-radius:11px;
+  background:rgba(255,255,255,.025);border:1px solid var(--line)}
+.k-p .k-face{width:100%;aspect-ratio:1/1.34}
+.k-p .k-face .ini{font-size:.82rem}
+.k-p .role{font-family:var(--arcade);font-size:.46rem;letter-spacing:.03em;color:var(--bone-dim);line-height:1}
+.k-p .ovr{font-family:var(--led);font-weight:900;font-size:1rem;line-height:1;color:var(--bone)}
+.k-p .ovr.oro{color:#ffcf4d} .k-p .ovr.arg{color:#d6dbe6} .k-p .ovr.brz{color:#c78a5b}
+.k-five-lab{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px;flex:none}
+.k-five-lab .t{font-weight:800;font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dim)}
+.k-five-lab .v{font-family:var(--arcade);font-size:.56rem;letter-spacing:.02em;color:var(--brass)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RUN · direzione A - TABELLONE DA PALAZZETTO
+   L'oggetto È la schermata: un tabellone LED appeso, con cornice, viti e sirena.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.kA{gap:14px}
+/* percorso compatto in testa: 16 tacche, si legge "quanto manca" a colpo d'occhio */
+.kA-streak{flex:none}
+.kA-streak .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px}
+.kA-streak .lab{font-weight:800;font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+.kA-streak .num{font-family:var(--led);font-weight:900;font-size:1.05rem;line-height:1;color:var(--yellow)}
+.kA-streak .num i{font-style:normal;font-size:.72rem;color:var(--bone-dim)}
+.kA-ticks{display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+.kA-ticks span{height:9px;border-radius:2px;background:#23244f;border:1px solid #2f3068}
+.kA-ticks span.on{background:linear-gradient(180deg,var(--yellow),var(--brass));border-color:var(--yellow);
+  box-shadow:0 0 8px -2px var(--yellow)}
+.kA-ticks span.next{border-color:var(--yellow);background:#2b2c63}
+
+/* il tabellone: cresce e si prende lo spazio libero, invece di lasciare un buco
+   sopra la CTA. È la tesi della direzione - l'oggetto È la schermata - quindi
+   deve dominare, non galleggiare. */
+.kA-board{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;
+  border-radius:16px;padding:14px 14px 16px;
+  background:linear-gradient(180deg,#1a1b46,#101132);
+  border:2px solid #3a3b7a;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.06),inset 0 -18px 30px -20px #000,0 16px 34px -22px #000}
+/* viti agli angoli: dettaglio da oggetto fisico, non da schermata */
+.kA-board::before,.kA-board::after{content:"";position:absolute;top:7px;width:5px;height:5px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#6f70ad,#2a2b5e)}
+.kA-board::before{left:8px} .kA-board::after{right:8px}
+.kA-strip{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none;padding:0 4px 11px;
+  border-bottom:1px solid #33346e;margin-bottom:6px}
+.kA-round{font-family:var(--arcade);font-size:.56rem;letter-spacing:.05em;text-transform:uppercase;color:var(--bone-dim)}
+.kA-per{font-weight:800;font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+/* i punteggi si prendono lo spazio libero, ma con un tetto: oltre ~215px l'aria
+   attorno ai numeri smette di leggersi come respiro e diventa un buco. */
+.kA-sides{flex:1;max-height:260px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px}
+.kA-side{display:flex;flex-direction:column;align-items:center;gap:9px;min-width:0}
+.kA-side .who{font-family:var(--arcade);font-size:.58rem;letter-spacing:.02em;line-height:1.3;text-align:center;
+  color:var(--bone-dim);max-width:100%;text-wrap:balance}
+.kA-side.me .who{color:var(--brass)}
+.kA-side .score{font-family:var(--led);font-weight:900;font-size:5.6rem;line-height:.82;letter-spacing:.02em;color:var(--bone);
+  font-variant-numeric:tabular-nums}
+/* micro-etichette: pavimento a .52rem e colore bone-dim (5.2:1 sul fondo). Sotto
+   questa soglia, o con un lilla più scuro, sul telefono non si leggono. */
+.kA-side .cap{font-weight:800;font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+/* shot clock al centro, come sul tabellone vero: disco LED fra i due punteggi */
+.kA-clock{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none}
+.kA-clock .disc{width:92px;height:92px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 34%,#22235a,#0c0d26);
+  border:2px solid #3a3b7a;box-shadow:inset 0 3px 10px rgba(0,0,0,.6)}
+.kA-clock b{font-family:var(--led);font-weight:900;font-size:1.9rem;line-height:1;color:var(--red);
+  font-variant-numeric:tabular-nums;text-shadow:0 0 16px rgba(255,80,56,.55)}
+.kA-clock i{font-style:normal;font-weight:800;font-size:.52rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim)}
+/* quintetto DENTRO il tabellone: è la formazione in campo, non un blocco a parte */
+.kA-in{flex:none;margin-top:auto;padding-top:11px;border-top:1px solid #33346e}
+/* riga bassa: gli ultimi risultati, come su un tabellone vero */
+.kA-log{display:flex;align-items:center;gap:7px;flex:none;margin-top:11px}
+.kA-log .t{font-weight:800;font-size:.52rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim);flex:none}
+.kA-log .chips{display:flex;gap:5px;margin-left:auto;flex-wrap:nowrap}
+.kA-log .chips span{font-family:var(--led);font-weight:700;font-size:.6rem;line-height:1;color:var(--bone-dim);
+  padding:4px 6px;border-radius:5px;background:rgba(0,0,0,.3);border:1px solid #33346e}
+.kA-log .chips span.last{color:var(--green);border-color:rgba(92,207,142,.45)}
+.kA-side.me .score{color:var(--yellow);text-shadow:0 0 22px rgba(255,207,51,.3)}
+.kA-vs{font-family:var(--arcade);font-size:.62rem;color:#4d4e8c;letter-spacing:.04em}
+
+/* lampada sirena: dorme spenta, si accende sul buzzer */
+.kA-siren{position:absolute;inset:-2px;border-radius:16px;pointer-events:none;opacity:0;
+  box-shadow:inset 0 0 0 3px var(--brass),inset 0 0 40px rgba(255,91,30,.5),0 0 30px -6px var(--brass)}
+/* verdetto: cartello che si stampa sopra il tabellone */
+.kA-verdict{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);z-index:3;opacity:0;
+  pointer-events:none;padding:9px 16px;border-radius:11px;white-space:nowrap;
+  font-family:var(--arcade);font-size:.86rem;letter-spacing:.02em;text-transform:uppercase;
+  border:2.5px solid var(--near-black);box-shadow:4px 4px 0 var(--near-black)}
+.kA-verdict.win{background:var(--green);color:#06210f}
+.kA-verdict.lose{background:var(--red);color:#2b0500}
+
+/* ---- animazione del round, direzione A ---- */
+.kA.playing .kA-clock b{animation:kA-tick .28s steps(1) 4}
+@keyframes kA-tick{50%{opacity:.25}}
+.kA.buzz .kA-siren{animation:kA-siren .9s var(--ease) both}
+@keyframes kA-siren{0%{opacity:0}18%{opacity:1}55%{opacity:.55}100%{opacity:0}}
+.kA.buzz .kA-side.me .score{animation:kA-pop .5s .12s var(--ease-out-quint) both}
+@keyframes kA-pop{0%{transform:scale(1)}38%{transform:scale(1.16)}100%{transform:scale(1)}}
+.kA.buzz .kA-verdict{animation:kA-stamp 1s .18s var(--ease-out-quint) both}
+@keyframes kA-stamp{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(1.6) rotate(-7deg)}
+  22%{opacity:1;transform:translate(-50%,-50%) scale(.97) rotate(-2deg)}
+  32%{transform:translate(-50%,-50%) scale(1) rotate(-2deg)}
+  80%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1) rotate(-2deg)}
+}
+.kA-ticks span.just{animation:kA-light .6s var(--ease) both}
+@keyframes kA-light{0%{transform:scaleY(.4);filter:brightness(2.4)}60%{transform:scaleY(1.35)}100%{transform:scaleY(1);filter:none}}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RUN · direzione B - FACCIA A FACCIA
+   Struttura da schermata VS: la tua metà in alto, la loro in basso, l'urto in mezzo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.kB{gap:0}
+.kB-half{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:11px;
+  padding:16px 15px;border-radius:16px;border:2px solid var(--line);overflow:hidden}
+.kB-half.me{background:linear-gradient(160deg,rgba(255,91,30,.19),rgba(255,91,30,.03) 62%),#191a44;
+  border-color:var(--brass-deep)}
+.kB-half.them{background:linear-gradient(200deg,rgba(120,124,190,.14),rgba(0,0,0,.16) 62%),#161738}
+.kB-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.kB-name{min-width:0}
+.kB-name .t{display:block;font-weight:800;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim)}
+.kB-name .n{display:block;margin-top:5px;font-family:var(--arcade);font-size:1.02rem;line-height:1.1;color:var(--bone);
+  text-wrap:balance}
+.kB-half.me .kB-name .n{color:var(--yellow)}
+.kB-ovr{font-family:var(--led);font-weight:900;font-size:3.2rem;line-height:.84;color:var(--bone);flex:none;
+  font-variant-numeric:tabular-nums}
+.kB-half.me .kB-ovr{color:var(--yellow);text-shadow:0 0 24px rgba(255,207,51,.32)}
+/* ventaglio delle 5 facce */
+.kB-fan{display:flex;gap:5px}
+.kB-fan .k-face{flex:1;aspect-ratio:1/1.15;border-radius:8px}
+.kB-fan .k-face .ini{font-size:.68rem}
+.kB-fan.mute .k-face{filter:saturate(.25) brightness(.72)}
+.kB-half .tagline{font-weight:700;font-size:.66rem;color:var(--bone-dim);letter-spacing:.02em}
+.kB-half .tagline b{color:var(--bone)}
+
+/* fascia centrale: VS + streak, taglia le due metà */
+.kB-mid{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin:-13px 0;padding:9px 15px;flex:none;border-radius:12px;
+  background:var(--near-black);border:2px solid var(--brass);
+  box-shadow:0 10px 26px -14px #000}
+.kB-vs{font-family:var(--arcade);font-size:1.1rem;color:var(--brass);letter-spacing:.02em;line-height:1}
+.kB-streak{display:flex;align-items:baseline;gap:7px}
+.kB-streak b{font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:1;color:var(--yellow)}
+.kB-streak i{font-style:normal;font-family:var(--led);font-weight:700;font-size:.86rem;color:var(--bone-dim)}
+.kB-streak span{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+
+/* urto */
+.kB.buzz .kB-half.me{animation:kB-push-down .95s var(--ease-out-quint) both}
+.kB.buzz .kB-half.them{animation:kB-push-away .95s var(--ease-out-quint) both}
+@keyframes kB-push-down{
+  0%{transform:translateY(0)}
+  26%{transform:translateY(16px) scale(1.015)}
+  40%{transform:translateY(6px)}
+  100%{transform:translateY(0)}
+}
+@keyframes kB-push-away{
+  0%{transform:translateY(0);filter:none}
+  26%{transform:translateY(16px)}
+  55%{transform:translateY(30px);filter:saturate(.2) brightness(.6)}
+  100%{transform:translateY(0);filter:saturate(.2) brightness(.6)}
+}
+.kB.buzz .kB-mid{animation:kB-shake .5s .2s var(--ease) both}
+@keyframes kB-shake{
+  0%,100%{transform:translateX(0)}
+  15%{transform:translateX(-7px)}
+  32%{transform:translateX(6px)}
+  52%{transform:translateX(-4px)}
+  72%{transform:translateX(2px)}
+}
+.kB-spark{position:absolute;left:0;right:0;top:50%;height:3px;transform:translateY(-50%) scaleX(0);z-index:3;
+  background:linear-gradient(90deg,transparent,var(--yellow),#fff,var(--yellow),transparent);opacity:0;pointer-events:none}
+.kB.buzz .kB-spark{animation:kB-spark .55s .18s var(--ease) both}
+@keyframes kB-spark{
+  0%{opacity:0;transform:translateY(-50%) scaleX(0)}
+  30%{opacity:1;transform:translateY(-50%) scaleX(1)}
+  100%{opacity:0;transform:translateY(-50%) scaleX(1)}
+}
+.kB.buzz .kB-streak b{animation:kB-count .5s .42s var(--ease-out-quint) both}
+@keyframes kB-count{0%{transform:translateY(-14px);opacity:0}60%{transform:translateY(2px);opacity:1}100%{transform:none}}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RUN · direzione C - IL CAMMINO
+   Il protagonista non è la partita: è la striscia di 16. Ogni vittoria timbra
+   una casella con la sigla della squadra battuta - il tabellone dei playoff.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.kC{gap:13px}
+.kC-title{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex:none}
+.kC-title .t{font-family:var(--arcade);font-size:.72rem;letter-spacing:.02em;color:var(--yellow)}
+.kC-title .c{font-family:var(--led);font-weight:900;font-size:1.15rem;line-height:1;color:var(--bone)}
+.kC-title .c i{font-style:normal;font-size:.76rem;color:var(--bone-dim)}
+/* la griglia 4x4 = i 16 scalpi */
+.kC-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;flex:none}
+.kC-cell{position:relative;aspect-ratio:1/.86;border-radius:10px;display:grid;place-items:center;
+  border:1.5px dashed #34356a;background:linear-gradient(160deg,#171545,#100f30);overflow:hidden}
+.kC-cell .n{font-family:var(--led);font-weight:700;font-size:.72rem;color:#6d6eb4}
+.kC-cell.done{border-style:solid;border-color:transparent;
+  background:linear-gradient(158deg,var(--tc1,#3a2d5e),var(--tc2,#211636))}
+.kC-cell.done .n{display:none}
+.kC-cell .tag{position:relative;z-index:1;display:none;font-family:var(--arcade);font-size:.58rem;color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 10px rgba(0,0,0,.6)}
+.kC-cell.done .tag{display:block}
+/* velo scuro su tutta la casella: senza, le sigle bianche spariscono sui colori
+   chiari (ORL azzurro, GSW oro). Il colore squadra resta riconoscibile. */
+.kC-cell.done::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.32),rgba(0,0,0,.6))}
+.kC-cell.now{border-style:solid;border-color:var(--yellow);background:#26265c;
+  box-shadow:0 0 0 1px var(--yellow),0 0 20px -5px var(--yellow);animation:kC-pulse 1.15s ease-in-out infinite}
+.kC-cell.now .n{color:var(--yellow)}
+@keyframes kC-pulse{50%{box-shadow:0 0 0 2px var(--yellow),0 0 28px -3px var(--yellow)}}
+
+/* la partita di adesso: una riga sola, densa */
+.kC-match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;flex:none;
+  padding:13px 15px;border-radius:13px;background:var(--ink-2);border:1px solid var(--line)}
+.kC-m{display:flex;flex-direction:column;gap:5px;min-width:0}
+.kC-m.them{align-items:flex-end;text-align:right}
+.kC-m .who{font-weight:800;font-size:.58rem;letter-spacing:.09em;text-transform:uppercase;color:var(--bone-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.kC-m.me .who{color:var(--brass)}
+.kC-m .v{font-family:var(--led);font-weight:900;font-size:2.1rem;line-height:.9;color:var(--bone)}
+.kC-m.me .v{color:var(--yellow)}
+.kC-vs{font-family:var(--arcade);font-size:.58rem;color:#4d4e8c}
+
+.kC.buzz .kC-cell.now{animation:none;border-color:transparent;background:linear-gradient(158deg,#5a2f8f,#2c1a4d)}
+.kC-cell.stamped{animation:kC-stamp .6s var(--ease-out-quint) both}
+@keyframes kC-stamp{
+  0%{transform:scale(1.5) rotate(-8deg);opacity:.2}
+  55%{transform:scale(.95) rotate(1deg);opacity:1}
+  100%{transform:none;opacity:1}
+}
+.kC.buzz .kC-match{animation:kC-flash .7s var(--ease) both}
+@keyframes kC-flash{
+  0%{box-shadow:inset 0 0 0 0 rgba(92,207,142,0)}
+  22%{box-shadow:inset 0 0 0 2px var(--green),0 0 26px -8px var(--green)}
+  100%{box-shadow:inset 0 0 0 0 rgba(92,207,142,0)}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COACH · elementi comuni alle 3 direzioni
+   Novità di sostanza (vale per tutte): ANTEPRIMA DELL'EFFETTO. Oggi scegli il
+   coach al buio; qui vedi il tuo voto squadra passare da 68 a 70 prima di
+   confermare. È il motivo per cui la schermata esiste.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.k-sec{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex:none;margin-bottom:2px}
+.k-sec .t{font-weight:800;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dim)}
+.k-sec .h{font-size:.66rem;color:var(--bone-dim)}
+.k-sec .h b{color:var(--yellow)}
+
+/* riquadro anteprima voto */
+.k-prev{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;
+  padding:12px 15px;border-radius:13px;background:rgba(255,207,51,.07);border:1px solid rgba(255,207,51,.28)}
+.k-prev .lab{font-weight:800;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
+  line-height:1.45;max-width:24ch;text-wrap:pretty}
+.k-prev .nums{display:flex;align-items:center;gap:9px}
+.k-prev .from{font-family:var(--led);font-weight:700;font-size:1.35rem;line-height:1;color:var(--bone-dim)}
+.k-prev .arr{color:var(--bone-dim);font-size:.9rem}
+.k-prev .to{font-family:var(--led);font-weight:900;font-size:2rem;line-height:1;color:var(--yellow);
+  transition:color .2s}
+.k-prev .to.up{color:var(--green)} .k-prev .to.down{color:var(--red)}
+.k-prev .to.bump{animation:k-bump .42s var(--ease-out-quint)}
+@keyframes k-bump{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}}
+
+/* celle voto LED: qui i colori per fascia FUNZIONANO (nell'app oggi sono morti,
+   `.coach-gr .gr b` vince su `.g-A` per specificità: bug da correggere nel port) */
+.k-gr{display:flex;gap:7px}
+.k-gr .g{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 11px;border-radius:9px;
+  background:rgba(0,0,0,.28);border:1px solid var(--line)}
+.k-gr .g i{font-style:normal;font-weight:800;font-size:.5rem;letter-spacing:.14em;color:var(--bone-dim)}
+.k-gr .g b{font-family:var(--led);font-weight:900;font-size:1.08rem;line-height:1;color:var(--bone)}
+.k-gr .g b.gA{color:var(--green)} .k-gr .g b.gB{color:var(--yellow)} .k-gr .g b.gC{color:var(--brass)}
+.k-gr .g.bonus b{color:var(--yellow)}
+
+/* ---- COACH A · fila da panchina: righe orizzontali, densità da lista ---- */
+.kD-list{display:flex;flex-direction:column;gap:9px;flex:none}
+.kD-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:13px;width:100%;text-align:left;
+  padding:16px 15px;border-radius:13px;cursor:pointer;font:inherit;color:inherit;
+  background:linear-gradient(100deg,#191a3d,#141336);border:2px solid var(--line);
+  transition:border-color .16s,background .16s,transform .12s var(--ease)}
+.kD-row:hover{border-color:var(--brass-deep);transform:translateX(2px)}
+.kD-row:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.kD-row[aria-pressed="true"]{border-color:var(--yellow);background:linear-gradient(100deg,#26264f,#191840);
+  box-shadow:0 0 0 1px var(--yellow),0 14px 30px -20px #000}
+.kD-l{min-width:0}
+.kD-l .n{display:block;font-family:var(--arcade);font-size:.7rem;line-height:1.2;color:var(--yellow)}
+.kD-row[aria-pressed="true"] .kD-l .n{color:var(--bone)}
+.kD-l .d{display:block;margin-top:6px;font-size:.68rem;line-height:1.4;color:var(--bone-dim);text-wrap:pretty}
+.kD-l .d b{color:var(--bone)}
+
+/* ---- COACH B · figurine: 3 carte affiancate, la scelta si alza ---- */
+.kE-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;flex:none}
+.kE-card{display:flex;flex-direction:column;align-items:center;gap:11px;padding:18px 8px 16px;border-radius:14px;
+  cursor:pointer;font:inherit;color:inherit;text-align:center;
+  background:linear-gradient(168deg,#1d1e4a,#131232);border:2px solid var(--line);
+  transition:transform .18s var(--ease-out-quint),border-color .16s,box-shadow .18s}
+.kE-card:hover{transform:translateY(-4px);border-color:var(--brass-deep)}
+.kE-card:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.kE-card[aria-pressed="true"]{transform:translateY(-9px);border-color:var(--yellow);
+  box-shadow:0 0 0 1px var(--yellow),0 20px 34px -20px #000,0 0 30px -14px var(--yellow)}
+.kE-badge{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;flex:none;
+  background:radial-gradient(circle at 34% 28%,#3b3c7d,#191a44);border:2px solid #434490}
+.kE-badge svg{width:31px;height:31px}
+.kE-card[aria-pressed="true"] .kE-badge{background:radial-gradient(circle at 34% 28%,#ffdb6b,var(--brass));border-color:var(--yellow)}
+.kE-card .n{font-family:var(--arcade);font-size:.6rem;line-height:1.25;color:var(--yellow);text-wrap:balance;
+  min-height:2.5em;display:flex;align-items:center}
+.kE-card[aria-pressed="true"] .n{color:var(--bone)}
+.kE-card .k-gr{gap:5px}
+.kE-card .k-gr .g{padding:5px 8px}
+.kE-card .k-gr .g b{font-size:.94rem}
+.kE-card .d{font-size:.6rem;line-height:1.35;color:var(--bone-dim);text-wrap:pretty}
+
+/* ---- COACH C · lavagna tattica: gesso su ardesia ---- */
+.kF-board{position:relative;flex:none;border-radius:14px;padding:15px 14px 16px;overflow:hidden;
+  background:
+    repeating-linear-gradient(102deg,rgba(255,255,255,.014) 0 2px,transparent 2px 9px),
+    linear-gradient(168deg,#12331f,#0b1f14);
+  border:3px solid #6a5433;
+  box-shadow:inset 0 0 44px rgba(0,0,0,.55),0 14px 30px -20px #000}
+/* schema a gesso sul fondo: linee del campo, tratteggio, cerchio */
+.kF-chalk{position:absolute;inset:0;pointer-events:none;opacity:.2}
+.kF-chalk svg{width:100%;height:100%}
+.kF-chalk path,.kF-chalk circle,.kF-chalk line{stroke:#dff3e4;fill:none;stroke-width:1.6;stroke-linecap:round}
+.kF-opts{position:relative;z-index:1;display:flex;flex-direction:column;gap:8px}
+.kF-opt{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;width:100%;text-align:left;
+  padding:11px 13px;border-radius:10px;cursor:pointer;font:inherit;color:inherit;
+  background:rgba(255,255,255,.035);border:1.5px solid rgba(223,243,228,.22);
+  transition:background .16s,border-color .16s,transform .12s}
+.kF-opt:hover{background:rgba(255,255,255,.075);border-color:rgba(223,243,228,.5)}
+.kF-opt:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.kF-opt[aria-pressed="true"]{background:rgba(255,207,51,.14);border-color:var(--yellow)}
+.kF-arrow{width:34px;height:24px;flex:none}
+.kF-arrow path,.kF-arrow line{stroke:#dff3e4;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kF-opt[aria-pressed="true"] .kF-arrow path,.kF-opt[aria-pressed="true"] .kF-arrow line{stroke:var(--yellow)}
+.kF-opt .n{display:block;font-family:var(--arcade);font-size:.66rem;line-height:1.2;color:#e9fbee;text-wrap:balance}
+.kF-opt .d{display:block;margin-top:5px;font-size:.64rem;line-height:1.35;color:rgba(223,243,228,.62);text-wrap:pretty}
+.kF-opt[aria-pressed="true"] .n{color:var(--yellow)}
+.kF-gr{display:flex;gap:5px;flex:none}
+.kF-gr .g{display:flex;flex-direction:column;align-items:center;gap:2px}
+.kF-gr .g i{font-style:normal;font-weight:800;font-size:.5rem;letter-spacing:.1em;color:rgba(223,243,228,.55)}
+.kF-gr .g b{font-family:var(--led);font-weight:900;font-size:.95rem;line-height:1;color:#e9fbee}
+.kF-gr .g b.gA{color:#7ef0ab} .kF-gr .g b.gB{color:var(--yellow)} .kF-gr .g b.gC{color:#ff9057}
+
+/* spinge la CTA in fondo senza lasciare un buco morto in mezzo */
+.k-push{flex:1;min-height:10px}
+
+/* ═══════════════ reduced motion ═══════════════ */
+@media (prefers-reduced-motion:reduce){
+  .kC-cell.now{animation:none}
+  .kA.playing .kA-clock b,.kA.buzz .kA-siren,.kA.buzz .kA-side.me .score,
+  .kB.buzz .kB-half.me,.kB.buzz .kB-mid,.kB.buzz .kB-spark,.kB.buzz .kB-streak b,
+  .kC-cell.stamped,.kC.buzz .kC-match{animation:none!important}
+  /* niente spostamenti: resta solo il cambio di stato, in dissolvenza */
+  .kA.buzz .kA-verdict{animation:k-fade 1.1s ease both!important}
+  .kB.buzz .kB-half.them{animation:k-mute .5s ease both!important}
+  @keyframes k-fade{0%{opacity:0}20%,75%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0}}
+  @keyframes k-mute{to{filter:saturate(.2) brightness(.6)}}
+  .k-prev .to.bump{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <div class="mk-group">
+    <span class="mk-lbl">Schermata</span>
+    <button class="mk-chip" data-scr="run" aria-pressed="true">Run</button>
+    <button class="mk-chip" data-scr="coach" aria-pressed="false">Coach</button>
+  </div>
+  <div class="mk-group" id="dirs"></div>
+  <p class="mk-note" id="note"></p>
+</div>
+
+<div class="mk-head">
+  <h2 id="dirTitle"></h2>
+  <p id="dirDesc"></p>
+</div>
+
+<div class="stage">
+  <div class="phone"><div class="k-scr" id="scr"></div></div>
+</div>
+
+<script type="module">
+/* ============================================================================
+   DATI FINTI, ma coerenti col prototipo vero.
+   Quintetto = quello uscito davvero dal draft nella sessione di prova (POR).
+   Il voto squadra a schermo (68) sta su una scala diversa dagli OVR carta
+   (77-92) perché l'app rimappa il voto motore con toDisplayOvr(). Lo riporto
+   com'è per fedeltà - vedi la nota "scala doppia" nel riepilogo.
+   ========================================================================== */
+const QUINTETTO = [
+  { role:"PG", ini:"DL", ovr:92, tc:["#c8102e","#1d1160"] },
+  { role:"SG", ini:"CM", ovr:87, tc:["#c8102e","#1d1160"] },
+  { role:"SF", ini:"AA", ovr:77, tc:["#c8102e","#1d1160"] },
+  { role:"PF", ini:"EK", ovr:80, tc:["#c8102e","#1d1160"] },
+  { role:"C",  ini:"JN", ovr:83, tc:["#c8102e","#1d1160"] },
+];
+// squadre già battute: sigla + colori, per timbrare le caselle della direzione C
+const BATTUTE = [
+  { tag:"LAL", tc:["#552583","#fdb927"] }, { tag:"BOS", tc:["#007a33","#ba9653"] },
+  { tag:"NYK", tc:["#006bb6","#f58426"] }, { tag:"DET", tc:["#c8102e","#1d42ba"] },
+  { tag:"CHI", tc:["#ce1141","#0b0b0b"] }, { tag:"ORL", tc:["#0077c0","#c4ced4"] },
+  { tag:"GSW", tc:["#1d428a","#ffc72c"] },
+];
+const STATO = { vinte:7, target:16, round:8, tuo:68, loro:62, avv:"MIA 2012-13", avvTc:["#98002e","#f9a01b"] };
+
+const COACH = [
+  { id:"off", nome:"Coach d'Attacco",  off:"A", def:"C", bonus:0, delta:+2,
+    breve:"Sistema in corsa: alza il tiro, regala qualcosa dietro.", tattica:"Corri e tira" },
+  { id:"bil", nome:"Coach Equilibrato", off:"B", def:"B", bonus:1, delta:+3,
+    breve:"Nessun buco: due reparti solidi e un anello in bacheca.", tattica:"Tieni l'equilibrio" },
+  { id:"def", nome:"Coach di Difesa",   off:"C", def:"A", bonus:0, delta:+1,
+    breve:"Partite sporche: concede pochissimo, segna col contagocce.", tattica:"Chiudi il pitturato" },
+];
+
+/* ---------------------------------------------------------------- helper */
+const el = (html) => { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; };
+const fascia = (o) => o >= 88 ? "oro" : o >= 82 ? "arg" : "brz";
+const FLAME = `<svg viewBox="0 0 24 24" aria-hidden="true"><path class="f1" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67z"/><path class="f2" d="M11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`;
+const PLAY = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>`;
+const WHISTLE = `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#f4eee0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h9l3.2-2.4A5.5 5.5 0 1 1 12 17H7a4 4 0 0 1-4-4z"/><circle cx="16.5" cy="11.5" r="2.1"/></svg>`;
+
+const header = () => `
+  <div class="k-hd">
+    <div class="k-wm">BU<b>ZZ</b>ER</div>
+    <div class="k-pill">${FLAME}<span>Normale</span></div>
+  </div>`;
+
+const faccia = (p, cls = "") =>
+  `<span class="k-face ${cls}" style="--tc1:${p.tc[0]};--tc2:${p.tc[1]}"><span class="ini">${p.ini}</span></span>`;
+
+const cinque = () => QUINTETTO.map((p) => `
+  <span class="k-p">
+    ${faccia(p)}
+    <span class="role">${p.role}</span>
+    <span class="ovr ${fascia(p.ovr)}">${p.ovr}</span>
+  </span>`).join("");
+
+/* ══════════════════════════════════════════════════ RUN A - TABELLONE ════ */
+function runA() {
+  const ticks = Array.from({ length: STATO.target }, (_, i) =>
+    `<span class="${i < STATO.vinte ? "on" : i === STATO.vinte ? "next" : ""}"></span>`).join("");
+
+  const root = el(`
+    <div class="k-scr" id="scr">
+      ${header()}
+      <div class="k-body kA">
+        <div class="kA-streak">
+          <div class="row">
+            <span class="lab">Vittorie di fila</span>
+            <span class="num" id="aCount">${String(STATO.vinte).padStart(2,"0")}<i> / ${STATO.target}</i></span>
+          </div>
+          <div class="kA-ticks" id="aTicks">${ticks}</div>
+        </div>
+
+        <div class="kA-board">
+          <div class="kA-siren"></div>
+          <div class="kA-verdict win" id="aVerdict">Canestro allo scadere</div>
+          <div class="kA-strip">
+            <span class="kA-round">Round <b id="aRound">${STATO.round}</b> · Playoff</span>
+            <span class="kA-per">Serie secca</span>
+          </div>
+          <div class="kA-sides">
+            <span class="kA-side me">
+              <span class="who">Portland 2018-19</span>
+              <span class="score" id="aMe">${STATO.tuo}</span>
+              <span class="cap">Il tuo voto</span>
+            </span>
+            <span class="kA-clock"><span class="disc"><b id="aClock">24</b></span><i>Shot clock</i></span>
+            <span class="kA-side">
+              <span class="who">${STATO.avv}</span>
+              <span class="score">${STATO.loro}</span>
+              <span class="cap">Titolo 2013</span>
+            </span>
+          </div>
+          <div class="kA-in">
+            <div class="k-five-lab"><span class="t">In campo</span><span class="v">Coach equilibrato</span></div>
+            <div class="k-five">${cinque()}</div>
+          </div>
+          <div class="kA-log">
+            <span class="t">Ultimi</span>
+            <span class="chips">${BATTUTE.slice(-4).map((b,i,a)=>
+              `<span class="${i===a.length-1?"last":""}">${b.tag}</span>`).join("")}</span>
+          </div>
+        </div>
+
+        <button class="k-cta" id="go">${PLAY} Gioca il round</button>
+      </div>
+    </div>`);
+
+  const kA = root.querySelector(".kA");
+  const go = root.querySelector("#go");
+  const clock = root.querySelector("#aClock");
+
+  go.onclick = () => {
+    if (kA.classList.contains("playing")) return;
+    go.disabled = true;
+    kA.classList.add("playing");
+    // conto alla rovescia dello shot clock: 3 battiti, poi il buzzer
+    let n = 3;
+    clock.textContent = "03";
+    const t = setInterval(() => {
+      n -= 1;
+      clock.textContent = String(Math.max(n, 0)).padStart(2, "0");
+      if (n <= 0) {
+        clearInterval(t);
+        kA.classList.remove("playing");
+        kA.classList.add("buzz");
+        // la tacca si accende e il contatore sale nello stesso istante del buzzer
+        const ticksEls = root.querySelectorAll("#aTicks span");
+        const i = STATO.vinte;
+        if (ticksEls[i]) { ticksEls[i].classList.remove("next"); ticksEls[i].classList.add("on","just"); }
+        if (ticksEls[i+1]) ticksEls[i+1].classList.add("next");
+        root.querySelector("#aCount").innerHTML = `${String(STATO.vinte+1).padStart(2,"0")}<i> / ${STATO.target}</i>`;
+        setTimeout(() => {
+          kA.classList.remove("buzz");
+          clock.textContent = "24";
+          root.querySelector("#aRound").textContent = STATO.round + 1;
+          go.disabled = false;
+          // reset dello stato del mockup: si può rigiocare all'infinito
+          ticksEls.forEach((s, k) => { s.className = k < STATO.vinte ? "on" : k === STATO.vinte ? "next" : ""; });
+          root.querySelector("#aCount").innerHTML = `${String(STATO.vinte).padStart(2,"0")}<i> / ${STATO.target}</i>`;
+          root.querySelector("#aRound").textContent = STATO.round;
+        }, 1450);
+      }
+    }, 300);
+  };
+  return root;
+}
+
+/* ══════════════════════════════════════════════ RUN B - FACCIA A FACCIA ══ */
+function runB() {
+  const loro = QUINTETTO.map((p) => ({ ...p, ini:"··", tc: STATO.avvTc }));
+  const root = el(`
+    <div class="k-scr" id="scr">
+      ${header()}
+      <div class="k-body kB">
+        <div class="kB-half me">
+          <div class="kB-spark"></div>
+          <div class="kB-top">
+            <span class="kB-name"><span class="t">Il tuo quintetto</span><span class="n">Portland 2018-19</span></span>
+            <span class="kB-ovr" id="bMe">${STATO.tuo}</span>
+          </div>
+          <div class="kB-fan">${QUINTETTO.map((p)=>faccia(p)).join("")}</div>
+          <p class="tagline" style="margin:0">Coach: <b>Equilibrato</b> · anello in bacheca</p>
+        </div>
+
+        <div class="kB-mid">
+          <span class="kB-vs">VS</span>
+          <span class="kB-streak">
+            <span>Vinte</span><b id="bCount">${String(STATO.vinte).padStart(2,"0")}</b><i>/ ${STATO.target}</i>
+          </span>
+        </div>
+
+        <div class="kB-half them">
+          <div class="kB-top">
+            <span class="kB-name"><span class="t">Round ${STATO.round} · avversario</span><span class="n">${STATO.avv}</span></span>
+            <span class="kB-ovr">${STATO.loro}</span>
+          </div>
+          <div class="kB-fan mute">${loro.map((p)=>faccia(p)).join("")}</div>
+          <p class="tagline" style="margin:0">Titolo vinto quell'anno · <b>al buio</b> fino al fischio</p>
+        </div>
+
+        <div style="height:14px;flex:none"></div>
+        <button class="k-cta" id="go">${PLAY} Gioca il round</button>
+      </div>
+    </div>`);
+
+  const kB = root.querySelector(".kB");
+  const go = root.querySelector("#go");
+  go.onclick = () => {
+    if (kB.classList.contains("buzz")) return;
+    go.disabled = true;
+    kB.classList.add("buzz");
+    setTimeout(() => { root.querySelector("#bCount").textContent = String(STATO.vinte+1).padStart(2,"0"); }, 420);
+    setTimeout(() => {
+      kB.classList.remove("buzz");
+      root.querySelector("#bCount").textContent = String(STATO.vinte).padStart(2,"0");
+      go.disabled = false;
+    }, 1500);
+  };
+  return root;
+}
+
+/* ══════════════════════════════════════════════════ RUN C - IL CAMMINO ══ */
+function runC() {
+  const celle = Array.from({ length: STATO.target }, (_, i) => {
+    const b = BATTUTE[i];
+    if (i < STATO.vinte && b)
+      return `<span class="kC-cell done" style="--tc1:${b.tc[0]};--tc2:${b.tc[1]}"><span class="tag">${b.tag}</span></span>`;
+    if (i === STATO.vinte) return `<span class="kC-cell now"><span class="n">${i+1}</span></span>`;
+    return `<span class="kC-cell"><span class="n">${i+1}</span></span>`;
+  }).join("");
+
+  const root = el(`
+    <div class="k-scr" id="scr">
+      ${header()}
+      <div class="k-body kC">
+        <div class="kC-title">
+          <span class="t">Il cammino</span>
+          <span class="c" id="cCount">${String(STATO.vinte).padStart(2,"0")}<i> / ${STATO.target}</i></span>
+        </div>
+        <div class="kC-grid" id="cGrid">${celle}</div>
+
+        <div class="kC-match" id="cMatch">
+          <span class="kC-m me"><span class="who">Il tuo quintetto</span><span class="v">${STATO.tuo}</span></span>
+          <span class="kC-vs">VS</span>
+          <span class="kC-m them"><span class="who">${STATO.avv}</span><span class="v">${STATO.loro}</span></span>
+        </div>
+
+        <div>
+          <div class="k-five-lab"><span class="t">In campo</span><span class="v">Portland 2018-19</span></div>
+          <div class="k-five">${cinque()}</div>
+        </div>
+
+        <div class="k-push"></div>
+        <button class="k-cta" id="go">${PLAY} Round ${STATO.round}: gioca</button>
+      </div>
+    </div>`);
+
+  const kC = root.querySelector(".kC");
+  const go = root.querySelector("#go");
+  go.onclick = () => {
+    if (kC.classList.contains("buzz")) return;
+    go.disabled = true;
+    kC.classList.add("buzz");
+    const cells = root.querySelectorAll(".kC-cell");
+    const cur = cells[STATO.vinte];
+    const b = BATTUTE[STATO.vinte % BATTUTE.length];
+    // la casella si timbra con la squadra appena battuta
+    cur.className = "kC-cell done stamped";
+    cur.style.setProperty("--tc1", b.tc[0]); cur.style.setProperty("--tc2", b.tc[1]);
+    cur.innerHTML = `<span class="tag">${b.tag}</span>`;
+    setTimeout(() => {
+      if (cells[STATO.vinte+1]) cells[STATO.vinte+1].classList.add("now");
+      root.querySelector("#cCount").innerHTML = `${String(STATO.vinte+1).padStart(2,"0")}<i> / ${STATO.target}</i>`;
+    }, 340);
+    setTimeout(() => {
+      kC.classList.remove("buzz");
+      cur.className = "kC-cell now"; cur.removeAttribute("style");
+      cur.innerHTML = `<span class="n">${STATO.vinte+1}</span>`;
+      if (cells[STATO.vinte+1]) cells[STATO.vinte+1].classList.remove("now");
+      root.querySelector("#cCount").innerHTML = `${String(STATO.vinte).padStart(2,"0")}<i> / ${STATO.target}</i>`;
+      go.disabled = false;
+    }, 1600);
+  };
+  return root;
+}
+
+/* ═════════════════════════════════ COACH - anteprima voto, comune a A/B/C ═ */
+function collegaAnteprima(root) {
+  const to = root.querySelector("#cvTo");
+  const bottoni = [...root.querySelectorAll("[data-coach]")];
+  const scegli = (b) => {
+    bottoni.forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    const c = COACH.find((x) => x.id === b.dataset.coach);
+    const v = STATO.tuo + c.delta;
+    to.textContent = v;
+    to.className = "to " + (c.delta > 0 ? "up" : c.delta < 0 ? "down" : "");
+    to.classList.remove("bump"); void to.offsetWidth; to.classList.add("bump");
+    root.querySelector("#go").disabled = false;
+  };
+  bottoni.forEach((b) => { b.onclick = () => scegli(b); });
+}
+
+const anteprima = () => `
+  <div class="k-prev">
+    <span class="lab" id="cvLab">Il tuo voto squadra</span>
+    <span class="nums">
+      <span class="from">${STATO.tuo}</span><span class="arr">&rsaquo;</span><span class="to" id="cvTo">-</span>
+    </span>
+  </div>`;
+
+/* ═════════════════════════════════════ COACH A - FILA DA PANCHINA ════════ */
+function coachA() {
+  const righe = COACH.map((c) => `
+    <button class="kD-row" data-coach="${c.id}" aria-pressed="false" type="button">
+      <span class="kD-l">
+        <span class="n">${c.nome}</span>
+        <span class="d">${c.breve}</span>
+      </span>
+      <span class="k-gr">
+        <span class="g"><i>OFF</i><b class="g${c.off}">${c.off}</b></span>
+        <span class="g"><i>DEF</i><b class="g${c.def}">${c.def}</b></span>
+        ${c.bonus ? `<span class="g bonus"><i>ANELLI</i><b>+${c.bonus}</b></span>` : ""}
+      </span>
+    </button>`).join("");
+
+  const root = el(`
+    <div class="k-scr" id="scr">
+      ${header()}
+      <div class="k-body kD" style="gap:13px">
+        <div class="k-sec"><span class="t">Panchina</span><span class="h">Ultimo passo: poi si gioca</span></div>
+        <div class="kD-list">${righe}</div>
+        ${anteprima()}
+        <div class="k-push"></div>
+        <div>
+          <div class="k-five-lab"><span class="t">La squadra che allenerà</span><span class="v">Portland 2018-19</span></div>
+          <div class="k-five">${cinque()}</div>
+        </div>
+        <button class="k-cta" id="go" disabled>${PLAY} Manda in campo</button>
+      </div>
+    </div>`);
+  collegaAnteprima(root);
+  return root;
+}
+
+/* ═════════════════════════════════════════ COACH B - FIGURINE ════════════ */
+function coachB() {
+  const carte = COACH.map((c) => `
+    <button class="kE-card" data-coach="${c.id}" aria-pressed="false" type="button">
+      <span class="kE-badge">${WHISTLE}</span>
+      <span class="n">${c.nome.replace("Coach ", "")}</span>
+      <span class="k-gr">
+        <span class="g"><i>OFF</i><b class="g${c.off}">${c.off}</b></span>
+        <span class="g"><i>DEF</i><b class="g${c.def}">${c.def}</b></span>
+      </span>
+      <span class="d">${c.bonus ? "Anello in bacheca" : c.tattica}</span>
+    </button>`).join("");
+
+  const root = el(`
+    <div class="k-scr" id="scr">
+      ${header()}
+      <div class="k-body kE" style="gap:15px;justify-content:space-between">
+        <div class="k-sec"><span class="t">Scegli il coach</span><span class="h">Tocca una figurina</span></div>
+        <div class="kE-cards">${carte}</div>
+        ${anteprima()}
+        <div>
+          <div class="k-five-lab"><span class="t">La squadra che allenerà</span><span class="v">Portland 2018-19</span></div>
+          <div class="k-five">${cinque()}</div>
+        </div>
+        <button class="k-cta" id="go" disabled>${PLAY} Manda in campo</button>
+      </div>
+    </div>`);
+  collegaAnteprima(root);
+  return root;
+}
+
+/* ═════════════════════════════════════ COACH C - LAVAGNA TATTICA ═════════ */
+function coachC() {
+  // tre frecce diverse: attacco in verticale, equilibrio a due punte, difesa a muro
+  const FRECCE = {
+    off:`<svg class="kF-arrow" viewBox="0 0 34 24"><path d="M3 20 L14 6 L22 14 L31 5"/><path d="M25 4 L31 4 L31 10"/></svg>`,
+    bil:`<svg class="kF-arrow" viewBox="0 0 34 24"><line x1="4" y1="12" x2="30" y2="12"/><path d="M25 7 L30 12 L25 17"/><path d="M9 7 L4 12 L9 17"/></svg>`,
+    def:`<svg class="kF-arrow" viewBox="0 0 34 24"><line x1="5" y1="5" x2="5" y2="19"/><line x1="12" y1="5" x2="12" y2="19"/><path d="M20 12 L30 12"/><path d="M25 7 L20 12 L25 17"/></svg>`,
+  };
+  const opts = COACH.map((c) => `
+    <button class="kF-opt" data-coach="${c.id}" aria-pressed="false" type="button">
+      ${FRECCE[c.id]}
+      <span>
+        <span class="n">${c.tattica}</span>
+        <span class="d">${c.nome} · ${c.breve}</span>
+      </span>
+      <span class="kF-gr">
+        <span class="g"><i>OFF</i><b class="g${c.off}">${c.off}</b></span>
+        <span class="g"><i>DEF</i><b class="g${c.def}">${c.def}</b></span>
+      </span>
+    </button>`).join("");
+
+  const root = el(`
+    <div class="k-scr" id="scr">
+      ${header()}
+      <div class="k-body kF" style="gap:14px;justify-content:space-between">
+        <div class="k-sec"><span class="t">Lavagna</span><span class="h">Come vuoi giocarla?</span></div>
+        <div class="kF-board">
+          <div class="kF-chalk" aria-hidden="true">
+            <svg viewBox="0 0 340 240" preserveAspectRatio="none">
+              <circle cx="170" cy="120" r="52"/>
+              <line x1="10" y1="14" x2="330" y2="14"/>
+              <path d="M10 14 A 160 130 0 0 0 330 14"/>
+              <line x1="130" y1="14" x2="130" y2="96"/><line x1="210" y1="14" x2="210" y2="96"/>
+              <line x1="130" y1="96" x2="210" y2="96"/>
+            </svg>
+          </div>
+          <div class="kF-opts">${opts}</div>
+        </div>
+        ${anteprima()}
+        <div>
+          <div class="k-five-lab"><span class="t">La squadra che allenerà</span><span class="v">Portland 2018-19</span></div>
+          <div class="k-five">${cinque()}</div>
+        </div>
+        <button class="k-cta" id="go" disabled>${PLAY} Manda in campo</button>
+      </div>
+    </div>`);
+  collegaAnteprima(root);
+  return root;
+}
+
+/* ══════════════════════════════════════════════════════ orchestrazione ═══ */
+const DIR = {
+  run: [
+    { id:"A", chip:"A · Tabellone", make:runA,
+      title:"RUN A · Tabellone da palazzetto",
+      desc:"L'oggetto <b>è</b> la schermata: un tabellone LED con cornice, viti e lampada della sirena. Il round parte da uno <b>shot clock che scende</b>, il buzzer accende la sirena e stampa il verdetto. Le 16 tacche in testa dicono sempre quanto manca.",
+      note:"Tocca <b>GIOCA IL ROUND</b>: 3 battiti di shot clock, sirena, verdetto, la tacca si accende. Poi si riarma da solo." },
+    { id:"B", chip:"B · Faccia a faccia", make:runB,
+      title:"RUN B · Faccia a faccia",
+      desc:"Struttura da schermata VS: <b>la tua metà sopra</b>, l'avversario sotto, la fascia dell'urto in mezzo. Vedi entrambi i quintetti (il loro coperto). Il round è una <b>collisione</b>: chi perde arretra e si spegne.",
+      note:"Tocca <b>GIOCA IL ROUND</b>: le due metà si spingono, scintilla sull'impatto, l'avversario si desatura, il contatore scatta." },
+    { id:"C", chip:"C · Il cammino", make:runC,
+      title:"RUN C · Il cammino",
+      desc:"Il protagonista non è la singola partita ma <b>la striscia di 16</b>: una griglia di caselle che si <b>timbrano</b> col colore e la sigla della squadra battuta. La partita di adesso è una riga sola, densa.",
+      note:"Tocca il bottone: la casella accesa viene timbrata <b>GSW</b>, la successiva si accende, il contatore sale." },
+  ],
+  coach: [
+    { id:"A", chip:"A · Fila panchina", make:coachA,
+      title:"COACH A · Fila da panchina",
+      desc:"Tre righe dense, leggibili in verticale: nome, cosa fa in una riga, voti OFF/DEF come <b>lampadine LED colorate</b> per fascia. Sotto, l'anteprima del voto squadra.",
+      note:"Novità in tutte e tre: <b>l'anteprima dell'effetto</b>. Tocca un coach e guarda 68 diventare 70/71: oggi nell'app scegli al buio." },
+    { id:"B", chip:"B · Figurine", make:coachB,
+      title:"COACH B · Figurine",
+      desc:"Tre carte affiancate da scegliere come figurine: <b>quella scelta si solleva</b> e accende il distintivo. Sotto resta visibile il quintetto che quel coach andrà ad allenare.",
+      note:"Tocca una figurina: si alza, il distintivo diventa oro, l'anteprima del voto scatta. Le altre restano a terra." },
+    { id:"C", chip:"C · Lavagna tattica", make:coachC,
+      title:"COACH C · Lavagna tattica",
+      desc:"Rompe la notte indaco con un <b>fondo ardesia</b> e schemi a gesso: le tre opzioni sono <b>tattiche</b> (\"Corri e tira\", \"Tieni l'equilibrio\", \"Chiudi il pitturato\"), non nomi di persone. Ogni riga ha la sua freccia.",
+      note:"È l'unica direzione che cambia materiale: paga in personalità, costa un'eccezione nella palette. Tocca una tattica per vedere l'anteprima." },
+  ],
+};
+
+let scr = "run", dir = 0;
+const dirsBox = document.getElementById("dirs");
+// Il telefono è il contenitore stabile: ogni cambio direzione ne sostituisce il
+// contenuto. Tenere un riferimento al vecchio .k-scr lo renderebbe stantìo dopo
+// la prima sostituzione (bug classico di replaceWith), quindi parto dal frame.
+const phone = document.querySelector(".phone");
+
+function renderChips() {
+  dirsBox.innerHTML = `<span class="mk-lbl">Direzione</span>` + DIR[scr]
+    .map((d, i) => `<button class="mk-chip" data-dir="${i}" aria-pressed="${i === dir}">${d.chip}</button>`).join("");
+  dirsBox.querySelectorAll("[data-dir]").forEach((b) => {
+    b.onclick = () => { dir = Number(b.dataset.dir); renderChips(); renderScreen(); };
+  });
+}
+function renderScreen() {
+  const d = DIR[scr][dir];
+  document.getElementById("dirTitle").textContent = d.title;
+  document.getElementById("dirDesc").innerHTML = d.desc;
+  document.getElementById("note").innerHTML = d.note;
+  phone.replaceChildren(d.make());
+}
+document.querySelectorAll("[data-scr]").forEach((b) => {
+  b.onclick = () => {
+    scr = b.dataset.scr; dir = 0;
+    document.querySelectorAll("[data-scr]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    renderChips(); renderScreen();
+  };
+});
+renderChips();
+renderScreen();
+</script>
+</body>
+</html>
