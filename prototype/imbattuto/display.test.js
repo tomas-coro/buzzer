@@ -2,40 +2,40 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { toDisplayOvr } from "./display.js";
 
-// Mappa lineare voto-squadra nativo [71,162] → display [60,99], con clamp.
-// Ancore e punti attesi calcolati da: 60 + (nativo-71)*39/89, arrotondato.
+// Il voto squadra nasce già su scala 2K (media degli overall delle carte):
+// toDisplayOvr è un passthrough con arrotondamento e clamp [40,99].
 
-test("ancora bassa: nativo 71 → 60", () => {
-  assert.equal(toDisplayOvr(71), 60);
+test("passthrough: 85 resta 85", () => {
+  assert.equal(toDisplayOvr(85), 85);
 });
 
-test("nativo 106 → 75", () => {
-  assert.equal(toDisplayOvr(106), 75);
+test("passthrough: 89 (quintetto col coach) resta 89", () => {
+  assert.equal(toDisplayOvr(89), 89);
 });
 
-test("nativo 119 (Tu col coach) → 81", () => {
-  assert.equal(toDisplayOvr(119), 81);
+test("arrotonda: 84.6 → 85", () => {
+  assert.equal(toDisplayOvr(84.6), 85);
 });
 
-test("nativo 123 (avversario mediano) → 83", () => {
-  assert.equal(toDisplayOvr(123), 83);
+test("clamp sopra: 104 (coach su quintetto leggendario) → 99", () => {
+  assert.equal(toDisplayOvr(104), 99);
 });
 
-test("ancora alta: nativo 160 → 99", () => {
-  assert.equal(toDisplayOvr(160), 99);
+test("clamp sotto: 12 → 40", () => {
+  assert.equal(toDisplayOvr(12), 40);
 });
 
-test("clamp sotto: nativo < 71 non scende sotto 60", () => {
-  assert.equal(toDisplayOvr(50), 60);
-});
-
-test("clamp sopra: nativo > 160 non supera 99", () => {
-  assert.equal(toDisplayOvr(162), 99);
+test("coerenza con le carte: media di cinque carte 2K resta nel loro intervallo", () => {
+  const carte = [92, 88, 85, 81, 77];
+  const media = carte.reduce((s, o) => s + o, 0) / carte.length; // 84.6
+  const display = toDisplayOvr(media);
+  assert.ok(display >= Math.min(...carte) && display <= Math.max(...carte),
+    `il voto squadra ${display} è fuori dall'intervallo delle carte`);
 });
 
 test("monotòna: display non decresce al crescere del nativo", () => {
   let prev = -Infinity;
-  for (let n = 60; n <= 170; n++) {
+  for (let n = 30; n <= 110; n++) {
     const d = toDisplayOvr(n);
     assert.ok(d >= prev, `regressione a nativo ${n}`);
     prev = d;

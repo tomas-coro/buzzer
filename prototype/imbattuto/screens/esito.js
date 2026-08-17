@@ -1,4 +1,5 @@
 import { toDisplayOvr } from "../display.js";
+import { appHeader } from "./_chrome.js";
 
 // ctx: { state, dispatch, go }
 export function render(ctx) {
@@ -9,6 +10,7 @@ export function render(ctx) {
   const righe = state.storia.map((h) =>
     `<li>Round ${h.round}: ${h.vinto ? "✓" : "✗"} ${toDisplayOvr(h.tuo)} vs ${toDisplayOvr(h.loro)} (${h.avversario})</li>`).join("");
   el.innerHTML = `
+    ${appHeader(state)}
     <h1 class="display">${vinto ? "IMBATTUTO" : "SCONFITTA"}</h1>
     <p class="riepilogo">${state.vittorie} vittorie di fila</p>
     <ul class="storia">${righe}</ul>

@@ -257,9 +257,11 @@ button.bz-mode{cursor:pointer}
 .dc-name{font-family:"Bungee";font-size:.86rem;color:var(--pop2);line-height:1}
 .dc-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--pop);font-weight:800}
 .dc-aid{font-size:.72rem;color:var(--txt-dim);margin-top:2px}
-.dc-r{display:flex;align-items:center;gap:8px;flex:none}
-.dc-n{font-family:"Doto";font-weight:900;font-size:2rem;line-height:.8;color:var(--pop2)}
-.dc-n-lab{font-size:.5rem;line-height:1.05;letter-spacing:.1em;text-transform:uppercase;color:var(--txt-dim);font-weight:800}
+.dc-r{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+/* Colonna destra del chip: cosa scopri della carta (il differenziatore, ora che le
+   vittorie sono sempre 16). Etichetta piccola + valore arcade. */
+.dc-see-lab{font-size:.5rem;line-height:1;letter-spacing:.16em;text-transform:uppercase;color:var(--txt-dim);font-weight:800}
+.dc-see{font-family:"Bungee";font-size:.72rem;line-height:1;color:var(--pop2);white-space:nowrap}
 
 /* CTA principale */
 .cta {
@@ -284,10 +286,10 @@ button.bz-mode{cursor:pointer}
    tirate su desktop). */
 .draft { gap: 16px; width: 100%; max-width: 440px; margin-inline: auto; }
 
-/* ---- Header: marchio + modalità ---- */
-.draft .apphd { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.draft .wm { font-family: var(--arcade); font-size: 1rem; color: var(--yellow); line-height: 1; }
-.draft .wm b { color: var(--brass); }
+/* ---- Header-cabina: marchio + modalità (condiviso draft/coach/run/esito) ---- */
+.apphd { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+.wm { font-family: var(--arcade); font-size: 1rem; color: var(--yellow); line-height: 1; }
+.wm b { color: var(--brass); }
 .mode-pill {
   display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px;
   background: rgba(255, 91, 30, .1); border: 1px solid var(--line); border-radius: 999px;
@@ -530,49 +532,321 @@ button.bz-mode{cursor:pointer}
   .dslot.elig, .reticle, .rlist.morph, .rlist.morph .crd { animation: none !important; }
 }
 
-/* =================== COACH =================== */
-.coach h2 { font-size: 1.6rem; }
-.coaches { display: grid; gap: 12px; }
-@media (min-width: 560px) { .coaches { grid-template-columns: repeat(3, 1fr); } }
-.coach-card {
-  display: flex; flex-direction: column; gap: 8px; text-align: left;
-  padding: 20px 18px; background: var(--ink-2);
-  border: 1px solid var(--line); border-radius: var(--radius);
-  transition: border-color .18s, transform .12s, background .18s;
-}
-.coach-card:hover { border-color: var(--brass); background: var(--ink-3); transform: translateY(-2px); }
-.coach-card:active { transform: translateY(0) scale(.99); }
-.coach-name { font-size: 1.15rem; }
-.grades { font-size: .78rem; letter-spacing: .06em; color: var(--bone-dim); font-weight: 600; }
+/* =================== COACH (port mockup 75, mix direzioni A+C) =================== */
+/* Struttura della direzione A (righe dense, leggibili in verticale) con il gesso
+   della direzione C: frecce tattiche e schema di campo in filigrana. Il fondo
+   ardesia di C NON è stato portato: la palette resta Cabina 90s ovunque. */
+.coach { flex: 1; gap: 16px; width: 100%; max-width: 440px; margin-inline: auto; }
 
-/* =================== RUN =================== */
-.run { gap: 26px; align-items: center; }
-.meter { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.meter-label { font-size: .72rem; letter-spacing: .3em; color: var(--brass); font-weight: 700; }
-.tacche { display: flex; gap: 8px; }
-.tacca {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid var(--line); background: transparent;
-  transition: background .3s var(--ease), border-color .3s, box-shadow .3s;
+/* Il pannello-lavagnetta che raccoglie titolo e tre righe. */
+.ct-board {
+  position: relative; overflow: hidden; padding: 14px 15px 16px;
+  border-radius: var(--radius); border: 1px solid var(--line);
+  background: linear-gradient(168deg, #191a3d, #121230);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, .35);
 }
-.tacca.on {
-  background: var(--brass); border-color: var(--brass);
-  box-shadow: 0 0 10px -1px rgba(224, 169, 109, .8);
+.ct-board .seclab { position: relative; z-index: 1; margin-bottom: 11px; }
+/* Schema di campo a gesso: fa da texture, non deve mai competere col testo. Parte
+   sotto l'etichetta di sezione, se no la linea di fondocampo taglia le parole. */
+.ct-chalk { position: absolute; inset: 34px 0 0; pointer-events: none; opacity: .16; }
+.ct-chalk svg { width: 100%; height: 100%; }
+.ct-chalk path, .ct-chalk circle, .ct-chalk line {
+  stroke: var(--bone); fill: none; stroke-width: 1.4; stroke-linecap: round;
 }
 
-/* Tabellone da palazzetto: due lati, VS al centro, numeri Bodoni. */
-.tabellone {
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
-  width: 100%; padding: 22px 20px;
-  background: var(--ink-2); border: 1px solid var(--line); border-radius: 18px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03);
+.ct-list { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 9px; }
+
+/* Riga coach su due piani: freccia a tutta altezza, nome sopra, tattica e voti
+   sotto. A un piano solo, su 390px, il nome in Bungee e le due celle LED non ci
+   stavano insieme senza tagliare le parole. */
+.ct-row {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 4px 12px; align-items: center;
+  grid-template-areas: "arrow nome nome" "arrow tac gr";
+  width: 100%; text-align: left; padding: 16px 14px;
+  background: linear-gradient(100deg, #1c1d42, #16153a);
+  border: 2px solid var(--line); border-radius: 13px;
+  transition: border-color .16s, background .16s, transform .12s var(--ease);
 }
-.lato { display: flex; flex-direction: column; gap: 8px; text-align: center; min-width: 0; }
-.lato-nome { font-size: .8rem; letter-spacing: .04em; color: var(--bone-dim); }
-.lato.tuo .lato-nome { color: var(--brass); }
-.lato-ovr { font-family: var(--serif); font-weight: 700; font-size: clamp(2.4rem, 12vw, 3.6rem); line-height: 1; }
-.vs { font-size: .8rem; letter-spacing: .12em; color: var(--bone-dim); font-weight: 700; }
-.round-info { font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; color: var(--bone-dim); font-weight: 700; margin: 0; }
+.ct-row:hover { border-color: var(--brass-deep); transform: translateX(2px); }
+.ct-row[aria-pressed="true"] {
+  border-color: var(--yellow); background: linear-gradient(100deg, #26264f, #191840);
+  box-shadow: 0 0 0 1px var(--yellow), 0 14px 30px -20px #000;
+}
+.ct-arrow { grid-area: arrow; width: 34px; height: 24px; }
+.ct-arrow path, .ct-arrow line {
+  stroke: var(--bone-dim); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.ct-row[aria-pressed="true"] .ct-arrow path,
+.ct-row[aria-pressed="true"] .ct-arrow line { stroke: var(--yellow); }
+
+.ct-n {
+  grid-area: nome; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  font-family: var(--arcade); font-size: .7rem; line-height: 1.2; color: var(--yellow);
+}
+.ct-row[aria-pressed="true"] .ct-n { color: var(--bone); }
+/* Anelli veri in bacheca: colore, non meccanica (il bonus vero è champ_bonus). */
+.ct-rings {
+  font-family: var(--body); font-style: normal; font-weight: 800;
+  font-size: .5rem; letter-spacing: .1em; text-transform: uppercase;
+  color: #0f1030; background: var(--brass); padding: 3px 6px; border-radius: 5px;
+}
+.ct-tac {
+  grid-area: tac; font-size: .66rem; line-height: 1.35; color: var(--bone-dim);
+  text-wrap: pretty;
+}
+
+/* Voti OFF/DEF come celle da tabellone: etichetta + lettera LED colorata per fascia.
+   Il colore sta sul <b> (`.gr b.g-A`): la vecchia coppia `.coach-gr .gr b` +
+   `.coach-gr .g-A` perdeva sempre per specificità e le fasce erano tutte crema. */
+.coach-gr { grid-area: gr; display: flex; gap: 7px; }
+.coach-gr .gr {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 10px;
+  border: 1px solid var(--line); border-radius: 9px; background: rgba(0, 0, 0, .28);
+}
+.coach-gr .gr i { font-style: normal; font-weight: 800; font-size: .48rem; letter-spacing: .12em; color: var(--bone-dim); }
+.coach-gr .gr b { font-family: var(--led); font-weight: 900; font-size: 1.05rem; line-height: 1; color: var(--bone); }
+.coach-gr .gr b.g-A { color: var(--green); }
+.coach-gr .gr b.g-B { color: var(--yellow); }
+.coach-gr .gr b.g-C { color: var(--brass); }
+.coach-gr .gr b.g-D { color: var(--red); }
+
+/* Anteprima dell'effetto: da quanto vale la squadra a quanto varrà col coach. */
+.ct-prev {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 15px 16px; border-radius: 13px;
+  background: rgba(255, 207, 51, .07); border: 1px solid rgba(255, 207, 51, .28);
+}
+/* Una riga sola: a due righe l'ultima resta con una parola sola in mezzo al vuoto. */
+.ct-prev .lab {
+  font-weight: 800; font-size: .56rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--bone-dim); line-height: 1.2; white-space: nowrap;
+}
+.ct-prev .nums { display: flex; align-items: center; gap: 9px; }
+.ct-prev .from { font-family: var(--led); font-weight: 700; font-size: 1.35rem; line-height: 1; color: var(--bone-dim); }
+.ct-prev .arr { color: var(--bone-dim); font-size: .9rem; }
+.ct-prev .to { font-family: var(--led); font-weight: 900; font-size: 2rem; line-height: 1; color: var(--yellow); transition: color .2s; }
+.ct-prev .to.up { color: var(--green); }
+.ct-prev .to.down { color: var(--red); }
+.ct-prev .to.bump { animation: ct-bump .42s cubic-bezier(.22, 1, .36, 1); }
+@keyframes ct-bump { 0% { transform: scale(1); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
+
+/* Striscia quintetto: la squadra draftata resta sotto gli occhi fino al fischio. */
+.ct-five-lab { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+.ct-five-lab .t { font-weight: 800; font-size: .56rem; letter-spacing: .16em; text-transform: uppercase; color: var(--bone-dim); }
+.ct-five-lab .v { font-family: var(--arcade); font-size: .54rem; letter-spacing: .02em; color: var(--brass); }
+.ct-five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.ct-p {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 9px 3px 10px; border-radius: 11px;
+  background: rgba(0, 0, 0, .24); border: 1px solid var(--line);
+}
+.ct-face { position: relative; width: 100%; aspect-ratio: 1 / 1.34; border-radius: 9px; overflow: hidden; display: block; background: linear-gradient(155deg, var(--tc1), var(--tc2)); }
+.ct-face .ini {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--arcade); font-size: .8rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
+}
+.ct-p .role { font-family: var(--arcade); font-size: .46rem; letter-spacing: .03em; color: var(--bone-dim); line-height: 1; }
+.ct-p .ovr { font-family: var(--led); font-weight: 900; font-size: 1rem; line-height: 1; color: var(--bone); }
+.ct-p .ovr.oro { color: #ffcf4d; }
+.ct-p .ovr.arg { color: #d6dbe6; }
+.ct-p .ovr.brz { color: #c78a5b; }
+
+/* Nota sotto le righe: spiega la meccanica a chi apre il gioco la prima volta,
+   e chiude il pannello senza lasciare la lista sospesa sul bordo. */
+.ct-note {
+  position: relative; z-index: 1; margin-top: 11px; padding-top: 11px;
+  border-top: 1px solid var(--line);
+  font-size: .64rem; line-height: 1.45; color: var(--bone-dim); text-wrap: pretty;
+}
+.ct-note b { color: var(--bone); font-weight: 700; }
+
+/* La CTA del coach è a tutta larghezza e va in fondo allo schermo: è l'unico modo
+   di uscire dalla schermata, e appoggiata al pollice si raggiunge meglio. */
+.coach .cta {
+  align-self: stretch; margin-top: auto; min-height: 56px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+
+/* Riga di aiuto a destra dell'etichetta di sezione (coach e run). */
+.sl-h { font-size: .64rem; color: var(--bone-dim); }
+.sl-h b { color: var(--yellow); }
+
+/* =================== RUN (port mockup 75, direzione A "Tabellone") =================== */
+/* Il tabellone da palazzetto È la schermata: cornice, viti agli angoli, shot clock
+   al centro, lampada della sirena sul bordo. Il vecchio blocco (meter + barra +
+   numeri Bodoni) è stato rimosso: era fuori dalla pelle Cabina 90s e lasciava
+   mezzo schermo vuoto. */
+.run {
+  flex: 1; gap: 14px; align-items: stretch;
+  width: 100%; max-width: 440px; margin-inline: auto;
+}
+
+/* ---- Striscia delle vittorie: quanto manca all'imbattuto, sempre a vista ---- */
+.rn-streak { flex: none; }
+.rn-streak .row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+.rn-streak .lab { font-weight: 800; font-size: .56rem; letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }
+.rn-streak .num b { font-family: var(--led); font-weight: 900; font-size: 1.05rem; line-height: 1; color: var(--yellow); }
+.rn-streak .num i { font-family: var(--led); font-style: normal; font-size: .72rem; color: var(--bone-dim); }
+/* 16 tacche: una per vittoria. Su 16 round i pallini non reggevano, le tacche sì. */
+.rn-ticks { display: grid; grid-template-columns: repeat(16, 1fr); gap: 3px; }
+.rn-ticks span { height: 9px; border-radius: 2px; background: #23244f; border: 1px solid #2f3068; }
+.rn-ticks span.on {
+  background: linear-gradient(180deg, var(--yellow), var(--brass));
+  border-color: var(--yellow); box-shadow: 0 0 8px -2px var(--yellow);
+}
+.rn-ticks span.next { border-color: var(--yellow); background: #2b2c63; }
+
+/* ---- Il tabellone ---- */
+.rn-board {
+  position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column;
+  border-radius: 16px; padding: 14px 14px 16px;
+  background: linear-gradient(180deg, #1a1b46, #101132);
+  border: 2px solid #3a3b7a;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .06), inset 0 -18px 30px -20px #000, 0 16px 34px -22px #000;
+}
+/* Viti agli angoli: il dettaglio che lo fa sembrare un oggetto, non un riquadro. */
+.rn-board::before, .rn-board::after {
+  content: ""; position: absolute; top: 7px; width: 5px; height: 5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #6f70ad, #2a2b5e);
+}
+.rn-board::before { left: 8px; }
+.rn-board::after { right: 8px; }
+
+.rn-strip {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none;
+  padding: 0 4px 11px; border-bottom: 1px solid #33346e; margin-bottom: 6px;
+}
+.rn-round { font-family: var(--arcade); font-size: .56rem; letter-spacing: .05em; text-transform: uppercase; color: var(--bone-dim); }
+.rn-round b { color: var(--yellow); }
+.rn-per { font-weight: 800; font-size: .52rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-dim); }
+
+/* I due punteggi si prendono TUTTO lo spazio fra la testata e la formazione.
+   Con un tetto (max-height) restava un buco di ~200px fra i numeri e la striscia
+   del quintetto: qui l'aria in più diventa respiro attorno ai numeri, non vuoto. */
+.rn-sides { flex: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
+.rn-side { display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 0; }
+.rn-side .who {
+  font-family: var(--arcade); font-size: .56rem; letter-spacing: .02em; line-height: 1.3;
+  text-align: center; color: var(--bone-dim); max-width: 100%; text-wrap: balance;
+}
+.rn-side.me .who { color: var(--brass); }
+.rn-side .score {
+  font-family: var(--led); font-weight: 900; font-size: 5.2rem; line-height: .82;
+  letter-spacing: .02em; color: var(--bone); font-variant-numeric: tabular-nums;
+}
+.rn-side.me .score { color: var(--yellow); text-shadow: 0 0 22px rgba(255, 207, 51, .3); }
+/* Micro-etichette: pavimento a .52rem e colore bone-dim. Sotto questa soglia, sul
+   telefono, non si leggono più. */
+.rn-side .cap {
+  font-weight: 800; font-size: .52rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--bone-dim); text-align: center; line-height: 1.3;
+}
+
+/* Shot clock al centro, come sul tabellone vero: disco LED fra i due punteggi. */
+.rn-clock { display: flex; flex-direction: column; align-items: center; gap: 7px; flex: none; }
+.rn-clock .disc {
+  width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 34%, #22235a, #0c0d26);
+  border: 2px solid #3a3b7a; box-shadow: inset 0 3px 10px rgba(0, 0, 0, .6);
+}
+.rn-clock b {
+  font-family: var(--led); font-weight: 900; font-size: 1.9rem; line-height: 1; color: var(--red);
+  font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(255, 80, 56, .55);
+}
+.rn-clock i { font-style: normal; font-weight: 800; font-size: .52rem; letter-spacing: .13em; text-transform: uppercase; color: var(--bone-dim); }
+
+/* Quintetto DENTRO il tabellone: è la formazione in campo, non un blocco a parte.
+   Prima del port la squadra draftata spariva del tutto durante il run. */
+.rn-in { flex: none; padding-top: 11px; border-top: 1px solid #33346e; }
+.rn-five-lab { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
+/* La seconda striscia (loro) prende aria dalla prima senza una riga di separazione:
+   il salto di etichetta basta a dire che è un'altra squadra. */
+.rn-five-lab.loro { margin-top: 12px; }
+.rn-five-lab.loro .v { color: var(--bone-dim); }
+.rn-five-lab .t { font-weight: 800; font-size: .54rem; letter-spacing: .16em; text-transform: uppercase; color: var(--bone-dim); }
+.rn-five-lab .v { font-family: var(--arcade); font-size: .54rem; color: var(--brass); }
+.rn-five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.rn-p { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rn-face { position: relative; width: 100%; aspect-ratio: 1 / 1.2; border-radius: 8px; overflow: hidden; display: block; background: linear-gradient(155deg, var(--tc1), var(--tc2)); }
+.rn-face .ini {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--arcade); font-size: .68rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
+}
+.rn-p .role { font-family: var(--arcade); font-size: .42rem; letter-spacing: .03em; color: var(--bone-dim); line-height: 1; }
+.rn-p .ovr { font-family: var(--led); font-weight: 900; font-size: .88rem; line-height: 1; color: var(--bone); }
+.rn-p .ovr.oro { color: #ffcf4d; }
+.rn-p .ovr.arg { color: #d6dbe6; }
+.rn-p .ovr.brz { color: #c78a5b; }
+
+/* Riga bassa: le squadre già battute, come lo storico su un tabellone vero. */
+.rn-log { display: flex; align-items: center; gap: 7px; flex: none; margin-top: 11px; }
+.rn-log .t { font-weight: 800; font-size: .52rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-dim); flex: none; }
+.rn-log .chips { display: flex; gap: 5px; margin-left: auto; flex-wrap: nowrap; }
+.rn-log .chips span {
+  font-family: var(--led); font-weight: 700; font-size: .6rem; line-height: 1; color: var(--bone-dim);
+  padding: 4px 6px; border-radius: 5px; background: rgba(0, 0, 0, .3); border: 1px solid #33346e;
+}
+.rn-log .chips span.last { color: var(--green); border-color: rgba(92, 207, 142, .45); }
+/* Al primo round non c'è storico: lo dico invece di lasciare la riga vuota. */
+.rn-log .chips .vuoto {
+  font-family: var(--body); font-weight: 600; font-size: .58rem; text-transform: none;
+  letter-spacing: 0; background: none; border: none; padding: 4px 0;
+}
+
+/* ---- Lampada della sirena: dorme spenta, si accende sul buzzer ---- */
+.rn-siren {
+  position: absolute; inset: -2px; border-radius: 16px; pointer-events: none; opacity: 0;
+  box-shadow: inset 0 0 0 3px var(--brass), inset 0 0 40px rgba(255, 91, 30, .5), 0 0 30px -6px var(--brass);
+}
+/* ---- Verdetto: un cartello che si stampa sopra il tabellone ----
+   Sta all'altezza dei punteggi, non al centro geometrico: al centro cadeva sopra
+   le etichette delle formazioni e le tagliava a metà parola. */
+.rn-verdict {
+  position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%) scale(.8); z-index: 3;
+  opacity: 0; pointer-events: none; padding: 10px 18px; border-radius: 11px; white-space: nowrap;
+  font-family: var(--arcade); font-size: .86rem; letter-spacing: .02em; text-transform: uppercase;
+  border: 2.5px solid #0a0a18; box-shadow: 4px 4px 0 #0a0a18;
+}
+.rn-verdict.win { background: var(--green); color: #06210f; }
+.rn-verdict.lose { background: var(--red); color: #2b0500; }
+
+/* ---- Messinscena del round: ~1,3s in tutto ---- */
+.rn-board.playing .rn-clock b { animation: rn-tick .22s steps(1) 3; }
+@keyframes rn-tick { 50% { opacity: .25; } }
+.rn-board.buzz .rn-siren { animation: rn-siren .9s var(--ease) both; }
+@keyframes rn-siren { 0% { opacity: 0; } 18% { opacity: 1; } 55% { opacity: .55; } 100% { opacity: 0; } }
+.rn-board.buzz .rn-side.me .score { animation: rn-pop .5s .12s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes rn-pop { 0% { transform: scale(1); } 38% { transform: scale(1.16); } 100% { transform: scale(1); } }
+/* Il timbro deve essere fermo e pieno entro ~250 ms: il verdetto di una vittoria
+   resta a schermo 700 ms, quindi un'animazione più lenta lo farebbe sparire prima
+   che si legga. */
+.rn-board.buzz .rn-verdict { animation: rn-stamp .34s .04s cubic-bezier(.22, 1, .36, 1) both; }
+@keyframes rn-stamp {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.6) rotate(-7deg); }
+  55% { opacity: 1; transform: translate(-50%, -50%) scale(.97) rotate(-2deg); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-2deg); }
+}
+.rn-ticks span.just { animation: rn-light .6s var(--ease) both; }
+@keyframes rn-light {
+  0% { transform: scaleY(.4); filter: brightness(2.4); }
+  60% { transform: scaleY(1.35); }
+  100% { transform: scaleY(1); filter: none; }
+}
+
+/* Chi ha chiesto meno movimento risolve il round senza attesa: niente animazioni. */
+@media (prefers-reduced-motion: reduce) {
+  .rn-board.playing .rn-clock b,
+  .rn-board.buzz .rn-siren,
+  .rn-board.buzz .rn-side.me .score,
+  .rn-board.buzz .rn-verdict,
+  .rn-ticks span.just { animation: none; }
+}
+
+/* La CTA del run va in fondo, a tutta larghezza: è l'unico comando della schermata. */
+.run .cta {
+  align-self: stretch; flex: none; min-height: 56px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
 
 /* =================== ESITO =================== */
 .esito { align-items: flex-start; text-align: left; }
@@ -592,6 +866,21 @@ button.bz-mode{cursor:pointer}
   font-size: .88rem; font-variant-numeric: tabular-nums;
 }
 .azioni { display: flex; gap: 10px; flex-wrap: wrap; }
+/* Bottone secondario (es. "Nuovo run"): scuro, testo crema visibile. Prima usava una
+   classe .chip senza regole, così cadeva sul default del browser (riquadro grigio,
+   testo crema illeggibile). Ora è un vero secondario, spalla della .cta gialla. */
+.chip {
+  align-self: flex-start;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 14px 22px; min-height: 48px;
+  font-family: var(--display); font-weight: 800; font-size: .92rem;
+  text-transform: uppercase; letter-spacing: .03em;
+  color: var(--bone); background: var(--ink-2);
+  border: 1px solid var(--line); border-radius: 12px;
+  transition: border-color .16s, color .16s, background .16s, transform .12s;
+}
+.chip:hover { border-color: var(--brass); color: #fff; background: var(--ink-3); }
+.chip:active { transform: translateY(1px) scale(.99); }
 
 /* =================== LEADERBOARD =================== */
 .leaderboard h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
