@@ -1,0 +1,1441 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>77 - Partita: tre regie + fine partita, fine corsa, profilo · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   77 - LA PARTITA, TRE REGIE + I DUE FINALI + IL PROFILO.
+   Segue il 76, che era un telefono da 390px piantato in mezzo a uno schermo da
+   1200: due terzi di nero. Qui si parte da DESKTOP e si scende a telefono.
+
+   COSA CAMBIA RISPETTO AL 76 (deciso col grill)
+   - due colonne su desktop, una su telefono;
+   - via il cerchio "1° QUARTO": il quarto lo dice la colonna accesa del box
+     score, al suo posto c'è il MARGINE in tempo reale;
+   - "voto" diventa OVR, con ATT e DIF accanto;
+   - i chip velocità da fascia intera a un segmentato alto 26px;
+   - le carte dei giocatori si vedono solo PRIMA del via: al fischio d'inizio
+     diventano le righe del box score;
+   - box score per giocatore che si riempie in diretta (PT RIMB AST RUB PP STP).
+
+   I DATI SONO VERI: 77-partita-data.js esce da tools/dati-tabellone.mjs, che
+   gira il motore (draft + coach + partita + game/boxscore.js). Punteggi, righe
+   dei giocatori, cronaca, OVR e medie non sono inventati.
+
+   Prefissi: `mk-` barra del mockup · `sh-` scocca condivisa · `a-` `b-` `c-`
+   le tre regie · `fp-` fine partita · `fr-` fine corsa · `pr-` profilo.
+   ========================================================================== */
+:root{
+  --ink:#15163a; --ink-2:#1d1e4a; --ink-3:#2a2a63; --line:#2c2a63;
+  --bone:#f4eee0; --bone-dim:#8a8bc0;
+  --brass:#ff5b1e; --brass-deep:#c2480c; --yellow:#ffcf33;
+  --green:#5ccf8e; --red:#ff5038;
+  --deep:#0d0e29; --near-black:#0a0a18;
+  --arcade:"Bungee", system-ui, sans-serif;
+  --display:"Bricolage Grotesque", system-ui, sans-serif;
+  --led:"Doto", ui-monospace, monospace;
+  --paper:"Instrument Serif", Georgia, serif;
+  --body:"Hanken Grotesk", system-ui, sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-out-quint:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#07071a;color:var(--bone);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;text-wrap:pretty}
+button{font:inherit;color:inherit}
+
+/* ═══════════ barra di controllo del mockup (non fa parte del design) ═══════ */
+.mkbar{position:sticky;top:0;z-index:40;display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+  padding:11px 18px;background:#0c0d24;border-bottom:1px solid var(--line)}
+.mk-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.mk-lbl{font-weight:800;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.mk-chip{font-family:var(--body);font-weight:800;font-size:.66rem;color:var(--bone-dim);
+  background:#141539;border:1px solid var(--line);border-radius:999px;padding:8px 14px;min-height:36px;cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s}
+.mk-chip:hover{color:var(--bone);border-color:var(--brass-deep)}
+.mk-chip[aria-pressed="true"]{color:#0c0d22;background:var(--yellow);border-color:var(--yellow)}
+.mk-chip:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mk-note{margin-left:auto;font-size:.65rem;line-height:1.5;color:var(--bone-dim);max-width:46ch;text-align:right}
+.mk-note b{color:var(--bone)}
+.mk-head{padding:20px 24px 0;max-width:1320px;margin:0 auto}
+.mk-head h2{margin:0;font-family:var(--arcade);font-size:.95rem;color:var(--yellow);text-wrap:balance}
+.mk-head p{margin:8px 0 0;max-width:74ch;font-size:.79rem;line-height:1.6;color:var(--bone-dim)}
+.mk-head p b{color:var(--bone)}
+
+/* ═══════════ scocca condivisa ═══════════ */
+.stage{max-width:1320px;margin:0 auto;padding:16px 24px 64px}
+.sh-screen{position:relative;border-radius:22px;border:1px solid var(--line);overflow:hidden;
+  min-height:720px;display:flex;flex-direction:column;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.045) 1px, transparent 1.6px) 0 0/14px 14px,
+    radial-gradient(120% 70% at 50% 0%, #232463 0, var(--ink) 46%, var(--deep) 100%);
+  box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}
+
+/* header comune alle tre regie */
+.sh-hd{flex:none;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:14px 22px;border-bottom:1px solid var(--line);background:rgba(10,10,26,.4)}
+.sh-wm{font-family:var(--arcade);font-size:.95rem;line-height:1;color:var(--yellow)}
+.sh-wm b{color:var(--brass)}
+.sh-pill{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+  background:rgba(255,91,30,.12);border:1px solid var(--line);
+  font-family:var(--arcade);font-size:.53rem;letter-spacing:.04em;text-transform:uppercase;color:var(--bone)}
+.sh-pill b{color:var(--yellow)}
+
+/* striscia delle 16 vittorie, compatta e in linea */
+.sh-streak{display:flex;align-items:center;gap:9px}
+.sh-streak .lab{font-weight:800;font-size:.5rem;letter-spacing:.19em;text-transform:uppercase;color:var(--brass);white-space:nowrap}
+.sh-ticks{display:flex;gap:2.5px}
+.sh-ticks i{display:block;width:9px;height:9px;border-radius:2px;background:#23244f;border:1px solid #2f3068}
+.sh-ticks i.on{background:linear-gradient(180deg,var(--yellow),var(--brass));border-color:var(--yellow)}
+.sh-ticks i.next{border-color:var(--yellow);background:#2b2c63}
+.sh-ticks i.ko{background:var(--red);border-color:var(--red)}
+.sh-streak .num{font-family:var(--led);font-weight:900;font-size:.82rem;color:var(--yellow);white-space:nowrap}
+.sh-streak .num i{font-style:normal;color:var(--bone-dim)}
+
+/* SELETTORE VELOCITÀ compatto: nel 76 erano quattro bottoni da 46px che si
+   mangiavano una fascia intera. Qui è un segmentato alto 26, sempre a schermo
+   e cambiabile in corsa. */
+.sh-speed{margin-left:auto;display:flex;align-items:center;gap:8px}
+.sh-speed>span{font-weight:800;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dim)}
+.sh-seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#101132}
+.sh-seg button{border:0;background:transparent;color:var(--bone-dim);cursor:pointer;
+  font-weight:800;font-size:.6rem;letter-spacing:.06em;padding:0 11px;height:26px;
+  border-right:1px solid var(--line);transition:background .15s,color .15s}
+.sh-seg button:last-child{border-right:0}
+.sh-seg button:hover{color:var(--bone);background:#181a45}
+.sh-seg button[aria-pressed="true"]{background:var(--yellow);color:#0c0d22}
+.sh-seg button:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+
+.sh-body{flex:1;min-height:0;padding:18px 22px 20px;display:flex;flex-direction:column;gap:14px}
+
+/* CTA arcade */
+.sh-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;flex:none;
+  font-family:var(--arcade);font-size:.92rem;letter-spacing:.03em;text-transform:uppercase;
+  color:var(--near-black);background:var(--yellow);border:2.5px solid var(--near-black);border-radius:14px;
+  box-shadow:5px 5px 0 var(--near-black);cursor:pointer;
+  transition:transform .1s var(--ease),box-shadow .1s var(--ease),background .2s,color .2s}
+.sh-cta:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--near-black)}
+.sh-cta:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--near-black)}
+.sh-cta:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
+.sh-cta svg{width:15px;height:15px;fill:currentColor}
+.sh-cta.ghost{background:transparent;color:var(--bone);border-color:var(--line);box-shadow:none;min-height:44px;
+  font-size:.72rem}
+.sh-cta.ghost:hover{border-color:var(--yellow);color:var(--yellow);transform:none}
+
+/* etichette di sezione */
+.sh-cap{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  font-weight:800;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim)}
+.sh-cap b{color:var(--brass);font-weight:800}
+
+/* faccia squadra (tessera giocatore prima del via) */
+.sh-face{position:relative;border-radius:8px;overflow:hidden;
+  background:linear-gradient(158deg,var(--tc1,#3a2d5e) 0,var(--tc2,#211636) 100%)}
+.sh-face::before{content:"";position:absolute;inset:0;opacity:.5;
+  background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),
+    repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+.sh-face .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--arcade);color:rgba(255,255,255,.94);text-shadow:0 2px 0 rgba(0,0,0,.35)}
+
+/* OVR · ATT · DIF - il numero grande si chiama OVR, non "voto" */
+.sh-ratings{display:flex;align-items:center;gap:9px}
+.sh-rat{display:flex;align-items:baseline;gap:4px}
+.sh-rat span{font-weight:800;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+.sh-rat b{font-family:var(--led);font-weight:900;font-size:.98rem;line-height:1;color:var(--bone)}
+.sh-rat.hero b{font-size:1.42rem;color:var(--yellow)}
+.sh-rat.hero span{color:var(--brass)}
+
+/* tabella box score, condivisa dalle regie */
+.sh-box{width:100%;border-collapse:collapse;font-size:.74rem}
+.sh-box th{font-weight:800;font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim);
+  padding:0 0 7px;text-align:right;white-space:nowrap}
+.sh-box th:first-child{text-align:left}
+.sh-box td{padding:6px 0;border-top:1px solid rgba(44,42,99,.7);text-align:right;
+  font-family:var(--led);font-weight:700;font-size:.85rem;color:var(--bone);font-variant-numeric:tabular-nums}
+.sh-box td:first-child{text-align:left;font-family:var(--body);font-weight:700;font-size:.76rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0;width:42%}
+/* I punti sono la colonna che si guarda per prima, quindi sono più grandi. Il
+   miglior marcatore è l'unico in giallo: prima erano gialli tutti e cinque e
+   una riga "top" doveva farsi riconoscere con un puntino che sembrava un refuso. */
+.sh-box td.pt{color:var(--bone);font-size:.98rem}
+.sh-box tr.top td.pt{color:var(--yellow)}
+.sh-box tr.top td:first-child{color:var(--yellow)}
+.sh-box .ruolo{display:inline-block;min-width:22px;margin-right:7px;font-family:var(--led);font-size:.62rem;
+  color:var(--brass);letter-spacing:.04em}
+.sh-box td.zero{color:#4d4f86}
+.sh-box tfoot td{border-top:1.5px solid var(--line);color:var(--bone-dim);font-size:.76rem;padding-top:7px}
+.sh-box tfoot td:first-child{font-family:var(--body);font-weight:800;font-size:.54rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--bone-dim)}
+
+/* numero appena cambiato: un lampo breve, non un'animazione per ogni cifra */
+.flash{animation:flash .5s var(--ease) both}
+@keyframes flash{0%{color:#fff;text-shadow:0 0 12px var(--yellow)}100%{}}
+
+/* ═══════════ duello dei reparti ═══════════
+   Riempie lo spazio che nel primo giro restava nero, ma soprattutto risponde
+   alla domanda che il punteggio non risponde: PERCHÉ è finita così. I cinque
+   reparti sono quelli su cui gira game/partita.js. */
+.sh-duel{display:flex;flex-direction:column;gap:7px}
+.sh-duel .r{display:grid;grid-template-columns:1fr 62px 1fr;gap:9px;align-items:center}
+.sh-duel .bar{position:relative;height:9px;border-radius:3px;background:#191a3f;overflow:hidden}
+.sh-duel .bar i{position:absolute;inset:0 auto 0 0;display:block;border-radius:3px}
+.sh-duel .sx .bar{transform:scaleX(-1)}
+.sh-duel .sx .bar i{background:linear-gradient(90deg,var(--brass),var(--yellow))}
+.sh-duel .dx .bar i{background:linear-gradient(90deg,#4a4c92,#6f72c9)}
+.sh-duel .lab{text-align:center;font-weight:800;font-size:.5rem;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--bone-dim);white-space:nowrap}
+.sh-duel .side{display:flex;align-items:center;gap:7px;min-width:0}
+.sh-duel .sx{flex-direction:row-reverse}
+.sh-duel .val{font-family:var(--led);font-weight:900;font-size:.72rem;color:var(--bone-dim);
+  min-width:20px;text-align:center}
+.sh-duel .sx .val.win,.sh-duel .dx .val.win{color:var(--yellow)}
+.sh-duel .bar{flex:1}
+.sh-duel .head{display:flex;justify-content:space-between;font-weight:800;font-size:.48rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim);margin-bottom:1px}
+
+/* profilo reparti di una squadra sola (regia B, sotto il box score) */
+.sh-prof{display:flex;flex-direction:column;gap:6px}
+.sh-prof .r{display:grid;grid-template-columns:56px 1fr 26px;gap:9px;align-items:center}
+.sh-prof .k{font-weight:800;font-size:.48rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim)}
+.sh-prof .bar{height:7px;border-radius:3px;background:#191a3f;overflow:hidden}
+.sh-prof .bar i{display:block;height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--brass-deep),var(--yellow))}
+.sh-prof .v{font-family:var(--led);font-weight:900;font-size:.68rem;color:var(--bone);text-align:right}
+
+/* briefing prima del via */
+.sh-brief{display:flex;flex-direction:column;gap:8px}
+.sh-brief .r{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding-bottom:8px;border-bottom:1px solid rgba(44,42,99,.7)}
+.sh-brief .r span{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.sh-brief .r b{font-size:.8rem;color:var(--bone);text-align:right}
+.sh-note{margin:2px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.sh-note li{list-style:none;padding:10px 12px;border-radius:9px;border:1px solid var(--line);
+  border-left:3px solid var(--brass);background:rgba(10,10,26,.42);
+  font-size:.76rem;line-height:1.5;color:var(--bone-dim)}
+.sh-note li b{color:var(--yellow);font-weight:800}
+
+/* cronaca che si accumula */
+.sh-log{display:flex;flex-direction:column;gap:8px}
+.sh-log li{list-style:none;display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:start;
+  padding:9px 11px;border-radius:9px;background:rgba(10,10,26,.42);border:1px solid var(--line);
+  border-left:3px solid var(--line);animation:logIn .45s var(--ease-out-quint) both}
+.sh-log li .q{font-family:var(--led);font-weight:900;font-size:.62rem;color:var(--bone-dim);
+  letter-spacing:.02em;padding-top:1px}
+.sh-log li .t{font-size:.76rem;line-height:1.45;color:var(--bone)}
+.sh-log li.pos{border-left-color:var(--green)}
+.sh-log li.neg{border-left-color:var(--red)}
+.sh-log li.par{border-left-color:var(--yellow)}
+@keyframes logIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.sh-empty{display:flex;align-items:center;justify-content:center;text-align:center;flex:1;min-height:90px;
+  padding:16px;border:1px dashed var(--line);border-radius:11px;
+  font-size:.72rem;line-height:1.5;color:var(--bone-dim);text-wrap:balance}
+
+/* verdetto */
+.sh-verdict{flex:none;display:flex;align-items:center;justify-content:center;gap:11px;min-height:46px;
+  border-radius:11px;border:1px solid var(--line);background:rgba(10,10,26,.5);
+  font-family:var(--arcade);font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;text-align:center;
+  animation:logIn .4s var(--ease-out-quint) both}
+.sh-verdict.win{color:var(--green);border-color:rgba(92,207,142,.45);background:rgba(92,207,142,.09)}
+.sh-verdict.lose{color:var(--red);border-color:rgba(255,80,56,.45);background:rgba(255,80,56,.09)}
+.sh-verdict em{font-style:normal;font-family:var(--led);color:var(--bone)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REGIA A · CRUSCOTTO - tutto a schermo, densità da sala controllo.
+   ═════════════════════════════════════════════════════════════════════════ */
+.a-top{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(280px,.72fr);gap:14px;flex:none}
+.a-panel{border:1px solid var(--line);border-radius:13px;background:rgba(10,10,26,.42);padding:14px 16px;
+  display:flex;flex-direction:column;gap:12px;min-width:0}
+.a-scoreline{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+.a-team{display:flex;flex-direction:column;gap:6px;min-width:0}
+.a-team.right{align-items:flex-end;text-align:right}
+.a-team .nm{font-family:var(--arcade);font-size:.86rem;line-height:1.15;color:var(--bone);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.a-team.mine .nm{color:var(--yellow)}
+.a-team .sub{font-weight:700;font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim)}
+.a-score{display:flex;align-items:center;gap:12px;justify-content:center}
+.a-score b{font-family:var(--led);font-weight:900;font-size:3.5rem;line-height:.9;color:var(--bone);
+  font-variant-numeric:tabular-nums}
+.a-score b.lead{color:var(--yellow)}
+.a-score i{font-family:var(--led);font-style:normal;font-size:1.5rem;color:var(--bone-dim)}
+/* MARGINE al posto del cerchio "1° QUARTO": è quello che uno cerca davvero. */
+.a-margin{justify-self:center;margin-top:2px;padding:3px 12px;border-radius:999px;border:1px solid var(--line);
+  font-family:var(--led);font-weight:900;font-size:.74rem;letter-spacing:.04em;background:#101132;color:var(--bone-dim)}
+.a-margin.pos{color:var(--green);border-color:rgba(92,207,142,.45)}
+.a-margin.neg{color:var(--red);border-color:rgba(255,80,56,.45)}
+
+.a-quarti{width:100%;border-collapse:collapse}
+.a-quarti th{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim);
+  padding:0 0 6px;text-align:center}
+.a-quarti th:first-child{text-align:left}
+.a-quarti td{padding:0;text-align:center}
+.a-quarti td:first-child{text-align:left;font-family:var(--body);font-weight:800;font-size:.56rem;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim);width:74px}
+.a-quarti .cell{display:flex;align-items:center;justify-content:center;height:36px;margin:2px 3px;border-radius:7px;
+  border:1px solid var(--line);background:#101132;
+  font-family:var(--led);font-weight:900;font-size:1rem;color:var(--bone)}
+.a-quarti .cell.off{color:#3f4179}
+.a-quarti .cell.live{border-color:var(--yellow);box-shadow:0 0 0 1px rgba(255,207,51,.3) inset}
+.a-quarti .cell.just{animation:cellIn .45s var(--ease-out-quint) both}
+.a-quarti tr.mine .cell.just{border-color:var(--yellow)}
+@keyframes cellIn{from{opacity:0;transform:scale(.82)}to{opacity:1;transform:none}}
+.a-qhead th.live{color:var(--yellow)}
+
+.a-bot{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
+/* Le tessere crescono per riempire il pannello invece di lasciare 150px di nero
+   sotto: prima del via la formazione È il contenuto, tanto vale vederla grande. */
+.a-lineup{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;flex:1;min-height:0}
+.a-card{display:flex;flex-direction:column;gap:5px;min-width:0}
+.a-card .sh-face{flex:1;min-height:88px}
+.a-card .sh-face .ini{font-size:.72rem}
+.a-card .nm{font-size:.6rem;font-weight:700;color:var(--bone-dim);text-align:center;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.a-card .ov{font-family:var(--led);font-weight:900;font-size:.82rem;color:var(--yellow);text-align:center}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REGIA B · GIORNALE - la partita raccontata come una pagina sportiva.
+   Niente card: filetti, colonne, un titolo che cambia col match.
+   ═════════════════════════════════════════════════════════════════════════ */
+.b-wrap{display:flex;flex-direction:column;gap:0;flex:1;min-height:0}
+.b-kick{display:flex;align-items:center;gap:10px;font-weight:800;font-size:.53rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--brass)}
+.b-kick span{color:var(--bone-dim)}
+.b-head{margin:9px 0 0;font-family:var(--paper);font-weight:400;font-size:2.5rem;line-height:1.06;
+  color:var(--bone);text-wrap:balance;letter-spacing:-.01em}
+.b-head em{font-style:italic;color:var(--yellow)}
+.b-mast{display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;
+  margin:14px 0 0;padding:14px 0;border-top:2px solid var(--bone);border-bottom:1px solid var(--line)}
+.b-side{display:flex;flex-direction:column;gap:5px;min-width:0}
+.b-side.right{align-items:flex-end;text-align:right}
+.b-side .nm{font-family:var(--paper);font-size:1.5rem;line-height:1.05;color:var(--bone);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.b-side.mine .nm{color:var(--yellow)}
+.b-digits{display:flex;align-items:baseline;gap:10px;font-family:var(--led);font-weight:900;font-size:3rem;
+  line-height:.9;color:var(--bone);font-variant-numeric:tabular-nums}
+.b-digits i{font-style:normal;font-size:1.2rem;color:var(--bone-dim)}
+.b-digits b.lead{color:var(--yellow)}
+.b-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(240px,.82fr);gap:0;flex:1;min-height:0}
+.b-col{padding:14px 18px;border-right:1px solid var(--line);min-width:0;display:flex;flex-direction:column;gap:10px}
+.b-col:first-child{padding-left:0}
+.b-col:last-child{border-right:0;padding-right:0}
+.b-col h4{margin:0;font-family:var(--paper);font-size:1.08rem;color:var(--bone);font-weight:400}
+.b-col h4 span{font-family:var(--body);font-weight:800;font-size:.5rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--bone-dim);display:block;margin-bottom:3px}
+.b-strip{display:flex;gap:5px;flex-wrap:wrap}
+.b-strip .q{flex:1;min-width:46px;border:1px solid var(--line);border-radius:6px;padding:5px 6px;text-align:center;
+  background:#101132}
+.b-strip .q span{display:block;font-weight:800;font-size:.46rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--bone-dim);margin-bottom:2px}
+.b-strip .q b{font-family:var(--led);font-weight:900;font-size:.82rem;color:var(--bone)}
+.b-strip .q.off b{color:#3f4179}
+.b-strip .q.live{border-color:var(--yellow)}
+.b-lineup{display:flex;flex-direction:column;gap:7px}
+.b-lineup li{list-style:none;display:grid;grid-template-columns:26px 1fr auto;gap:9px;align-items:center;
+  padding-bottom:7px;border-bottom:1px solid rgba(44,42,99,.7)}
+.b-lineup li:last-child{border-bottom:0}
+.b-lineup .ruolo{font-family:var(--led);font-size:.62rem;color:var(--brass)}
+.b-lineup .nm{font-size:.78rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.b-lineup .nm em{display:block;font-style:normal;font-size:.56rem;font-weight:600;color:var(--bone-dim);
+  letter-spacing:.08em;text-transform:uppercase}
+.b-lineup .ov{font-family:var(--led);font-weight:900;font-size:.92rem;color:var(--yellow)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REGIA C · PALAZZETTO - il cubo sopra il campo. LED grandi, tutto leggibile
+   da lontano, il box score come i pannelli laterali dell'arena.
+   ═════════════════════════════════════════════════════════════════════════ */
+.c-wrap{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
+.c-cube{position:relative;flex:none;border-radius:16px;border:2px solid #000;overflow:hidden;
+  background:linear-gradient(180deg,#0b0b1f 0,#05050f 100%);
+  box-shadow:0 0 0 1px var(--line),0 20px 50px -22px rgba(255,207,51,.28) inset}
+.c-cube::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 3px)}
+.c-cube-in{position:relative;display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;
+  padding:18px 24px}
+.c-team{display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.c-team .abbr{font-family:var(--arcade);font-size:1.5rem;line-height:1;color:var(--brass);letter-spacing:.02em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.c-team.mine .abbr{color:var(--yellow)}
+.c-team .nm{font-weight:700;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.c-team .pts{font-family:var(--led);font-weight:900;font-size:4.6rem;line-height:.86;color:#ff8a3d;
+  text-shadow:0 0 26px rgba(255,138,61,.5);font-variant-numeric:tabular-nums}
+.c-team.mine .pts{color:var(--yellow);text-shadow:0 0 26px rgba(255,207,51,.45)}
+.c-mid{display:flex;flex-direction:column;align-items:center;gap:8px}
+.c-dots{display:flex;gap:5px}
+.c-dots i{width:26px;height:5px;border-radius:2px;background:#26264f}
+.c-dots i.on{background:var(--yellow)}
+.c-dots i.live{background:var(--brass);animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.c-mid .lbl{font-family:var(--arcade);font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;color:var(--bone-dim)}
+.c-mid .mar{font-family:var(--led);font-weight:900;font-size:1.15rem;color:var(--bone)}
+.c-mid .mar.pos{color:var(--green)}
+.c-mid .mar.neg{color:var(--red)}
+.c-qrow{position:relative;display:grid;grid-template-columns:76px repeat(5,1fr);gap:5px;
+  padding:0 24px 16px;align-items:center}
+.c-qrow .lab{font-weight:800;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bone-dim)}
+.c-qrow .cell{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 4px;border-radius:6px;
+  background:#0e0e26;border:1px solid #22224c}
+.c-qrow .cell span{font-weight:800;font-size:.44rem;letter-spacing:.12em;color:var(--bone-dim)}
+.c-qrow .cell b{font-family:var(--led);font-weight:900;font-size:.85rem;color:var(--bone)}
+.c-qrow .cell.off b{color:#33355f}
+.c-qrow .cell.live{border-color:var(--yellow)}
+.c-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
+.c-panel{border:1px solid var(--line);border-radius:12px;background:rgba(10,10,26,.5);padding:12px 14px;
+  display:flex;flex-direction:column;gap:9px;min-width:0}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FINE PARTITA
+   ═════════════════════════════════════════════════════════════════════════ */
+.fp-hero{flex:none;display:grid;grid-template-columns:1fr auto 1fr;gap:18px;align-items:center;
+  padding:16px 20px;border-radius:14px;border:1px solid var(--line);background:rgba(10,10,26,.5)}
+.fp-hero .fp-side{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fp-hero .fp-side.right{align-items:flex-end;text-align:right}
+.fp-hero .nm{font-family:var(--arcade);font-size:1rem;color:var(--bone);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.fp-hero .fp-side.mine .nm{color:var(--yellow)}
+.fp-digits{display:flex;align-items:baseline;gap:12px;font-family:var(--led);font-weight:900;font-size:3.6rem;
+  line-height:.9;color:var(--bone);font-variant-numeric:tabular-nums}
+.fp-digits i{font-style:normal;font-size:1.4rem;color:var(--bone-dim)}
+.fp-digits b.lead{color:var(--yellow)}
+.fp-mvp{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;flex:none;
+  padding:12px 16px;border-radius:12px;border:1px solid rgba(255,207,51,.35);
+  background:linear-gradient(100deg,rgba(255,207,51,.12),rgba(255,91,30,.05))}
+.fp-mvp .sh-face{width:56px;height:62px;flex:none}
+.fp-mvp .sh-face .ini{font-size:.78rem}
+.fp-mvp .txt span{display:block;font-weight:800;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:3px}
+.fp-mvp .txt b{font-family:var(--arcade);font-size:.86rem;color:var(--bone);display:block;margin-bottom:4px}
+.fp-mvp .txt em{font-style:normal;font-family:var(--led);font-weight:700;font-size:.86rem;color:var(--yellow)}
+.fp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;min-height:0}
+.fp-cronaca{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FINE CORSA
+   ═════════════════════════════════════════════════════════════════════════ */
+.fr-banner{flex:none;text-align:center;padding:20px 18px;border-radius:16px;border:1px solid var(--line);
+  background:radial-gradient(80% 130% at 50% 0%,rgba(255,207,51,.14),transparent 70%),rgba(10,10,26,.5)}
+.fr-banner.ko{background:radial-gradient(80% 130% at 50% 0%,rgba(255,80,56,.14),transparent 70%),rgba(10,10,26,.5)}
+.fr-banner .kick{font-weight:800;font-size:.52rem;letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
+.fr-banner h3{margin:8px 0 0;font-family:var(--arcade);font-size:1.7rem;line-height:1.1;color:var(--yellow);
+  text-wrap:balance}
+.fr-banner.ko h3{color:var(--red)}
+.fr-banner p{margin:9px auto 0;max-width:58ch;font-size:.79rem;line-height:1.55;color:var(--bone-dim)}
+.fr-banner p b{color:var(--bone)}
+.fr-run{display:flex;gap:3px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.fr-run .g{position:relative;width:30px;height:30px;border-radius:6px;border:1px solid var(--line);background:#101132;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--led);font-weight:900;font-size:.56rem;color:var(--bone-dim);cursor:default}
+.fr-run .g.win{border-color:rgba(92,207,142,.5);color:var(--green);background:rgba(92,207,142,.08)}
+.fr-run .g.lose{border-color:var(--red);color:var(--red);background:rgba(255,80,56,.12)}
+.fr-cols{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,.9fr);gap:14px;flex:1;min-height:0}
+/* I sedici risultati per esteso: la fila di tacche dice quante ne hai vinte,
+   questa dice COME. Riempie il pannello con la storia della corsa. */
+.fr-games{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.fr-games div{display:flex;align-items:baseline;justify-content:space-between;gap:6px;
+  padding:6px 9px;border-radius:7px;border:1px solid var(--line);background:rgba(10,10,26,.45)}
+.fr-games span{font-weight:800;font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:var(--bone-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-games b{font-family:var(--led);font-weight:900;font-size:.72rem;color:var(--green);white-space:nowrap}
+.fr-games div.lose{border-color:rgba(255,80,56,.4)}
+.fr-games div.lose b{color:var(--red)}
+.fr-lead{display:flex;flex-direction:column;gap:9px}
+.fr-lead .row{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;
+  padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:rgba(10,10,26,.45)}
+.fr-lead .row .k{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);
+  writing-mode:horizontal-tb;min-width:44px}
+.fr-lead .row .n{font-size:.8rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fr-lead .row .v{font-family:var(--led);font-weight:900;font-size:1.15rem;color:var(--yellow)}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PROFILO - il nome squadra e le statistiche che restano fra una corsa e l'altra
+   ═════════════════════════════════════════════════════════════════════════ */
+.pr-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end;flex:none;
+  padding-bottom:14px;border-bottom:1px solid var(--line)}
+.pr-name label{display:block;font-weight:800;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--brass);margin-bottom:7px}
+.pr-name .field{display:flex;gap:9px;align-items:center}
+.pr-name input{font-family:var(--arcade);font-size:1.28rem;color:var(--yellow);background:transparent;
+  border:0;border-bottom:2px solid var(--line);padding:4px 2px 7px;min-width:0;width:100%;max-width:420px}
+.pr-name input:focus{outline:0;border-bottom-color:var(--yellow)}
+.pr-name .hint{margin:8px 0 0;font-size:.68rem;color:var(--bone-dim);max-width:52ch}
+.pr-kpi{display:flex;gap:10px}
+.pr-kpi div{min-width:82px;padding:9px 13px;border-radius:10px;border:1px solid var(--line);
+  background:rgba(10,10,26,.45);text-align:center}
+.pr-kpi span{display:block;font-weight:800;font-size:.46rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--bone-dim);margin-bottom:4px}
+.pr-kpi b{font-family:var(--led);font-weight:900;font-size:1.3rem;color:var(--yellow)}
+.pr-sort{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.pr-sort span{font-weight:800;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dim)}
+.pr-tbl{width:100%;border-collapse:collapse;font-size:.76rem}
+.pr-tbl th{font-weight:800;font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim);
+  padding:0 0 8px;text-align:right;white-space:nowrap}
+.pr-tbl th:nth-child(-n+2){text-align:left}
+.pr-tbl td{padding:7px 0;border-top:1px solid rgba(44,42,99,.7);text-align:right;
+  font-family:var(--led);font-weight:700;font-size:.86rem;font-variant-numeric:tabular-nums}
+.pr-tbl td:first-child{width:34px;text-align:left;color:var(--bone-dim);font-size:.72rem}
+.pr-tbl td:nth-child(2){text-align:left;font-family:var(--body);font-weight:700;font-size:.78rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0;width:34%}
+.pr-tbl td.hot{color:var(--yellow)}
+.pr-tbl tr.podio td:nth-child(2){color:var(--yellow)}
+/* La classifica scorre DENTRO la schermata: con trenta nomi liberi di crescere
+   la scocca diventava alta 1600px e il resto spariva sotto la piega. */
+.pr-scroll{flex:1;min-height:120px;max-height:400px;overflow:auto;
+  scrollbar-color:var(--ink-3) transparent;scrollbar-width:thin}
+.pr-scroll thead th{position:sticky;top:0;background:#12132f;padding-top:6px;z-index:1}
+
+/* ═══════════ responsive: la stessa schermata su telefono ═══════════ */
+@media (max-width:1080px){
+  .a-top,.a-bot,.fp-grid,.fr-cols,.c-panels{grid-template-columns:1fr}
+  .b-cols{grid-template-columns:1fr 1fr}
+  .b-col:nth-child(3){grid-column:1/-1;border-right:0;padding:14px 0 0;border-top:1px solid var(--line)}
+  .pr-top{grid-template-columns:1fr}
+  .pr-kpi{flex-wrap:wrap}
+}
+@media (max-width:720px){
+  .stage{padding:12px 12px 48px}
+  .sh-body{padding:14px 14px 16px}
+  .sh-hd{padding:12px 14px}
+  .sh-streak{order:3;width:100%}
+  .sh-speed{margin-left:0}
+  .a-score b,.fp-digits{font-size:2.5rem}
+  .b-cols{grid-template-columns:1fr}
+  .b-col{border-right:0;padding:14px 0;border-top:1px solid var(--line)}
+  .b-col:first-child{border-top:0}
+  .b-head{font-size:1.75rem}
+  .c-cube-in{grid-template-columns:1fr;gap:12px}
+  .c-team .pts{font-size:3.2rem}
+  .c-qrow{grid-template-columns:56px repeat(5,1fr);padding:0 14px 14px}
+  .fp-hero,.a-scoreline{grid-template-columns:1fr;text-align:center}
+  .fp-hero .fp-side.right,.a-team.right{align-items:center;text-align:center}
+  .fp-cronaca{grid-template-columns:1fr}
+  .a-lineup{grid-template-columns:repeat(5,1fr);gap:5px}
+}
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <div class="mk-group">
+    <span class="mk-lbl">Schermata</span>
+    <button class="mk-chip" data-vista="A" aria-pressed="true">A · Cruscotto</button>
+    <button class="mk-chip" data-vista="B" aria-pressed="false">B · Giornale</button>
+    <button class="mk-chip" data-vista="C" aria-pressed="false">C · Palazzetto</button>
+    <button class="mk-chip" data-vista="FP" aria-pressed="false">Fine partita</button>
+    <button class="mk-chip" data-vista="FR" aria-pressed="false">Fine corsa</button>
+    <button class="mk-chip" data-vista="PR" aria-pressed="false">Profilo</button>
+  </div>
+  <div class="mk-group" id="mk-scenari"></div>
+  <p class="mk-note">Dati <b>veri</b> dal motore: box score per giocatore, cronaca, OVR e medie
+    escono da <b>game/boxscore.js</b> e <b>game/partita.js</b>. La velocità si cambia anche a partita in corso.</p>
+</div>
+
+<div class="mk-head">
+  <h2 id="mk-title">A · Cruscotto</h2>
+  <p id="mk-desc"></p>
+</div>
+
+<div class="stage"><div class="sh-screen" id="screen"></div></div>
+
+<script src="77-partita-data.js"></script>
+<script>
+/* ============================================================================
+   Motore del mockup. Non simula niente: rigioca i dati che il motore vero ha
+   già prodotto, un quarto alla volta, alla velocità scelta.
+   ========================================================================== */
+"use strict";
+
+const SPEEDS = { lenta: 4000, normale: 2000, rapida: 800, salta: 0 };
+const SPEED_LABEL = { lenta: "Lenta", normale: "Normale", rapida: "Rapida", salta: "Salta" };
+const SCENARI = [
+  { k: 0, nome: "Volata" }, { k: 1, nome: "Dominio" }, { k: 2, nome: "Sconfitta" },
+];
+const DESC = {
+  A: "Tutto a schermo in due colonne: punteggio e quarti a sinistra, cronaca a destra, i due box score sotto. Nessuno spazio nero: la densità è il punto.",
+  B: "La partita raccontata come una pagina sportiva. Titolo che cambia col match, punteggio in testata, tre colonne di filetti al posto delle card.",
+  C: "Il cubo sopra il campo. LED grandi leggibili da lontano, i quarti come tacche, il box score nei due pannelli laterali dell'arena.",
+  FP: "Cosa resta a fine partita: il finale, il migliore in campo, il box score completo delle due squadre e le quattro righe di cronaca.",
+  FR: "Fine corsa. Le medie di ogni giocatore su tutte le partite giocate, la fila dei 16 turni e i primati della corsa.",
+  PR: "Il profilo locale: il nome squadra e le statistiche che si accumulano fra una corsa e l'altra. LeBron 2012-13 e LeBron 2017-18 contano come lo stesso LeBron.",
+};
+const COLORI = ["#c8102e,#7a0a1c", "#1d428a,#0e2148", "#552583,#2c1245", "#007a33,#00381a",
+  "#ce1141,#7a0a26", "#e56020,#8a3512", "#00538c,#00304f", "#5d76a9,#2c3a54"];
+
+const state = {
+  vista: "A", partita: 0, fine: 0, quarto: 0, playing: false, speed: "normale",
+  sort: "gp", squadra: (window.PROFILO && window.PROFILO.squadra) || "Dinamo Sofà",
+};
+let timer = null;
+
+const P = () => window.PARTITE[state.partita];
+const FR = () => window.FINE_RUN[state.fine];
+const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c;
+  if (x != null) n.textContent = x; return n; };
+const app = (p, ...kids) => { kids.forEach((k) => k && p.appendChild(k)); return p; };
+const iniziali = (nome) => nome.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+const cognome = (nome) => { const p = nome.split(/\s+/); return p.length > 1 ? p.slice(1).join(" ") : nome; };
+const tinta = (i) => COLORI[i % COLORI.length].split(",");
+
+// Punteggio dopo `n` quarti giocati. Con n = 0 la partita non è iniziata.
+function cum(n) {
+  const q = P().quarti;
+  if (n <= 0) return { casa: 0, ospite: 0 };
+  const k = q[Math.min(n, q.length) - 1];
+  return { casa: k.cumCasa, ospite: k.cumOspite };
+}
+// Riga di un giocatore dopo `n` quarti: si somma quello che ha fatto finora.
+function parziale(riga, n) {
+  const t = { pts: 0, reb: 0, ast: 0, stl: 0, tov: 0, blk: 0 };
+  for (let i = 0; i < Math.min(n, riga.per.length); i++) {
+    for (const k in t) t[k] += riga.per[i][k];
+  }
+  return t;
+}
+const finita = () => state.quarto >= P().quarti.length;
+const vinta = () => P().vincitore === "casa";
+const nomeMio = () => state.squadra;
+const nomeLoro = () => P().avv;
+
+/* ---- driver: avanza di un quarto alla velocità scelta ---------------------- */
+function stop() { if (timer) { clearTimeout(timer); timer = null; } state.playing = false; }
+function via() {
+  if (finita()) return;
+  state.playing = true;
+  if (state.speed === "salta") { state.quarto = P().quarti.length; state.playing = false; render(); return; }
+  passo();
+}
+function passo() {
+  state.quarto++;
+  render();
+  if (finita()) { state.playing = false; return; }
+  // La velocità si legge a ogni passo, non all'inizio: se premi Rapida a metà
+  // partita deve valere dal quarto dopo, non dalla partita dopo.
+  if (state.speed === "salta") { state.quarto = P().quarti.length; state.playing = false; render(); return; }
+  timer = setTimeout(passo, SPEEDS[state.speed]);
+}
+function reset() { stop(); state.quarto = 0; render(); }
+
+/* ---- pezzi condivisi ------------------------------------------------------ */
+function header(opts = {}) {
+  const hd = el("div", "sh-hd");
+  const wm = el("div", "sh-wm"); wm.innerHTML = 'BUZ<b>ZER</b>';
+  const pill = el("div", "sh-pill");
+  pill.innerHTML = 'Round <b>' + (opts.round ?? P().round) + '</b> · Normale';
+  app(hd, wm, pill);
+
+  if (opts.streak !== false) {
+    const st = el("div", "sh-streak");
+    const ticks = el("div", "sh-ticks");
+    const vinte = (opts.round ?? P().round) - 1;
+    for (let i = 0; i < 16; i++) {
+      const t = el("i");
+      if (i < vinte) t.className = "on"; else if (i === vinte) t.className = "next";
+      ticks.appendChild(t);
+    }
+    const num = el("div", "sh-streak-num");
+    num.className = "num"; num.innerHTML = vinte + '<i>/16</i>';
+    app(st, el("span", "lab", "Fila"), ticks, num);
+    hd.appendChild(st);
+  }
+
+  if (opts.speed !== false) {
+    const sp = el("div", "sh-speed");
+    sp.appendChild(el("span", null, "Velocità"));
+    const seg = el("div", "sh-seg");
+    for (const k of Object.keys(SPEEDS)) {
+      const b = el("button", null, SPEED_LABEL[k]);
+      b.setAttribute("aria-pressed", String(state.speed === k));
+      b.onclick = () => {
+        state.speed = k;
+        // Cambio in corsa: riprogrammo subito il prossimo quarto, altrimenti a
+        // Lenta premi Rapida e per quattro secondi non succede niente.
+        if (state.playing) { clearTimeout(timer); timer = null;
+          if (k === "salta") { state.quarto = P().quarti.length; state.playing = false; render(); return; }
+          timer = setTimeout(passo, SPEEDS[k]);
+        }
+        render();
+      };
+      seg.appendChild(b);
+    }
+    app(sp, seg);
+    hd.appendChild(sp);
+  }
+  return hd;
+}
+
+// Tabella box score di una squadra. `n` = quarti giocati.
+function tabellaBox(righe, carte, n, opts = {}) {
+  const t = el("table", "sh-box");
+  const thead = el("thead"); const tr = el("tr");
+  for (const h of ["Giocatore", "PT", "RIMB", "AST", "RUB", "PP", "STP"]) tr.appendChild(el("th", null, h));
+  app(thead, tr); t.appendChild(thead);
+
+  const tot = righe.map((r) => parziale(r, n));
+  const maxPt = Math.max(...tot.map((v) => v.pts));
+  const tb = el("tbody");
+  righe.forEach((r, i) => {
+    const v = tot[i];
+    const row = el("tr");
+    if (v.pts === maxPt && n > 0) row.className = "top";
+    const c = carte[i] || {};
+    const td0 = el("td");
+    const ru = el("span", "ruolo", c.ruolo || "");
+    td0.appendChild(ru); td0.appendChild(document.createTextNode(cognome(r.nome)));
+    td0.title = r.nome + (c.stagione ? " · " + c.team + " " + c.stagione : "");
+    row.appendChild(td0);
+    [["pts", "pt"], ["reb"], ["ast"], ["stl"], ["tov"], ["blk"]].forEach(([k, cls]) => {
+      const td = el("td", cls || (v[k] === 0 ? "zero" : null), String(v[k]));
+      if (opts.flash && n > 0 && r.per[n - 1] && r.per[n - 1][k] > 0) td.classList.add("flash");
+      row.appendChild(td);
+    });
+    tb.appendChild(row);
+  });
+  t.appendChild(tb);
+
+  const somma = tot.reduce((a, v) => {
+    for (const k in a) a[k] += v[k]; return a;
+  }, { pts: 0, reb: 0, ast: 0, stl: 0, tov: 0, blk: 0 });
+  const tf = el("tfoot"); const trf = el("tr");
+  trf.appendChild(el("td", null, "Squadra"));
+  for (const k of ["pts", "reb", "ast", "stl", "tov", "blk"]) trf.appendChild(el("td", null, String(somma[k])));
+  app(tf, trf); t.appendChild(tf);
+  return t;
+}
+
+// Cronaca accumulata. Il colore della riga viene dal PARZIALE, non dal tipo di
+// frase: nel 76 un allungo dell'avversario finiva dipinto di verde.
+function cronacaList(n, limite) {
+  const ul = el("ul", "sh-log");
+  const righe = P().cronaca.slice(0, n);
+  const da = limite ? Math.max(0, righe.length - limite) : 0;
+  righe.slice(da).forEach((r, idx) => {
+    const i = da + idx;
+    const q = P().quarti[i];
+    const par = q.casa - q.ospite;
+    const li = el("li", par > 0 ? "pos" : par < 0 ? "neg" : "par");
+    app(li, el("div", "q", (i + 1) + (q.overtime ? "OT" : "°")), el("div", "t", r.testo));
+    ul.appendChild(li);
+  });
+  return ul;
+}
+
+function verdetto() {
+  const v = el("div", "sh-verdict " + (vinta() ? "win" : "lose"));
+  const p = cum(P().quarti.length);
+  v.innerHTML = (vinta() ? "Passi il turno" : "Corsa finita") +
+    ' · <em>' + p.casa + "-" + p.ospite + "</em>";
+  return v;
+}
+
+function ctaPartita() {
+  if (state.quarto === 0) {
+    const b = el("button", "sh-cta");
+    b.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Gioca la partita';
+    b.onclick = via;
+    return b;
+  }
+  if (!finita()) {
+    const b = el("button", "sh-cta ghost", "Simulazione in corso · " + SPEED_LABEL[state.speed]);
+    b.disabled = true;
+    return b;
+  }
+  const b = el("button", "sh-cta", vinta() ? "Prossimo turno" : "Vedi come è andata");
+  b.onclick = () => { state.vista = "FP"; render(); };
+  return b;
+}
+
+const REPARTI = [["t3", "Tiro 3"], ["fin", "Finaliz."], ["dif", "Difesa"], ["reb", "Rimbalzi"], ["reg", "Regia"]];
+
+// Media di un reparto sul quintetto. I reparti stanno sulle carte, non sulla
+// squadra: la media è quello che il motore usa per far girare la partita.
+function repartiSquadra(carte) {
+  const out = {};
+  for (const [k] of REPARTI) out[k] = Math.round(carte.reduce((a, c) => a + c.reparti[k], 0) / carte.length);
+  return out;
+}
+
+// Il duello: cinque righe, due barre che si guardano. Risponde al "perché è
+// finita così", che il solo punteggio non dice.
+function duelloReparti(mie, loro, nomeSx, nomeDx) {
+  const a = repartiSquadra(mie); const b = repartiSquadra(loro);
+  const w = el("div", "sh-duel");
+  const head = el("div", "head");
+  app(head, el("span", null, nomeSx), el("span", null, nomeDx));
+  w.appendChild(head);
+  for (const [k, lab] of REPARTI) {
+    const r = el("div", "r");
+    const mk = (val, vince, cls) => {
+      const s = el("div", "side " + cls);
+      const bar = el("div", "bar"); const fill = el("i");
+      fill.style.width = Math.max(4, val) + "%";
+      bar.appendChild(fill);
+      app(s, el("div", "val" + (vince ? " win" : ""), String(val)), bar);
+      return s;
+    };
+    app(r, mk(a[k], a[k] >= b[k], "sx"), el("div", "lab", lab), mk(b[k], b[k] > a[k], "dx"));
+    w.appendChild(r);
+  }
+  return w;
+}
+
+// Profilo di una squadra sola: cinque barre, per la regia B dove le due squadre
+// stanno in colonne diverse e un confronto affiancato non ci starebbe.
+function profiloReparti(carte) {
+  const v = repartiSquadra(carte);
+  const w = el("div", "sh-prof");
+  for (const [k, lab] of REPARTI) {
+    const r = el("div", "r");
+    const bar = el("div", "bar"); const fill = el("i");
+    fill.style.width = Math.max(4, v[k]) + "%"; bar.appendChild(fill);
+    app(r, el("div", "k", lab), bar, el("div", "v", String(v[k])));
+    w.appendChild(r);
+  }
+  return w;
+}
+
+// Cosa succede in quella colonna PRIMA del via. Al primo giro c'era una scatola
+// vuota alta 300px che diceva "il racconto arriverà": adesso dice chi allena,
+// che ritmo si gioca e dove sei meglio o peggio dell'avversario.
+const CONSEGUENZA = {
+  t3: "ti puniscono da fuori", fin: "segnano vicino a canestro",
+  dif: "faticherai a trovare il canestro", reb: "prendono secondi tiri",
+  reg: "girano meglio la palla",
+};
+function briefing(g) {
+  const a = repartiSquadra(g.mio); const b = repartiSquadra(g.loro);
+  const scarti = REPARTI.map(([k, lab]) => ({ k, lab, d: a[k] - b[k] }));
+  const meglio = scarti.slice().sort((x, y) => y.d - x.d)[0];
+  const peggio = scarti.slice().sort((x, y) => x.d - y.d)[0];
+
+  const w = el("div", "sh-brief");
+  const riga = (lab, val) => {
+    const r = el("div", "r");
+    app(r, el("span", null, lab), el("b", null, val));
+    return r;
+  };
+  w.appendChild(riga("Coach", g.coach));
+  w.appendChild(riga("Tattica", g.tattica));
+  w.appendChild(riga("Ritmo previsto", g.possessi.casa + " possessi"));
+
+  const note = el("ul", "sh-note");
+  const n1 = el("li");
+  n1.innerHTML = "Il tuo vantaggio è <b>" + meglio.lab.toLowerCase() + "</b>: " +
+    a[meglio.k] + " contro " + b[meglio.k] + ".";
+  note.appendChild(n1);
+  const n2 = el("li");
+  n2.innerHTML = peggio.d < 0
+    ? "Ti battono a <b>" + peggio.lab.toLowerCase() + "</b> (" + b[peggio.k] + " contro " +
+      a[peggio.k] + "): " + CONSEGUENZA[peggio.k] + "."
+    : "Non hanno un reparto in cui ti superano: la partita la perdi solo per la serata storta.";
+  note.appendChild(n2);
+  // Il terzo avviso è il patto col giocatore: essere più forti non basta. È il
+  // numero vero della taratura del motore, non una frase di colore.
+  const gap = g.ovrTuo - g.ovrLoro;
+  const n3 = el("li");
+  n3.innerHTML = gap > 0
+    ? "Sei favorito di <b>" + gap + "</b> di OVR. Nel motore chi è più debole di sei punti vince comunque <b>una volta su quattro</b>."
+    : "Parti sotto di <b>" + Math.abs(gap) + "</b> di OVR. Una su quattro finisce lo stesso dalla tua parte.";
+  note.appendChild(n3);
+  w.appendChild(note);
+  return w;
+}
+
+function ratings(ovr, att, dif, hero) {
+  const w = el("div", "sh-ratings");
+  const add = (lab, val, cls) => {
+    const r = el("div", "sh-rat" + (cls ? " " + cls : ""));
+    app(r, el("span", null, lab), el("b", null, String(val)));
+    w.appendChild(r);
+  };
+  add("Ovr", ovr, hero ? "hero" : null); add("Att", att); add("Dif", dif);
+  return w;
+}
+
+/* ============================ REGIA A · CRUSCOTTO ========================= */
+function vistaA(root) {
+  root.appendChild(header());
+  const body = el("div", "sh-body");
+  const g = P(); const n = state.quarto; const p = cum(n);
+
+  /* --- riga alta: punteggio + quarti | cronaca --- */
+  const top = el("div", "a-top");
+  const sx = el("div", "a-panel");
+
+  const line = el("div", "a-scoreline");
+  const mine = el("div", "a-team mine");
+  app(mine, el("div", "nm", nomeMio()), ratings(g.ovrTuo, g.att, g.dif, true));
+  const mid = el("div");
+  const sc = el("div", "a-score");
+  const b1 = el("b", p.casa > p.ospite ? "lead" : null, String(p.casa));
+  const b2 = el("b", p.ospite > p.casa ? "lead" : null, String(p.ospite));
+  if (n > 0) { b1.classList.add("flash"); b2.classList.add("flash"); }
+  app(sc, b1, el("i", null, "·"), b2);
+  const d = p.casa - p.ospite;
+  const mar = el("div", "a-margin " + (n === 0 ? "" : d > 0 ? "pos" : d < 0 ? "neg" : ""),
+    n === 0 ? "Palla a due" : (d > 0 ? "+" : "") + d + (finita() ? "" : " · " + (n) + "° quarto"));
+  app(mid, sc, mar);
+  const opp = el("div", "a-team right");
+  app(opp, el("div", "nm", g.avvSigla), el("div", "sub", g.avv.replace(g.avvSigla + " ", "")),
+    ratings(g.ovrLoro, g.loroAttDif.att, g.loroAttDif.dif));
+  app(line, mine, mid, opp);
+  sx.appendChild(line);
+
+  /* box score a quarti: qui e solo qui si legge il quarto in corso */
+  const tq = el("table", "a-quarti");
+  const th = el("tr", "a-qhead"); th.appendChild(el("th", null, "Quarti"));
+  g.quarti.forEach((q, i) => {
+    const h = el("th", i === n - 1 && !finita() ? "live" : null, q.overtime ? "OT" : (i + 1) + "°");
+    th.appendChild(h);
+  });
+  th.appendChild(el("th", null, "Tot"));
+  app(el("thead"), th);
+  const head = el("thead"); head.appendChild(th); tq.appendChild(head);
+  const tbq = el("tbody");
+  [["mine", nomeMio(), "casa"], ["opp", g.avvSigla, "ospite"]].forEach(([cls, lab, side]) => {
+    const tr = el("tr", cls === "mine" ? "mine" : null);
+    tr.appendChild(el("td", null, cls === "mine" ? "Tu" : lab));
+    g.quarti.forEach((q, i) => {
+      const td = el("td");
+      const on = i < n;
+      const cell = el("div", "cell" + (on ? "" : " off") + (i === n - 1 && !finita() ? " live" : "") +
+        (i === n - 1 ? " just" : ""), on ? String(q[side]) : "·");
+      app(td, cell); tr.appendChild(td);
+    });
+    const tot = el("td");
+    app(tot, el("div", "cell" + (n === 0 ? " off" : ""), n === 0 ? "·" : String(cum(n)[side])));
+    tr.appendChild(tot);
+    tbq.appendChild(tr);
+  });
+  tq.appendChild(tbq);
+  sx.appendChild(tq);
+
+  const capD = el("div", "sh-cap");
+  app(capD, el("span", null, "Il duello dei reparti"), el("b", null, "Perché finisce così"));
+  sx.appendChild(capD);
+  sx.appendChild(duelloReparti(g.mio, g.loro, nomeMio(), g.avvSigla));
+  top.appendChild(sx);
+
+  const dx = el("div", "a-panel");
+  const cap = el("div", "sh-cap");
+  app(cap, el("span", null, n === 0 ? "Prima del via" : "Cronaca"),
+    el("b", null, n === 0 ? "Come si vince" : n + "/" + g.quarti.length));
+  dx.appendChild(cap);
+  if (n === 0) {
+    dx.appendChild(briefing(g));
+  } else {
+    dx.appendChild(cronacaList(n));
+  }
+  if (finita()) dx.appendChild(verdetto());
+  top.appendChild(dx);
+  body.appendChild(top);
+
+  /* --- riga bassa: le carte prima del via, le righe del box score dopo --- */
+  const bot = el("div", "a-bot");
+  [["casa", nomeMio(), g.mio], ["ospite", g.avvSigla, g.loro]].forEach(([side, lab, carte]) => {
+    const pan = el("div", "a-panel");
+    const c = el("div", "sh-cap");
+    app(c, el("span", null, side === "casa" ? "Il tuo quintetto" : "Chi hai di fronte"),
+      el("b", null, n === 0 ? "Formazione" : "Box score"));
+    pan.appendChild(c);
+    if (n === 0) {
+      const grid = el("div", "a-lineup");
+      carte.forEach((cd, i) => {
+        const card = el("div", "a-card");
+        const f = el("div", "sh-face");
+        const [t1, t2] = tinta(side === "casa" ? i : i + 3);
+        f.style.setProperty("--tc1", t1); f.style.setProperty("--tc2", t2);
+        app(f, el("div", "ini", iniziali(cd.nome)));
+        app(card, f, el("div", "nm", cognome(cd.nome)), el("div", "ov", String(cd.ovr)));
+        grid.appendChild(card);
+      });
+      pan.appendChild(grid);
+    } else {
+      pan.appendChild(tabellaBox(g.box[side], carte, n, { flash: true }));
+    }
+    bot.appendChild(pan);
+  });
+  body.appendChild(bot);
+  body.appendChild(ctaPartita());
+  root.appendChild(body);
+}
+
+/* ============================ REGIA B · GIORNALE ========================== */
+function vistaB(root) {
+  root.appendChild(header());
+  const body = el("div", "sh-body");
+  const g = P(); const n = state.quarto; const p = cum(n);
+  const wrap = el("div", "b-wrap");
+
+  const kick = el("div", "b-kick");
+  app(kick, el("span2", null), document.createTextNode(""));
+  kick.textContent = "";
+  const k1 = el("strong", null, "Round " + g.round + " di 16");
+  const k2 = el("span", null, "·"); const k3 = el("span", null, g.coach + " · " + g.tattica);
+  app(kick, k1, k2, k3);
+  wrap.appendChild(kick);
+
+  const titolo = n === 0
+    ? nomeMio() + " sfida " + g.avv
+    : finita()
+      ? (vinta() ? nomeMio() + " passa il turno" : g.avvSigla + " ferma la corsa")
+      : g.cronaca[n - 1].testo.replace(/,.*$/, "");
+  const h = el("h1", "b-head");
+  h.innerHTML = titolo.replace(nomeMio(), "<em>" + nomeMio() + "</em>");
+  wrap.appendChild(h);
+
+  const mast = el("div", "b-mast");
+  const sxs = el("div", "b-side mine");
+  app(sxs, el("div", "nm", nomeMio()), ratings(g.ovrTuo, g.att, g.dif));
+  const dig = el("div", "b-digits");
+  const d1 = el("b", p.casa > p.ospite ? "lead" : null, String(p.casa));
+  const d2 = el("b", p.ospite > p.casa ? "lead" : null, String(p.ospite));
+  if (n > 0) { d1.classList.add("flash"); d2.classList.add("flash"); }
+  app(dig, d1, el("i", null, "-"), d2);
+  const dxs = el("div", "b-side right");
+  app(dxs, el("div", "nm", g.avvSigla), ratings(g.ovrLoro, g.loroAttDif.att, g.loroAttDif.dif));
+  app(mast, sxs, dig, dxs);
+  wrap.appendChild(mast);
+
+  const cols = el("div", "b-cols");
+  [["casa", "Il tuo quintetto", nomeMio(), g.mio], ["ospite", "L'avversario", g.avv, g.loro]]
+    .forEach(([side, occhiello, titoloCol, carte]) => {
+      const col = el("div", "b-col");
+      const h4 = el("h4");
+      app(h4, el("span", null, occhiello), document.createTextNode(titoloCol));
+      col.appendChild(h4);
+      if (n === 0) {
+        const ul = el("ul", "b-lineup");
+        carte.forEach((cd) => {
+          const li = el("li");
+          const nm = el("div", "nm");
+          app(nm, document.createTextNode(cognome(cd.nome)),
+            el("em", null, cd.team + " " + cd.stagione));
+          app(li, el("div", "ruolo", cd.ruolo), nm, el("div", "ov", String(cd.ovr)));
+          ul.appendChild(li);
+        });
+        col.appendChild(ul);
+      } else {
+        col.appendChild(tabellaBox(g.box[side], carte, n, { flash: true }));
+      }
+      // Sotto il box score, il profilo a reparti della squadra: nel primo giro
+      // qui restavano 180px di nero, e sono anche il motivo del punteggio.
+      const capR = el("div", "sh-cap");
+      app(capR, el("span", null, "Reparti"), el("b", null, "0-99"));
+      col.appendChild(capR);
+      col.appendChild(profiloReparti(carte));
+      cols.appendChild(col);
+    });
+
+  const col3 = el("div", "b-col");
+  const h4 = el("h4");
+  app(h4, el("span", null, "Quarto per quarto"), document.createTextNode("Il racconto"));
+  col3.appendChild(h4);
+  const strip = el("div", "b-strip");
+  g.quarti.forEach((q, i) => {
+    const c = el("div", "q" + (i < n ? (i === n - 1 && !finita() ? " live" : "") : " off"));
+    app(c, el("span", null, q.overtime ? "OT" : (i + 1) + "°"),
+      el("b", null, i < n ? q.casa + "-" + q.ospite : "· ·"));
+    strip.appendChild(c);
+  });
+  col3.appendChild(strip);
+  col3.appendChild(n === 0 ? briefing(g) : cronacaList(n));
+  if (finita()) col3.appendChild(verdetto());
+  cols.appendChild(col3);
+  wrap.appendChild(cols);
+  body.appendChild(wrap);
+  body.appendChild(ctaPartita());
+  root.appendChild(body);
+}
+
+/* ============================ REGIA C · PALAZZETTO ======================== */
+function vistaC(root) {
+  root.appendChild(header());
+  const body = el("div", "sh-body");
+  const g = P(); const n = state.quarto; const p = cum(n);
+  const wrap = el("div", "c-wrap");
+
+  const cube = el("div", "c-cube");
+  const inn = el("div", "c-cube-in");
+  const t1 = el("div", "c-team mine");
+  const pt1 = el("div", "pts", String(p.casa)); if (n > 0) pt1.classList.add("flash");
+  app(t1, el("div", "abbr", "TU"), el("div", "nm", nomeMio()), pt1);
+  const mid = el("div", "c-mid");
+  const dots = el("div", "c-dots");
+  g.quarti.forEach((q, i) => {
+    dots.appendChild(el("i", i < n - 1 ? "on" : i === n - 1 ? (finita() ? "on" : "live") : ""));
+  });
+  const d = p.casa - p.ospite;
+  app(mid, dots,
+    el("div", "lbl", n === 0 ? "Palla a due" : finita() ? "Finale" : (n) + "° quarto"),
+    el("div", "mar " + (n === 0 ? "" : d > 0 ? "pos" : d < 0 ? "neg" : ""),
+      n === 0 ? "-" : (d > 0 ? "+" : "") + d));
+  const t2 = el("div", "c-team");
+  const pt2 = el("div", "pts", String(p.ospite)); if (n > 0) pt2.classList.add("flash");
+  app(t2, el("div", "abbr", g.avvSigla), el("div", "nm", g.avv), pt2);
+  app(inn, t1, mid, t2);
+  cube.appendChild(inn);
+
+  // Tante colonne quanti sono i periodi VERI: una quinta casella vuota quando
+  // il supplementare non c'è è uno slot morto, non un'informazione.
+  const qrow = el("div", "c-qrow");
+  qrow.style.gridTemplateColumns = "76px repeat(" + g.quarti.length + ",1fr)";
+  qrow.appendChild(el("div", "lab", "Quarti"));
+  for (let i = 0; i < g.quarti.length; i++) {
+    const q = g.quarti[i];
+    const c = el("div", "cell" + (i < n ? (i === n - 1 && !finita() ? " live" : "") : " off"));
+    app(c, el("span", null, q.overtime ? "OT" : (i + 1) + "°"),
+      el("b", null, i < n ? q.casa + "-" + q.ospite : "· ·"));
+    qrow.appendChild(c);
+  }
+  cube.appendChild(qrow);
+  wrap.appendChild(cube);
+
+  const pans = el("div", "c-panels");
+  [["casa", "Il tuo quintetto", g.mio], ["ospite", g.avv, g.loro]].forEach(([side, lab, carte]) => {
+    const pan = el("div", "c-panel");
+    const cap = el("div", "sh-cap");
+    app(cap, el("span", null, lab), el("b", null, n === 0 ? "Formazione" : "In diretta"));
+    pan.appendChild(cap);
+    if (n === 0) {
+      const ul = el("ul", "b-lineup");
+      carte.forEach((cd) => {
+        const li = el("li");
+        const nm = el("div", "nm");
+        app(nm, document.createTextNode(cognome(cd.nome)), el("em", null, cd.team + " " + cd.stagione));
+        app(li, el("div", "ruolo", cd.ruolo), nm, el("div", "ov", String(cd.ovr)));
+        ul.appendChild(li);
+      });
+      pan.appendChild(ul);
+    } else {
+      pan.appendChild(tabellaBox(g.box[side], carte, n, { flash: true }));
+    }
+    pans.appendChild(pan);
+  });
+  wrap.appendChild(pans);
+
+  const low = el("div", "a-panel");
+  const cap = el("div", "sh-cap");
+  app(cap, el("span", null, "Cronaca"), el("b", null, n === 0 ? "Prima del via" : n + "/" + g.quarti.length));
+  low.appendChild(cap);
+  low.appendChild(n === 0
+    ? briefing(g)
+    // Durante la partita bastano le ultime due righe, ma a fine partita devono
+    // esserci tutte: il racconto completo è il motivo per cui si accumula.
+    : cronacaList(n, finita() ? 0 : 2));
+  if (finita()) low.appendChild(verdetto());
+  wrap.appendChild(low);
+
+  body.appendChild(wrap);
+  body.appendChild(ctaPartita());
+  root.appendChild(body);
+}
+
+/* ============================ FINE PARTITA ================================ */
+function vistaFP(root) {
+  root.appendChild(header({ speed: false }));
+  const body = el("div", "sh-body");
+  const g = P(); const n = g.quarti.length; const p = cum(n);
+
+  const hero = el("div", "fp-hero");
+  const sx = el("div", "fp-side mine");
+  app(sx, el("div", "nm", nomeMio()), ratings(g.ovrTuo, g.att, g.dif));
+  const dig = el("div", "fp-digits");
+  app(dig, el("b", p.casa > p.ospite ? "lead" : null, String(p.casa)), el("i", null, "·"),
+    el("b", p.ospite > p.casa ? "lead" : null, String(p.ospite)));
+  const dx = el("div", "fp-side right");
+  app(dx, el("div", "nm", g.avvSigla), ratings(g.ovrLoro, g.loroAttDif.att, g.loroAttDif.dif));
+  app(hero, sx, dig, dx);
+  body.appendChild(hero);
+  body.appendChild(verdetto());
+
+  // Il migliore dei TUOI, sempre: "migliore in campo" preso dalla squadra che
+  // ha vinto stonava quando l'avversario sconfitto aveva il top scorer della
+  // partita (Young 40 punti in una sconfitta), e comunque qui interessa il tuo.
+  const righe = g.box.casa;
+  let best = 0;
+  righe.forEach((r, i) => { if (r.tot.pts > righe[best].tot.pts) best = i; });
+  const mvp = el("div", "fp-mvp");
+  const f = el("div", "sh-face");
+  const [c1, c2] = tinta(best); f.style.setProperty("--tc1", c1); f.style.setProperty("--tc2", c2);
+  app(f, el("div", "ini", iniziali(righe[best].nome)));
+  const txt = el("div", "txt");
+  const b = righe[best].tot;
+  app(txt, el("span", null, "Il migliore dei tuoi"), el("b", null, righe[best].nome),
+    el("em", null, b.pts + " pt · " + b.reb + " rimb · " + b.ast + " ast · " + b.stl + " rub · " + b.blk + " stp"));
+  app(mvp, f, txt);
+  body.appendChild(mvp);
+
+  const grid = el("div", "fp-grid");
+  [["casa", nomeMio(), g.mio], ["ospite", g.avv, g.loro]].forEach(([side, lab, cs]) => {
+    const pan = el("div", "a-panel");
+    const cap = el("div", "sh-cap");
+    app(cap, el("span", null, lab), el("b", null, "Box score"));
+    pan.appendChild(cap);
+    pan.appendChild(tabellaBox(g.box[side], cs, n));
+    grid.appendChild(pan);
+  });
+  body.appendChild(grid);
+
+  const pan = el("div", "a-panel");
+  const cap = el("div", "sh-cap");
+  app(cap, el("span", null, "Come è andata"), el("b", null, "4 quarti"));
+  pan.appendChild(cap);
+  const cr = cronacaList(n); cr.className = "sh-log fp-cronaca";
+  pan.appendChild(cr);
+  body.appendChild(pan);
+
+  const cta = el("button", "sh-cta", vinta() ? "Round " + (g.round + 1) + " · avanti" : "Vedi la corsa");
+  cta.onclick = () => { state.vista = vinta() ? "A" : "FR"; if (vinta()) state.quarto = 0; render(); };
+  body.appendChild(cta);
+  root.appendChild(body);
+}
+
+/* ============================ FINE CORSA ================================== */
+function vistaFR(root) {
+  const f = FR();
+  root.appendChild(header({ round: f.storia.length, streak: false, speed: false }));
+  const body = el("div", "sh-body");
+  const ok = f.esito === "imbattuto";
+
+  const ban = el("div", "fr-banner" + (ok ? "" : " ko"));
+  app(ban, el("div", "kick", ok ? "Corsa chiusa" : "Corsa interrotta"),
+    el("h3", null, ok ? "Imbattuto · 16-0" : "Eliminato al " + (f.vittorie + 1) + "° turno"));
+  const p = el("p");
+  p.innerHTML = ok
+    ? "<b>" + state.squadra + "</b> ha vinto tutte e sedici. Coach " + f.coach + "."
+    : "<b>" + state.squadra + "</b> si ferma dopo <b>" + f.vittorie + "</b> vittorie di fila. Coach " + f.coach + ".";
+  ban.appendChild(p);
+  // La fila di tacche numerate stava qui, ma diceva la stessa cosa della
+  // griglia "turno per turno" qui sotto, che in più mostra i punteggi.
+  body.appendChild(ban);
+
+  const cols = el("div", "fr-cols");
+  const pan = el("div", "a-panel");
+  const cap = el("div", "sh-cap");
+  // Le partite GIOCATE non sono le vittorie: chi viene eliminato al 16° turno
+  // ha vinto 15 volte ma è sceso in campo 16, ed è su 16 che sono le medie.
+  app(cap, el("span", null, "Medie del quintetto"), el("b", null, f.storia.length + " partite giocate"));
+  pan.appendChild(cap);
+
+  const t = el("table", "sh-box");
+  const th = el("tr");
+  for (const h of ["Giocatore", "PG", "PT", "RIMB", "AST", "RUB", "PP", "STP", "Max pt"]) {
+    th.appendChild(el("th", null, h));
+  }
+  const head = el("thead"); head.appendChild(th); t.appendChild(head);
+  const tb = el("tbody");
+  const maxPt = Math.max(...f.medie.map((m) => m.medie.pts));
+  f.medie.forEach((m) => {
+    const tr = el("tr", m.medie.pts === maxPt ? "top" : null);
+    const td0 = el("td");
+    app(td0, el("span", "ruolo", m.ruolo));
+    td0.appendChild(document.createTextNode(cognome(m.nome)));
+    td0.title = m.nome + " · " + m.team + " " + m.stagione + " · OVR " + m.ovr;
+    tr.appendChild(td0);
+    tr.appendChild(el("td", null, String(m.gp)));
+    [["pts", "pt"], ["reb"], ["ast"], ["stl"], ["tov"], ["blk"]].forEach(([k, cls]) => {
+      tr.appendChild(el("td", cls || null, m.medie[k].toFixed(1)));
+    });
+    // Il massimo in una partita sola: la media dice come sei andato, il massimo
+    // dice la serata che ti ricordi.
+    tr.appendChild(el("td", null, String(m.max.pts)));
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  pan.appendChild(t);
+
+  // Sotto le medie, i totali della corsa. Riempiono lo spazio che restava nero
+  // e dicono la cosa che le medie dei singoli non dicono: come ha giocato la
+  // squadra, e quali sono state le due partite da ricordare.
+  const capT = el("div", "sh-cap");
+  app(capT, el("span", null, "La corsa in cifre"), el("b", null, "Squadra"));
+  pan.appendChild(capT);
+  const kpi = el("div", "pr-kpi");
+  const tot = f.totali;
+  [["Fatti", tot.fatti], ["Subiti", tot.subiti],
+    ["Margine", (tot.margine > 0 ? "+" : "") + tot.margine.toFixed(1)],
+    ["Media pt", (tot.fatti / f.storia.length).toFixed(1)],
+  ].forEach(([l, v]) => {
+    const d = el("div"); app(d, el("span", null, l), el("b", null, String(v))); kpi.appendChild(d);
+  });
+  pan.appendChild(kpi);
+
+  const capG = el("div", "sh-cap");
+  app(capG, el("span", null, "Turno per turno"), el("b", null, f.storia.length + " partite"));
+  pan.appendChild(capG);
+  const games = el("div", "fr-games");
+  f.storia.forEach((h) => {
+    const d = el("div", h.vinto ? null : "lose");
+    app(d, el("span", null, h.round + " · " + h.avversario),
+      el("b", null, h.punti.casa + "-" + h.punti.ospite));
+    games.appendChild(d);
+  });
+  pan.appendChild(games);
+  cols.appendChild(pan);
+
+  const dx = el("div", "a-panel");
+  const cap2 = el("div", "sh-cap");
+  app(cap2, el("span", null, "Primati della corsa"), el("b", null, "Chi ha deciso"));
+  dx.appendChild(cap2);
+  const lead = el("div", "fr-lead");
+  [["Punti", "pts"], ["Rimbalzi", "reb"], ["Assist", "ast"], ["Recuperi", "stl"], ["Stoppate", "blk"]]
+    .forEach(([lab, k]) => {
+      const best = f.medie.slice().sort((a, b) => b.medie[k] - a.medie[k])[0];
+      const row = el("div", "row");
+      app(row, el("div", "k", lab), el("div", "n", best.nome), el("div", "v", best.medie[k].toFixed(1)));
+      lead.appendChild(row);
+    });
+  dx.appendChild(lead);
+
+  const capP = el("div", "sh-cap");
+  app(capP, el("span", null, "Le due da ricordare"), el("b", null, "Su " + f.storia.length));
+  dx.appendChild(capP);
+  const due = el("div", "fr-lead");
+  [["Più larga", tot.piuLarga], ["Più tirata", tot.piuTirata]].forEach(([lab, h]) => {
+    const row = el("div", "row");
+    app(row, el("div", "k", lab), el("div", "n", "Round " + h.round + " · " + h.avversario),
+      el("div", "v", h.punti.casa + "-" + h.punti.ospite));
+    due.appendChild(row);
+  });
+  dx.appendChild(due);
+  cols.appendChild(dx);
+  body.appendChild(cols);
+
+  const cta = el("button", "sh-cta", "Nuova corsa");
+  cta.onclick = () => { state.vista = "PR"; render(); };
+  body.appendChild(cta);
+  root.appendChild(body);
+}
+
+/* ============================ PROFILO ===================================== */
+function vistaPR(root) {
+  const hd = el("div", "sh-hd");
+  const wm = el("div", "sh-wm"); wm.innerHTML = 'BUZ<b>ZER</b>';
+  app(hd, wm, el("div", "sh-pill", "Profilo · su questo dispositivo"));
+  root.appendChild(hd);
+
+  const body = el("div", "sh-body");
+  const pr = window.PROFILO;
+
+  const top = el("div", "pr-top");
+  const nm = el("div", "pr-name");
+  const lab = el("label", null, "Nome della squadra");
+  lab.htmlFor = "pr-input";
+  const field = el("div", "field");
+  const inp = el("input"); inp.id = "pr-input"; inp.value = state.squadra; inp.maxLength = 26;
+  inp.oninput = () => { state.squadra = inp.value.trim() || "La tua squadra"; };
+  field.appendChild(inp);
+  const hint = el("p", "hint",
+    "Entra anche nella cronaca della partita: le frasi dicono “" + state.squadra +
+    " sorpassa con un 32-24” invece di “La tua squadra”.");
+  app(nm, lab, field, hint);
+  const kpi = el("div", "pr-kpi");
+  [["Corse", pr.corse], ["Partite", pr.partite], ["16-0", pr.imbattute]].forEach(([l, v]) => {
+    const d = el("div"); app(d, el("span", null, l), el("b", null, String(v))); kpi.appendChild(d);
+  });
+  app(top, nm, kpi);
+  body.appendChild(top);
+
+  const cap = el("div", "sh-cap");
+  const sort = el("div", "pr-sort");
+  sort.appendChild(el("span", null, "Ordina per"));
+  [["gp", "Più usati"], ["pts", "Punti"], ["reb", "Rimbalzi"], ["ast", "Assist"], ["stl", "Recuperi"]]
+    .forEach(([k, l]) => {
+      const b = el("button", "mk-chip", l);
+      b.setAttribute("aria-pressed", String(state.sort === k));
+      b.onclick = () => { state.sort = k; render(); };
+      sort.appendChild(b);
+    });
+  app(cap, el("span", null, "Classifica dei tuoi giocatori"), el("b", null, pr.giocatori.length + " nomi"));
+  body.appendChild(cap);
+  body.appendChild(sort);
+
+  const scroll = el("div", "pr-scroll");
+  const t = el("table", "pr-tbl");
+  const th = el("tr");
+  for (const h of ["#", "Giocatore", "PART", "PT", "RIMB", "AST", "RUB", "PP", "STP"]) th.appendChild(el("th", null, h));
+  const head = el("thead"); head.appendChild(th); t.appendChild(head);
+  const tb = el("tbody");
+  const lista = pr.giocatori.slice().sort((a, b) =>
+    state.sort === "gp" ? b.gp - a.gp : b.medie[state.sort] - a.medie[state.sort]);
+  lista.forEach((m, i) => {
+    const tr = el("tr", i < 3 ? "podio" : null);
+    tr.appendChild(el("td", null, String(i + 1)));
+    tr.appendChild(el("td", null, m.nome));
+    tr.appendChild(el("td", state.sort === "gp" ? "hot" : null, String(m.gp)));
+    ["pts", "reb", "ast", "stl", "tov", "blk"].forEach((k) => {
+      tr.appendChild(el("td", state.sort === k ? "hot" : null, m.medie[k].toFixed(1)));
+    });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  scroll.appendChild(t);
+  body.appendChild(scroll);
+
+  const nota = el("div", "sh-empty");
+  nota.textContent = "Tutto qui dentro sta nel browser di questo dispositivo. Con un account gli stessi numeri " +
+    "ti seguirebbero anche sul telefono, ma il profilo locale è già scritto per essere sincronizzato dopo.";
+  body.appendChild(nota);
+  root.appendChild(body);
+}
+
+/* ============================ router ====================================== */
+function render() {
+  const root = document.getElementById("screen");
+  root.textContent = "";
+  ({ A: vistaA, B: vistaB, C: vistaC, FP: vistaFP, FR: vistaFR, PR: vistaPR })[state.vista](root);
+
+  document.querySelectorAll("[data-vista]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.vista === state.vista)));
+  document.getElementById("mk-title").textContent =
+    ({ A: "A · Cruscotto", B: "B · Giornale", C: "C · Palazzetto",
+      FP: "Fine partita", FR: "Fine corsa", PR: "Profilo e classifica" })[state.vista];
+  document.getElementById("mk-desc").textContent = DESC[state.vista];
+  scenari();
+}
+
+// I chip di scenario cambiano significato con la schermata: partita e fine
+// partita scelgono il match, fine corsa sceglie il finale, il profilo non ne ha.
+function scenari() {
+  const box = document.getElementById("mk-scenari");
+  box.textContent = "";
+  if (state.vista === "PR") return;
+  const runView = state.vista === "FR";
+  box.appendChild(el("span", "mk-lbl", runView ? "Finale" : "Scenario"));
+  const lista = runView
+    ? window.FINE_RUN.map((f, i) => ({ k: i, nome: f.esito === "imbattuto" ? "16-0" : "Eliminato" }))
+    : SCENARI.filter((s) => s.k < window.PARTITE.length);
+  lista.forEach((s) => {
+    const b = el("button", "mk-chip", s.nome);
+    const attivo = runView ? state.fine === s.k : state.partita === s.k;
+    b.setAttribute("aria-pressed", String(attivo));
+    b.onclick = () => {
+      if (runView) { state.fine = s.k; render(); }
+      else { stop(); state.partita = s.k; state.quarto = state.vista === "FP" ? window.PARTITE[s.k].quarti.length : 0; render(); }
+    };
+    box.appendChild(b);
+  });
+}
+
+document.querySelectorAll("[data-vista]").forEach((b) => {
+  b.onclick = () => {
+    stop();
+    state.vista = b.dataset.vista;
+    if (state.vista === "FP") state.quarto = P().quarti.length;
+    else if (["A", "B", "C"].includes(state.vista)) state.quarto = 0;
+    render();
+  };
+});
+
+render();
+</script>
+</body>
+</html>

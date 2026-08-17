@@ -172,14 +172,28 @@ test("con 20 punti di scarto il 4° quarto non impazzisce", () => {
   assert.ok(rimonte < 0.06, `rimonte da -15 nel ${Math.round(100 * rimonte)}% dei casi: troppe`);
 });
 
-test("cronaca: una riga per quarto, con il punteggio dentro", () => {
+test("cronaca: una riga per quarto, col punteggio dentro tranne l'ultima", () => {
   const p = simulaPartita({ casa: squadra({ nome: "Bulls" }), ospite: squadra({ nome: "Jazz" }), rng: rngSeed(4) });
   assert.equal(p.cronaca.length, p.quarti.length);
+  const ultimo = p.cronaca.length - 1;
   for (const [i, riga] of p.cronaca.entries()) {
     assert.ok(riga.testo.length > 10, "riga di cronaca vuota");
-    assert.ok(riga.testo.includes(`${p.quarti[i].cumCasa}`), "manca il punteggio corrente");
     assert.equal(typeof riga.quarto, "string");
+    if (i < ultimo) {
+      assert.ok(riga.testo.includes(`${p.quarti[i].cumCasa}`), "manca il punteggio corrente");
+    }
   }
+});
+
+// L'ultima riga non ripete quello che il tabellone mostra già in grande: né il
+// punteggio finale né il nome di chi ha vinto. Prima diceva "finisce 111-107:
+// vince La tua squadra" mentre sopra c'era scritto "111-107" e "Passi il turno".
+test("cronaca: l'ultima riga non ripete punteggio finale e vincitore", () => {
+  const p = simulaPartita({ casa: squadra({ nome: "Bulls" }), ospite: squadra({ nome: "Jazz" }), rng: rngSeed(4) });
+  const ultima = p.cronaca[p.cronaca.length - 1].testo;
+  assert.ok(!/vince/.test(ultima), `non deve dire chi vince: "${ultima}"`);
+  assert.ok(!ultima.includes(`${p.punti.casa}-${p.punti.ospite}`), `non deve ripetere il finale: "${ultima}"`);
+  assert.ok(ultima.length < 90, `l'ultima riga è lunga il doppio delle altre: "${ultima}"`);
 });
 
 test("cronaca: i nomi delle squadre finiscono nel testo", () => {
@@ -206,7 +220,6 @@ test("cronaca: un parziale di chi insegue non è mai un allungo", () => {
   const ultima = c[3].testo;
   assert.ok(!/largo|chiude i conti/.test(ultima), `frase sbagliata: "${ultima}"`);
   assert.ok(ultima.includes("Jazz"), "il parziale è dei Jazz, devono comparire");
-  assert.ok(ultima.includes("vince Bulls"), "l'ultima riga deve dire chi ha vinto");
 });
 
 test("cronaca: chi allunga è sempre chi sta davanti", () => {
@@ -231,7 +244,6 @@ test("cronaca: la parità al 48' annuncia i supplementari", () => {
   const c = cronaca(q, "Bulls", "Jazz");
   assert.match(c[3].testo, /supplementari/i);
   assert.match(c[4].quarto, /suppl/i);
-  assert.ok(c[4].testo.includes("vince Bulls"));
 });
 
 test("satura: lineare da vicino, piatta da lontano", () => {

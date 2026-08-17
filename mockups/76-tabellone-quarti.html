@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>76 - Tabellone a quarti: box score + cronaca + velocità · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   76 - TABELLONE A QUARTI (tappa E del piano motore-partita).
+   File AUTONOMO come il 75: i token della pelle Cabina 90s sono ricopiati qui e
+   NON importo prototype/imbattuto/styles.css (i mockup 70 e 73 si erano rotti per
+   collisioni di nomi-classe). Prefissi: `mk-` barra del mockup, `k-` pezzi di
+   scocca già portati dal 75, `tb-` roba nuova del tabellone.
+   Device: telefono 390x740 (deciso: mobile).
+
+   I DATI SONO VERI: 76-tabellone-quarti-data.js esce da tools/dati-tabellone.mjs,
+   che gira il motore vero (draft + coach + partita). Box score, cronaca e voti
+   non sono inventati - se il mockup convince, convince su numeri che il gioco
+   produce davvero.
+   ========================================================================== */
+:root{
+  --ink:#15163a; --ink-2:#1d1e4a; --ink-3:#2a2a63; --line:#2c2a63;
+  --bone:#f4eee0; --bone-dim:#8a8bc0;
+  --brass:#ff5b1e; --brass-deep:#c2480c; --yellow:#ffcf33;
+  --green:#5ccf8e; --red:#ff5038;
+  --deep:#0d0e29; --near-black:#0a0a18;
+  --arcade:"Bungee", system-ui, sans-serif;
+  --display:"Bricolage Grotesque", system-ui, sans-serif;
+  --led:"Doto", ui-monospace, monospace;
+  --body:"Hanken Grotesk", system-ui, sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-out-quint:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#07071a;color:var(--bone);font-family:var(--body);-webkit-font-smoothing:antialiased}
+
+/* ═══════════════ barra di controllo del mockup (non fa parte del design) ═══ */
+.mkbar{position:sticky;top:0;z-index:40;display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  padding:12px 18px;background:#0c0d24;border-bottom:1px solid var(--line)}
+.mk-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mk-lbl{font-weight:800;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.mk-chip{font-family:var(--body);font-weight:800;font-size:.68rem;color:var(--bone-dim);
+  background:#141539;border:1px solid var(--line);border-radius:999px;padding:9px 15px;min-height:38px;cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s}
+.mk-chip:hover{color:var(--bone);border-color:var(--brass-deep)}
+.mk-chip[aria-pressed="true"]{color:#0c0d22;background:var(--yellow);border-color:var(--yellow)}
+.mk-chip:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mk-note{margin-left:auto;font-size:.66rem;line-height:1.45;color:var(--bone-dim);max-width:44ch;text-align:right;text-wrap:pretty}
+.mk-note b{color:var(--bone)}
+.mk-head{text-align:center;padding:22px 18px 2px}
+.mk-head h2{margin:0;font-family:var(--arcade);font-size:1rem;color:var(--yellow)}
+.mk-head p{margin:9px auto 0;max-width:58ch;font-size:.78rem;line-height:1.55;color:var(--bone-dim);text-wrap:pretty}
+.mk-head p b{color:var(--bone)}
+
+/* ═══════════════ frame telefono ═══════════════ */
+.stage{display:flex;justify-content:center;padding:16px 16px 60px}
+.phone{width:390px;max-width:100%;height:740px;border-radius:44px;border:11px solid #000;background:var(--ink);
+  overflow:hidden;position:relative;box-shadow:0 40px 90px -30px rgba(0,0,0,.9)}
+.k-scr{position:absolute;inset:0;display:flex;flex-direction:column;isolation:isolate;overflow:hidden;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
+    radial-gradient(130% 80% at 50% 0%, #232463 0, var(--ink) 46%, var(--deep) 100%)}
+
+/* ---- header-cabina ---- */
+.k-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:18px 16px 0;flex:none}
+.k-wm{font-family:var(--arcade);font-size:.95rem;line-height:1;color:var(--yellow)}
+.k-wm b{color:var(--brass)}
+.k-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 11px;border-radius:999px;
+  background:rgba(255,91,30,.12);border:1px solid var(--line)}
+.k-pill span{font-family:var(--arcade);font-size:.55rem;letter-spacing:.04em;text-transform:uppercase;color:var(--bone)}
+.k-pill b{color:var(--yellow)}
+
+.k-body{flex:1;display:flex;flex-direction:column;gap:9px;min-height:0;padding:13px 16px 16px}
+
+/* ---- CTA arcade ---- */
+.k-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;flex:none;
+  font-family:var(--arcade);font-size:.98rem;letter-spacing:.03em;text-transform:uppercase;
+  color:var(--near-black);background:var(--yellow);border:2.5px solid var(--near-black);border-radius:15px;
+  box-shadow:5px 5px 0 var(--near-black);cursor:pointer;
+  transition:transform .1s var(--ease),box-shadow .1s var(--ease),background .2s,color .2s}
+.k-cta:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--near-black)}
+.k-cta:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--near-black)}
+.k-cta:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
+.k-cta svg{width:16px;height:16px;fill:currentColor}
+.k-cta[disabled]{background:var(--ink-3);color:var(--bone-dim);border-color:#000;box-shadow:3px 3px 0 #000;
+  cursor:default;transform:none}
+
+/* ---- facce squadra ---- */
+.k-face{position:relative;border-radius:8px;overflow:hidden;flex:none;display:block;
+  background:linear-gradient(158deg,var(--tc1,#3a2d5e) 0,var(--tc2,#211636) 100%)}
+.k-face::before{content:"";position:absolute;inset:0;opacity:.5;
+  background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),
+    repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+.k-face .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--arcade);color:rgba(255,255,255,.94);text-shadow:0 2px 0 rgba(0,0,0,.35)}
+
+/* ═══════════════ vittorie di fila: quanto manca all'imbattuto ═════════════
+   Sedici tacche, una per round. Sta in cima come nella schermata run attuale:
+   il senso della corsa non è la singola partita, è la fila. */
+.tb-streak{flex:none}
+.tb-streak .row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:5px}
+.tb-streak .lab{font-weight:800;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+.tb-streak .num b{font-family:var(--led);font-weight:900;font-size:1rem;line-height:1;color:var(--yellow)}
+.tb-streak .num i{font-family:var(--led);font-style:normal;font-size:.7rem;color:var(--bone-dim)}
+.tb-ticks{display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+.tb-ticks span{height:8px;border-radius:2px;background:#23244f;border:1px solid #2f3068}
+.tb-ticks span.on{background:linear-gradient(180deg,var(--yellow),var(--brass));border-color:var(--yellow);
+  box-shadow:0 0 8px -2px var(--yellow)}
+.tb-ticks span.next{border-color:var(--yellow);background:#2b2c63}
+.tb-ticks span.just{animation:tb-light .6s var(--ease) both}
+@keyframes tb-light{0%{transform:scaleY(.4);filter:brightness(2.2)}100%{transform:none;filter:none}}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SELETTORE VELOCITÀ - sempre a schermo, non dentro un menu: la corsa è di 16
+   partite e la voglia di accelerare arriva a metà simulazione, non prima.
+   ═════════════════════════════════════════════════════════════════════════ */
+.tb-speed{display:flex;align-items:center;gap:6px;flex:none}
+.tb-speed .lab{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--bone-dim);margin-right:2px}
+.tb-sp{flex:1;min-height:40px;padding:0 4px;font-family:var(--body);font-weight:800;font-size:.66rem;
+  color:var(--bone-dim);background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:10px;
+  cursor:pointer;transition:color .15s,background .15s,border-color .15s}
+.tb-sp:hover{color:var(--bone);border-color:var(--brass-deep)}
+.tb-sp[aria-pressed="true"]{color:var(--near-black);background:var(--yellow);border-color:var(--yellow)}
+.tb-sp.salta[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:#160500}
+.tb-sp:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   IL TABELLONE - cornice con viti agli angoli e lampada della sirena, come il
+   run attuale: l'oggetto È la schermata, non un riquadro appoggiato sopra.
+   ═════════════════════════════════════════════════════════════════════════ */
+.tb-board{position:relative;flex:none;padding:13px 13px 12px;border-radius:18px;
+  border:2px solid #35357a;background:linear-gradient(180deg,#191a42 0,#121232 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 34px -22px #000}
+.tb-board::before,.tb-board::after{content:"";position:absolute;top:8px;width:5px;height:5px;border-radius:50%;
+  background:#3f3f86;box-shadow:0 1px 0 rgba(255,255,255,.12)}
+.tb-board::before{left:8px} .tb-board::after{right:8px}
+.tb-siren{position:absolute;top:-3px;left:50%;transform:translateX(-50%);width:64px;height:5px;border-radius:3px;
+  background:#2a2a63;opacity:.7}
+.tb-board.buzz .tb-siren{animation:tb-siren .9s var(--ease) both}
+@keyframes tb-siren{
+  0%{background:#2a2a63;box-shadow:none;opacity:.7}
+  18%{background:var(--red);box-shadow:0 0 26px 5px rgba(255,80,56,.75);opacity:1}
+  60%{background:var(--yellow);box-shadow:0 0 22px 4px rgba(255,207,51,.6)}
+  100%{background:#2a2a63;box-shadow:none;opacity:.7}
+}
+
+/* ---- punteggio grande: due numeri LED, il quarto in corso nel mezzo ---- */
+.tb-score{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:8px}
+.tb-side{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;text-align:center}
+.tb-side .who{font-weight:800;font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-side.me .who{color:var(--brass)}
+.tb-side .num{font-family:var(--led);font-weight:900;font-size:2.8rem;line-height:.86;color:var(--bone);
+  font-variant-numeric:tabular-nums}
+.tb-side.me .num{color:var(--yellow);text-shadow:0 0 22px rgba(255,207,51,.28)}
+.tb-side .sub{font-weight:700;font-size:.54rem;letter-spacing:.03em;color:var(--bone-dim)}
+.tb-side .sub b{color:var(--bone);font-weight:800}
+.tb-mid{display:flex;flex-direction:column;align-items:center;gap:5px;padding-top:13px;flex:none;width:58px}
+.tb-clock{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 30%,#2b2c66,#111130);border:1.5px solid #3d3d86}
+.tb-clock b{font-family:var(--led);font-weight:900;font-size:1.15rem;line-height:1;color:var(--brass)}
+.tb-clock.fine b{font-size:.72rem;color:var(--yellow)}
+.tb-mid i{font-style:normal;font-weight:800;font-size:.46rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--bone-dim)}
+.tb-board.buzz .tb-side.me .num,.tb-board.buzz .tb-side.loro .num{animation:tb-pop .5s .1s var(--ease-out-quint) both}
+@keyframes tb-pop{0%{transform:scale(1)}45%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+/* ---- box score: una colonna per quarto, si riempie una casella per volta ----
+   Prima del via NON c'è: quattro colonne di puntini non raccontano niente e si
+   mangiano 80px che alla scheda del duello servono. Si accende al via, insieme
+   al tabellone. */
+.tb-grid{display:grid;gap:3px;max-height:0;opacity:0;overflow:hidden;margin-top:0;padding-top:0;
+  border-top:0 solid #33346e;
+  transition:max-height .34s var(--ease),opacity .26s,margin-top .34s var(--ease),padding-top .34s var(--ease)}
+.tb-board.live .tb-grid{max-height:130px;opacity:1;margin-top:11px;padding-top:9px;border-top-width:1px}
+.tb-row{display:grid;grid-template-columns:52px repeat(4,1fr);gap:3px;align-items:center}
+.tb-row .lab{font-family:var(--arcade);font-size:.5rem;letter-spacing:.02em;color:var(--bone-dim);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-row.me .lab{color:var(--brass)}
+.tb-row.head .lab{font-family:var(--body);font-weight:800;font-size:.44rem;letter-spacing:.14em;text-transform:uppercase}
+.tb-row.head span:not(.lab){font-weight:800;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--bone-dim);text-align:center}
+.tb-c{height:27px;display:grid;place-items:center;border-radius:7px;background:rgba(255,255,255,.03);
+  border:1px solid #2e2f6a;font-family:var(--led);font-weight:900;font-size:1rem;color:var(--bone-dim);
+  font-variant-numeric:tabular-nums;transition:color .2s,border-color .2s,background .2s}
+.tb-c.done{color:var(--bone);background:rgba(255,255,255,.055)}
+.tb-row.me .tb-c.done{color:var(--yellow)}
+.tb-c.now{border-color:var(--brass);background:rgba(255,91,30,.1)}
+.tb-c.vinto{border-color:rgba(92,207,142,.5)}
+.tb-c.landed{animation:tb-land .34s var(--ease-out-quint) both}
+@keyframes tb-land{0%{transform:translateY(-5px) scale(.9);opacity:.2}100%{transform:none;opacity:1}}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CRONACA - si accumula: a fine partita hai il racconto completo, 4 righe.
+   Prima del via lo stesso spazio tiene la scheda del duello (coach, tattica,
+   ritmo): così l'area non nasce vuota e il tasto Gioca ha un contesto.
+   ═════════════════════════════════════════════════════════════════════════ */
+.tb-chron{flex:1;min-height:0;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.tb-chron .cap{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex:none}
+.tb-chron .cap .t{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.tb-chron .cap .v{font-family:var(--arcade);font-size:.52rem;color:var(--brass)}
+.tb-list{flex:1;min-height:0;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.tb-line{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start;padding:7px 10px;border-radius:9px;
+  background:rgba(255,255,255,.028);border-left:2px solid #34356f}
+.tb-line.landed{animation:tb-slide .3s var(--ease-out-quint) both}
+@keyframes tb-slide{0%{opacity:0;transform:translateX(-7px)}100%{opacity:1;transform:none}}
+.tb-line .q{font-family:var(--led);font-weight:900;font-size:.72rem;color:var(--bone-dim);line-height:1.35}
+/* Massimo due linee per riga: le frasi del motore variano di lunghezza (quella
+   del 4° quarto ripete il punteggio e arriva a tre linee), e senza un tetto la
+   quarta riga finiva segata a metà. Il tetto vale come rete di sicurezza: la
+   correzione vera è accorciare la frase nel motore. */
+.tb-line .tx{font-size:.71rem;line-height:1.36;color:var(--bone);text-wrap:pretty;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tb-line.buona{border-left-color:var(--green)} .tb-line.buona .q{color:var(--green)}
+.tb-line.brutta{border-left-color:var(--red)} .tb-line.brutta .q{color:var(--red)}
+.tb-line.calda{border-left-color:var(--yellow)} .tb-line.calda .q{color:var(--yellow)}
+/* scheda del duello, prima del via */
+.tb-pre{flex:1;display:flex;flex-direction:column;justify-content:center;gap:7px;padding:9px 11px;border-radius:11px;
+  background:rgba(255,255,255,.028);border:1px dashed #34356f}
+.tb-pre .r{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.tb-pre .k{font-weight:800;font-size:.53rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim)}
+.tb-pre .v{font-family:var(--display);font-weight:800;font-size:.8rem;color:var(--bone);text-align:right}
+.tb-pre .v.acc{color:var(--yellow)}
+
+/* ═══════════════ le due formazioni ═══════════════════════════════════════
+   Prima del via sono in chiaro (faccia, cognome, voto): quei cinque li hai
+   scelti tu e li vuoi vedere. Al via la fascia si RESTRINGE e lo spazio passa
+   alla cronaca: durante la partita conta il racconto, non il ripasso della rosa.
+   La transizione sta su `height` e `max-height` perché sono animabili - su
+   aspect-ratio no, e l'altezza sarebbe saltata di colpo.
+   ═════════════════════════════════════════════════════════════════════════ */
+.tb-fives{flex:none;display:grid;gap:7px}
+.tb-flab{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:5px;
+  max-height:16px;overflow:hidden;transition:max-height .3s var(--ease),opacity .22s,margin .3s var(--ease)}
+.tb-flab .t{font-weight:800;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--bone-dim)}
+.tb-flab .v{font-family:var(--arcade);font-size:.5rem;color:var(--brass);
+  max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tb-flab.loro .v{color:var(--bone-dim)}
+.tb-five{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.tb-p{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.tb-p .k-face{width:100%;height:58px;transition:height .32s var(--ease)}
+.tb-p .k-face .ini{font-size:.62rem;transition:font-size .3s var(--ease)}
+.tb-p .nm{font-weight:700;font-size:.46rem;letter-spacing:.01em;color:var(--bone-dim);max-width:100%;
+  max-height:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  transition:max-height .3s var(--ease),opacity .22s}
+.tb-p .ovr{font-family:var(--led);font-weight:900;font-size:.8rem;line-height:1;color:var(--bone);
+  transition:font-size .3s var(--ease)}
+/* fascia strizzata: resta l'identità (colore squadra, iniziali, voto), spariscono
+   cognomi ed etichette, e le due squadre si AFFIANCANO su una riga sola. Due
+   righe sovrapposte lasciavano la quarta riga di cronaca tagliata: raschiare
+   pixel non bastava, perché la lunghezza delle frasi cambia da partita a
+   partita. Così 241px diventano ~50 e la cronaca ha sempre il suo posto. */
+.tb-fives.stretto{grid-auto-flow:column;grid-auto-columns:1fr;gap:16px;align-items:center;position:relative}
+/* filo verticale al centro: senza, le due metà da cinque sembrano una fila da dieci */
+.tb-fives.stretto::before{content:"";position:absolute;top:2px;bottom:2px;left:50%;width:1px;
+  background:linear-gradient(180deg,transparent,#3a3b7d 30%,#3a3b7d 70%,transparent)}
+.tb-fives.stretto .tb-five{gap:3px}
+.tb-fives.stretto .tb-flab{max-height:0;opacity:0;margin-bottom:0}
+.tb-fives.stretto .tb-p .k-face{height:17px}
+.tb-fives.stretto .tb-p .k-face .ini{font-size:.5rem}
+.tb-fives.stretto .tb-p .nm{max-height:0;opacity:0}
+.tb-fives.stretto .tb-p .ovr{font-size:.68rem}
+.tb-p .ovr.oro{color:#ffcf4d} .tb-p .ovr.arg{color:#d6dbe6} .tb-p .ovr.brz{color:#c78a5b}
+
+/* ═══════════════ verdetto ═══════════════ */
+.tb-verdict{flex:none;min-height:34px;display:flex;align-items:center;justify-content:center;gap:9px;
+  border-radius:11px;font-family:var(--arcade);font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;
+  border:1.5px solid #34356f;color:var(--bone-dim);background:rgba(255,255,255,.02)}
+.tb-verdict b{font-family:var(--led);font-size:.9rem}
+.tb-verdict.win{background:var(--green);color:#06210f;border-color:var(--green)}
+.tb-verdict.lose{background:var(--red);color:#2b0500;border-color:var(--red)}
+.tb-verdict.win,.tb-verdict.lose{animation:tb-stamp .32s var(--ease-out-quint) both}
+@keyframes tb-stamp{0%{opacity:0;transform:scale(1.14)}100%{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .tb-c.landed,.tb-line.landed,.tb-verdict.win,.tb-verdict.lose,
+  .tb-board.buzz .tb-siren,.tb-board.buzz .tb-side .num{animation:none}
+}
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <div class="mk-group">
+    <span class="mk-lbl">Partita</span>
+    <button class="mk-chip" data-partita="0" aria-pressed="true">Volata</button>
+    <button class="mk-chip" data-partita="1" aria-pressed="false">Dominio</button>
+    <button class="mk-chip" data-partita="2" aria-pressed="false">Sconfitta</button>
+  </div>
+  <p class="mk-note">Tre partite <b>vere</b>, uscite dal motore: box score, cronaca e voti sono
+    quelli che <b>game/partita.js</b> produce. La velocità si cambia <b>anche a partita in corso</b>.</p>
+</div>
+
+<div class="mk-head">
+  <h2>Tabellone a quarti</h2>
+  <p>Punteggio grande, sotto il <b>box score</b> che si riempie una casella per volta, e la
+    <b>cronaca che si accumula</b>: a fine partita resta il racconto completo. Il tabellone si
+    ferma sul finale e chiede il tap per andare avanti.</p>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <div class="k-scr">
+      <div class="k-hd">
+        <span class="k-wm">BUZ<b>ZER</b></span>
+        <span class="k-pill"><span>Round <b id="hdRound">7</b> · <b id="hdDiff">Normale</b></span></span>
+      </div>
+
+      <div class="k-body">
+        <div class="tb-streak">
+          <div class="row">
+            <span class="lab">Vittorie di fila</span>
+            <span class="num"><b id="stVinte">00</b><i> / 16</i></span>
+          </div>
+          <div class="tb-ticks" id="ticks"></div>
+        </div>
+
+        <div class="tb-speed" role="group" aria-label="Velocità della simulazione">
+          <span class="lab">Vel.</span>
+          <button class="tb-sp" data-vel="lenta" aria-pressed="false">Lenta</button>
+          <button class="tb-sp" data-vel="normale" aria-pressed="true">Normale</button>
+          <button class="tb-sp" data-vel="rapida" aria-pressed="false">Rapida</button>
+          <button class="tb-sp salta" data-vel="salta" aria-pressed="false">Salta</button>
+        </div>
+
+        <div class="tb-board" id="board">
+          <span class="tb-siren" aria-hidden="true"></span>
+          <div class="tb-score">
+            <div class="tb-side me">
+              <span class="who">Il tuo quintetto</span>
+              <span class="num" id="numMe">0</span>
+              <span class="sub">voto <b id="votoMe">90</b></span>
+            </div>
+            <div class="tb-mid">
+              <span class="tb-clock" id="clock"><b id="clockN">1°</b></span>
+              <i id="clockLab">quarto</i>
+            </div>
+            <div class="tb-side loro">
+              <span class="who" id="whoLoro">ATL 2019-20</span>
+              <span class="num" id="numLoro">0</span>
+              <span class="sub">voto <b id="votoLoro">76</b></span>
+            </div>
+          </div>
+
+          <div class="tb-grid" id="grid">
+            <div class="tb-row head"><span class="lab">Quarti</span><span>1°</span><span>2°</span><span>3°</span><span>4°</span></div>
+            <div class="tb-row me"><span class="lab">TU</span>
+              <span class="tb-c" data-me="1">·</span><span class="tb-c" data-me="2">·</span>
+              <span class="tb-c" data-me="3">·</span><span class="tb-c" data-me="4">·</span></div>
+            <div class="tb-row loro"><span class="lab" id="labLoro">ATL</span>
+              <span class="tb-c" data-loro="1">·</span><span class="tb-c" data-loro="2">·</span>
+              <span class="tb-c" data-loro="3">·</span><span class="tb-c" data-loro="4">·</span></div>
+          </div>
+        </div>
+
+        <div class="tb-chron">
+          <div class="cap"><span class="t" id="chronLab">Il duello</span><span class="v" id="chronV">prima del via</span></div>
+          <div class="tb-list" id="list" aria-live="polite">
+            <!-- la scheda del duello la costruisce schedaPre() al reset -->
+
+          </div>
+        </div>
+
+        <div class="tb-fives" id="fives">
+          <div>
+            <div class="tb-flab"><span class="t">La tua formazione</span><span class="v" id="fiveTattica">Tiro da tre o niente</span></div>
+            <div class="tb-five" id="fiveMe"></div>
+          </div>
+          <div>
+            <div class="tb-flab loro"><span class="t">Chi hai di fronte</span><span class="v" id="fiveAvv">ATL 2019-20</span></div>
+            <div class="tb-five" id="fiveLoro"></div>
+          </div>
+        </div>
+
+        <div class="tb-verdict" id="verdict" role="status">Palla a due tra <b id="vSecondi">4</b> quarti</div>
+        <button class="k-cta" id="cta">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <span id="ctaLab">Gioca la partita</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="76-tabellone-quarti-data.js"></script>
+<script>
+/* ---------------------------------------------------------------------------
+   Colori squadra: presi da prototype/imbattuto/team-colors.js, ricopiati solo
+   per le squadre che compaiono in questi tre incontri (il mockup resta un file
+   che si apre con doppio clic, senza server).
+   ------------------------------------------------------------------------- */
+const COLORI = {
+  ATL:["#e03a3e","#6d1214"], CLE:["#860038","#42001c"], DEN:["#255aa8","#0e2240"],
+  DET:["#c8102e","#5f0816"], GSW:["#1d428a","#0f2350"], HOU:["#ce1141","#6d0a22"],
+  NOP:["#1a3d6d","#0c2340"], OKC:["#007ac1","#003b5c"], TOR:["#ce1141","#6d0a22"],
+};
+/* Tempo di UN quarto, per preset. Sono i valori del piano: qui si sentono con il
+   dito, ed è l'unico modo di deciderli davvero (4 s a quarto = 16 s a partita). */
+const VELOCITA = { lenta:4000, normale:2000, rapida:800, salta:0 };
+
+const $ = (id) => document.getElementById(id);
+const iniziali = (n) => n.split(/\s+/).slice(0,2).map((p) => p[0]).join("").toUpperCase();
+const fascia = (v) => (v >= 88 ? "oro" : v >= 80 ? "arg" : "brz");
+const senzaMovimento = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+let iPartita = 0;
+let velocita = "normale";
+let stato = "pronto";      // pronto | corre | finita
+let tQuarto = null;        // chiude il quarto in corso
+let tCatena = null;        // fa partire il quarto dopo
+let quartoCorrente = 0;
+const chiusi = new Set();  // quarti già raccontati: "Salta" non li ripete
+let gen = 0;               // generazione: le salite di punti vecchie si spengono
+
+function fermaTutto() {
+  clearTimeout(tQuarto); clearTimeout(tCatena);
+  tQuarto = null; tCatena = null;
+  gen += 1;   // le rAF in volo vedono un gen diverso e smettono di scrivere
+}
+
+const P = () => window.PARTITE[iPartita];
+
+/* --- una striscia da 5: faccia, cognome, voto ---------------------------- */
+function striscia(el, carte) {
+  el.innerHTML = carte.map((c) => {
+    const [c1, c2] = COLORI[c.team] ?? ["#3a2d5e","#211636"];
+    const cognome = c.nome.split(/\s+/).slice(-1)[0];
+    return `<span class="tb-p">
+      <span class="k-face" style="--tc1:${c1};--tc2:${c2}"><span class="ini">${iniziali(c.nome)}</span></span>
+      <span class="nm" title="${c.nome}">${cognome}</span>
+      <span class="ovr ${fascia(c.voto)}">${c.voto}</span>
+    </span>`;
+  }).join("");
+}
+
+/* --- rimette tutto al minuto zero della partita scelta ------------------- */
+function reset() {
+  fermaTutto();
+  stato = "pronto"; quartoCorrente = 0; chiusi.clear();
+  const g = P();
+  const abbr = g.avv.split(" ")[0];
+
+  $("hdRound").textContent = g.round;
+  $("whoLoro").textContent = g.avv;
+  $("labLoro").textContent = abbr;
+  $("votoMe").textContent = g.votoTuo;
+  $("votoLoro").textContent = g.votoLoro;
+  $("numMe").textContent = "0";
+  $("numLoro").textContent = "0";
+  $("fiveTattica").textContent = g.tattica;
+  $("fiveAvv").textContent = g.avv;
+  // La scheda del duello NON si aggiorna campo per campo: il primo quarto la
+  // cancella dalla lista, quindi qui la ricostruisco da zero (vedi schedaPre).
+
+  striscia($("fiveMe"), g.mio);
+  striscia($("fiveLoro"), g.loro);
+
+  // Vinte = i round già passati (il round 7 vuol dire 6 vittorie in fila).
+  const vinte = g.round - 1;
+  $("stVinte").textContent = String(vinte).padStart(2, "0");
+  $("ticks").innerHTML = Array.from({ length: 16 }, (_, i) =>
+    `<span class="${i < vinte ? "on" : i === vinte ? "next" : ""}"></span>`).join("");
+
+  document.querySelectorAll(".tb-c").forEach((c) => {
+    c.textContent = "·"; c.className = "tb-c";
+  });
+  marcaQuarto(1);
+
+  $("clock").className = "tb-clock"; $("clockN").textContent = "1°"; $("clockLab").textContent = "quarto";
+  $("board").classList.remove("buzz", "live");
+  $("chronLab").textContent = "Il duello"; $("chronV").textContent = "prima del via";
+  $("list").innerHTML = "";
+  $("list").appendChild(schedaPre(g));
+  $("verdict").className = "tb-verdict";
+  $("verdict").innerHTML = `Si gioca su <b>4</b> quarti`;
+  $("fives").classList.remove("stretto");
+  $("cta").disabled = false; $("ctaLab").textContent = "Gioca la partita";
+}
+
+/* La scheda del duello prima del via: stesso spazio della cronaca, così l'area
+   non nasce vuota. La ricostruisco perché il primo quarto la sostituisce. */
+function schedaPre(g) {
+  const ritmo = g.possessi.casa >= 101 ? "ritmo alto" : g.possessi.casa <= 95 ? "ritmo basso" : "ritmo neutro";
+  const el = document.createElement("div");
+  el.className = "tb-pre";
+  el.innerHTML = `
+    <div class="r"><span class="k">Il tuo coach</span><span class="v acc">${g.coach}</span></div>
+    <div class="r"><span class="k">Tattica</span><span class="v">${g.tattica}</span></div>
+    <div class="r"><span class="k">Possessi attesi</span><span class="v">${g.possessi.casa} · ${ritmo}</span></div>
+`;
+  return el;
+}
+
+function marcaQuarto(n) {
+  document.querySelectorAll(".tb-c").forEach((c) => c.classList.remove("now"));
+  if (n > 4) return;
+  document.querySelector(`[data-me="${n}"]`).classList.add("now");
+  document.querySelector(`[data-loro="${n}"]`).classList.add("now");
+}
+
+/* --- conteggio dei punti: il numero grande sale, non salta --------------- */
+function conta(el, da, a, durata) {
+  if (durata <= 0 || senzaMovimento()) { el.textContent = a; return; }
+  const mio = gen;                       // se la generazione cambia, questa salita muore
+  const t0 = performance.now();
+  const passo = (t) => {
+    if (mio !== gen) return;
+    const k = Math.min((t - t0) / durata, 1);
+    el.textContent = Math.round(da + (a - da) * k);
+    if (k < 1) requestAnimationFrame(passo);
+  };
+  requestAnimationFrame(passo);
+}
+
+/* Il colore della riga esce dal PARZIALE del quarto, non dal tipo di frase: il
+   tipo dice "allungo" senza dire di chi, e la prima versione dipingeva di verde
+   un allungo dell'avversario. Verde = quarto tuo, rosso = quarto loro, giallo =
+   pari. Così il bordo e i numeri raccontano la stessa cosa. */
+function classeRiga(q) {
+  if (q.casa > q.ospite) return "buona";
+  if (q.casa < q.ospite) return "brutta";
+  return "calda";
+}
+
+/* --- gioca un quarto ----------------------------------------------------- */
+function giocaQuarto(n, immediato = false) {
+  if (chiusi.has(n)) return;   // "Salta" non deve ripetere un quarto già raccontato
+  const g = P();
+  const q = g.quarti[n - 1];
+  const durata = VELOCITA[velocita];
+  const salto = immediato || durata === 0 || senzaMovimento();
+
+  if (n === 1) { $("list").innerHTML = ""; $("chronLab").textContent = "Cronaca"; }
+  marcaQuarto(n);
+  $("clockN").textContent = `${n}°`;
+
+  const cellaMe = document.querySelector(`[data-me="${n}"]`);
+  const cellaLoro = document.querySelector(`[data-loro="${n}"]`);
+  const primaMe = n === 1 ? 0 : g.quarti[n - 2].cumCasa;
+  const primaLoro = n === 1 ? 0 : g.quarti[n - 2].cumOspite;
+
+  // I punti del quarto arrivano insieme al cumulato: il box score e i due numeri
+  // grandi raccontano la stessa cosa a due velocità diverse.
+  const salita = Math.max(durata * 0.58, 0);
+  conta($("numMe"), primaMe, q.cumCasa, salita);
+  conta($("numLoro"), primaLoro, q.cumOspite, salita);
+  conta(cellaMe, 0, q.casa, salita);
+  conta(cellaLoro, 0, q.ospite, salita);
+
+  const chiudi = () => {
+    chiusi.add(n);
+    // Il quarto è finito: il bordo "in corso" se ne va subito, altrimenti resta
+    // accesso su una colonna già chiusa per tutto il tempo del quarto dopo.
+    cellaMe.classList.remove("now"); cellaLoro.classList.remove("now");
+    cellaMe.textContent = q.casa; cellaLoro.textContent = q.ospite;
+    cellaMe.classList.add("done"); cellaLoro.classList.add("done");
+    if (q.casa > q.ospite) cellaMe.classList.add("vinto"); else if (q.ospite > q.casa) cellaLoro.classList.add("vinto");
+    if (!salto) { cellaMe.classList.add("landed"); cellaLoro.classList.add("landed"); }
+    $("numMe").textContent = q.cumCasa; $("numLoro").textContent = q.cumOspite;
+
+    const c = g.cronaca[n - 1];
+    const riga = document.createElement("div");
+    riga.className = `tb-line ${classeRiga(q)} ${salto ? "" : "landed"}`;
+    riga.innerHTML = `<span class="q">${n}°</span><span class="tx">${c.testo}</span>`;
+    $("list").appendChild(riga);
+    const restano = 4 - n;
+    $("chronV").textContent = n === 4 ? "partita chiusa"
+      : `${restano} ${restano === 1 ? "quarto" : "quarti"} da giocare`;
+
+    if (n < 4) {
+      $("verdict").innerHTML = margine(q.cumCasa, q.cumOspite);
+    } else {
+      fine();
+    }
+  };
+
+  if (salto) { chiudi(); return; }
+  tQuarto = setTimeout(chiudi, salita);
+}
+
+function margine(a, b) {
+  if (a === b) return `Parità a <b>${a}</b>`;
+  const chi = a > b ? "Avanti" : "Sotto";
+  return `${chi} di <b>${Math.abs(a - b)}</b>`;
+}
+
+function fine() {
+  stato = "finita";
+  marcaQuarto(5);
+  const g = P();
+  const vinto = g.vincitore === "casa";
+  $("board").classList.add("buzz");
+  $("clock").className = "tb-clock fine"; $("clockN").textContent = "FINE"; $("clockLab").textContent = "sirena";
+  $("verdict").className = `tb-verdict ${vinto ? "win" : "lose"}`;
+  $("verdict").innerHTML = vinto
+    ? `Passi il turno · <b>${g.punti.casa}-${g.punti.ospite}</b>`
+    : `Eliminato · <b>${g.punti.casa}-${g.punti.ospite}</b>`;
+  $("ctaLab").textContent = vinto ? "Prossimo round" : "Vedi la corsa";
+  $("cta").disabled = false;
+  // La tacca del round si accende sulla sirena: il progresso della fila si vede
+  // nello stesso momento in cui si vince, non alla schermata dopo.
+  if (vinto) {
+    const tacca = $("ticks").children[g.round - 1];
+    if (tacca) { tacca.classList.remove("next"); tacca.classList.add("on", "just"); }
+    $("stVinte").textContent = String(g.round).padStart(2, "0");
+  }
+}
+
+/* --- catena dei quattro quarti ------------------------------------------- */
+function via() {
+  stato = "corre";
+  $("fives").classList.add("stretto");   // lo spazio passa alla cronaca
+  $("board").classList.add("live");      // e il box score si accende
+  $("cta").disabled = true;
+  $("ctaLab").textContent = "Partita in corso";
+  quartoCorrente = 0;
+  prossimo();
+}
+
+function prossimo() {
+  quartoCorrente += 1;
+  if (quartoCorrente > 4) return;
+  giocaQuarto(quartoCorrente);
+  if (stato !== "corre") return;
+  const durata = VELOCITA[velocita];
+  if (durata === 0 || senzaMovimento()) { prossimo(); return; }
+  // Il quarto successivo parte quando questo ha finito di raccontarsi. La velocità
+  // si rilegge qui, non all'inizio: cambiarla a metà partita deve funzionare.
+  tCatena = setTimeout(prossimo, durata);
+}
+
+/* --- comandi ------------------------------------------------------------- */
+/* Cambiare velocità a partita in corso deve avere effetto SUBITO. Prima il
+   nuovo preset entrava in vigore solo dal quarto dopo: a Lenta significava
+   premere "Rapida" e non vedere niente per quattro secondi. Ora il quarto in
+   corso si chiude all'istante e il resto scorre alla nuova cadenza. */
+function cambiaVelocita(v) {
+  velocita = v;
+  document.querySelectorAll(".tb-sp").forEach((x) =>
+    x.setAttribute("aria-pressed", String(x.dataset.vel === v)));
+  if (stato !== "corre") return;
+  fermaTutto();
+  if (v === "salta") {                       // finisce tutto, senza ripetere righe
+    for (let n = 1; n <= 4; n++) giocaQuarto(n, true);
+    return;
+  }
+  giocaQuarto(quartoCorrente, true);          // il quarto in corso si chiude ora
+  if (stato === "corre") tCatena = setTimeout(prossimo, VELOCITA[v]);
+}
+
+document.querySelectorAll(".tb-sp").forEach((b) => {
+  b.onclick = () => cambiaVelocita(b.dataset.vel);
+});
+
+document.querySelectorAll(".mk-chip").forEach((b) => {
+  b.onclick = () => {
+    iPartita = Number(b.dataset.partita);
+    document.querySelectorAll(".mk-chip").forEach((x) =>
+      x.setAttribute("aria-pressed", String(x === b)));
+    reset();
+  };
+});
+
+$("cta").onclick = () => {
+  if (stato === "pronto") { via(); return; }
+  if (stato === "finita") {   // nel mockup "avanti" mostra la partita dopo
+    iPartita = (iPartita + 1) % window.PARTITE.length;
+    document.querySelectorAll(".mk-chip").forEach((x) =>
+      x.setAttribute("aria-pressed", String(Number(x.dataset.partita) === iPartita)));
+    reset();
+  }
+};
+
+reset();
+</script>
+</body>
+</html>

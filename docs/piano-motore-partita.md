@@ -174,24 +174,300 @@ draftare (voto medio 81 in Facile, 68 in Incubo).
 Conversione dei 12 + 18 nuovi, ognuno con 2 plus, 1 malus e il ritmo.
 
 ### E - UI (mockup prima, poi porting)
-Mockup nuovo del tabellone: punteggio che sale a quarti, riga di cronaca, tempo,
-selettore velocità. 2-3 direzioni per il blocco cronaca. Poi `screens/run.js` e
-`screens/coach.js` (scheda coach con plus/malus e anteprima sui tuoi reparti).
+
+**E1 - mockup del tabellone: FATTO (2026-08-17), in attesa del giudizio di Tomas.**
+`mockups/76-tabellone-quarti.html`, dati veri generati da `tools/dati-tabellone.mjs`
+(tre partite pescate da corse reali: volata 111-107, dominio 119-89, sconfitta
+108-110). Scelte fissate col grill, tutte confermate sulla raccomandazione:
+
+- punteggio grande + **box score a quarti** stile NBA che si riempie una casella
+  per volta (non tabellone LED col solo quarto corrente);
+- **cronaca che si accumula**, quattro righe a fine partita (non ticker a riga
+  singola: a Rapida non si leggerebbe e alla fine non resterebbe niente);
+- **chip velocità sempre a schermo**, cambiabili in corsa;
+- il tabellone **si ferma sul finale** e chiede il tap per andare avanti;
+- le formazioni restano visibili, **compresse al via**.
+
+Due mosse nate dal fatto che su 740px non ci stava tutto: al via le due
+formazioni si affiancano su una riga sola e il box score si accende (prima del
+via quattro colonne di puntini rubavano 80px senza dire niente). Aggiunta anche
+la striscia delle 16 vittorie, che nella schermata run esiste già.
+
+Difetti trovati e corretti provando il mockup nel browser, non a occhio sul
+codice: quarta riga di cronaca segata (le prime misure erano falsate dai font
+non ancora caricati), colore della riga preso dal tipo di frase invece che dal
+parziale - dipingeva di verde un allungo dell'avversario -, marcatore del quarto
+in corso che restava accesso su una colonna già chiusa, "1 quarti da giocare",
+"Sotto tu di 4", e il cambio di velocità che entrava in vigore solo dal quarto
+dopo (a Lenta: premi Rapida e per quattro secondi non succede niente).
+
+**Emerso dal mockup, da correggere nel MOTORE** (`cronaca()` in `partita.js`):
+le frasi del 4° quarto sono troppo lunghe e ripetono il punteggio che il
+tabellone mostra già in grande ("finisce 111-107: vince La tua squadra" mentre
+il verdetto dice "Passi il turno · 111-107"), e col nome "La tua squadra" alcune
+suonano sgrammaticate ("Sorpasso La tua squadra con un parziale di 32-24"). Nel
+mockup c'è una rete di sicurezza (massimo due linee per riga), ma la correzione
+vera è accorciare e rifrasare le frasi.
+
+**E2 - da fare**: porting su `screens/run.js` e `screens/coach.js` (scheda coach
+con plus/malus e anteprima sui tuoi reparti), dopo l'ok di Tomas sul mockup.
 
 **Aggiunto dopo la tappa C**: nel draft il numero grande della carta deve passare
 da `card.ovr` (2K) a `toDisplayOvr(votoCarta(card))`. Il motore è già pronto, ma
 è una modifica visiva, quindi passa da un mockup prima dell'app vera. L'OVR 2K
 resta in scheda come dato reale, in secondo piano.
 
+### F - box score per giocatore - FATTO (2026-08-17)
+
+Nato dal grill sulla schermata partita: Tomas voleva le statistiche del suo
+quintetto dopo ogni partita e le medie a fine corsa, "calcolate nella
+simulazione come fa eraball.com" (dove "the stat line shown on a player's draft
+card is actually what drives the simulation").
+
+**Il vincolo che ha deciso il modello**: il punteggio di `partita.js` è tarato
+(media 104, margine 11,4, e le soglie 16-0 escono da lì). Far nascere i punti
+dai singoli e sommarli avrebbe sballato tutto. Quindi le righe si generano
+dentro la simulazione, quarto per quarto, con lo stesso rng, ma **atterrano** sul
+punteggio già calcolato: la somma delle cinque righe di un quarto è esattamente
+il punteggio di quel quarto.
+
+- `game/boxscore.js` + 26 test. Sei statistiche: PT · RIMB · AST · RUB · PP · STP.
+  Le quote nascono da `stats_real` normalizzata al minuto; i totali di squadra
+  sono legati alla partita (assist ai punti, rimbalzi ai possessi, recuperi e
+  stoppate al reparto difesa, palle perse alla regia); `ripartisci` arrotonda col
+  resto più grande così la somma torna sempre.
+- `run.js`: `boxScoreRound(state)` puro come `partitaRound` (seme `+ 7919`, così
+  ritarare il box score non cambia chi vince), e `storia` salva le righe.
+- `medieCarriera` aggrega **per persona**: LeBron 2012-13 e LeBron 2017-18 sono
+  lo stesso LeBron. Tiene anche i massimi di una singola partita.
+- `newRun({squadra})`: il nome squadra entra nella cronaca.
+
+Banco su 5690 righe vere: 21,2 pt · 8,8 rimb · 4,9 ast · 1,7 rub · 2,5 pp ·
+1,1 stp di media per giocatore, cioè totali di squadra da 106/44/25/13 - i
+valori NBA. Zeri: 3,3% senza assist, 25% senza recuperi, 54% senza stoppate.
+
+Due difetti del motore corretti guardando i risultati veri:
+- `cronaca()` ripeteva nell'ultima riga il punteggio finale e il vincitore che
+  il tabellone mostra già in grande, e scriveva "Sorpasso La tua squadra";
+- `opponents.js` teneva il quintetto avversario ordinato per OVR mentre la UI
+  stampa i ruoli in ordine PG→C: nel mockup i nomi finivano accanto al ruolo di
+  un altro. Ora il pool è ordinato per ruolo.
+
+### E3 - mockup della partita, tre regie - FATTO (2026-08-17), in attesa del giudizio
+
+`mockups/77-partita-direzioni.html`, dati da `tools/dati-tabellone.mjs`. Sei
+schermate: tre regie della partita (**A cruscotto · B giornale · C palazzetto**),
+fine partita, fine corsa (16-0 e eliminato), profilo con la classifica dei
+giocatori più usati.
+
+Deciso col grill del 2026-08-17:
+- **desktop-first, due colonne**, mobile a colonna singola. Il 76 era un telefono
+  da 390px in mezzo a 1200px di nero;
+- **niente login per ora**: profilo locale, ma scritto come oggetto unico
+  sincronizzabile, così l'account dopo è un innesto da un paio d'ore;
+- **nome squadra** chiesto al primo avvio e modificabile dalle impostazioni;
+- via il cerchio "1° QUARTO" (il quarto lo dice la colonna accesa del box score),
+  al suo posto il **margine in tempo reale**;
+- "voto" diventa **OVR**, con **ATT** e **DIF** accanto;
+- chip velocità da fascia intera a un segmentato alto 26px;
+- le carte si vedono solo prima del via, poi diventano le righe del box score.
+
+Difetti trovati provando le schermate nel browser: buchi neri sotto le carte e
+sotto i box score (riempiti col **duello dei reparti** e col **briefing prima
+del via**, che rispondono al "perché è finita così"); miglior marcatore segnato
+con un puntino che sembrava un refuso; quinta colonna dei quarti vuota quando il
+supplementare non c'è; cronaca troncata a due righe anche a fine partita in C;
+"migliore in campo" preso dalla squadra vincente mentre il top scorer stava
+dall'altra parte; a fine corsa "15 partite giocate" quando erano 16.
+
+**Regia scelta da Tomas (2026-08-17): A · Cruscotto.**
+
+### E4 - porting della partita nell'app - FATTO (2026-08-17)
+
+`prototype/imbattuto/screens/run.js` riscritto sulla regia A, blocco CSS `.sh-*`
+`.a-*` al posto del vecchio `.rn-*` (tabellone con lo shot clock, rimosso).
+La schermata anima `partitaRound`/`boxScoreRound` in locale e dispatcha
+`resolveRound` solo alla CTA finale: app.js ri-renderizza tutto a ogni dispatch,
+quindi animare e applicare nello stesso momento non si può.
+
+Scelte prese col grill prima di scrivere: si porta **solo la partita** (fine
+partita, fine corsa e profilo restano da fare); la shell dell'app sale a 1240px
+ma **solo `.screen.run` la usa**, le altre schermate restano nei loro 720px, così
+il porting non rimette in gioco home, draft e coach; i breakpoint mobile del
+mockup vengono portati com'erano.
+
+La velocità scelta si ricorda tra le partite (`localStorage`, chiave
+`buzzer.velocita`): su una corsa da 16 partite ripartire da Normale ogni volta
+era una scelta da rifare 16 volte.
+
+Difetti trovati provando l'app nel browser, non a occhio sul codice:
+- la classe `.flash` del mockup collideva con `.flash` della home (la lampata
+  tonda, `position:absolute` 172px): **cancellava** i numeri del punteggio e le
+  celle del box score invece di illuminarli. Rinominata `sh-flash`;
+- 200px di nero sotto la CTA (la riga bassa non cresceva) e un rettangolo vuoto
+  sotto le righe del box score: `.a-bot { flex: 1 }` più `.sh-box { height: 100% }`;
+- il 4° quarto restava col bordo giallo anche a partita finita, e sembrava ancora
+  in corso: il bordo sta su `live`, non su `just`;
+- sei pixel di barra di scroll a 900px di altezza, tolti col padding inferiore
+  ridotto sulla schermata partita.
+
+Provato: corsa intera fino alla sconfitta (11 vittorie poi 105-111), le quattro
+velocità, il cambio in corsa, cinque colonne di quarti col supplementare, e
+390px senza overflow. Suite: 140 motore + 36 prototipo, tutti verdi.
+
+**Da fare**: porting di `screens/esito.js` (fine partita e fine corsa) e la
+schermata profilo nuova.
+
+## Tappa G - rosa da 10, coach vero, punto a punto (dal grill del 2026-08-17)
+
+Tomas ha bocciato la partita portata nell'app: coach non spiegati, nessun effetto
+sui giocatori, simulazione a quarti «inutile e brutta». Quattro blocchi di
+`/grill-me` hanno chiuso i bivi. Le decisioni:
+
+- **rosa da 10**, due per ruolo (titolare + riserva). I minuti sono il peso di
+  tutto: reparti di squadra, box score e punto a punto leggono da lì;
+- **coach con 2 plus e 1 malus** che agiscono sulle CARTE, una per una, più ritmo
+  e rotazione. Passivo durante la partita: il campionato tipo 38-0-0 resta fuori;
+- **punto a punto** srotolando i quarti già tarati (la taratura 16-0 non si
+  tocca), eventi con nome, durate 20/10/5s + istantanea, log a due livelli;
+- **box score** con tiri, triple e liberi separati, dieci righe;
+- mockup unico con tre schermate **dopo** il motore, app solo a mockup approvato.
+
+### G1 - rosa, coach, avversari - FATTO (2026-08-17)
+
+`game/rosa.js` (dieci caselle, `slotLibero` per il draft a un tocco, minuti
+36/12 · 32/16 · 28/20 sempre a somma 240), `game/coach.js` riscritto
+(`applyCoach(rosa, coach)` torna la rosa allenata + `effetti`, cioè chi guadagna
+cosa: è quello che la schermata coach mostra col dito), `game/opponents.js` con
+`buildHistoricalRose` (175 squadre-stagione su 180: sotto le dieci carte la rosa
+non si costruisce, e cinque avversari in meno battono cinque panchine inventate).
+
+### G2 - run.js e box score sui minuti - FATTO (2026-08-17)
+
+`game/run.js` gira sulla rosa da 10: lo stato tiene `rosa` (draftata) e
+`rosaAllenata` (dopo il coach) **separate**, così la schermata mostra il prima e
+il dopo e cambiare coach non consuma niente. `game/boxscore.js` pesa le quote per
+i minuti veri: a parità di resa al minuto, un titolare da 32' produce il doppio
+di una riserva da 16'. Ogni riga porta i suoi minuti.
+
+### G3 - avversari a urna e ritaratura - FATTO (2026-08-17)
+
+Le rose da dieci hanno compresso il pool da 40-74 a **38-67** (mediana 51), e le
+soglie vecchie erano di nuovo fuori scala. Nato `tools/taratura-soglie.mjs`, che
+CERCA le soglie invece di provarle a mano: alza il pavimento finché il tetto del
+pool basta, poi biseziona sul tetto, con campioni più grandi dove il bersaglio è
+raro (misurare uno 0,5% con 400 corse vuol dire misurare due corse, cioè rumore).
+
+Cercando è saltato fuori un difetto vecchio: `pickOpponent` prendeva sempre il
+voto più vicino alla soglia, quindi **i sedici avversari di un livello erano gli
+stessi in ogni corsa**, e in Incubo (banda stretta, 14 squadre) la stessa squadra
+tornava fino a tre volte nella stessa corsa: 6 avversari distinti su 16. Deciso
+con Tomas: pescata a caso fra le **otto più vicine** alla soglia, con l'rng del
+seme della corsa, escludendo chi hai già affrontato. Ora sono 16/16 distinti in
+ogni livello, e cinque corse in Incubo mostrano 21 squadre diverse.
+
+| livello | soglie | 16-0 | bersaglio | vittorie medie |
+|---|---|---|---|---|
+| facile | 41-67 | 39,8% | 40% | 12,2 |
+| normale | 42-67 | 12,9% | 12% | 9,2 |
+| difficile | 54-67 | 3,2% | 3% | 5,0 |
+| incubo | 61-67 | 1,0% | 0,5% | 2,5 |
+
+**Incubo non arriva allo 0,5%**: è il pavimento del pool, non un errore di
+taratura. Col tetto già sulla squadra più forte di sempre, alzare oppMin non
+sposta più niente (63-67 → 1,05%, 65-67 → 1,15%, 67-67 → 1,07%). L'una corsa su
+cento che passa è quella con un draft eccezionale, e quella coda le soglie non la
+tagliano: servirebbe un'altra manopola.
+
+### G4a - punto a punto - FATTO (2026-08-17)
+
+`game/playbyplay.js` + `game/playbyplay.test.js` (41 test) e
+`tools/banco-punto-a-punto.mjs`. Quattro blocchi di `/grill-me` hanno chiuso i
+bivi prima di scrivere; tutte le risposte hanno confermato la raccomandazione,
+tranne il mix di tiro, dove Tomas ha aggiunto che il profilo vero è una
+**tendenza e non un destino** (Curry può chiudere senza triple, Gobert ne segna
+una ogni tanto, un Curry da 20 rimbalzi non deve esistere).
+
+Le decisioni:
+
+- **il box score comanda**, il punto a punto lo srotola. La taratura del
+  punteggio non si tocca e `boxscore.js` non si tocca;
+- **si generano anche i tiri sbagliati**: senza, i rimbalzi non hanno causa e le
+  percentuali di tiro non esistono;
+- **le riserve entrano in blocco nel tratto centrale** di ogni quarto: così ogni
+  azione cade quando il suo protagonista è in campo e i minuti di `minutiRosa`
+  tornano esatti senza aggiustamenti;
+- **orologio vero** (11:47 del 1° quarto), ricavato dalle azioni del segmento;
+- **le colonne di tiro sono un sottoprodotto** (`tiri`), non nuove statistiche
+  dentro `boxscore.js`: due vincoli incrociati sarebbero stati fragili;
+- **falli modellati con la colonna FALLI**: ogni viaggio in lunetta ha il nome di
+  chi ha commesso il fallo;
+- **log a due livelli**: `notevole` per regola fissa (sorpasso, parziale da 8+,
+  tripla, schiacciata, stoppata, cambio, finale in equilibrio);
+- **ogni azione ha la sua causa**: l'assist sul canestro, il rimbalzo dopo
+  l'errore, la stoppata sul tiro, il recupero sulla palla persa;
+- **le azioni NON si salvano in storia**: si ricalcolano dal seme, e 16 partite
+  da ~350 azioni sarebbero qualche megabyte di localStorage.
+
+Il vincolo che regge tutto: **ogni tiro sbagliato produce un rimbalzo**. I
+rimbalzi li ha già decisi il box score, quindi sono loro a dire quanti errori si
+tirano - e da lì escono i tentativi, cioè le percentuali che il box score da solo
+non poteva avere.
+
+Quattro difetti trovati al banco, non dai test (che erano già tutti verdi):
+
+1. **78/105 dalla lunetta.** Nella scomposizione dei punti il peso dei liberi non
+   era diviso per il loro valore: valendo poco vincevano sempre, perché servivano
+   tante scelte per coprire il bottino.
+2. **57 tiri liberi anche dopo il primo fix.** La scomposizione stava al livello
+   del SEGMENTO, dove una riserva fa due punti: i residui da un punto si possono
+   fare solo dalla lunetta. Nata `sparpaglia`, che scompone il bottino INTERO del
+   giocatore e poi divide i canestri già formati fra i periodi, rispettando al
+   punto il punteggio del motore.
+3. **41/42 dalla lunetta.** I liberi sbagliati non esistevano: i viaggi
+   nascevano solo dai punti fatti. Ora i tentativi escono dalla percentuale vera
+   e gli errori si appoggiano ai viaggi esistenti o creano un 0/2.
+4. **46,5% da tre di lega.** Gli errori da fuori si contavano sul mix teorico
+   invece che sui canestri davvero segnati, e la conversione del residuo (un
+   canestro da due allungato in tripla) aggiungeva triple senza tentativi.
+
+Banco su 199 partite con rose storiche, contro le medie NBA:
+
+| misura | motore | NBA | scarto |
+|---|---|---|---|
+| FG% | 45,3 | 47,0 | -4% |
+| 3PA | 31,7 | 35,0 | -9% |
+| 3P% | 38,7 | 36,5 | +6% |
+| FTA | 25,8 | 22,0 | +17% |
+| TL% | 77,7 | 78,0 | 0% |
+| falli | 19,6 | 19,5 | +1% |
+| secondi per azione | 13,8 | 14,5 | -5% |
+
+Le 3PA sotto scala non sono un difetto: il pool è storico, e negli anni Ottanta
+da tre non si tirava. Una partita produce ~314 azioni, di cui ~79 notevoli.
+
+`run.js`: `playByPlayRound(state)` puro come gli altri, seme staccato (`+ 3121`)
+perché ritarare il racconto non cambi né chi vince né il tabellino.
+`game/fixtures.js` ha ora anche `stats_vol`, che è il dato da cui nasce il mix di
+tiro. Suite: 232 test, tutti verdi. Taratura 16-0 invariata (banco a 200 corse:
+37% · 13% · 3% · 0,5%).
+
+### G4b - da fare
+
+1. Mockup unico con le tre schermate, dati veri da `tools/dati-tabellone.mjs`.
+   Va deciso lì quante righe di log stanno a schermo e a che velocità scorrono:
+   79 righe notevoli su 48 minuti si sentono, non si calcolano.
+2. Porting nell'app: `app.js`, `screens/draft.js` e `screens/run.js` usano ancora
+   cinque slot e `state.quintetto`, quindi oggi sono rotti contro il motore.
+
 ## Stime
 
-A ~3 ore · B ~4 ore · C ~2 ore · D ~2 ore · E ~4 ore. In tutto: circa due giornate
-di lavoro, non una.
+A ~3 ore · B ~4 ore · C ~2 ore · D ~2 ore · E ~4 ore · G1-G3 ~5 ore ·
+G4a ~4 ore. Restano: mockup ~3 ore, porting ~4 ore.
 
 ## Aperti
 
 - Tempi esatti dei preset velocità: si sentono nel mockup, non si decidono a tavolino.
-- Ritaratura di `oppMin`/`oppMax` in `difficulty.js`: la selezione dell'avversario
-  resta sul voto sintetico, ma le soglie vanno riviste quando la partita cambia.
+- Incubo allo 0,5%: serve una manopola oltre le soglie, oppure si accetta l'1%.
 - Peso dei reparti nel voto sintetico mostrato in scheda (resta una sintesi, non
   decide più la partita).

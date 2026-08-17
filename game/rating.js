@@ -17,6 +17,7 @@
 // spostano da soli - il voto non può mentire su come funziona la partita.
 
 import { mediaReparti, REPARTI } from "./reparti.js";
+import { repartiRosa } from "./rosa.js";
 import {
   attacco, K_EFFICIENZA, K_RIMBALZI, PPP_BASE, POSSESSI_BASE,
 } from "./partita.js";
@@ -94,5 +95,13 @@ export function teamRating(cards, _k = DEFAULT_K) {
     throw new Error("teamRating: servono almeno una carta");
   }
   const reparti = mediaReparti(cards);
+  return { ovr: votoDaReparti(reparti), reparti };
+}
+
+// Voto di una rosa da 10, coi reparti PESATI PER MINUTI. È questo che scende in
+// campo da quando esiste la panchina: `teamRating` resta per i gruppi di carte
+// senza rotazione (una top-5 qualsiasi, l'anteprima di un pool).
+export function votoRosa(rosa, rotazione = "normale") {
+  const reparti = repartiRosa(rosa, rotazione);
   return { ovr: votoDaReparti(reparti), reparti };
 }

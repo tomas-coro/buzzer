@@ -6,3 +6,6 @@ data/raw/
 
 # Screenshot temporanei delle verifiche visive (nella root)
 /*.png
+
+# macOS
+.DS_Store

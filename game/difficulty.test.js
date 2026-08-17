@@ -43,18 +43,33 @@ test("la difficoltà cresce: la banda avversari non cala (N resta costante)", ()
   assert.ok(DIFFICULTIES.incubo.oppMin > DIFFICULTIES.facile.oppMin);
 });
 
-// I 180 quintetti storici stanno tra 40 e 74 sulla scala nativa del voto. Soglie
-// fuori da lì non sono "difficili": sono rotte, perché pickOpponent finirebbe per
-// pescare sempre lo stesso quintetto - è esattamente quello che è successo quando
-// il voto è passato dagli overall 2K ai reparti e le soglie sono rimaste a 70-99.
-// La taratura vera si rifà con `node tools/banco-corse.mjs`.
-test("le soglie stanno dentro l'intervallo reale dei quintetti storici", () => {
-  const POOL_MIN = 40;
-  const POOL_MAX = 74;
+// Le 175 rose storiche stanno tra 38 e 67 sulla scala nativa del voto (erano
+// 40-74 quando l'avversario era una top-5: la panchina pesata per minuti ha
+// abbassato tutti). Soglie fuori da lì non sono "difficili": sono rotte, perché
+// pickOpponent finirebbe per pescare sempre le stesse squadre - è esattamente
+// quello che è successo quando il voto è passato dagli overall 2K ai reparti e
+// le soglie sono rimaste a 70-99. La taratura si rifà con
+// `node tools/taratura-soglie.mjs`.
+test("le soglie stanno dentro l'intervallo reale delle rose storiche", () => {
+  const POOL_MIN = 38;
+  const POOL_MAX = 67;
   for (const [key, d] of Object.entries(DIFFICULTIES)) {
     assert.ok(d.oppMin >= POOL_MIN, `${key}: oppMin ${d.oppMin} sotto il pool (${POOL_MIN})`);
     assert.ok(d.oppMax <= POOL_MAX, `${key}: oppMax ${d.oppMax} sopra il pool (${POOL_MAX})`);
+    // La soglia deve salire: un livello con la banda piatta gioca sedici volte
+    // la stessa partita.
+    assert.ok(d.oppMax - d.oppMin >= 5,
+      `${key}: banda di ${d.oppMax - d.oppMin} punti, la soglia non sale`);
+  }
+});
+
+// Nei due livelli d'ingresso la rampa deve sentirsi: si parte da avversari
+// abbordabili e si finisce contro i mostri. Negli altri due la corsa è dura da
+// subito, ed è il senso di "difficile" e "incubo".
+test("Facile e Normale hanno una rampa vera, non una banda stretta", () => {
+  for (const key of ["facile", "normale"]) {
+    const d = DIFFICULTIES[key];
     assert.ok(d.oppMax - d.oppMin >= 15,
-      `${key}: banda di ${d.oppMax - d.oppMin} punti, la corsa non ha una rampa`);
+      `${key}: banda di ${d.oppMax - d.oppMin} punti, troppo piatta per una rampa`);
   }
 });

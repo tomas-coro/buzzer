@@ -1,18 +1,45 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { COACHES, pickCoaches, toEngineCoach } from "./coaches.js";
-import { applyCoach, GRADE_MULT } from "../../game/coach.js";
+import { COACHES, pickCoaches, descriviEffetto, NOME_REPARTO } from "./coaches.js";
+import { applyCoach, VALORE_MIRATO, VALORE_DIFFUSO, VALORE_MALUS } from "../../game/coach.js";
+import { REPARTI } from "../../game/reparti.js";
+import { ROLES } from "../../game/roster.js";
+import { emptyRosa, assegnaRosa, MINUTI, TITOLARE, RISERVA } from "../../game/rosa.js";
+import { card } from "../../game/fixtures.js";
 
-test("dodici coach, tutti con id diverso", () => {
-  assert.equal(COACHES.length, 12);
-  assert.equal(new Set(COACHES.map((c) => c.id)).size, 12);
+test("trenta coach, tutti con id diverso", () => {
+  assert.equal(COACHES.length, 30);
+  assert.equal(new Set(COACHES.map((c) => c.id)).size, 30);
 });
 
-test("ogni coach ha voti validi per il motore", () => {
+test("dieci coach per profilo: la terna esce sempre varia", () => {
+  for (const p of ["off", "bil", "dif"]) {
+    assert.equal(COACHES.filter((c) => c.profilo === p).length, 10, `profilo ${p}`);
+  }
+});
+
+test("ogni coach ha due plus, un malus, ritmo e rotazione validi", () => {
   for (const c of COACHES) {
-    assert.ok(GRADE_MULT[c.off], `${c.id}: voto OFF non valido (${c.off})`);
-    assert.ok(GRADE_MULT[c.def], `${c.id}: voto DEF non valido (${c.def})`);
-    assert.ok(Number.isInteger(c.champ_bonus) && c.champ_bonus >= 0, `${c.id}: bonus non valido`);
+    assert.equal(c.plus.length, 2, `${c.id}: servono due plus`);
+    for (const p of c.plus) {
+      assert.ok(REPARTI.includes(p.reparto), `${c.id}: reparto plus '${p.reparto}' inesistente`);
+      if (p.ruoli) {
+        assert.ok(p.ruoli.length >= 1 && p.ruoli.length <= 3, `${c.id}: bersaglio da 1 a 3 ruoli`);
+        for (const r of p.ruoli) assert.ok(ROLES.includes(r), `${c.id}: ruolo '${r}' inesistente`);
+      }
+    }
+    assert.ok(c.malus && REPARTI.includes(c.malus.reparto), `${c.id}: malus mancante o non valido`);
+    assert.ok(c.ritmo >= -1 && c.ritmo <= 1, `${c.id}: ritmo fuori scala (${c.ritmo})`);
+    assert.ok(MINUTI[c.rotazione], `${c.id}: rotazione '${c.rotazione}' inesistente`);
+  }
+});
+
+test("i due plus non insistono sullo stesso reparto, e il malus non annulla un plus", () => {
+  for (const c of COACHES) {
+    assert.notEqual(c.plus[0].reparto, c.plus[1].reparto, `${c.id}: due plus sullo stesso reparto`);
+    for (const p of c.plus) {
+      assert.notEqual(p.reparto, c.malus.reparto, `${c.id}: dà e toglie sullo stesso reparto`);
+    }
   }
 });
 
@@ -27,6 +54,13 @@ test("il bonus segue gli anelli: 0 → 0, 1-3 → +1, 4+ → +2", () => {
     const atteso = c.anelli === 0 ? 0 : c.anelli <= 3 ? 1 : 2;
     assert.equal(c.champ_bonus, atteso, `${c.id}: bonus ${c.champ_bonus} con ${c.anelli} anelli`);
   }
+});
+
+test("almeno un plus mirato e almeno uno diffuso esistono nella panchina", () => {
+  const mirati = COACHES.filter((c) => c.plus.some((p) => p.ruoli));
+  const diffusi = COACHES.filter((c) => c.plus.some((p) => !p.ruoli));
+  assert.ok(mirati.length >= 10, "servono coach che alzano ruoli precisi");
+  assert.ok(diffusi.length >= 10, "servono coach che alzano tutta la squadra");
 });
 
 test("pickCoaches dà sempre un offensivo, un equilibrato e un difensivo", () => {
@@ -50,19 +84,57 @@ test("pickCoaches cambia terna tra una run e l'altra", () => {
   assert.ok(terne.size > 1, "la terna è sempre identica: manca la rigiocabilità");
 });
 
-// Il rating che applyCoach si aspetta ora porta i reparti, non solo un numero:
-// il coach agisce su quelli, perché sono l'unica cosa che la partita legge.
-const RATING = { ovr: 60, reparti: { t3: 60, fin: 60, dif: 60, reb: 60, reg: 60 } };
+// --- le schede funzionano davvero nel motore --------------------------------
 
-test("toEngineCoach produce la forma che applyCoach si aspetta", () => {
-  const c = toEngineCoach(COACHES.find((x) => x.id === "jackson"));
-  const voto = applyCoach(RATING, c);
-  assert.ok(voto.ovr > RATING.ovr, "Jackson (A/B + 2 anelli) deve alzare il voto");
-  assert.ok(voto.reparti.t3 > 60 && voto.reparti.dif > 60, "deve muovere i reparti");
+// Rosa da 10 tutta a 50: quello che si muove viene dal coach e da nient'altro.
+function rosaPiatta() {
+  let r = emptyRosa();
+  for (const ruolo of ROLES) {
+    for (const tipo of [TITOLARE, RISERVA]) {
+      r = assegnaRosa(r, ruolo, tipo, card({
+        player_id: `${ruolo}-${tipo}`, pos: { primary: ruolo, secondary: null },
+        reparti: { t3: 50, fin: 50, dif: 50, reb: 50, reg: 50 },
+      }));
+    }
+  }
+  return r;
+}
+
+test("ogni scheda passa nel motore e sposta qualcosa in campo", () => {
+  for (const c of COACHES) {
+    const out = applyCoach(rosaPiatta(), c);
+    assert.ok(out.effetti.length > 0, `${c.id}: coach senza alcun effetto sui giocatori`);
+    assert.equal(out.rotazione, c.rotazione);
+    assert.equal(out.ritmo, c.ritmo);
+  }
 });
 
-test("un coach offensivo puro vale meno di uno pluri-titolato", () => {
-  const dantoni = applyCoach(RATING, toEngineCoach(COACHES.find((x) => x.id === "dantoni")));
-  const jackson = applyCoach(RATING, toEngineCoach(COACHES.find((x) => x.id === "jackson")));
-  assert.ok(jackson.ovr > dantoni.ovr, "il bonus anelli non si vede nel voto");
+test("Thibodeau alza la difesa dei lunghi e non quella dei playmaker", () => {
+  const thibs = COACHES.find((c) => c.id === "thibodeau");
+  const out = applyCoach(rosaPiatta(), thibs);
+  assert.equal(out.rosa.C[TITOLARE].reparti.dif, 50 + VALORE_MIRATO);
+  assert.equal(out.rosa.PG[TITOLARE].reparti.dif, 50);
+  // e il prezzo lo paga tutta la squadra
+  assert.equal(out.rosa.PG[TITOLARE].reparti.reg, 50 - VALORE_MALUS);
+});
+
+test("D'Antoni fa correre e alza il tiro degli esterni", () => {
+  const dantoni = COACHES.find((c) => c.id === "dantoni");
+  const out = applyCoach(rosaPiatta(), dantoni);
+  assert.equal(out.ritmo, 1);
+  assert.equal(out.rosa.SG[TITOLARE].reparti.t3, 50 + VALORE_MIRATO);
+  assert.equal(out.rosa.C[TITOLARE].reparti.t3, 50, "il centro non tira da tre per decreto");
+  assert.equal(out.rosa.C[TITOLARE].reparti.reg, 50 + VALORE_DIFFUSO);
+});
+
+test("gli anelli si sentono: Jackson alza il voto più di un coach senza titoli", () => {
+  const jackson = applyCoach(rosaPiatta(), COACHES.find((c) => c.id === "jackson"));
+  const moe = applyCoach(rosaPiatta(), COACHES.find((c) => c.id === "moe"));
+  assert.ok(jackson.voto.ovr > moe.voto.ovr, "il bonus anelli non si vede nel voto");
+});
+
+test("descriviEffetto scrive dove agisce il coach, in italiano", () => {
+  assert.equal(descriviEffetto({ reparto: "dif", ruoli: ["PF", "C"] }), "Difesa · ali forti e centri");
+  assert.equal(descriviEffetto({ reparto: "reg" }), "Regia · tutta la squadra");
+  for (const r of REPARTI) assert.ok(NOME_REPARTO[r], `manca l'etichetta del reparto ${r}`);
 });

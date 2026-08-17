@@ -339,7 +339,7 @@ export function cronaca(quarti, nomeCasa, nomeOspite) {
     }
     if (prima !== 0 && Math.sign(prima) !== Math.sign(dopo)) {
       tipo = "sorpasso";
-      azione = `Sorpasso ${avanti} con un parziale di ${pQuarto}`;
+      azione = `${avanti} sorpassa con un ${pQuarto}`;
     } else if (Math.sign(parziale) !== Math.sign(dopo) && Math.abs(parziale) >= 4) {
       // Il parziale è di chi insegue. Va guardato PRIMA dell'allungo: un 33-25
       // di chi sta perdendo non è una fuga, è una rimonta - e senza questo
@@ -378,7 +378,10 @@ export function cronaca(quarti, nomeCasa, nomeOspite) {
       azione = `Periodo senza scossoni (${pQuarto}), avanti ${avanti}`;
     }
 
-    const coda = finale ? `, ${chiusa}: vince ${avanti}.` : `, ${chiusa}.`;
+    // L'ultima riga NON ripete il punteggio finale né il vincitore: il tabellone
+    // li ha già scritti in grande sopra, e ripeterli faceva una riga lunga il
+    // doppio delle altre che diceva quello che si vedeva già.
+    const coda = finale ? "." : `, ${chiusa}.`;
     return { quarto: etichetta(q), tipo, testo: azione + coda };
   });
 }

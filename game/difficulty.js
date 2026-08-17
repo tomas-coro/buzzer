@@ -4,29 +4,38 @@
 // il reveal delle carte (gestito nella UI del draft). Vedi memoria target-16-0-sempre.
 // oppMin/oppMax sono il voto dell'avversario al primo e al sedicesimo round (la
 // soglia sale linearmente in mezzo, vedi opponents.js). Sono sulla scala NATIVA
-// del voto, cioè percentili: i 180 quintetti storici stanno tra 40 e 74, con la
-// mediana a 56. Le vecchie soglie 70-99 erano sulla scala 2K e, dopo il passaggio
-// del voto ai reparti, cadevano tutte sopra il massimo del pool: ogni round
-// pescava lo stesso quintetto, il più forte di sempre.
+// del voto, cioè percentili.
 //
-// I valori sotto NON sono a occhio: escono da `node tools/banco-corse.mjs`, che
-// simula corse intere e misura quante finiscono 16-0. Bersagli concordati e
-// misurati (800-1000 corse per livello):
+// LA SCALA SI È SPOSTATA DUE VOLTE, ED È IL MOTIVO PER CUI QUESTI NUMERI VANNO
+// RIMISURATI E MAI RITOCCATI A OCCHIO.
+//   1. Col voto sui reparti, le vecchie soglie 70-99 (scala 2K) finivano sopra
+//      il massimo del pool: ogni round pescava la stessa squadra.
+//   2. Con le rose da DIECI pesate per minuti, ogni squadra storica vale meno di
+//      quanto valeva la sua top-5: il pool è passato da 40-74 a 38-67, mediana
+//      51, e le soglie tarate sul pool vecchio erano di nuovo fuori scala.
+//
+// I valori sotto escono da `node tools/taratura-soglie.mjs`, che cerca le soglie
+// misurando quante corse finiscono 16-0. Bersagli concordati e misurati
+// (800 corse per livello, ×10 dove il bersaglio è raro):
 //
 //   livello     soglie    16-0 misurato   bersaglio   vittorie medie
-//   facile       44-66        40.5%          40%           12.2
-//   normale      45-72        10.3%          12%            9.3
-//   difficile    45-74         2.9%           3%            7.1
-//   incubo       54-74         0.5%         0.5%            4.4
+//   facile       41-67        39.8%          40%           12.2
+//   normale      42-67        12.9%          12%            9.2
+//   difficile    54-67         3.2%           3%            5.0
+//   incubo       61-67         1.0%         0.5%            2.5
 //
-// Notare due cose. Primo: in Facile il tetto è 66, quindi le squadre leggendarie
-// (70+) non si incontrano proprio - è quello che significa "facile". Secondo:
-// buona parte del salto tra un livello e l'altro non viene da qui ma dagli AIUTI,
-// che cambiano quanto forte è la squadra che riesci a draftare (voto medio: 81 in
-// Facile, 68 in Incubo).
+// INCUBO NON ARRIVA ALLO 0,5% E NON È UN ERRORE DI TARATURA: è il pavimento del
+// pool. Col tetto già sulla squadra più forte di sempre, alzare ancora oppMin
+// non sposta più niente (misurato: 63-67 → 1,05%, 65-67 → 1,15%, 67-67 → 1,07%).
+// L'una corsa su cento che passa è quella con un draft eccezionale, e quella
+// coda le soglie non la tagliano.
+//
+// Il salto vero tra un livello e l'altro non viene da qui ma dagli AIUTI, che
+// cambiano quanto forte è la squadra che riesci a draftare: voto medio 79 in
+// Facile, 67 in Incubo.
 export const DIFFICULTIES = {
-  facile:    { aids: { squadra: 3, stagione: 3, respin: 2 }, freeSwitch: true,  N: 16, oppMin: 44, oppMax: 66 },
-  normale:   { aids: { squadra: 2, stagione: 2, respin: 1 }, freeSwitch: false, N: 16, oppMin: 45, oppMax: 72 },
-  difficile: { aids: { squadra: 1, stagione: 1, respin: 0 }, freeSwitch: false, N: 16, oppMin: 45, oppMax: 74 },
-  incubo:    { aids: { squadra: 0, stagione: 0, respin: 0 }, freeSwitch: false, N: 16, oppMin: 54, oppMax: 74 },
+  facile:    { aids: { squadra: 3, stagione: 3, respin: 2 }, freeSwitch: true,  N: 16, oppMin: 41, oppMax: 67 },
+  normale:   { aids: { squadra: 2, stagione: 2, respin: 1 }, freeSwitch: false, N: 16, oppMin: 42, oppMax: 67 },
+  difficile: { aids: { squadra: 1, stagione: 1, respin: 0 }, freeSwitch: false, N: 16, oppMin: 54, oppMax: 67 },
+  incubo:    { aids: { squadra: 0, stagione: 0, respin: 0 }, freeSwitch: false, N: 16, oppMin: 61, oppMax: 67 },
 };

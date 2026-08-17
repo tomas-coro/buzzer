@@ -43,9 +43,13 @@ body {
     var(--ink);
 }
 
+/* La shell è larga perché la partita è una schermata da desktop (due colonne,
+   box score per giocatore). Le altre schermate NON si allargano: restano nella
+   loro misura di prima con `.screen`, così il porting della partita non rimette
+   in gioco il design di home, draft e coach. */
 #app {
   min-height: 100dvh;
-  max-width: 720px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: clamp(20px, 5vw, 40px) 20px 64px;
   display: flex;
@@ -64,7 +68,10 @@ button { font: inherit; cursor: pointer; color: inherit; }
 button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
 /* ---- Ingresso staggered di ogni schermata ---- */
-.screen { display: flex; flex-direction: column; gap: 22px; }
+/* max-width qui e non su #app: le schermate vecchie tengono i loro 720px, la
+   partita (.screen.run) è l'unica che usa tutta la larghezza. */
+.screen { display: flex; flex-direction: column; gap: 22px; width: 100%; max-width: 720px; margin-inline: auto; }
+.screen.run { max-width: none; }
 .screen > * { animation: rise .5s var(--ease) both; }
 .screen > *:nth-child(2) { animation-delay: .05s; }
 .screen > *:nth-child(3) { animation-delay: .10s; }
@@ -671,181 +678,294 @@ button.bz-mode{cursor:pointer}
 .sl-h { font-size: .64rem; color: var(--bone-dim); }
 .sl-h b { color: var(--yellow); }
 
-/* =================== RUN (port mockup 75, direzione A "Tabellone") =================== */
-/* Il tabellone da palazzetto È la schermata: cornice, viti agli angoli, shot clock
-   al centro, lampada della sirena sul bordo. Il vecchio blocco (meter + barra +
-   numeri Bodoni) è stato rimosso: era fuori dalla pelle Cabina 90s e lasciava
-   mezzo schermo vuoto. */
-.run {
-  flex: 1; gap: 14px; align-items: stretch;
-  width: 100%; max-width: 440px; margin-inline: auto;
-}
+/* =================== PARTITA (port mockup 77, regia A "Cruscotto") =================== */
+/* Tutto a schermo in due colonne, densità da sala controllo: punteggio e quarti
+   a sinistra, briefing/cronaca a destra, i due box score sotto. Il vecchio
+   tabellone col shot clock (blocco .rn-*) è stato rimosso: la partita adesso ha
+   un punteggio vero da mostrare, quattro quarti e le righe dei giocatori, e un
+   riquadro da 440px non li conteneva.
+   Prefissi: `sh-` pezzi condivisi con le altre schermate della partita, `a-` la
+   regia Cruscotto. */
+.run { flex: 1; gap: 12px; align-items: stretch; }
+/* La partita finisce con la CTA a tutta larghezza: i 64px di respiro in fondo
+   alla pagina qui diventano una barra di scroll per pochi pixel. */
+#app:has(.run) { padding-bottom: 24px; }
+/* Niente ingresso staggered qui: la schermata si ridisegna a ogni quarto e i
+   figli ripartirebbero da capo a ogni passaggio, cioè uno sfarfallio ogni volta. */
+.run > * { animation: none; }
 
-/* ---- Striscia delle vittorie: quanto manca all'imbattuto, sempre a vista ---- */
-.rn-streak { flex: none; }
-.rn-streak .row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
-.rn-streak .lab { font-weight: 800; font-size: .56rem; letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }
-.rn-streak .num b { font-family: var(--led); font-weight: 900; font-size: 1.05rem; line-height: 1; color: var(--yellow); }
-.rn-streak .num i { font-family: var(--led); font-style: normal; font-size: .72rem; color: var(--bone-dim); }
-/* 16 tacche: una per vittoria. Su 16 round i pallini non reggevano, le tacche sì. */
-.rn-ticks { display: grid; grid-template-columns: repeat(16, 1fr); gap: 3px; }
-.rn-ticks span { height: 9px; border-radius: 2px; background: #23244f; border: 1px solid #2f3068; }
-.rn-ticks span.on {
-  background: linear-gradient(180deg, var(--yellow), var(--brass));
-  border-color: var(--yellow); box-shadow: 0 0 8px -2px var(--yellow);
+/* ---- fascia comandi: striscia delle vittorie + velocità ---- */
+.run .sh-hd {
+  flex: none; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 11px 16px; border: 1px solid var(--line); border-radius: 12px;
+  background: rgba(10, 10, 26, .42);
 }
-.rn-ticks span.next { border-color: var(--yellow); background: #2b2c63; }
+.sh-streak { display: flex; align-items: center; gap: 9px; }
+.sh-streak .lab { font-weight: 800; font-size: .5rem; letter-spacing: .19em; text-transform: uppercase; color: var(--brass); white-space: nowrap; }
+.sh-ticks { display: flex; gap: 2.5px; }
+.sh-ticks i { display: block; width: 9px; height: 9px; border-radius: 2px; background: #23244f; border: 1px solid #2f3068; }
+.sh-ticks i.on { background: linear-gradient(180deg, var(--yellow), var(--brass)); border-color: var(--yellow); }
+.sh-ticks i.next { border-color: var(--yellow); background: #2b2c63; }
+.sh-streak .num { font-family: var(--led); font-weight: 900; font-size: .82rem; color: var(--yellow); white-space: nowrap; }
+.sh-streak .num i { font-style: normal; color: var(--bone-dim); }
 
-/* ---- Il tabellone ---- */
-.rn-board {
-  position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column;
-  border-radius: 16px; padding: 14px 14px 16px;
-  background: linear-gradient(180deg, #1a1b46, #101132);
-  border: 2px solid #3a3b7a;
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .06), inset 0 -18px 30px -20px #000, 0 16px 34px -22px #000;
+/* Selettore velocità: segmentato alto 26px, sempre a schermo e cambiabile in
+   corsa. Una corsa è di 16 partite: a Lenta sarebbero minuti di sola attesa. */
+.sh-speed { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.sh-speed > span { font-weight: 800; font-size: .5rem; letter-spacing: .18em; text-transform: uppercase; color: var(--bone-dim); }
+.sh-seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #101132; }
+.sh-seg button {
+  border: 0; background: transparent; color: var(--bone-dim); cursor: pointer;
+  font-weight: 800; font-size: .6rem; letter-spacing: .06em; padding: 0 11px; height: 26px;
+  border-right: 1px solid var(--line); transition: background .15s, color .15s;
 }
-/* Viti agli angoli: il dettaglio che lo fa sembrare un oggetto, non un riquadro. */
-.rn-board::before, .rn-board::after {
-  content: ""; position: absolute; top: 7px; width: 5px; height: 5px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #6f70ad, #2a2b5e);
-}
-.rn-board::before { left: 8px; }
-.rn-board::after { right: 8px; }
+.sh-seg button:last-child { border-right: 0; }
+.sh-seg button:hover { color: var(--bone); background: #181a45; }
+.sh-seg button[aria-pressed="true"] { background: var(--yellow); color: #0c0d22; }
+.sh-seg button:focus-visible { outline: 2px solid var(--brass); outline-offset: -2px; }
 
-.rn-strip {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px; flex: none;
-  padding: 0 4px 11px; border-bottom: 1px solid #33346e; margin-bottom: 6px;
-}
-.rn-round { font-family: var(--arcade); font-size: .56rem; letter-spacing: .05em; text-transform: uppercase; color: var(--bone-dim); }
-.rn-round b { color: var(--yellow); }
-.rn-per { font-weight: 800; font-size: .52rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-dim); }
+.run .sh-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
 
-/* I due punteggi si prendono TUTTO lo spazio fra la testata e la formazione.
-   Con un tetto (max-height) restava un buco di ~200px fra i numeri e la striscia
-   del quintetto: qui l'aria in più diventa respiro attorno ai numeri, non vuoto. */
-.rn-sides { flex: 1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 6px; }
-.rn-side { display: flex; flex-direction: column; align-items: center; gap: 9px; min-width: 0; }
-.rn-side .who {
-  font-family: var(--arcade); font-size: .56rem; letter-spacing: .02em; line-height: 1.3;
-  text-align: center; color: var(--bone-dim); max-width: 100%; text-wrap: balance;
+/* ---- pannelli ---- */
+.a-panel {
+  border: 1px solid var(--line); border-radius: 13px; background: rgba(10, 10, 26, .42);
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0;
 }
-.rn-side.me .who { color: var(--brass); }
-.rn-side .score {
-  font-family: var(--led); font-weight: 900; font-size: 5.2rem; line-height: .82;
-  letter-spacing: .02em; color: var(--bone); font-variant-numeric: tabular-nums;
-}
-.rn-side.me .score { color: var(--yellow); text-shadow: 0 0 22px rgba(255, 207, 51, .3); }
-/* Micro-etichette: pavimento a .52rem e colore bone-dim. Sotto questa soglia, sul
-   telefono, non si leggono più. */
-.rn-side .cap {
-  font-weight: 800; font-size: .52rem; letter-spacing: .12em; text-transform: uppercase;
-  color: var(--bone-dim); text-align: center; line-height: 1.3;
-}
+.a-top { display: grid; grid-template-columns: minmax(0, 1.28fr) minmax(280px, .72fr); gap: 12px; flex: none; }
+/* La riga bassa prende l'altezza che avanza: senza, su uno schermo alto restano
+   200px di nero sotto la CTA e le tessere stanno strette in cima. */
+.a-bot { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-height: 0; }
 
-/* Shot clock al centro, come sul tabellone vero: disco LED fra i due punteggi. */
-.rn-clock { display: flex; flex-direction: column; align-items: center; gap: 7px; flex: none; }
-.rn-clock .disc {
-  width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 50% 34%, #22235a, #0c0d26);
-  border: 2px solid #3a3b7a; box-shadow: inset 0 3px 10px rgba(0, 0, 0, .6);
+/* etichetta di sezione */
+.sh-cap {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  font-weight: 800; font-size: .52rem; letter-spacing: .2em; text-transform: uppercase; color: var(--bone-dim);
 }
-.rn-clock b {
-  font-family: var(--led); font-weight: 900; font-size: 1.9rem; line-height: 1; color: var(--red);
-  font-variant-numeric: tabular-nums; text-shadow: 0 0 16px rgba(255, 80, 56, .55);
-}
-.rn-clock i { font-style: normal; font-weight: 800; font-size: .52rem; letter-spacing: .13em; text-transform: uppercase; color: var(--bone-dim); }
+.sh-cap b { color: var(--brass); font-weight: 800; }
 
-/* Quintetto DENTRO il tabellone: è la formazione in campo, non un blocco a parte.
-   Prima del port la squadra draftata spariva del tutto durante il run. */
-.rn-in { flex: none; padding-top: 11px; border-top: 1px solid #33346e; }
-.rn-five-lab { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 7px; }
-/* La seconda striscia (loro) prende aria dalla prima senza una riga di separazione:
-   il salto di etichetta basta a dire che è un'altra squadra. */
-.rn-five-lab.loro { margin-top: 12px; }
-.rn-five-lab.loro .v { color: var(--bone-dim); }
-.rn-five-lab .t { font-weight: 800; font-size: .54rem; letter-spacing: .16em; text-transform: uppercase; color: var(--bone-dim); }
-.rn-five-lab .v { font-family: var(--arcade); font-size: .54rem; color: var(--brass); }
-.rn-five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
-.rn-p { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.rn-face { position: relative; width: 100%; aspect-ratio: 1 / 1.2; border-radius: 8px; overflow: hidden; display: block; background: linear-gradient(155deg, var(--tc1), var(--tc2)); }
-.rn-face .ini {
+/* ---- punteggio ---- */
+.a-scoreline { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; align-items: center; }
+.a-team { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.a-team.right { align-items: flex-end; text-align: right; }
+.a-team .nm {
+  font-family: var(--arcade); font-size: .86rem; line-height: 1.15; color: var(--bone);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+}
+.a-team.mine .nm { color: var(--yellow); }
+.a-team .sub { font-weight: 700; font-size: .58rem; letter-spacing: .13em; text-transform: uppercase; color: var(--bone-dim); }
+.a-score { display: flex; align-items: center; gap: 12px; justify-content: center; }
+.a-score b {
+  font-family: var(--led); font-weight: 900; font-size: 3.5rem; line-height: .9; color: var(--bone);
+  font-variant-numeric: tabular-nums;
+}
+.a-score b.lead { color: var(--yellow); }
+.a-score i { font-family: var(--led); font-style: normal; font-size: 1.5rem; color: var(--bone-dim); }
+/* Il MARGINE al posto del cerchio "1° quarto": il quarto in corso lo dice già la
+   colonna accesa del box score, il margine è quello che uno cerca davvero. */
+.a-margin {
+  width: max-content; margin: 2px auto 0; padding: 3px 12px; border-radius: 999px; border: 1px solid var(--line);
+  font-family: var(--led); font-weight: 900; font-size: .74rem; letter-spacing: .04em;
+  background: #101132; color: var(--bone-dim); white-space: nowrap;
+}
+.a-margin.pos { color: var(--green); border-color: rgba(92, 207, 142, .45); }
+.a-margin.neg { color: var(--red); border-color: rgba(255, 80, 56, .45); }
+
+/* OVR · ATT · DIF - il numero grande si chiama OVR, non "voto" */
+.sh-ratings { display: flex; align-items: center; gap: 9px; }
+.sh-rat { display: flex; align-items: baseline; gap: 4px; }
+.sh-rat span { font-weight: 800; font-size: .5rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-dim); }
+.sh-rat b { font-family: var(--led); font-weight: 900; font-size: .98rem; line-height: 1; color: var(--bone); }
+.sh-rat.hero b { font-size: 1.42rem; color: var(--yellow); }
+.sh-rat.hero span { color: var(--brass); }
+
+/* ---- box score a quarti ---- */
+.a-quarti { width: 100%; border-collapse: collapse; }
+.a-quarti th {
+  font-weight: 800; font-size: .5rem; letter-spacing: .16em; text-transform: uppercase; color: var(--bone-dim);
+  padding: 0 0 6px; text-align: center;
+}
+.a-quarti th:first-child { text-align: left; }
+.a-quarti td { padding: 0; text-align: center; }
+.a-quarti td:first-child {
+  text-align: left; font-family: var(--body); font-weight: 800; font-size: .56rem;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--bone-dim); width: 74px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.a-quarti .cell {
+  display: flex; align-items: center; justify-content: center; height: 36px; margin: 2px 3px; border-radius: 7px;
+  border: 1px solid var(--line); background: #101132;
+  font-family: var(--led); font-weight: 900; font-size: 1rem; color: var(--bone);
+}
+.a-quarti .cell.off { color: #3f4179; }
+.a-quarti .cell.live { border-color: var(--yellow); box-shadow: 0 0 0 1px rgba(255, 207, 51, .3) inset; }
+/* `just` è solo l'ingresso della casella appena stampata. Il bordo giallo sta su
+   `live`, cioè sul quarto in corso: tenerlo su `just` lasciava il 4° acceso
+   anche a partita finita, e sembrava che stesse ancora giocando. */
+.a-quarti .cell.just { animation: cellIn .45s cubic-bezier(.22, 1, .36, 1) both; }
+.a-qhead th.live { color: var(--yellow); }
+@keyframes cellIn { from { opacity: 0; transform: scale(.82); } to { opacity: 1; transform: none; } }
+
+/* Numero appena cambiato: un lampo breve, non un'animazione per ogni cifra.
+   Si chiama `sh-flash` e non `flash` perché `.flash` esiste già ed è la lampata
+   tonda della home (position:absolute, 172px): sulle celle del box score
+   cancellava i numeri invece di illuminarli. */
+.sh-flash { animation: sh-flash .5s var(--ease) both; }
+@keyframes sh-flash { 0% { color: #fff; text-shadow: 0 0 12px var(--yellow); } 100% { } }
+
+/* ---- duello dei reparti: perché è finita così ---- */
+.sh-duel { display: flex; flex-direction: column; gap: 7px; }
+.sh-duel .head {
+  display: flex; justify-content: space-between; gap: 12px; font-weight: 800; font-size: .48rem;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--bone-dim); margin-bottom: 1px;
+}
+.sh-duel .head span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45%; }
+.sh-duel .r { display: grid; grid-template-columns: 1fr 62px 1fr; gap: 9px; align-items: center; }
+.sh-duel .side { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.sh-duel .sx { flex-direction: row-reverse; }
+.sh-duel .bar { position: relative; flex: 1; height: 9px; border-radius: 3px; background: #191a3f; overflow: hidden; }
+.sh-duel .bar i { position: absolute; inset: 0 auto 0 0; display: block; border-radius: 3px; }
+.sh-duel .sx .bar { transform: scaleX(-1); }
+.sh-duel .sx .bar i { background: linear-gradient(90deg, var(--brass), var(--yellow)); }
+.sh-duel .dx .bar i { background: linear-gradient(90deg, #4a4c92, #6f72c9); }
+.sh-duel .lab {
+  text-align: center; font-weight: 800; font-size: .5rem; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--bone-dim); white-space: nowrap;
+}
+.sh-duel .val { font-family: var(--led); font-weight: 900; font-size: .72rem; color: var(--bone-dim); min-width: 20px; text-align: center; }
+.sh-duel .val.win { color: var(--yellow); }
+
+/* ---- briefing prima del via ---- */
+.sh-brief { display: flex; flex-direction: column; gap: 8px; }
+.sh-brief .r {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid rgba(44, 42, 99, .7);
+}
+.sh-brief .r span { font-weight: 800; font-size: .5rem; letter-spacing: .16em; text-transform: uppercase; color: var(--bone-dim); }
+.sh-brief .r b { font-size: .8rem; color: var(--bone); text-align: right; }
+.sh-note { margin: 2px 0 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.sh-note li {
+  list-style: none; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--line);
+  border-left: 3px solid var(--brass); background: rgba(10, 10, 26, .42);
+  font-size: .76rem; line-height: 1.5; color: var(--bone-dim); text-wrap: pretty;
+}
+.sh-note li b { color: var(--yellow); font-weight: 800; }
+
+/* ---- cronaca che si accumula ---- */
+.sh-log { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; }
+.sh-log li {
+  list-style: none; display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: start;
+  padding: 9px 11px; border-radius: 9px; background: rgba(10, 10, 26, .42); border: 1px solid var(--line);
+  border-left: 3px solid var(--line); animation: logIn .45s cubic-bezier(.22, 1, .36, 1) both;
+}
+.sh-log li .q { font-family: var(--led); font-weight: 900; font-size: .62rem; color: var(--bone-dim); letter-spacing: .02em; padding-top: 1px; }
+.sh-log li .t { font-size: .76rem; line-height: 1.45; color: var(--bone); text-wrap: pretty; }
+.sh-log li.pos { border-left-color: var(--green); }
+.sh-log li.neg { border-left-color: var(--red); }
+.sh-log li.par { border-left-color: var(--yellow); }
+@keyframes logIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* ---- verdetto ---- */
+.sh-verdict {
+  flex: none; display: flex; align-items: center; justify-content: center; gap: 11px; min-height: 46px;
+  border-radius: 11px; border: 1px solid var(--line); background: rgba(10, 10, 26, .5);
+  font-family: var(--arcade); font-size: .72rem; letter-spacing: .03em; text-transform: uppercase; text-align: center;
+  animation: logIn .4s cubic-bezier(.22, 1, .36, 1) both;
+}
+/* Il verdetto siede sul fondo della colonna: con quattro righe di cronaca lo
+   spazio che avanza va sopra di lui, non sotto. */
+.a-panel > .sh-verdict { margin-top: auto; }
+.sh-verdict.win { color: var(--green); border-color: rgba(92, 207, 142, .45); background: rgba(92, 207, 142, .09); }
+.sh-verdict.lose { color: var(--red); border-color: rgba(255, 80, 56, .45); background: rgba(255, 80, 56, .09); }
+.sh-verdict em { font-style: normal; font-family: var(--led); color: var(--bone); }
+
+/* ---- formazione prima del via ---- */
+/* Prima del via la formazione È il contenuto: le tessere crescono per riempire
+   il pannello invece di lasciare nero sotto. */
+.a-lineup { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; flex: 1; min-height: 0; }
+.a-card { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.a-card .sh-face { flex: 1; }
+.sh-face {
+  position: relative; display: block; border-radius: 8px; overflow: hidden; min-height: 88px;
+  background: linear-gradient(158deg, var(--tc1, #3a2d5e) 0, var(--tc2, #211636) 100%);
+}
+.sh-face::before {
+  content: ""; position: absolute; inset: 0; opacity: .5;
+  background: radial-gradient(60% 45% at 50% 12%, rgba(255, 255, 255, .16), transparent 70%),
+    repeating-linear-gradient(115deg, rgba(0, 0, 0, .09) 0 2px, transparent 2px 7px);
+}
+.sh-face .ini {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-family: var(--arcade); font-size: .68rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
+  font-family: var(--arcade); font-size: .72rem; color: rgba(255, 255, 255, .94); text-shadow: 0 2px 0 rgba(0, 0, 0, .35);
 }
-.rn-p .role { font-family: var(--arcade); font-size: .42rem; letter-spacing: .03em; color: var(--bone-dim); line-height: 1; }
-.rn-p .ovr { font-family: var(--led); font-weight: 900; font-size: .88rem; line-height: 1; color: var(--bone); }
-.rn-p .ovr.oro { color: #ffcf4d; }
-.rn-p .ovr.arg { color: #d6dbe6; }
-.rn-p .ovr.brz { color: #c78a5b; }
+.a-card .ru { font-family: var(--arcade); font-size: .44rem; letter-spacing: .03em; color: var(--brass); text-align: center; }
+.a-card .nm { font-size: .6rem; font-weight: 700; color: var(--bone-dim); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.a-card .ov { font-family: var(--led); font-weight: 900; font-size: .82rem; color: var(--yellow); text-align: center; }
 
-/* Riga bassa: le squadre già battute, come lo storico su un tabellone vero. */
-.rn-log { display: flex; align-items: center; gap: 7px; flex: none; margin-top: 11px; }
-.rn-log .t { font-weight: 800; font-size: .52rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-dim); flex: none; }
-.rn-log .chips { display: flex; gap: 5px; margin-left: auto; flex-wrap: nowrap; }
-.rn-log .chips span {
-  font-family: var(--led); font-weight: 700; font-size: .6rem; line-height: 1; color: var(--bone-dim);
-  padding: 4px 6px; border-radius: 5px; background: rgba(0, 0, 0, .3); border: 1px solid #33346e;
+/* ---- box score per giocatore ---- */
+/* height 100%: la tabella distribuisce l'altezza che avanza fra le righe invece
+   di lasciare un rettangolo nero in fondo al pannello. */
+.sh-box { width: 100%; height: 100%; border-collapse: collapse; font-size: .74rem; }
+.sh-box th {
+  font-weight: 800; font-size: .5rem; letter-spacing: .13em; text-transform: uppercase; color: var(--bone-dim);
+  padding: 0 0 7px; text-align: right; white-space: nowrap;
 }
-.rn-log .chips span.last { color: var(--green); border-color: rgba(92, 207, 142, .45); }
-/* Al primo round non c'è storico: lo dico invece di lasciare la riga vuota. */
-.rn-log .chips .vuoto {
-  font-family: var(--body); font-weight: 600; font-size: .58rem; text-transform: none;
-  letter-spacing: 0; background: none; border: none; padding: 4px 0;
+.sh-box th:first-child { text-align: left; }
+.sh-box td {
+  padding: 6px 0; border-top: 1px solid rgba(44, 42, 99, .7); text-align: right;
+  font-family: var(--led); font-weight: 700; font-size: .85rem; color: var(--bone); font-variant-numeric: tabular-nums;
 }
-
-/* ---- Lampada della sirena: dorme spenta, si accende sul buzzer ---- */
-.rn-siren {
-  position: absolute; inset: -2px; border-radius: 16px; pointer-events: none; opacity: 0;
-  box-shadow: inset 0 0 0 3px var(--brass), inset 0 0 40px rgba(255, 91, 30, .5), 0 0 30px -6px var(--brass);
+.sh-box td:first-child {
+  text-align: left; font-family: var(--body); font-weight: 700; font-size: .76rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 0; width: 42%;
 }
-/* ---- Verdetto: un cartello che si stampa sopra il tabellone ----
-   Sta all'altezza dei punteggi, non al centro geometrico: al centro cadeva sopra
-   le etichette delle formazioni e le tagliava a metà parola. */
-.rn-verdict {
-  position: absolute; left: 50%; top: 34%; transform: translate(-50%, -50%) scale(.8); z-index: 3;
-  opacity: 0; pointer-events: none; padding: 10px 18px; border-radius: 11px; white-space: nowrap;
-  font-family: var(--arcade); font-size: .86rem; letter-spacing: .02em; text-transform: uppercase;
-  border: 2.5px solid #0a0a18; box-shadow: 4px 4px 0 #0a0a18;
+/* I punti sono la colonna che si guarda per prima, quindi sono più grandi. Il
+   miglior marcatore è l'unico in giallo: con tutti e cinque gialli, la riga da
+   notare doveva farsi riconoscere con un puntino che sembrava un refuso. */
+.sh-box td.pt { color: var(--bone); font-size: .98rem; }
+.sh-box tr.top td.pt, .sh-box tr.top td:first-child { color: var(--yellow); }
+.sh-box .ruolo {
+  display: inline-block; min-width: 22px; margin-right: 7px;
+  font-family: var(--led); font-size: .62rem; color: var(--brass); letter-spacing: .04em;
 }
-.rn-verdict.win { background: var(--green); color: #06210f; }
-.rn-verdict.lose { background: var(--red); color: #2b0500; }
-
-/* ---- Messinscena del round: ~1,3s in tutto ---- */
-.rn-board.playing .rn-clock b { animation: rn-tick .22s steps(1) 3; }
-@keyframes rn-tick { 50% { opacity: .25; } }
-.rn-board.buzz .rn-siren { animation: rn-siren .9s var(--ease) both; }
-@keyframes rn-siren { 0% { opacity: 0; } 18% { opacity: 1; } 55% { opacity: .55; } 100% { opacity: 0; } }
-.rn-board.buzz .rn-side.me .score { animation: rn-pop .5s .12s cubic-bezier(.22, 1, .36, 1) both; }
-@keyframes rn-pop { 0% { transform: scale(1); } 38% { transform: scale(1.16); } 100% { transform: scale(1); } }
-/* Il timbro deve essere fermo e pieno entro ~250 ms: il verdetto di una vittoria
-   resta a schermo 700 ms, quindi un'animazione più lenta lo farebbe sparire prima
-   che si legga. */
-.rn-board.buzz .rn-verdict { animation: rn-stamp .34s .04s cubic-bezier(.22, 1, .36, 1) both; }
-@keyframes rn-stamp {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.6) rotate(-7deg); }
-  55% { opacity: 1; transform: translate(-50%, -50%) scale(.97) rotate(-2deg); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-2deg); }
-}
-.rn-ticks span.just { animation: rn-light .6s var(--ease) both; }
-@keyframes rn-light {
-  0% { transform: scaleY(.4); filter: brightness(2.4); }
-  60% { transform: scaleY(1.35); }
-  100% { transform: scaleY(1); filter: none; }
+.sh-box td.zero { color: #4d4f86; }
+.sh-box tfoot td { border-top: 1.5px solid var(--line); color: var(--bone-dim); font-size: .76rem; padding-top: 7px; }
+.sh-box tfoot td:first-child {
+  font-family: var(--body); font-weight: 800; font-size: .54rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--bone-dim);
 }
 
-/* Chi ha chiesto meno movimento risolve il round senza attesa: niente animazioni. */
-@media (prefers-reduced-motion: reduce) {
-  .rn-board.playing .rn-clock b,
-  .rn-board.buzz .rn-siren,
-  .rn-board.buzz .rn-side.me .score,
-  .rn-board.buzz .rn-verdict,
-  .rn-ticks span.just { animation: none; }
+/* ---- CTA arcade ---- */
+.sh-cta {
+  display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px; flex: none;
+  font-family: var(--arcade); font-size: .92rem; letter-spacing: .03em; text-transform: uppercase;
+  color: #0a0a18; background: var(--yellow); border: 2.5px solid #0a0a18; border-radius: 14px;
+  box-shadow: 5px 5px 0 #0a0a18; cursor: pointer;
+  transition: transform .1s var(--ease), box-shadow .1s var(--ease), background .2s, color .2s;
 }
+.sh-cta:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #0a0a18; }
+.sh-cta:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 #0a0a18; }
+.sh-cta:focus-visible { outline: 3px solid var(--brass); outline-offset: 3px; }
+.sh-cta svg { width: 15px; height: 15px; fill: currentColor; }
+.sh-cta.ghost {
+  background: transparent; color: var(--bone-dim); border-color: var(--line); box-shadow: none;
+  min-height: 44px; font-size: .72rem; cursor: default;
+}
+.sh-cta.ghost:hover { transform: none; box-shadow: none; }
 
-/* La CTA del run va in fondo, a tutta larghezza: è l'unico comando della schermata. */
-.run .cta {
-  align-self: stretch; flex: none; min-height: 56px;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
+/* ---- adattamenti in larghezza ---- */
+@media (max-width: 1000px) {
+  .a-top { grid-template-columns: 1fr; }
+  .a-score b { font-size: 3rem; }
+}
+@media (max-width: 720px) {
+  .a-bot { grid-template-columns: 1fr; }
+  .a-score b { font-size: 2.5rem; }
+  .a-scoreline { grid-template-columns: 1fr; text-align: center; }
+  .a-team.right { align-items: center; text-align: center; }
+  .a-team.mine { align-items: center; }
+  .sh-speed { margin-left: 0; }
+  .a-lineup { gap: 5px; }
+  .sh-face { min-height: 66px; }
 }
 
 /* =================== ESITO =================== */

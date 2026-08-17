@@ -1,5 +1,5 @@
 import { canPlay } from "../../game/roster.js";
-import { buildHistoricalQuintets } from "../../game/opponents.js";
+import { buildHistoricalRose } from "../../game/opponents.js";
 
 export function topFive(cards) {
   return [...cards].sort((a, b) => b.ovr - a.ovr).slice(0, 5);
@@ -41,6 +41,8 @@ export function spinRoster(cardsByKey, freeRoles, filtro = {}, rng = Math.random
   return { key, cards: topFive(cardsByKey[key]), fallback };
 }
 
+// Gli avversari: una rosa da 10 per squadra-stagione, non più una top-5. Le
+// squadre con meno di dieci carte restano fuori dal pool (vedi opponents.js).
 export function opponentPool(cardsByKey, k) {
-  return buildHistoricalQuintets(cardsByKey, k);
+  return buildHistoricalRose(cardsByKey, k);
 }
