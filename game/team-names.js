@@ -1,7 +1,10 @@
-// Nomi per esteso delle franchigie - SOLO presentazione, come team-colors.js.
-// Le carte del motore portano solo `team_abbr` ("MIA"), che in tabella va bene
-// ma a schermo grande è muto: "Miami Heat 2014-15" dice a chi stai giocando
-// contro, "MIA" no. Nessun impatto sul gioco.
+// Nomi per esteso delle franchigie: sigla -> "Miami Heat".
+//
+// Sta in game/ e non fra i file di presentazione perché la cronaca la scrive il
+// motore (`partita.js` riceve `nome` e lo mette nel testo), quindi il nome deve
+// essere disponibile qui dentro. Resta comunque un fatto di sola lettura: la
+// sigla continua a essere l'IDENTITÀ dell'avversario (`chiaveAvversario`,
+// storia, colori), il nome per esteso è solo come lo si legge a schermo.
 export const TEAM_NAMES = {
   ATL: "Atlanta Hawks",
   BKN: "Brooklyn Nets",

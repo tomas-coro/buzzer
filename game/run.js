@@ -23,6 +23,7 @@ import { DIFFICULTIES } from "./difficulty.js";
 import { simulaPartita, rngSeed } from "./partita.js";
 import { boxScorePartita } from "./boxscore.js";
 import { playByPlay } from "./playbyplay.js";
+import { teamName } from "./team-names.js";
 
 // La rotazione dell'avversario storico. Neutra come il suo ritmo, e per lo
 // stesso motivo: non sappiamo chi allenava quella squadra in quella stagione,
@@ -146,7 +147,10 @@ export function partitaRound(state) {
       ritmo: state.ritmo ?? 0,
     },
     ospite: {
-      nome: state.avversario.team,
+      // Il nome per esteso, non la sigla: la cronaca è un testo da leggere, e
+      // "Miami Heat avanti di 6" dice a chi stai giocando contro, "MIA" no.
+      // L'identità dell'avversario resta `team`: qui cambia solo come si legge.
+      nome: teamName(state.avversario.team),
       reparti: state.avversario.voto.reparti,
       ritmo: 0,
     },
@@ -210,7 +214,7 @@ export function playByPlayRound(
       reparti: state.voto.reparti,
     },
     ospite: {
-      nome: state.avversario.team,
+      nome: teamName(state.avversario.team),
       giocatori: giocatoriConMinuti(state.avversario.rosa, ROTAZIONE_AVVERSARIO),
       reparti: state.avversario.voto.reparti,
     },

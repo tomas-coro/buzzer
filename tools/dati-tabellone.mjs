@@ -5,7 +5,7 @@ import { CARDS_BY_TEAM_SEASON } from "../prototype/imbattuto/cards.js";
 import { pickCoaches } from "../prototype/imbattuto/coaches.js";
 import { opponentPool, spinRoster } from "../prototype/imbattuto/pool.js";
 import { toDisplayOvr } from "../prototype/imbattuto/display.js";
-import { teamName } from "../prototype/imbattuto/team-names.js";
+import { teamName } from "../game/team-names.js";
 import { ROLES, canPlay } from "../game/roster.js";
 import { SLOTS, slotLibero, minutiRosa } from "../game/rosa.js";
 import { votoCarta } from "../game/rating.js";

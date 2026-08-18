@@ -603,11 +603,6 @@ const nomeMio = () => state.squadra;
 // L'avversaria ha due nomi: per esteso dove c'è spazio ("Miami Heat"), sigla
 // nelle colonne strette dove un nome intero spaccherebbe la tabella.
 const nomeAvv = () => P().avvNome || P().avvSigla;
-const perEsteso = (t) => {
-  const g = P();
-  if (!g.avvNome || !g.avvSigla) return t;
-  return t.replace(new RegExp("\\b" + g.avvSigla + "\\b", "g"), g.avvNome);
-};
 const avvCompleto = () => nomeAvv() + " " + (P().avvAnno || "");
 
 // Le azioni del livello scelto, come INDICI dentro l'elenco completo: così
@@ -1664,7 +1659,7 @@ function vistaTabellino(root) {
   const cr = el("ul", "t-cronaca");
   g.cronaca.forEach((c) => {
     const li = el("li");
-    app(li, el("b", null, c.quarto), el("span", null, perEsteso(c.testo)));
+    app(li, el("b", null, c.quarto), el("span", null, c.testo));
     cr.appendChild(li);
   });
   alto.appendChild(cr);

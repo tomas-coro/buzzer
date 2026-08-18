@@ -525,8 +525,13 @@ nome nasce in `prototype/imbattuto/pool.js`, non nel motore.
 
 1. Porting nell'app: `app.js`, `screens/draft.js` e `screens/run.js` usano ancora
    cinque slot e `state.quintetto`, quindi oggi sono rotti contro il motore.
-2. Nome squadra per esteso alla fonte (`pool.js`), così la cronaca del motore
-   non ha bisogno della sostituzione a schermo.
+2. ~~Nome squadra per esteso alla fonte~~ - FATTO (2026-08-18). `team-names.js`
+   è passato da `prototype/imbattuto/` a `game/`: la cronaca la scrive il motore,
+   quindi il nome deve stare dove sta `partita.js`. `run.js` passa ora
+   `teamName(state.avversario.team)` come `nome` dell'ospite in `partitaRound` e
+   nel play-by-play. La sigla resta l'IDENTITÀ (`chiaveAvversario`, storia,
+   colori): cambia solo come si legge. Nel mockup 78 il rattoppo `perEsteso()`
+   è stato tolto, il testo arriva già giusto dai dati.
 
 ### G5 - cambi e minutaggi decisi da chi gioca - DA DECIDERE
 
