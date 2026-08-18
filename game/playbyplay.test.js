@@ -425,6 +425,55 @@ test("un livello che non esiste è un errore, non un log vuoto", () => {
   assert.throws(() => log(pbp.azioni, "verboso"), /livello inesistente/);
 });
 
+test("il comprimario porta il suo indice, non solo il cognome", () => {
+  const { pbp, casa, ospite } = partitaCompleta(31);
+  const rose = { casa: casa.giocatori, ospite: ospite.giocatori };
+  // L'assist sta nella rosa di chi segna, tutto il resto in quella avversaria:
+  // chi ruba, chi stoppa e chi commette il fallo giocano dall'altra parte.
+  const dove = { canestro: (l) => l, recupero: altro, stoppata: altro, liberi: altro };
+  let visti = 0;
+  for (const a of pbp.azioni) {
+    if (!a.chi2) continue;
+    assert.notEqual(a.chi2Idx, null, `${a.tipo}: chi2 senza indice`);
+    const lato = dove[a.tipo](a.lato);
+    const g = rose[lato][a.chi2Idx];
+    assert.ok(g, `${a.tipo}: indice ${a.chi2Idx} fuori dalla rosa ${lato}`);
+    assert.equal(cognome(g.name ?? g.nome), a.chi2);
+    visti++;
+  }
+  assert.ok(visti > 20, `troppi pochi comprimari con indice: ${visti}`);
+});
+
+function altro(lato) { return lato === "casa" ? "ospite" : "casa"; }
+
+test("due giocatori con lo stesso cognome restano distinti nelle azioni", () => {
+  // Il caso vero: due Harden nella stessa rosa. Senza indice, chi legge il log
+  // per cognome darebbe tutti gli assist di uno all'altro.
+  const rosaCasa = rosaFinta("Casa");
+  const rosaOspite = rosaFinta("Ospite");
+  const casa = {
+    nome: "Casa", giocatori: giocatori(rosaCasa).map((g) => ({ ...g, name: "James Harden" })),
+    reparti: repartiRosa(rosaCasa), ritmo: 0,
+  };
+  const ospite = {
+    nome: "Ospite", giocatori: giocatori(rosaOspite), reparti: repartiRosa(rosaOspite), ritmo: 0,
+  };
+  const partita = simulaPartita({ casa, ospite, rng: rngSeed(9) });
+  const box = boxScorePartita({
+    partita,
+    casa: { giocatori: casa.giocatori, reparti: casa.reparti },
+    ospite: { giocatori: ospite.giocatori, reparti: ospite.reparti },
+    rng: rngSeed(20),
+  });
+  const pbp = playByPlay({ partita, box, casa, ospite, rng: rngSeed(32) });
+  const assist = pbp.azioni.filter((a) => a.tipo === "canestro" && a.chi2);
+  assert.ok(assist.length > 5, "servono assist per provare qualcosa");
+  // Tutti si chiamano Harden, ma gli indici devono essere più di uno e non
+  // devono mai coincidere con chi ha segnato.
+  assert.ok(new Set(assist.map((a) => a.chi2Idx)).size > 1);
+  for (const a of assist) assert.notEqual(a.chi2Idx, a.chiIdx);
+});
+
 // --- validazione ------------------------------------------------------------
 
 test("senza partita, box score o rng l'errore dice cosa manca", () => {

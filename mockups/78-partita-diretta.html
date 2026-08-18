@@ -1,0 +1,1849 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>78 - La partita azione per azione · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   78 - LA PARTITA AZIONE PER AZIONE.
+   Segue il 77, che confrontava tre regie e faceva scorrere la partita un QUARTO
+   alla volta. Qui la regia è decisa (A · Cruscotto) e la partita scorre per
+   AZIONI: 336 in tutto, ~105 di quelle che raccontano davvero.
+
+   LE TRE SCHERMATE
+   1. Prima del via - chi scende in campo, chi c'è di fronte, cosa dice il coach.
+   2. Diretta      - il log che scorre, il punteggio, il tabellino che si riempie.
+   3. Tabellino    - cosa resta a fine partita, con le colonne di tiro.
+
+   COME SI TENGONO INSIEME I NUMERI (la regola che conta)
+   Il motore è il padrone. Le colonne PT RIMB AST RUB PP STP valgono, per i
+   quarti già finiti, esattamente quello che dice `game/boxscore.js`; dentro il
+   quarto in corso si accumulano dalle azioni. Così il tabellino è vivo mentre
+   la partita gira ed è ESATTO a ogni fine quarto. Le colonne di tiro (TIRI, 3PT,
+   TL) nascono solo dalle azioni, che è l'unico posto dove esistono.
+
+   DUE COSE CHE IL LOG NON PUÒ DIRE, ed è giusto sapere quali sono:
+   - un assist ha bisogno di un canestro a cui appoggiarsi. Se in un segmento
+     gli assist sono più dei canestri, quelli che avanzano restano nel box score
+     senza una riga di cronaca (sta scritto in game/playbyplay.js).
+   - il log dà un nome solo ai falli che mandano in lunetta. Gli altri esistono
+     nel motore ma non hanno una riga, quindi la colonna FALLI in diretta conta
+     meno di quelli veri: nel tabellino finale si legge il numero del motore.
+   Il mockup lo dichiara a schermo invece di far finta di niente.
+
+   I DATI SONO VERI: 78-partita-data.js esce da `tools/dati-tabellone.mjs
+   --azioni`, che gira il motore intero (draft, coach, partita, box score, punto
+   a punto). Non c'è un numero scritto a mano.
+
+   Prefissi: `mk-` barra del mockup (non fa parte del design) · `sh-` scocca
+   condivisa col 77 · `v-` prima del via · `d-` diretta · `t-` tabellino.
+   ========================================================================== */
+:root{
+  --ink:#15163a; --ink-2:#1d1e4a; --ink-3:#2a2a63; --line:#2c2a63;
+  --bone:#f4eee0; --bone-dim:#8a8bc0;
+  --brass:#ff5b1e; --brass-deep:#c2480c; --yellow:#ffcf33;
+  --green:#5ccf8e; --red:#ff5038;
+  --deep:#0d0e29; --near-black:#0a0a18;
+  --arcade:"Bungee", system-ui, sans-serif;
+  --display:"Bricolage Grotesque", system-ui, sans-serif;
+  --led:"Doto", ui-monospace, monospace;
+  --body:"Hanken Grotesk", system-ui, sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-out-quint:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:#07071a;color:var(--bone);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;text-wrap:pretty}
+button{font:inherit;color:inherit}
+
+/* ═══════════ barra di controllo del mockup (non fa parte del design) ═══════ */
+.mkbar{position:sticky;top:0;z-index:40;display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+  padding:11px 18px;background:#0c0d24;border-bottom:1px solid var(--line)}
+.mk-group{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.mk-lbl{font-weight:800;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.mk-chip{font-family:var(--body);font-weight:800;font-size:.66rem;color:var(--bone-dim);
+  background:#141539;border:1px solid var(--line);border-radius:999px;padding:8px 14px;min-height:36px;cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s}
+.mk-chip:hover{color:var(--bone);border-color:var(--brass-deep)}
+.mk-chip[aria-pressed="true"]{color:#0c0d22;background:var(--yellow);border-color:var(--yellow)}
+.mk-chip:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.mk-check{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:.62rem;color:var(--bone-dim)}
+.mk-check b{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+  border:1px solid rgba(92,207,142,.45);background:rgba(92,207,142,.1);color:var(--green);
+  font-weight:800;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase}
+.mk-check b.ko{border-color:rgba(255,80,56,.5);background:rgba(255,80,56,.12);color:var(--red)}
+.mk-head{padding:18px 24px 0;max-width:1400px;margin:0 auto}
+.mk-head h2{margin:0;font-family:var(--arcade);font-size:.95rem;color:var(--yellow);text-wrap:balance}
+.mk-head p{margin:8px 0 0;max-width:78ch;font-size:.79rem;line-height:1.6;color:var(--bone-dim)}
+.mk-head p b{color:var(--bone)}
+
+/* ═══════════ scocca condivisa col 77 ═══════════ */
+.stage{max-width:1400px;margin:0 auto;padding:14px 24px 56px}
+.sh-screen{position:relative;border-radius:22px;border:1px solid var(--line);overflow:hidden;
+  height:clamp(700px, calc(100vh - 210px), 1000px);display:flex;flex-direction:column;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,.045) 1px, transparent 1.6px) 0 0/14px 14px,
+    radial-gradient(120% 70% at 50% 0%, #232463 0, var(--ink) 46%, var(--deep) 100%);
+  box-shadow:0 40px 90px -40px rgba(0,0,0,.9)}
+
+.sh-hd{flex:none;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:13px 20px;border-bottom:1px solid var(--line);background:rgba(10,10,26,.4)}
+.sh-wm{font-family:var(--arcade);font-size:.95rem;line-height:1;color:var(--yellow)}
+.sh-wm b{color:var(--brass)}
+.sh-pill{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+  background:rgba(255,91,30,.12);border:1px solid var(--line);
+  font-family:var(--arcade);font-size:.53rem;letter-spacing:.04em;text-transform:uppercase;color:var(--bone)}
+.sh-pill b{color:var(--yellow)}
+
+.sh-streak{display:flex;align-items:center;gap:9px}
+.sh-streak .lab{font-weight:800;font-size:.5rem;letter-spacing:.19em;text-transform:uppercase;color:var(--brass);white-space:nowrap}
+.sh-ticks{display:flex;gap:2.5px}
+.sh-ticks i{display:block;width:9px;height:9px;border-radius:2px;background:#23244f;border:1px solid #2f3068}
+.sh-ticks i.on{background:linear-gradient(180deg,var(--yellow),var(--brass));border-color:var(--yellow)}
+.sh-ticks i.next{border-color:var(--yellow);background:#2b2c63}
+.sh-streak .num{font-family:var(--led);font-weight:900;font-size:.82rem;color:var(--yellow);white-space:nowrap}
+.sh-streak .num i{font-style:normal;color:var(--bone-dim)}
+
+/* segmentato: velocità, livello del log, colonne del tabellino */
+.sh-seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#101132}
+.sh-seg button{border:0;background:transparent;color:var(--bone-dim);cursor:pointer;
+  font-weight:800;font-size:.6rem;letter-spacing:.06em;padding:0 11px;height:26px;
+  border-right:1px solid var(--line);transition:background .15s,color .15s;white-space:nowrap}
+.sh-seg button:last-child{border-right:0}
+.sh-seg button:hover{color:var(--bone);background:#181a45}
+.sh-seg button[aria-pressed="true"]{background:var(--yellow);color:#0c0d22}
+.sh-seg button:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+.sh-ctrl{display:flex;align-items:center;gap:8px}
+.sh-ctrl>span{font-weight:800;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dim);
+  white-space:nowrap}
+.sh-ctrl.push{margin-left:auto}
+
+.sh-body{flex:1;min-height:0;padding:16px 20px 18px;display:flex;flex-direction:column;gap:12px}
+
+.sh-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;flex:none;
+  font-family:var(--arcade);font-size:.92rem;letter-spacing:.03em;text-transform:uppercase;
+  color:var(--near-black);background:var(--yellow);border:2.5px solid var(--near-black);border-radius:14px;
+  box-shadow:5px 5px 0 var(--near-black);cursor:pointer;
+  transition:transform .1s var(--ease),box-shadow .1s var(--ease),background .2s,color .2s}
+.sh-cta:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--near-black)}
+.sh-cta:active{transform:translate(4px,4px);box-shadow:1px 1px 0 var(--near-black)}
+.sh-cta:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
+.sh-cta.ghost{background:transparent;color:var(--bone);border-color:var(--line);box-shadow:none;min-height:40px;
+  font-size:.66rem;width:auto;padding:0 16px}
+.sh-cta.ghost:hover{border-color:var(--yellow);color:var(--yellow);transform:none;box-shadow:none}
+
+.sh-panel{border:1px solid var(--line);border-radius:13px;background:rgba(10,10,26,.42);padding:13px 15px;
+  display:flex;flex-direction:column;gap:11px;min-width:0}
+.sh-cap{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex:none;
+  font-weight:800;font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dim)}
+.sh-cap b{color:var(--brass);font-weight:800;white-space:nowrap}
+
+.sh-face{position:relative;border-radius:8px;overflow:hidden;
+  background:linear-gradient(158deg,var(--tc1,#3a2d5e) 0,var(--tc2,#211636) 100%)}
+.sh-face::before{content:"";position:absolute;inset:0;opacity:.5;
+  background:radial-gradient(60% 45% at 50% 12%,rgba(255,255,255,.16),transparent 70%),
+    repeating-linear-gradient(115deg,rgba(0,0,0,.09) 0 2px,transparent 2px 7px)}
+.sh-face .ini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--arcade);color:rgba(255,255,255,.94);text-shadow:0 2px 0 rgba(0,0,0,.35)}
+
+.sh-ratings{display:flex;align-items:center;gap:9px}
+.sh-rat{display:flex;align-items:baseline;gap:4px}
+.sh-rat span{font-weight:800;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+.sh-rat b{font-family:var(--led);font-weight:900;font-size:.98rem;line-height:1;color:var(--bone)}
+.sh-rat.hero b{font-size:1.42rem;color:var(--yellow)}
+.sh-rat.hero span{color:var(--brass)}
+
+/* ═══════════ tabella box score ═══════════ */
+.sh-box{width:100%;border-collapse:collapse;font-size:.74rem}
+.sh-box th{font-weight:800;font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim);
+  padding:0 0 6px;text-align:right;white-space:nowrap}
+.sh-box th:first-child{text-align:left}
+.sh-box td{padding:3px 0;border-top:1px solid rgba(44,42,99,.7);text-align:right;
+  font-family:var(--led);font-weight:700;font-size:.82rem;color:var(--bone);font-variant-numeric:tabular-nums}
+.sh-box td:first-child{text-align:left;font-family:var(--body);font-weight:700;font-size:.74rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:0;width:38%}
+.sh-box td.pt{color:var(--bone);font-size:.95rem}
+.sh-box tr.top td.pt{color:var(--yellow)}
+.sh-box tr.top td:first-child{color:var(--yellow)}
+.sh-box tr.panca td{border-top:1px dashed rgba(122,124,190,.45)}
+.sh-box tr.fuori td:first-child{color:#6b6da8}
+.sh-box .ruolo{display:inline-block;min-width:22px;margin-right:7px;font-family:var(--led);font-size:.6rem;
+  color:var(--brass);letter-spacing:.04em}
+.sh-box td.zero{color:#4d4f86}
+.sh-box td.frac{font-size:.76rem}
+.sh-box tfoot td{border-top:1.5px solid var(--line);color:var(--bone-dim);font-size:.76rem;padding-top:5px}
+.sh-box tfoot td:first-child{font-family:var(--body);font-weight:800;font-size:.54rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--bone-dim)}
+
+.flash{animation:flash .5s var(--ease) both}
+@keyframes flash{0%{color:#fff;text-shadow:0 0 12px var(--yellow)}100%{}}
+
+/* ═══════════ duello dei reparti ═══════════ */
+.sh-duel{display:flex;flex-direction:column;gap:7px}
+.sh-duel .r{display:grid;grid-template-columns:1fr 104px 1fr;gap:10px;align-items:center}
+.sh-duel .bar{position:relative;height:9px;border-radius:3px;background:#191a3f;overflow:hidden;flex:1}
+.sh-duel .bar i{position:absolute;inset:0 auto 0 0;display:block;border-radius:3px}
+.sh-duel .sx .bar{transform:scaleX(-1)}
+.sh-duel .sx .bar i{background:linear-gradient(90deg,var(--brass),var(--yellow))}
+.sh-duel .dx .bar i{background:linear-gradient(90deg,#4a4c92,#6f72c9)}
+.sh-duel .lab{text-align:center;font-weight:800;font-size:.47rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--bone-dim);white-space:nowrap}
+.sh-duel .side{display:flex;align-items:center;gap:7px;min-width:0}
+.sh-duel .sx{flex-direction:row-reverse}
+.sh-duel .val{font-family:var(--led);font-weight:900;font-size:.72rem;color:var(--bone-dim);
+  min-width:20px;text-align:center}
+.sh-duel .val.win{color:var(--yellow)}
+.sh-duel .head{display:flex;justify-content:space-between;font-weight:800;font-size:.48rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim);margin-bottom:1px}
+
+/* ═══════════ punteggio, margine, quarti ═══════════ */
+.d-scoreline{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center}
+.d-team{display:flex;flex-direction:column;gap:6px;min-width:0}
+.d-team.right{align-items:flex-end;text-align:right}
+.d-team .nm{font-family:var(--arcade);font-size:.86rem;line-height:1.15;color:var(--bone);
+  overflow:hidden;max-width:100%;text-wrap:balance;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.d-team.mine .nm{color:var(--yellow)}
+.d-team .sub{font-weight:700;font-size:.58rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim)}
+.d-mid{display:flex;flex-direction:column;align-items:center;gap:5px}
+.d-score{display:flex;align-items:center;gap:12px;justify-content:center}
+.d-score b{font-family:var(--led);font-weight:900;font-size:3.4rem;line-height:.9;color:var(--bone);
+  font-variant-numeric:tabular-nums}
+.d-score b.lead{color:var(--yellow)}
+.d-score i{font-family:var(--led);font-style:normal;font-size:1.5rem;color:var(--bone-dim)}
+.d-clock{display:flex;align-items:center;gap:10px}
+.d-margin{padding:3px 12px;border-radius:999px;border:1px solid var(--line);
+  font-family:var(--led);font-weight:900;font-size:.74rem;letter-spacing:.04em;background:#101132;color:var(--bone-dim)}
+.d-margin.pos{color:var(--green);border-color:rgba(92,207,142,.45)}
+.d-margin.neg{color:var(--red);border-color:rgba(255,80,56,.45)}
+/* L'orologio vero della partita: è il dato nuovo del punto a punto, quindi si
+   vede accanto al punteggio e non nascosto in una riga di log. */
+.d-time{padding:3px 12px;border-radius:999px;border:1px solid var(--line);background:#101132;
+  font-family:var(--led);font-weight:900;font-size:.74rem;color:var(--bone)}
+.d-time span{color:var(--bone-dim);font-size:.62rem;margin-left:6px}
+
+.d-quarti{width:100%;border-collapse:collapse}
+.d-quarti th{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim);
+  padding:0 0 5px;text-align:center}
+.d-quarti th:first-child{text-align:left}
+.d-quarti th.live{color:var(--yellow)}
+.d-quarti td{padding:0;text-align:center}
+.d-quarti td:first-child{text-align:left;font-family:var(--body);font-weight:800;font-size:.56rem;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim);width:72px}
+.d-quarti .cell{display:flex;align-items:center;justify-content:center;height:32px;margin:2px 3px;border-radius:7px;
+  border:1px solid var(--line);background:#101132;
+  font-family:var(--led);font-weight:900;font-size:.95rem;color:var(--bone)}
+.d-quarti .cell.off{color:#3f4179}
+.d-quarti .cell.live{border-color:var(--yellow);box-shadow:0 0 0 1px rgba(255,207,51,.3) inset}
+
+/* ═══════════ DIRETTA: due colonne, il log è alto quanto lo schermo ═══════════ */
+.d-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(330px,.7fr);gap:12px;flex:1;min-height:0}
+.d-left{display:flex;flex-direction:column;gap:12px;min-height:0}
+.d-boxes{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0}
+.d-boxes .sh-panel{overflow:auto}
+.d-log{min-height:0;gap:9px}
+.d-log-list{list-style:none;margin:0;padding:0 2px 0 0;overflow-y:auto;flex:1;min-height:0;
+  display:flex;flex-direction:column;gap:5px;scrollbar-width:thin;scrollbar-color:#33356f transparent}
+.d-log-list::-webkit-scrollbar{width:7px}
+.d-log-list::-webkit-scrollbar-thumb{background:#33356f;border-radius:99px}
+.d-row{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:9px;align-items:baseline;
+  padding:6px 9px;border-radius:8px;background:rgba(10,10,26,.5);border:1px solid var(--line);
+  border-left:3px solid #303263}
+.d-row .t{font-family:var(--led);font-weight:900;font-size:.62rem;color:var(--bone-dim);letter-spacing:.02em}
+.d-row .x{font-size:.75rem;line-height:1.4;color:var(--bone);min-width:0}
+.d-row .s{font-family:var(--led);font-weight:900;font-size:.7rem;color:var(--bone-dim);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.d-row.mia{border-left-color:var(--green)}
+.d-row.mia .s{color:var(--green)}
+.d-row.loro{border-left-color:var(--red)}
+.d-row.loro .s{color:var(--red)}
+.d-row.nuova{animation:logIn .4s var(--ease-out-quint) both}
+.d-row .tag{display:inline-block;margin-left:7px;padding:1px 6px;border-radius:4px;vertical-align:1px;
+  font-family:var(--body);font-weight:800;font-size:.5rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--yellow);background:rgba(255,207,51,.13);border:1px solid rgba(255,207,51,.35)}
+.d-row .tag.stop{color:#9fa2e8;background:rgba(111,114,201,.14);border-color:rgba(111,114,201,.4)}
+.d-row .tag.cambio{color:var(--bone-dim);background:transparent;border-color:var(--line)}
+/* separatore di quarto dentro il log: senza, 105 righe sono un muro unico */
+.d-sep{display:flex;align-items:center;gap:10px;margin:4px 0 1px;
+  font-weight:800;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+.d-sep::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+@keyframes logIn{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:none}}
+
+.d-foot{flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.d-foot .info{font-size:.62rem;color:var(--bone-dim);margin-left:auto;text-align:right}
+.d-foot .info b{color:var(--bone);font-family:var(--led);font-weight:900}
+
+.sh-empty{display:flex;align-items:center;justify-content:center;text-align:center;flex:1;min-height:90px;
+  padding:16px;border:1px dashed var(--line);border-radius:11px;
+  font-size:.72rem;line-height:1.5;color:var(--bone-dim);text-wrap:balance}
+.sh-verdict{flex:none;display:flex;align-items:center;justify-content:center;gap:11px;min-height:44px;
+  border-radius:11px;border:1px solid var(--line);background:rgba(10,10,26,.5);
+  font-family:var(--arcade);font-size:.72rem;letter-spacing:.03em;text-transform:uppercase;text-align:center;
+  animation:logIn .4s var(--ease-out-quint) both}
+.sh-verdict.win{color:var(--green);border-color:rgba(92,207,142,.45);background:rgba(92,207,142,.09)}
+.sh-verdict.lose{color:var(--red);border-color:rgba(255,80,56,.45);background:rgba(255,80,56,.09)}
+.sh-verdict em{font-style:normal;font-family:var(--led);color:var(--bone)}
+.sh-nota{margin:0;font-size:.66rem;line-height:1.5;color:var(--bone-dim)}
+.sh-nota b{color:var(--bone);font-weight:800}
+
+.d-boxbar{flex:none;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.d-boxbar-lab{font-weight:800;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dim)}
+.d-boxbar .sh-nota{flex:1;min-width:220px;text-align:right}
+
+.d-leg{padding:13px 14px;border:1px dashed var(--line);border-radius:11px;background:rgba(10,10,26,.35)}
+.d-leg h4{margin:0 0 10px;font-family:var(--arcade);font-size:.6rem;letter-spacing:.03em;color:var(--yellow)}
+.d-leg ul{margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.d-leg li{list-style:none;display:flex;flex-direction:column;gap:2px}
+.d-leg li b{font-weight:800;font-size:.55rem;letter-spacing:.13em;text-transform:uppercase;color:var(--brass)}
+.d-leg li span{font-size:.72rem;line-height:1.45;color:var(--bone-dim)}
+.d-leg p{margin:12px 0 0;padding-top:11px;border-top:1px solid rgba(44,42,99,.7);
+  font-size:.7rem;line-height:1.5;color:#7476b4}
+
+/* ═══ barra del tempo: in pausa si torna indietro e tutto si ricalcola ═══ */
+.d-scrub{flex:none;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.d-scrub .at{display:flex;align-items:baseline;gap:7px;min-width:118px;
+  font-family:var(--led);font-weight:900;font-size:.74rem;color:var(--bone);font-variant-numeric:tabular-nums}
+.d-scrub .at i{font-style:normal;font-family:var(--body);font-weight:800;font-size:.5rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--brass)}
+.d-scrub .track{position:relative;flex:1;min-width:190px;display:flex;align-items:center;height:24px}
+.d-scrub .ticks{position:absolute;inset:9px 8px auto;height:6px;pointer-events:none}
+.d-scrub .ticks i{position:absolute;top:-2px;width:1px;height:10px;background:#3d3f7d}
+.d-scrub input[type=range]{width:100%;height:24px;margin:0;background:transparent;cursor:pointer;
+  -webkit-appearance:none;appearance:none}
+.d-scrub input[type=range]:focus-visible{outline:2px solid var(--brass);outline-offset:3px;border-radius:99px}
+.d-scrub input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;
+  background:linear-gradient(90deg,var(--brass) 0 var(--pct,0%),#22244f var(--pct,0%) 100%)}
+.d-scrub input[type=range]::-moz-range-track{height:6px;border-radius:99px;
+  background:linear-gradient(90deg,var(--brass) 0 var(--pct,0%),#22244f var(--pct,0%) 100%)}
+.d-scrub input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;height:17px;margin-top:-6px;
+  border-radius:50%;background:var(--yellow);border:2px solid var(--near-black);box-shadow:0 0 0 1px var(--yellow)}
+.d-scrub input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;
+  background:var(--yellow);border:2px solid var(--near-black);box-shadow:0 0 0 1px var(--yellow)}
+.d-jump{display:flex;gap:4px}
+.d-jump button{min-width:30px;height:26px;padding:0 7px;border-radius:7px;border:1px solid var(--line);
+  background:#101132;color:var(--bone-dim);font-family:var(--led);font-weight:900;font-size:.62rem;cursor:pointer;
+  transition:color .15s,border-color .15s}
+.d-jump button:hover{color:var(--yellow);border-color:var(--brass-deep)}
+.d-jump button:disabled{opacity:.35;cursor:default}
+.d-jump button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+/* ═══ colonna destra: log, analisi, scheda del giocatore ═══ */
+.d-tabs{flex:none;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.d-tabs .push{margin-left:auto}
+.sh-box tr.clic{cursor:pointer}
+.sh-box tr.clic:hover td{background:rgba(255,207,51,.08)}
+.sh-box tr.clic:hover td:first-child{color:var(--yellow)}
+.sh-box tr.aperta td{background:rgba(255,91,30,.14)}
+.sh-box tr.aperta td:first-child{color:var(--brass)}
+
+.d-scroll{overflow-y:auto;flex:1;min-height:0;padding-right:3px;
+  display:flex;flex-direction:column;gap:12px;
+  scrollbar-width:thin;scrollbar-color:#33356f transparent}
+.d-scroll::-webkit-scrollbar{width:7px}
+.d-scroll::-webkit-scrollbar-thumb{background:#33356f;border-radius:99px}
+
+.d-card-hd{flex:none;display:flex;align-items:center;gap:11px}
+.d-card-hd .sh-face{width:46px;height:46px;flex:none}
+.d-card-hd .sh-face .ini{font-size:.76rem}
+.d-card-hd .who{min-width:0;flex:1}
+.d-card-hd .who b{display:block;font-family:var(--display);font-weight:800;font-size:.95rem;color:var(--bone);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-card-hd .who span{display:block;margin-top:2px;font-size:.6rem;color:var(--bone-dim);letter-spacing:.04em}
+.d-card-hd .ovr{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:52px;height:46px;border-radius:9px;border:1px solid rgba(255,207,51,.4);background:rgba(255,207,51,.09)}
+.d-card-hd .ovr b{font-family:var(--led);font-weight:900;font-size:1.15rem;line-height:1;color:var(--yellow)}
+.d-card-hd .ovr span{font-weight:800;font-size:.44rem;letter-spacing:.16em;color:var(--brass)}
+
+.d-figures{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.d-fig{display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 4px;border-radius:9px;
+  border:1px solid var(--line);background:rgba(10,10,26,.5)}
+.d-fig b{font-family:var(--led);font-weight:900;font-size:1.05rem;line-height:1;color:var(--bone)}
+.d-fig span{font-weight:800;font-size:.46rem;letter-spacing:.13em;text-transform:uppercase;color:var(--bone-dim)}
+.d-fig.hero{border-color:rgba(255,207,51,.4);background:rgba(255,207,51,.09)}
+.d-fig.hero b{color:var(--yellow)}
+
+.d-rep{display:flex;flex-direction:column;gap:6px}
+.d-rep .r{display:grid;grid-template-columns:74px minmax(0,1fr) 26px;gap:9px;align-items:center}
+.d-rep .r span{font-weight:800;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;color:var(--bone-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-rep .bar{height:6px;border-radius:99px;background:#1b1c42;overflow:hidden}
+.d-rep .bar i{display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg,var(--brass-deep),var(--yellow))}
+.d-rep .r b{font-family:var(--led);font-weight:900;font-size:.72rem;color:var(--bone);text-align:right}
+
+.d-sub{flex:none;font-weight:800;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+.d-mini{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+
+/* ═══ analisi: margine, migliori, confronto ═══ */
+.d-spark{position:relative}
+.d-spark svg{display:block;width:100%;height:104px;overflow:visible}
+.d-spark .axis{font-family:var(--led);font-weight:900;font-size:.5rem;fill:#6b6da8}
+.d-spark .qlab{font-family:var(--body);font-weight:800;font-size:.44rem;letter-spacing:.14em;fill:#5c5e9c}
+.d-best{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+.d-best li{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:9px;align-items:center;
+  padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:rgba(10,10,26,.5);
+  border-left:3px solid #303263}
+.d-best li.mia{border-left-color:var(--green)}
+.d-best li.loro{border-left-color:var(--red)}
+.d-best .pos{font-family:var(--led);font-weight:900;font-size:.72rem;color:var(--brass)}
+.d-best .nm{min-width:0}
+.d-best .nm b{display:block;font-weight:800;font-size:.72rem;color:var(--bone);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-best .nm span{display:block;font-size:.56rem;color:var(--bone-dim);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-best .lin{font-family:var(--led);font-weight:900;font-size:.7rem;color:var(--bone);white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+.d-vs{display:flex;flex-direction:column;gap:7px}
+.d-vs .r{display:grid;grid-template-columns:38px minmax(0,1fr) 62px minmax(0,1fr) 38px;gap:7px;align-items:center}
+.d-vs .n{font-family:var(--led);font-weight:900;font-size:.74rem;color:var(--bone);font-variant-numeric:tabular-nums}
+.d-vs .n.sx{text-align:right}
+.d-vs .lab{text-align:center;font-weight:800;font-size:.46rem;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--bone-dim)}
+.d-vs .bar{height:7px;border-radius:99px;background:#1b1c42;overflow:hidden;display:flex}
+.d-vs .bar.sx{justify-content:flex-end}
+.d-vs .bar i{display:block;height:100%;border-radius:99px}
+.d-vs .bar.sx i{background:linear-gradient(270deg,var(--green),#2e7a52)}
+.d-vs .bar.dx i{background:linear-gradient(90deg,var(--red),#8d2618)}
+.d-vs .r.pari .n{color:var(--bone-dim)}
+
+/* ═══════════ PRIMA DEL VIA ═══════════ */
+.v-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:12px;flex:1;min-height:0}
+.v-left{display:flex;flex-direction:column;gap:12px;min-height:0}
+.v-left .sh-panel:last-child{flex:1;min-height:0}
+.v-lineup{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;flex:1;min-height:0}
+.v-card{display:flex;flex-direction:column;gap:5px;min-width:0}
+.v-card .sh-face{flex:1;min-height:120px;display:flex;flex-direction:column;justify-content:space-between;
+  padding:9px 10px}
+.v-card .sh-face .ini{font-size:2.6rem;color:rgba(255,255,255,.16);text-shadow:none}
+.v-card .hi,.v-card .lo{position:relative;z-index:1;display:flex;align-items:baseline;gap:6px}
+.v-card .hi .ru{font-family:var(--led);font-weight:900;font-size:.66rem;color:rgba(255,255,255,.75)}
+.v-card .hi .ov{margin-left:auto;font-family:var(--led);font-weight:900;font-size:1.5rem;line-height:1;
+  color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.v-card .lo{flex-direction:column;align-items:stretch;gap:1px}
+.v-card .lo .n{font-family:var(--display);font-weight:800;font-size:.86rem;line-height:1.1;color:#fff;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v-card .lo .t{font-weight:700;font-size:.54rem;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.7)}
+.v-card .lo .m{font-family:var(--led);font-weight:900;font-size:.6rem;color:rgba(255,255,255,.72)}
+/* i cinque reparti della carta: la stessa scala del duello, in miniatura */
+.v-rep{display:flex;flex-direction:column;gap:3px;flex:none}
+.v-rep .r{display:grid;grid-template-columns:22px 1fr 20px;gap:5px;align-items:center}
+.v-rep .k{font-weight:800;font-size:.45rem;letter-spacing:.08em;color:var(--bone-dim)}
+.v-rep .bar{height:5px;border-radius:3px;background:#191a3f;overflow:hidden}
+.v-rep .bar i{display:block;height:100%;border-radius:3px;
+  background:linear-gradient(90deg,var(--brass-deep),var(--yellow))}
+.v-rep .v{font-family:var(--led);font-weight:900;font-size:.58rem;color:var(--bone-dim);text-align:right}
+.v-panca{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;flex:none}
+.v-panca .r{display:flex;align-items:center;gap:7px;min-width:0;padding:6px 8px;border-radius:8px;
+  border:1px solid var(--line);background:rgba(10,10,26,.42)}
+.v-panca .ru{font-family:var(--led);font-size:.6rem;color:var(--brass)}
+.v-panca .nm{font-size:.63rem;font-weight:700;color:var(--bone-dim);min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v-panca .ov{margin-left:auto;font-family:var(--led);font-weight:900;font-size:.7rem;color:var(--bone)}
+.v-brief{display:flex;flex-direction:column;gap:8px}
+.v-brief .r{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding-bottom:8px;border-bottom:1px solid rgba(44,42,99,.7)}
+.v-brief .r span{font-weight:800;font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim)}
+.v-brief .r b{font-size:.8rem;color:var(--bone);text-align:right}
+.v-note{margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.v-note li{list-style:none;padding:9px 11px;border-radius:9px;border:1px solid var(--line);
+  border-left:3px solid var(--brass);background:rgba(10,10,26,.42);
+  font-size:.74rem;line-height:1.5;color:var(--bone-dim)}
+.v-note li b{color:var(--yellow);font-weight:800}
+.v-loro{display:flex;flex-direction:column;gap:5px}
+.v-loro .r{display:flex;align-items:center;gap:8px;min-width:0;padding:5px 9px;border-radius:8px;
+  border:1px solid var(--line);background:rgba(10,10,26,.42)}
+.v-loro .ru{font-family:var(--led);font-size:.6rem;color:var(--brass);min-width:20px}
+.v-loro .nm{font-size:.72rem;font-weight:700;color:var(--bone);min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v-loro .ov{margin-left:auto;font-family:var(--led);font-weight:900;font-size:.78rem;color:var(--bone-dim)}
+/* il bottone sta in fondo alla colonna: l'aria avanzata si distribuisce sopra */
+.sh-cta.giu{margin-top:auto}
+
+/* ═══════════ TABELLINO ═══════════ */
+.t-wrap{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;overflow-y:auto;padding-right:2px;
+  scrollbar-width:thin;scrollbar-color:#33356f transparent}
+.t-wrap::-webkit-scrollbar{width:7px}
+.t-wrap::-webkit-scrollbar-thumb{background:#33356f;border-radius:99px}
+.t-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.62fr);gap:12px;flex:none}
+.t-mvp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+.t-mvp .sh-face{width:66px;height:66px;flex:none}
+.t-mvp .sh-face .ini{font-size:1rem}
+.t-mvp .who{min-width:0}
+.t-mvp .who .n{font-family:var(--arcade);font-size:.82rem;color:var(--yellow);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.t-mvp .who .s{margin-top:4px;font-weight:700;font-size:.6rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--bone-dim)}
+.t-mvp .who .line{margin-top:7px;font-family:var(--led);font-weight:900;font-size:.85rem;color:var(--bone)}
+.t-mvp .who .line i{font-style:normal;color:var(--bone-dim);font-size:.62rem;margin:0 10px 0 5px}
+.t-cronaca{margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.t-cronaca li{list-style:none;display:grid;grid-template-columns:88px minmax(0,1fr);gap:10px;
+  align-items:baseline;padding:6px 9px;border-radius:8px;background:rgba(10,10,26,.42);
+  border:1px solid var(--line);border-left:3px solid var(--brass-deep)}
+.t-cronaca li b{font-weight:800;font-size:.5rem;letter-spacing:.13em;text-transform:uppercase;color:var(--brass)}
+.t-cronaca li span{font-size:.73rem;line-height:1.4;color:var(--bone-dim)}
+.t-cifre{display:flex;flex-direction:column;gap:6px}
+.t-side .t-cifre{flex:1;justify-content:space-around}
+.t-cifre .r{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:baseline;
+  padding-bottom:6px;border-bottom:1px solid rgba(44,42,99,.7)}
+.t-cifre .r:last-child{border-bottom:0;padding-bottom:0}
+.t-cifre .k{font-weight:800;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+.t-cifre .a,.t-cifre .b{font-family:var(--led);font-weight:900;font-size:.78rem;color:var(--bone-dim);
+  font-variant-numeric:tabular-nums}
+.t-cifre .a{text-align:right;color:var(--yellow)}
+
+@media (max-width:1080px){
+  .d-grid,.v-grid,.t-top{grid-template-columns:minmax(0,1fr)}
+  .d-boxes{grid-template-columns:1fr}
+  .sh-screen{height:auto;min-height:0}
+  .d-log-list{max-height:420px}
+  .t-wrap{overflow:visible}
+}
+@media (max-width:720px){
+  .stage{padding:12px 14px 40px}
+  .v-lineup,.v-panca{grid-template-columns:repeat(2,1fr)}
+  /* In tre colonne il punteggio grande finiva SOPRA i nomi delle squadre.
+     Su telefono va sopra da solo, e le due squadre gli stanno sotto affiancate. */
+  .d-scoreline{grid-template-columns:1fr 1fr;grid-template-areas:"mid mid" "mine opp";gap:10px}
+  .d-mid{grid-area:mid}
+  .d-team{grid-area:mine}
+  .d-team.right{grid-area:opp}
+  .d-clock{flex-wrap:wrap;justify-content:center}
+  .d-score b{font-size:2.6rem}
+  .mk-check{margin-left:0;width:100%;justify-content:flex-start}
+  .mk-head p{font-size:.76rem}
+  /* Su telefono i segmentati devono restare toccabili: 26px sono da mouse. */
+  .sh-seg button{height:44px;padding:0 14px;font-size:.68rem}
+  .sh-cta.ghost{min-height:44px}
+  .sh-box td:first-child{width:44%}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+    transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<div class="mkbar">
+  <div class="mk-group">
+    <span class="mk-lbl">Schermata</span>
+    <button class="mk-chip" data-vista="V" aria-pressed="false">Prima del via</button>
+    <button class="mk-chip" data-vista="D" aria-pressed="true">Diretta</button>
+    <button class="mk-chip" data-vista="T" aria-pressed="false">Tabellino</button>
+  </div>
+  <div class="mk-group" id="mk-scenari"></div>
+  <div class="mk-check">Tabellino ricostruito dalle azioni <b id="mk-esito">controllo…</b></div>
+</div>
+
+<div class="mk-head">
+  <h2 id="mk-title">Diretta</h2>
+  <p id="mk-desc"></p>
+</div>
+
+<div class="stage"><div class="sh-screen" id="screen"></div></div>
+
+<script src="78-partita-data.js" charset="utf-8"></script>
+<script>
+/* ============================================================================
+   Motore del mockup. Non simula niente: srotola le azioni che il motore vero ha
+   già prodotto, una alla volta, alla velocità scelta.
+   ========================================================================== */
+"use strict";
+
+// La velocità si dichiara in DURATA DELLA PARTITA, non in millisecondi per
+// riga: con "Essenziale" le righe sono ~100 e con "Tutto" ~330, quindi un passo
+// fisso darebbe due partite lunghe il triplo l'una dell'altra. Così invece la
+// partita dura sempre quanto dice l'etichetta, e il ritmo si adatta.
+const DURATE = { lenta: 120, normale: 60, rapida: 20, salta: 0 };
+const DURATA_LABEL = { lenta: "Lenta", normale: "Normale", rapida: "Rapida", salta: "Salta" };
+const COLORI = ["#c8102e,#7a0a1c", "#1d428a,#0e2148", "#552583,#2c1245", "#007a33,#00381a",
+  "#ce1141,#7a0a26", "#e56020,#8a3512", "#00538c,#00304f", "#5d76a9,#2c3a54"];
+const DESC = {
+  V: "Prima del via: chi scende in campo, chi c'è di fronte, cosa cambia il coach. Le carte si vedono solo qui: al fischio d'inizio diventano le righe del tabellino.",
+  D: "La partita azione per azione. Il log scorre a sinistra il punteggio, a destra l'orologio vero del motore. Il tabellino si riempie mentre si gioca e a ogni fine quarto è esatto al numero.",
+  T: "Cosa resta a fine partita: il tabellino completo delle due squadre con le colonne di tiro, il migliore in campo e i quarti.",
+};
+const COL_BASE = [
+  { k: "pts", h: "PT", cls: "pt" }, { k: "reb", h: "RIMB" }, { k: "ast", h: "AST" },
+  { k: "stl", h: "RUB" }, { k: "tov", h: "PP" }, { k: "blk", h: "STP" },
+];
+const COL_TIRO = [
+  { k: "pts", h: "PT", cls: "pt" },
+  { f: ["fgm", "fga"], h: "TIRI" }, { f: ["tpm", "tpa"], h: "3PT" }, { f: ["ftm", "fta"], h: "TL" },
+  { k: "pf", h: "FALLI" },
+];
+
+const state = {
+  vista: "D", partita: 0, k: -1, playing: false,
+  velocita: "normale", livello: "essenziale", colonne: "base",
+  squadra: "Dinamo Sofà",
+  // Colonna destra della diretta: il log che scorre, l'analisi, oppure la
+  // scheda di un giocatore ({lato, i}) che vince sulle altre due finché è
+  // aperta. La scheda mette in pausa: si legge da fermi.
+  pannello: "log", scheda: null,
+};
+let timer = null;
+
+/* ---- aiutini ------------------------------------------------------------- */
+const P = () => window.PARTITE[state.partita];
+const el = (t, c, x) => { const n = document.createElement(t); if (c) n.className = c;
+  if (x != null) n.textContent = x; return n; };
+const app = (p, ...kids) => { kids.forEach((k) => k && p.appendChild(k)); return p; };
+const iniziali = (nome) => nome.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+const cognome = (nome) => { const p = nome.split(/\s+/); return p.length > 1 ? p.slice(1).join(" ") : nome; };
+const tinta = (i) => COLORI[i % COLORI.length].split(",");
+const altro = (lato) => (lato === "casa" ? "ospite" : "casa");
+const nomeMio = () => state.squadra;
+// L'avversaria ha due nomi: per esteso dove c'è spazio ("Miami Heat"), sigla
+// nelle colonne strette dove un nome intero spaccherebbe la tabella.
+const nomeAvv = () => P().avvNome || P().avvSigla;
+const perEsteso = (t) => {
+  const g = P();
+  if (!g.avvNome || !g.avvSigla) return t;
+  return t.replace(new RegExp("\\b" + g.avvSigla + "\\b", "g"), g.avvNome);
+};
+const avvCompleto = () => nomeAvv() + " " + (P().avvAnno || "");
+
+// Le azioni del livello scelto, come INDICI dentro l'elenco completo: così
+// cambiare livello a metà partita non fa saltare il punto in cui siamo.
+function visibili() {
+  const az = P().azioni;
+  const out = [];
+  for (let i = 0; i < az.length; i++) {
+    if (state.livello === "completo" || az[i].notevole) out.push(i);
+  }
+  return out;
+}
+const finita = () => { const v = visibili(); return state.k >= v[v.length - 1]; };
+const iniziata = () => state.k >= 0;
+
+/* ---- badge: le tre cose che si devono vedere da lontano -------------------
+   Sorpasso e parziale non stanno nell'azione: sono relazioni fra azioni, e si
+   calcolano una volta sola per partita al caricamento. */
+function preparaBadge(g) {
+  let testaPrima = 0, parziale = 0, latoParziale = null;
+  for (const a of g.azioni) {
+    if (a.punti > 0) {
+      if (latoParziale === a.lato) parziale += a.punti;
+      else { latoParziale = a.lato; parziale = a.punti; }
+    }
+    const testa = Math.sign(a.casa - a.ospite);
+    let tag = null;
+    if (a.punti > 0 && testa !== 0 && testa !== testaPrima) tag = { t: "Sorpasso", c: "" };
+    else if (a.punti > 0 && parziale >= 8) tag = { t: "Parziale " + parziale, c: "" };
+    else if (a.tipo === "canestro" && a.dettaglio === "t3") tag = { t: "Tripla", c: "" };
+    else if (a.tipo === "stoppata") tag = { t: "Stoppata", c: "stop" };
+    else if (a.tipo === "sostituzione") tag = { t: "Cambio", c: "cambio" };
+    a._tag = tag;
+    if (a.punti > 0) testaPrima = testa;
+  }
+}
+
+/* ---- il tabellino al momento `k` ------------------------------------------
+   Regola: i quarti già chiusi valgono quello che dice il box score del motore,
+   il quarto in corso si accumula dalle azioni. Così il numero è vivo durante il
+   quarto ed è esatto appena il quarto finisce. Le colonne di tiro e i falli
+   nascono solo qui, perché nel box score non esistono. */
+function tabellinoAl(k) {
+  const g = P();
+  const vuoto = () => ({ pts:0, reb:0, ast:0, stl:0, tov:0, blk:0, fgm:0, fga:0, tpm:0, tpa:0, ftm:0, fta:0, pf:0 });
+  const rose = { casa: g.mio, ospite: g.loro };
+  const corrente = { casa: g.mio.map(vuoto), ospite: g.loro.map(vuoto) };  // solo quarto in corso
+  const tiri = { casa: g.mio.map(vuoto), ospite: g.loro.map(vuoto) };      // tutta la partita
+  // Quanti quarti sono FINITI: se la prossima azione è del quarto dopo, questo
+  // è chiuso. Alla fine della partita lo sono tutti.
+  const qChiusi = k < 0 ? 0
+    : (k + 1 < g.azioni.length ? g.azioni[k + 1].q : g.quarti.length);
+
+  for (let i = 0; i <= k; i++) {
+    const a = g.azioni[i];
+    const primo = a.chiIdx !== null ? tiri[a.lato][a.chiIdx] : null;
+    const secondoLato = a.tipo === "canestro" ? a.lato : altro(a.lato);
+    const secondo = a.chi2Idx !== null && a.chi2Idx !== undefined ? tiri[secondoLato][a.chi2Idx] : null;
+    // Le stesse somme, ma tenute a parte per il quarto in corso.
+    const primoQ = a.q === qChiusi && a.chiIdx !== null ? corrente[a.lato][a.chiIdx] : null;
+    const secondoQ = a.q === qChiusi && secondo ? corrente[secondoLato][a.chi2Idx] : null;
+    const piu = (v, campo, n) => { if (v) v[campo] += n; };
+
+    switch (a.tipo) {
+      case "canestro":
+        piu(primo, "pts", a.punti); piu(primoQ, "pts", a.punti);
+        piu(primo, "fgm", 1); piu(primo, "fga", 1);
+        if (a.dettaglio === "t3") { piu(primo, "tpm", 1); piu(primo, "tpa", 1); }
+        piu(secondo, "ast", 1); piu(secondoQ, "ast", 1);
+        break;
+      case "liberi":
+        piu(primo, "pts", a.punti); piu(primoQ, "pts", a.punti);
+        piu(primo, "ftm", a.dettaglio.fatti); piu(primo, "fta", a.dettaglio.tentati);
+        piu(secondo, "pf", 1);
+        break;
+      case "errore":
+        piu(primo, "fga", 1);
+        if (a.dettaglio === "t3") piu(primo, "tpa", 1);
+        break;
+      case "stoppata":
+        piu(primo, "fga", 1);
+        if (a.dettaglio === "t3") piu(primo, "tpa", 1);
+        piu(secondo, "blk", 1); piu(secondoQ, "blk", 1);
+        break;
+      case "rimbalzo": piu(primo, "reb", 1); piu(primoQ, "reb", 1); break;
+      case "palla-persa": piu(primo, "tov", 1); piu(primoQ, "tov", 1); break;
+      case "recupero":
+        piu(primo, "tov", 1); piu(primoQ, "tov", 1);
+        piu(secondo, "stl", 1); piu(secondoQ, "stl", 1);
+        break;
+      case "sostituzione": break;
+      default: throw new Error("azione di tipo sconosciuto: " + a.tipo);
+    }
+  }
+
+  const out = {};
+  for (const lato of ["casa", "ospite"]) {
+    out[lato] = rose[lato].map((carta, i) => {
+      const r = { ...tiri[lato][i], carta };
+      for (const c of COL_BASE) {
+        let v = 0;
+        for (let q = 0; q < qChiusi; q++) v += g.box[lato][i].per[q][c.k];
+        r[c.k] = v + corrente[lato][i][c.k];
+      }
+      return r;
+    });
+  }
+  return out;
+}
+
+/* ---- driver: avanza di un'azione alla velocità scelta ---------------------- */
+function stop() { if (timer) { clearTimeout(timer); timer = null; } state.playing = false; }
+function passoMs() {
+  const n = visibili().length;
+  return n > 0 ? Math.max(40, (DURATE[state.velocita] * 1000) / n) : 0;
+}
+function via() {
+  if (finita()) return;
+  if (state.velocita === "salta") { const v = visibili(); state.k = v[v.length - 1]; stop(); render(); return; }
+  state.playing = true;
+  passo();
+}
+function passo() {
+  const v = visibili();
+  const prossimo = v.find((i) => i > state.k);
+  if (prossimo === undefined) { stop(); render(); return; }
+  state.k = prossimo;
+  render();
+  if (finita()) { stop(); return; }
+  // La velocità si rilegge a ogni passo: se premi Rapida a metà partita deve
+  // valere dall'azione dopo, non dalla partita dopo.
+  if (state.velocita === "salta") { state.k = v[v.length - 1]; stop(); render(); return; }
+  timer = setTimeout(passo, passoMs());
+}
+function riavvolgi() { stop(); state.k = -1; state.scheda = null; logCache = null; render(); }
+
+/* ---- pezzi condivisi ------------------------------------------------------ */
+function segmentato(valori, attuale, onPick) {
+  const seg = el("div", "sh-seg");
+  for (const [k, label] of valori) {
+    const b = el("button", null, label);
+    b.setAttribute("aria-pressed", String(attuale === k));
+    b.onclick = () => onPick(k);
+    seg.appendChild(b);
+  }
+  return seg;
+}
+
+function header() {
+  const g = P();
+  const hd = el("div", "sh-hd");
+  const wm = el("div", "sh-wm"); wm.innerHTML = 'BUZ<b>ZER</b>';
+  const pill = el("div", "sh-pill");
+  pill.innerHTML = 'Round <b>' + g.round + '</b> · Normale';
+  app(hd, wm, pill);
+
+  const st = el("div", "sh-streak");
+  const ticks = el("div", "sh-ticks");
+  const vinte = g.round - 1;
+  for (let i = 0; i < 16; i++) {
+    const t = el("i");
+    if (i < vinte) t.className = "on"; else if (i === vinte) t.className = "next";
+    ticks.appendChild(t);
+  }
+  const num = el("div", "num"); num.innerHTML = vinte + '<i>/16</i>';
+  app(st, el("span", "lab", "Fila"), ticks, num);
+  hd.appendChild(st);
+
+  if (state.vista === "D") {
+    const sp = el("div", "sh-ctrl push");
+    sp.appendChild(el("span", null, "Velocità"));
+    sp.appendChild(segmentato(
+      Object.keys(DURATE).map((k) => [k, DURATA_LABEL[k]]), state.velocita,
+      (k) => {
+        state.velocita = k;
+        if (k === "salta" && iniziata() && !finita()) {
+          const v = visibili(); state.k = v[v.length - 1]; stop(); render(); return;
+        }
+        // Cambio in corsa: riprogrammo subito il passo, altrimenti da Lenta
+        // premi Rapida e per due secondi non succede niente.
+        if (state.playing) { clearTimeout(timer); timer = setTimeout(passo, passoMs()); }
+        render();
+      }));
+    hd.appendChild(sp);
+  }
+  return hd;
+}
+
+function ratings(ovr, att, dif, hero) {
+  const w = el("div", "sh-ratings");
+  const a = el("div", "sh-rat" + (hero ? " hero" : ""));
+  app(a, el("span", null, "OVR"), el("b", null, String(ovr)));
+  const b = el("div", "sh-rat"); app(b, el("span", null, "ATT"), el("b", null, String(att)));
+  const c = el("div", "sh-rat"); app(c, el("span", null, "DIF"), el("b", null, String(dif)));
+  return app(w, a, b, c);
+}
+
+// Punteggio, margine e orologio: tutto quello che si legge in un colpo d'occhio.
+function scoreline() {
+  const g = P();
+  const a = iniziata() ? g.azioni[state.k] : null;
+  const casa = a ? a.casa : 0, ospite = a ? a.ospite : 0;
+
+  const line = el("div", "d-scoreline");
+  const mine = el("div", "d-team mine");
+  app(mine, el("div", "nm", nomeMio()), ratings(g.ovrTuo, g.att, g.dif, true));
+
+  const mid = el("div", "d-mid");
+  const sc = el("div", "d-score");
+  const b1 = el("b", casa > ospite ? "lead" : null, String(casa));
+  const b2 = el("b", ospite > casa ? "lead" : null, String(ospite));
+  if (a && a.punti > 0) (a.lato === "casa" ? b1 : b2).classList.add("flash");
+  app(sc, b1, el("i", null, "·"), b2);
+  const d = casa - ospite;
+  const clock = el("div", "d-clock");
+  const mar = el("div", "d-margin " + (!a ? "" : d > 0 ? "pos" : d < 0 ? "neg" : ""),
+    !a ? "Palla a due" : (d > 0 ? "+" : "") + d);
+  const tm = el("div", "d-time");
+  if (a) { tm.textContent = a.tempo; tm.appendChild(el("span", null, a.periodo)); }
+  else { tm.textContent = "12:00"; tm.appendChild(el("span", null, "1° quarto")); }
+  app(clock, mar, tm);
+  app(mid, sc, clock);
+
+  const opp = el("div", "d-team right");
+  app(opp, el("div", "nm", nomeAvv()), el("div", "sub", g.avvAnno || g.avv),
+    ratings(g.ovrLoro, g.loroAttDif.att, g.loroAttDif.dif));
+  return app(line, mine, mid, opp);
+}
+
+// I quarti: quelli chiusi col numero del motore, quello in corso col parziale
+// vero delle azioni viste finora.
+function tabellaQuarti() {
+  const g = P();
+  const a = iniziata() ? g.azioni[state.k] : null;
+  const qChiusi = !a ? 0 : (state.k + 1 < g.azioni.length ? g.azioni[state.k + 1].q : g.quarti.length);
+  const base = { casa: 0, ospite: 0 };
+  if (a && qChiusi > 0 && qChiusi <= g.quarti.length) {
+    const prima = g.quarti[qChiusi - 1];
+    base.casa = prima.cumCasa; base.ospite = prima.cumOspite;
+  }
+
+  const t = el("table", "d-quarti");
+  const th = el("tr"); th.appendChild(el("th", null, "Quarti"));
+  g.quarti.forEach((q, i) => {
+    th.appendChild(el("th", i === qChiusi && a ? "live" : null, q.overtime ? "OT" : (i + 1) + "°"));
+  });
+  th.appendChild(el("th", null, "Tot"));
+  const head = el("thead"); head.appendChild(th); t.appendChild(head);
+
+  const tb = el("tbody");
+  [["casa", nomeMio()], ["ospite", g.avvSigla]].forEach(([lato, lab]) => {
+    const tr = el("tr");
+    tr.appendChild(el("td", null, lato === "casa" ? "Tu" : lab));
+    g.quarti.forEach((q, i) => {
+      const td = el("td");
+      let testo = "·", cls = "cell off";
+      if (i < qChiusi) { testo = String(q[lato]); cls = "cell"; }
+      else if (a && i === qChiusi) {
+        testo = String((lato === "casa" ? a.casa : a.ospite) - base[lato]);
+        cls = "cell live";
+      }
+      app(td, el("div", cls, testo));
+      tr.appendChild(td);
+    });
+    const tot = el("td");
+    app(tot, el("div", "cell" + (a ? "" : " off"), a ? String(lato === "casa" ? a.casa : a.ospite) : "·"));
+    tr.appendChild(tot);
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  return t;
+}
+
+// Il tabellino di una squadra. `righe` esce da tabellinoAl.
+function tabella(righe, lato, colonne, colonneSuMisura, onPick) {
+  const cols = colonneSuMisura || (colonne === "tiro" ? COL_TIRO : COL_BASE);
+  const t = el("table", "sh-box");
+  const tr = el("tr");
+  tr.appendChild(el("th", null, "Giocatore"));
+  for (const c of cols) tr.appendChild(el("th", null, c.h));
+  const thead = el("thead"); thead.appendChild(tr); t.appendChild(thead);
+
+  const maxPt = Math.max(...righe.map((r) => r.pts));
+  // Due carte possono avere lo stesso cognome (due Harden di stagioni diverse):
+  // in quel caso, e solo in quello, il cognome si porta dietro l'anno.
+  const cognomi = righe.map((r) => cognome(r.carta.nome));
+  const nomeRiga = (r, i) => cognomi.filter((c) => c === cognomi[i]).length > 1
+    ? cognomi[i] + " '" + r.carta.stagione.slice(-2)
+    : cognomi[i];
+  const tb = el("tbody");
+  righe.forEach((r, i) => {
+    const row = el("tr");
+    const classi = [];
+    if (r.pts === maxPt && maxPt > 0) classi.push("top");
+    if (r.carta.tipo === "riserva" && righe[i - 1] && righe[i - 1].carta.tipo !== "riserva") classi.push("panca");
+    // Chi non è ancora sceso in campo resta leggibile ma spento: così si vede a
+    // colpo d'occhio chi sta giocando e chi aspetta.
+    if (!r.pts && !r.reb && !r.ast && !r.fga) classi.push("fuori");
+    row.className = classi.join(" ");
+    // In diretta la riga è una porta: apre la scheda del giocatore. Il tabellino
+    // finale passa senza `onPick` e resta una tabella e basta.
+    if (onPick) {
+      row.classList.add("clic");
+      if (state.scheda && state.scheda.lato === lato && state.scheda.i === i) row.classList.add("aperta");
+      row.tabIndex = 0;
+      row.setAttribute("role", "button");
+      row.onclick = () => onPick(i);
+      row.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPick(i); }
+      };
+    }
+
+    const td0 = el("td");
+    td0.appendChild(el("span", "ruolo", r.carta.ruolo));
+    td0.appendChild(document.createTextNode(nomeRiga(r, i)));
+    td0.title = r.carta.nome + " · " + r.carta.team + " " + r.carta.stagione;
+    row.appendChild(td0);
+
+    for (const c of cols) {
+      if (c.f) {
+        const [fatti, tentati] = c.f.map((k) => r[k]);
+        row.appendChild(el("td", "frac" + (tentati === 0 ? " zero" : ""), fatti + "/" + tentati));
+      } else {
+        row.appendChild(el("td", c.cls || (r[c.k] === 0 ? "zero" : null), String(r[c.k])));
+      }
+    }
+    tb.appendChild(row);
+  });
+  t.appendChild(tb);
+
+  const tf = el("tfoot"); const trf = el("tr");
+  trf.appendChild(el("td", null, "Totale"));
+  for (const c of cols) {
+    if (c.f) {
+      const [fatti, tentati] = c.f.map((k) => righe.reduce((a, r) => a + r[k], 0));
+      trf.appendChild(el("td", "frac", fatti + "/" + tentati));
+    } else {
+      trf.appendChild(el("td", null, String(righe.reduce((a, r) => a + r[c.k], 0))));
+    }
+  }
+  tf.appendChild(trf); t.appendChild(tf);
+  return t;
+}
+
+function verdetto() {
+  const g = P();
+  const vinta = g.vincitore === "casa";
+  const v = el("div", "sh-verdict " + (vinta ? "win" : "lose"));
+  v.innerHTML = (vinta ? "Vittoria " : "Sconfitta ") +
+    '<em>' + g.punti.casa + "-" + g.punti.ospite + '</em>' +
+    (vinta ? " · la fila continua" : " · la corsa finisce qui");
+  return v;
+}
+
+/* ---- il log --------------------------------------------------------------
+   Si disegna in modo incrementale: quando avanza di un'azione si aggiunge una
+   riga sola in cima, invece di rifare 300 nodi e far ripartire l'animazione di
+   tutte. Il rifacimento completo resta per i salti (cambio livello, riavvolgi,
+   scenario nuovo). */
+let logCache = null;
+// Il nodo della lista è UNO e resta lo stesso per tutta la sessione: `render`
+// svuota lo schermo, ma questo elemento lo teniamo per mano e lo riattacchiamo.
+// Così si aggiunge una riga sola per azione, e l'animazione parte solo su quella.
+const listaLog = el("ul", "d-log-list");
+
+function rigaLog(a) {
+  const li = el("li", "d-row" + (a.punti > 0 ? (a.lato === "casa" ? " mia" : " loro") : ""));
+  app(li, el("div", "t", a.tempo));
+  const x = el("div", "x", a.testo);
+  if (a._tag) {
+    const tag = el("span", "tag " + a._tag.c, a._tag.t);
+    x.appendChild(tag);
+  }
+  li.appendChild(x);
+  li.appendChild(el("div", "s", a.casa + "-" + a.ospite));
+  return li;
+}
+
+function disegnaLog(lista) {
+  const g = P();
+  const v = visibili().filter((i) => i <= state.k);
+  const chiave = state.partita + "/" + state.livello;
+  const incrementale = logCache && logCache.chiave === chiave && v.length === logCache.n + 1;
+
+  if (incrementale) {
+    const i = v[v.length - 1];
+    const a = g.azioni[i];
+    const li = rigaLog(a);
+    li.classList.add("nuova");
+    // Cambio di quarto: una riga di separazione, altrimenti 105 righe sono un
+    // muro unico e non si capisce più dove si è.
+    const prima = g.azioni[v[v.length - 2]];
+    if (prima && prima.q !== a.q) lista.insertBefore(el("div", "d-sep", "Via al " + a.periodo), lista.firstChild);
+    lista.insertBefore(li, lista.firstChild);
+    logCache.n = v.length;
+    return;
+  }
+
+  lista.textContent = "";
+  if (v.length === 0) {
+    lista.appendChild(legenda());
+  } else {
+    // Dal più recente al più vecchio: quello che è appena successo sta in cima.
+    for (let j = v.length - 1; j >= 0; j--) {
+      const a = g.azioni[v[j]];
+      lista.appendChild(rigaLog(a));
+      const prima = g.azioni[v[j - 1]];
+      if (prima && prima.q !== a.q) lista.appendChild(el("div", "d-sep", "Via al " + a.periodo));
+    }
+  }
+  logCache = { chiave, n: v.length };
+}
+
+// Prima del via il log è vuoto. Invece di un rettangolo tratteggiato alto mezzo
+// schermo, ci sta la legenda: si legge una volta e serve per tutta la partita.
+function legenda() {
+  const g = P();
+  const w = el("div", "d-leg");
+  w.appendChild(el("h4", null, "Come si legge"));
+  const ul = el("ul");
+  [["Orologio", "il tempo vero che resta nel quarto, come lo calcola il motore"],
+   ["Riga verde", "canestro tuo · riga rossa, canestro loro"],
+   ["Sorpasso · Tripla · Stoppata", "i momenti che il motore marca come notevoli"],
+   ["Essenziale / Tutto", "le " + g.azioni.filter((a) => a.notevole).length +
+     " righe che raccontano la partita, oppure tutte e " + g.azioni.length],
+  ].forEach(([k, x]) => {
+    const li = el("li");
+    app(li, el("b", null, k), el("span", null, x));
+    ul.appendChild(li);
+  });
+  w.appendChild(ul);
+  const p = el("p", null, "Ogni riga è un'azione vera: chi tira, chi serve l'assist, chi prende il rimbalzo. " +
+    "Nessuna è scritta a mano.");
+  w.appendChild(p);
+  return w;
+}
+
+/* ---- la barra del tempo ---------------------------------------------------
+   Trascinarla è come mettere in pausa e tornare indietro: sposta `state.k`, e
+   tutto il resto (punteggio, quarti, tabellini, log, analisi) si ricalcola da
+   quel momento, perché nessuno di quei pezzi tiene un totale suo.
+   L'input è un nodo SOLO, creato qui e riattaccato a ogni disegno: se lo
+   ricreassimo, il trascinamento si interromperebbe al primo aggiornamento. */
+const scrubInput = el("input");
+scrubInput.type = "range";
+scrubInput.step = "1";
+scrubInput.setAttribute("aria-label", "Momento della partita");
+let scrubRaf = null;
+
+scrubInput.oninput = () => {
+  const v = visibili();
+  const i = Math.max(-1, Math.min(v.length - 1, Number(scrubInput.value)));
+  stop();                                   // trascinare vuol dire fermarsi
+  state.k = i < 0 ? -1 : v[i];
+  // Un ridisegno per fotogramma: trascinando arrivano decine di eventi e il log
+  // può essere di 300 righe.
+  if (scrubRaf === null) {
+    scrubRaf = requestAnimationFrame(() => { scrubRaf = null; aggiornaDiretta(); });
+  }
+};
+
+// Prima azione visibile di un quarto: serve ai salti Q1..Q4.
+function iniziaQuarto(q) {
+  const az = P().azioni;
+  for (const i of visibili()) if (az[i].q === q) return i;
+  return null;
+}
+const etichettaQuarto = (i) => (P().quarti[i] && P().quarti[i].overtime) ? "OT" : (i + 1) + "°";
+
+// Sposta di `d` azioni visibili. Usato dalle frecce e dai salti.
+function vaiA(k) {
+  stop();
+  state.k = k;
+  render();
+}
+
+/* ---- scheda del giocatore -------------------------------------------------
+   Tutte le azioni in cui compare, sia da protagonista (tira, prende, perde)
+   sia da comprimario (serve l'assist, subisce il fallo, viene stoppato). */
+function azioniDi(lato, i, k) {
+  const g = P();
+  const out = [];
+  for (let j = 0; j <= k; j++) {
+    const a = g.azioni[j];
+    if (a.lato === lato && a.chiIdx === i) { out.push(a); continue; }
+    const secondoLato = a.tipo === "canestro" ? a.lato : altro(a.lato);
+    if (a.chi2Idx != null && a.chi2Idx === i && secondoLato === lato) out.push(a);
+  }
+  return out;
+}
+
+const REPARTI_LAB = [["t3", "Tiro da tre"], ["fin", "Finalizzazione"], ["dif", "Difesa"],
+  ["reb", "Rimbalzi"], ["reg", "Regia"]];
+
+function schedaGiocatore(lato, i, righe) {
+  const r = righe[lato][i];
+  const c = r.carta;
+  const w = el("div", "d-scroll");
+
+  const hd = el("div", "d-card-hd");
+  const face = el("div", "sh-face");
+  const [c1, c2] = tinta(i + (lato === "casa" ? 0 : 4));
+  face.style.setProperty("--tc1", c1); face.style.setProperty("--tc2", c2);
+  face.appendChild(el("div", "ini", iniziali(c.nome)));
+  const who = el("div", "who");
+  app(who, el("b", null, c.nome),
+    el("span", null, c.ruolo + " · " + (c.teamNome || c.team) + " " + c.stagione + " · " +
+      (c.tipo === "titolare" ? "titolare" : "panchina") + " " + c.minuti + "'"));
+  const ovr = el("div", "ovr");
+  app(ovr, el("b", null, String(c.ovr)), el("span", null, "OVR"));
+  app(hd, face, who, ovr);
+  w.appendChild(hd);
+
+  const fig = el("div", "d-figures");
+  [["PT", r.pts, true], ["RIMB", r.reb], ["AST", r.ast], ["PP", r.tov]].forEach(([lab, v, hero]) => {
+    const d = el("div", "d-fig" + (hero ? " hero" : ""));
+    app(d, el("b", null, String(v)), el("span", null, lab));
+    fig.appendChild(d);
+  });
+  w.appendChild(fig);
+
+  const fig2 = el("div", "d-figures");
+  [["TIRI", r.fgm + "/" + r.fga], ["3PT", r.tpm + "/" + r.tpa], ["TL", r.ftm + "/" + r.fta],
+   ["RUB+STP", r.stl + "+" + r.blk]].forEach(([lab, v]) => {
+    const d = el("div", "d-fig");
+    app(d, el("b", null, v), el("span", null, lab));
+    fig2.appendChild(d);
+  });
+  w.appendChild(fig2);
+
+  w.appendChild(el("div", "d-sub", "I cinque reparti della carta"));
+  const rep = el("div", "d-rep");
+  for (const [k, lab] of REPARTI_LAB) {
+    const v = c.reparti[k];
+    const row = el("div", "r");
+    const bar = el("div", "bar");
+    const fill = el("i"); fill.style.width = v + "%";
+    bar.appendChild(fill);
+    app(row, el("span", null, lab), bar, el("b", null, String(v)));
+    rep.appendChild(row);
+  }
+  w.appendChild(rep);
+
+  const sue = azioniDi(lato, i, state.k);
+  w.appendChild(el("div", "d-sub", "Le sue azioni (" + sue.length + ")"));
+  if (sue.length === 0) {
+    w.appendChild(el("div", "sh-empty", "Ancora nessuna azione con il suo nome dentro."));
+  } else {
+    const ul = el("ul", "d-mini");
+    for (let j = sue.length - 1; j >= 0; j--) ul.appendChild(rigaLog(sue[j]));
+    w.appendChild(ul);
+  }
+  return w;
+}
+
+/* ---- analisi: il margine, chi sta decidendo, le due squadre a confronto ---- */
+// Il grafico non porta testo: si deforma in larghezza, e un testo deformato è
+// il difetto più facile da lasciarsi scappare. Le cifre stanno nella didascalia.
+function graficoMargine(k) {
+  const g = P();
+  const az = g.azioni;
+  const W = 320, H = 104, MID = H / 2, PAD = 5;
+  let maxAbs = 8;
+  for (const a of az) maxAbs = Math.max(maxAbs, Math.abs(a.casa - a.ospite));
+  const x = (j) => (j / (az.length - 1)) * W;
+  const y = (d) => MID - (d / maxAbs) * (MID - PAD);
+
+  const ns = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.setAttribute("preserveAspectRatio", "none");
+  svg.setAttribute("aria-hidden", "true");
+  const mk = (t, attrs) => {
+    const n = document.createElementNS(ns, t);
+    for (const a in attrs) n.setAttribute(a, attrs[a]);
+    return n;
+  };
+
+  // fine di ogni quarto: le tacche verticali
+  let acc = 0;
+  const bordi = [];
+  for (let q = 0; q < g.quarti.length - 1; q++) {
+    while (acc < az.length && az[acc].q === q) acc++;
+    bordi.push(acc);
+  }
+  for (const b of bordi) {
+    svg.appendChild(mk("line", { x1: x(b), x2: x(b), y1: 0, y2: H, stroke: "#2c2a63", "stroke-width": 1 }));
+  }
+  svg.appendChild(mk("line", { x1: 0, x2: W, y1: MID, y2: MID,
+    stroke: "#4a4c8d", "stroke-width": 1, "stroke-dasharray": "3 3" }));
+
+  const fin = Math.max(0, k);
+  if (k >= 0) {
+    let d = "M0," + MID;
+    for (let j = 0; j <= fin; j++) d += " L" + x(j).toFixed(2) + "," + y(az[j].casa - az[j].ospite).toFixed(2);
+    const chiusa = d + " L" + x(fin).toFixed(2) + "," + MID + " Z";
+
+    const clipSopra = mk("clipPath", { id: "clipSopra" });
+    clipSopra.appendChild(mk("rect", { x: 0, y: 0, width: W, height: MID }));
+    const clipSotto = mk("clipPath", { id: "clipSotto" });
+    clipSotto.appendChild(mk("rect", { x: 0, y: MID, width: W, height: MID }));
+    const defs = mk("defs", {});
+    app(defs, clipSopra, clipSotto);
+    svg.appendChild(defs);
+
+    svg.appendChild(mk("path", { d: chiusa, fill: "rgba(92,207,142,.22)", "clip-path": "url(#clipSopra)" }));
+    svg.appendChild(mk("path", { d: chiusa, fill: "rgba(255,80,56,.22)", "clip-path": "url(#clipSotto)" }));
+    svg.appendChild(mk("path", { d, fill: "none", stroke: "#f4eee0", "stroke-width": 1.6,
+      "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" }));
+    svg.appendChild(mk("circle", { cx: x(fin), cy: y(az[fin].casa - az[fin].ospite), r: 3, fill: "#ffcf33" }));
+  }
+  const box = el("div", "d-spark");
+  box.appendChild(svg);
+  return box;
+}
+
+const impatto = (r) => r.pts + 1.2 * r.reb + 1.5 * r.ast + 2 * r.stl + 2 * r.blk - r.tov;
+
+function pannelloAnalisi(righe) {
+  const g = P();
+  const w = el("div", "d-scroll");
+  const az = g.azioni;
+  const fin = Math.max(0, state.k);
+  const d = iniziata() ? az[fin].casa - az[fin].ospite : 0;
+
+  /* 1. il margine minuto per minuto */
+  let piu = 0, meno = 0;
+  for (let j = 0; j <= fin && iniziata(); j++) {
+    const dd = az[j].casa - az[j].ospite;
+    piu = Math.max(piu, dd); meno = Math.min(meno, dd);
+  }
+  w.appendChild(el("div", "d-sub", "Margine, azione per azione"));
+  w.appendChild(graficoMargine(state.k));
+  const nota = el("p", "sh-nota");
+  nota.innerHTML = iniziata()
+    ? 'Sopra la linea sei avanti tu · meglio <b>+' + piu + '</b> · peggio <b>' +
+      (meno < 0 ? meno : 0) + '</b> · adesso <b>' + (d > 0 ? "+" + d : d) + '</b>'
+    : "La partita non è ancora cominciata.";
+  w.appendChild(nota);
+
+  /* 2. chi sta decidendo */
+  const tutti = [];
+  ["casa", "ospite"].forEach((lato) => righe[lato].forEach((r, i) => tutti.push({ r, i, lato })));
+  const top = tutti.filter((t) => impatto(t.r) > 0).sort((a, b) => impatto(b.r) - impatto(a.r)).slice(0, 3);
+  w.appendChild(el("div", "d-sub", "Chi sta decidendo la partita"));
+  if (top.length === 0) {
+    w.appendChild(el("div", "sh-empty", "Nessuno ha ancora messo la firma su una riga."));
+  } else {
+    const ul = el("ul", "d-best");
+    top.forEach((t, pos) => {
+      const li = el("li", t.lato === "casa" ? "mia" : "loro");
+      const nm = el("div", "nm");
+      app(nm, el("b", null, cognome(t.r.carta.nome)),
+        el("span", null, (t.lato === "casa" ? nomeMio() : nomeAvv()) + " · " + t.r.carta.ruolo));
+      // Cliccabile: da qui si apre la sua scheda, che è il posto dove guardarlo bene.
+      li.tabIndex = 0;
+      li.setAttribute("role", "button");
+      const apri = () => apriScheda(t.lato, t.i);
+      li.onclick = apri;
+      li.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); apri(); } };
+      app(li, el("div", "pos", String(pos + 1)), nm,
+        el("div", "lin", t.r.pts + " pt · " + t.r.reb + " rb · " + t.r.ast + " as"));
+      ul.appendChild(li);
+    });
+    w.appendChild(ul);
+  }
+
+  /* 3. le due squadre a confronto */
+  const somma = (lato, k) => righe[lato].reduce((a, r) => a + r[k], 0);
+  w.appendChild(el("div", "d-sub", nomeMio() + " contro " + avvCompleto()));
+  const vs = el("div", "d-vs");
+  const riga = (lab, a, b, ta, tb, scala) => {
+    const max = scala || Math.max(a, b, 1);
+    const r = el("div", "r" + (a === b ? " pari" : ""));
+    const bs = el("div", "bar sx"); const fs = el("i"); fs.style.width = (a / max * 100) + "%"; bs.appendChild(fs);
+    const bd = el("div", "bar dx"); const fd = el("i"); fd.style.width = (b / max * 100) + "%"; bd.appendChild(fd);
+    app(r, el("div", "n sx", ta != null ? ta : String(a)), bs, el("div", "lab", lab), bd,
+      el("div", "n", tb != null ? tb : String(b)));
+    return r;
+  };
+  const pct = (fatti, tentati) => tentati === 0 ? 0 : Math.round(fatti / tentati * 100);
+  [["Punti", "pts"], ["Rimbalzi", "reb"], ["Assist", "ast"],
+   ["Palle perse", "tov"], ["Recuperi", "stl"], ["Stoppate", "blk"]].forEach(([lab, k]) => {
+    vs.appendChild(riga(lab, somma("casa", k), somma("ospite", k)));
+  });
+  [["Tiro", "fgm", "fga"], ["Da tre", "tpm", "tpa"], ["Liberi", "ftm", "fta"]].forEach(([lab, m, a]) => {
+    const ca = pct(somma("casa", m), somma("casa", a));
+    const oa = pct(somma("ospite", m), somma("ospite", a));
+    vs.appendChild(riga(lab, ca, oa,
+      somma("casa", m) + "/" + somma("casa", a), somma("ospite", m) + "/" + somma("ospite", a), 100));
+  });
+  w.appendChild(vs);
+  w.appendChild(el("p", "sh-nota",
+    "Le percentuali di tiro nascono dalle azioni: sono l'unico posto dove il motore le dice."));
+  return w;
+}
+
+function apriScheda(lato, i) {
+  // Aprire una scheda ferma la partita: si guarda da fermi, poi si riprende.
+  stop();
+  state.scheda = { lato, i };
+  state.pannello = "log";
+  render();
+}
+function chiudiScheda() { state.scheda = null; render(); }
+
+/* ============================ SCHERMATA: DIRETTA ========================== */
+/* I pezzi della diretta sono nodi PERSISTENTI: `render` li svuota e li riempie
+   invece di ricrearli. Serve alla barra del tempo (un input ricreato a metà
+   trascinamento perde il dito) e al log, che si disegna in modo incrementale. */
+const nodi = {
+  alto: el("div", "sh-panel"),
+  scrub: el("div", "d-scrub"),
+  scrubAt: el("div", "at"),
+  scrubTrack: el("div", "track"),
+  scrubTicks: el("div", "ticks"),
+  jump: el("div", "d-jump"),
+  boxbar: el("div", "d-boxbar"),
+  boxes: el("div", "d-boxes"),
+  dx: el("div", "sh-panel d-log"),
+  foot: el("div", "d-foot"),
+};
+app(nodi.scrubTrack, nodi.scrubTicks, scrubInput);
+app(nodi.scrub, nodi.scrubAt, nodi.scrubTrack, nodi.jump);
+
+function vistaDiretta(root) {
+  root.appendChild(header());
+  const body = el("div", "sh-body");
+  const grid = el("div", "d-grid");
+  const sx = el("div", "d-left");
+  app(sx, nodi.alto, nodi.scrub, nodi.boxbar, nodi.boxes);
+  app(grid, sx, nodi.dx);
+  app(body, grid, nodi.foot);
+  root.appendChild(body);
+  aggiornaDiretta();
+}
+
+// Riempie i nodi persistenti al momento `state.k`. La chiama `render` (disegno
+// completo) e la barra del tempo mentre la trascini (senza rifare la scocca).
+function aggiornaDiretta() {
+  const g = P();
+  const righe = tabellinoAl(state.k);
+
+  nodi.alto.textContent = "";
+  app(nodi.alto, scoreline(), tabellaQuarti());
+
+  aggiornaScrub();
+
+  nodi.boxbar.textContent = "";
+  nodi.boxbar.appendChild(el("span", "d-boxbar-lab", "Tabellino"));
+  nodi.boxbar.appendChild(segmentato([["base", "Base"], ["tiro", "Tiro"]], state.colonne,
+    (k) => { state.colonne = k; render(); }));
+  nodi.boxbar.appendChild(el("p", "sh-nota", state.colonne === "tiro"
+    ? "In diretta FALLI conta solo quelli che mandano in lunetta: sono gli unici a cui il racconto sa dare un nome."
+    : "Clicca un giocatore: la partita si ferma e si apre la sua scheda."));
+
+  nodi.boxes.textContent = "";
+  [["casa", nomeMio()], ["ospite", nomeAvv()]].forEach(([lato, lab]) => {
+    const pan = el("div", "sh-panel");
+    const cap = el("div", "sh-cap");
+    app(cap, el("span", null, lato === "casa" ? "Il tuo tabellino" : "Loro"), el("b", null, lab));
+    pan.appendChild(cap);
+    pan.appendChild(tabella(righe[lato], lato, state.colonne, null,
+      (i) => { if (state.scheda && state.scheda.lato === lato && state.scheda.i === i) chiudiScheda();
+               else apriScheda(lato, i); }));
+    nodi.boxes.appendChild(pan);
+  });
+
+  aggiornaColonnaDestra(righe);
+  aggiornaFoot();
+}
+
+// La barra del tempo e i salti per quarto.
+function aggiornaScrub() {
+  const g = P();
+  const v = visibili();
+  const pos = state.k < 0 ? -1 : v.filter((i) => i <= state.k).length - 1;
+
+  scrubInput.min = "-1";
+  scrubInput.max = String(v.length - 1);
+  scrubInput.value = String(pos);
+  const pct = ((pos + 1) / v.length) * 100;
+  scrubInput.style.setProperty("--pct", pct.toFixed(2) + "%");
+
+  const a = iniziata() ? g.azioni[state.k] : null;
+  nodi.scrubAt.textContent = "";
+  app(nodi.scrubAt, el("i", null, a ? a.periodo.replace(" quarto", "") : "Via"),
+    el("span", null, a ? a.tempo + " · " + a.casa + "-" + a.ospite : "12:00 · 0-0"));
+
+  // Tacche: dove finisce ogni quarto, in scala sulle righe visibili.
+  nodi.scrubTicks.textContent = "";
+  for (let q = 1; q < g.quarti.length; q++) {
+    const i = iniziaQuarto(q);
+    if (i === null) continue;
+    const n = v.filter((j) => j < i).length;
+    const t = el("i");
+    t.style.left = (n / v.length * 100).toFixed(2) + "%";
+    nodi.scrubTicks.appendChild(t);
+  }
+
+  nodi.jump.textContent = "";
+  const passoIndietro = () => vaiA(pos > 0 ? v[pos - 1] : -1);
+  const passoAvanti = () => vaiA(v[Math.min(v.length - 1, pos + 1)]);
+  const frecce = [["‹", passoIndietro, pos < 0], ["›", passoAvanti, pos >= v.length - 1]];
+  for (const [lab, fn, spento] of frecce) {
+    const b = el("button", null, lab);
+    b.title = lab === "‹" ? "Un'azione indietro" : "Un'azione avanti";
+    b.disabled = spento;
+    b.onclick = fn;
+    nodi.jump.appendChild(b);
+  }
+  g.quarti.forEach((q, i) => {
+    const inizio = iniziaQuarto(i);
+    const b = el("button", null, etichettaQuarto(i));
+    b.title = "Vai all'inizio del " + etichettaQuarto(i);
+    b.disabled = inizio === null;
+    b.onclick = () => vaiA(inizio);
+    nodi.jump.appendChild(b);
+  });
+}
+
+// La colonna destra ha tre facce: il log, l'analisi, la scheda di un giocatore.
+function aggiornaColonnaDestra(righe) {
+  const g = P();
+  nodi.dx.textContent = "";
+
+  if (state.scheda) {
+    const r = righe[state.scheda.lato][state.scheda.i];
+    const cap = el("div", "sh-cap");
+    app(cap, el("span", null, "Scheda giocatore"),
+      el("b", null, state.scheda.lato === "casa" ? nomeMio() : nomeAvv()));
+    nodi.dx.appendChild(cap);
+    const tabs = el("div", "d-tabs");
+    const chiudi = el("button", "sh-cta ghost", "Chiudi scheda (Esc)");
+    chiudi.onclick = chiudiScheda;
+    tabs.appendChild(chiudi);
+    tabs.appendChild(el("span", "sh-nota push", "La partita è ferma"));
+    nodi.dx.appendChild(tabs);
+    nodi.dx.appendChild(schedaGiocatore(state.scheda.lato, state.scheda.i, righe));
+    return;
+  }
+
+  const v = visibili();
+  const viste = v.filter((i) => i <= state.k).length;
+  const cap = el("div", "sh-cap");
+  app(cap, el("span", null, state.pannello === "log" ? "Punto a punto" : "Analisi"),
+    el("b", null, state.pannello === "log" ? viste + "/" + v.length
+      : (iniziata() ? g.azioni[state.k].periodo : "prima del via")));
+  nodi.dx.appendChild(cap);
+
+  const tabs = el("div", "d-tabs");
+  tabs.appendChild(segmentato([["log", "Punto a punto"], ["analisi", "Analisi"]], state.pannello,
+    (k) => { state.pannello = k; render(); }));
+  if (state.pannello === "log") {
+    const ctrl = el("div", "sh-ctrl push");
+    ctrl.appendChild(el("span", null, "Log"));
+    ctrl.appendChild(segmentato([["essenziale", "Essenziale"], ["completo", "Tutto"]], state.livello,
+      (k) => {
+        state.livello = k; logCache = null;
+        // Cambiando livello cambia anche il numero di righe: se sta girando,
+        // riprogrammo il passo sulla nuova densità.
+        if (state.playing) { clearTimeout(timer); timer = setTimeout(passo, passoMs()); }
+        render();
+      }));
+    tabs.appendChild(ctrl);
+  }
+  nodi.dx.appendChild(tabs);
+
+  if (state.pannello === "log") {
+    nodi.dx.appendChild(listaLog);
+    disegnaLog(listaLog);
+    if (finita()) nodi.dx.appendChild(verdetto());
+  } else {
+    nodi.dx.appendChild(pannelloAnalisi(righe));
+  }
+}
+
+function aggiornaFoot() {
+  const v = visibili();
+  const viste = v.filter((i) => i <= state.k).length;
+  nodi.foot.textContent = "";
+
+  if (!finita()) {
+    const b = el("button", "sh-cta ghost", state.playing ? "Pausa" : (iniziata() ? "Riprendi" : "Palla a due"));
+    b.onclick = () => { if (state.playing) { stop(); render(); } else { state.scheda = null; via(); } };
+    nodi.foot.appendChild(b);
+  } else {
+    const b = el("button", "sh-cta ghost", "Vai al tabellino");
+    b.onclick = () => { state.vista = "T"; render(); };
+    nodi.foot.appendChild(b);
+  }
+  const r = el("button", "sh-cta ghost", "Riavvolgi");
+  r.onclick = riavvolgi;
+  nodi.foot.appendChild(r);
+
+  const info = el("div", "info");
+  const secondi = Math.round((v.length - viste) * passoMs() / 1000);
+  info.innerHTML = state.velocita === "salta"
+    ? "Salta: la partita finisce subito."
+    : 'Restano <b>' + (v.length - viste) + '</b> righe · circa <b>' +
+      (secondi >= 60 ? Math.floor(secondi / 60) + "m " + (secondi % 60) + "s" : secondi + "s") + '</b>';
+  nodi.foot.appendChild(info);
+}
+
+/* ========================= SCHERMATA: PRIMA DEL VIA ======================= */
+function vistaPrimaDelVia(root) {
+  root.appendChild(header());
+  const body = el("div", "sh-body");
+  const g = P();
+  const grid = el("div", "v-grid");
+
+  const sx = el("div", "v-left");
+  const alto = el("div", "sh-panel");
+  app(alto, scoreline(), tabellaQuarti());
+  sx.appendChild(alto);
+
+  const pan = el("div", "sh-panel");
+  const cap = el("div", "sh-cap");
+  app(cap, el("span", null, "Il tuo quintetto"), el("b", null, "Dieci in rosa"));
+  pan.appendChild(cap);
+  const grid5 = el("div", "v-lineup");
+  const REP_SIGLE = [["t3", "T3"], ["fin", "FIN"], ["dif", "DIF"], ["reb", "REB"], ["reg", "REG"]];
+  g.mio.filter((c) => c.tipo !== "riserva").forEach((c, i) => {
+    const card = el("div", "v-card");
+    const f = el("div", "sh-face");
+    const [t1, t2] = tinta(i);
+    f.style.setProperty("--tc1", t1); f.style.setProperty("--tc2", t2);
+    // Le iniziali restano, ma in filigrana: il posto in primo piano tocca ai
+    // numeri, che sono quello che si guarda davvero prima di una partita.
+    app(f, el("div", "ini", iniziali(c.nome)));
+    const alto = el("div", "hi");
+    app(alto, el("span", "ru", c.ruolo), el("span", "ov", String(c.ovr)));
+    const basso = el("div", "lo");
+    app(basso, el("span", "n", cognome(c.nome)),
+      el("span", "t", c.team + " " + c.stagione), el("span", "m", c.minuti + "'"));
+    app(f, alto, basso);
+    card.appendChild(f);
+    const rep = el("div", "v-rep");
+    for (const [k, sigla] of REP_SIGLE) {
+      const r = el("div", "r");
+      const bar = el("div", "bar"); const fill = el("i");
+      fill.style.width = c.reparti[k] + "%";
+      bar.appendChild(fill);
+      app(r, el("span", "k", sigla), bar, el("span", "v", String(c.reparti[k])));
+      rep.appendChild(r);
+    }
+    card.appendChild(rep);
+    grid5.appendChild(card);
+  });
+  pan.appendChild(grid5);
+  const panca = el("div", "v-panca");
+  g.mio.filter((c) => c.tipo === "riserva").forEach((c) => {
+    const r = el("div", "r");
+    app(r, el("span", "ru", c.ruolo), el("span", "nm", cognome(c.nome)), el("span", "ov", String(c.ovr)));
+    panca.appendChild(r);
+  });
+  pan.appendChild(panca);
+  sx.appendChild(pan);
+  grid.appendChild(sx);
+
+  const dx = el("div", "sh-panel");
+  const cap2 = el("div", "sh-cap");
+  app(cap2, el("span", null, "Prima del via"), el("b", null, "Come si vince"));
+  dx.appendChild(cap2);
+
+  const brief = el("div", "v-brief");
+  [["Avversario", avvCompleto()], ["Coach", g.coach], ["Tattica", g.tattica],
+   ["Minuti panchina", g.mio.filter((c) => c.tipo === "riserva").reduce((a, c) => a + c.minuti, 0) + "'"],
+  ].forEach(([k, v]) => {
+    const r = el("div", "r");
+    app(r, el("span", null, k), el("b", null, String(v)));
+    brief.appendChild(r);
+  });
+  dx.appendChild(brief);
+
+  const capD = el("div", "sh-cap");
+  app(capD, el("span", null, "Il duello dei reparti"), el("b", null, "Perché finisce così"));
+  dx.appendChild(capD);
+  dx.appendChild(duelloReparti(g));
+
+  const note = el("ul", "v-note");
+  const li = el("li");
+  li.innerHTML = "Le carte si vedono <b>solo qui</b>: al fischio d'inizio diventano le righe del tabellino, " +
+    "e da lì in poi contano i numeri, non i ritratti.";
+  note.appendChild(li);
+  dx.appendChild(note);
+
+  const capL = el("div", "sh-cap");
+  app(capL, el("span", null, "Chi hai di fronte"), el("b", null, nomeAvv() + " · quintetto"));
+  dx.appendChild(capL);
+  const loro = el("div", "v-loro");
+  g.loro.filter((c) => c.tipo !== "riserva").forEach((c) => {
+    const r = el("div", "r");
+    app(r, el("span", "ru", c.ruolo), el("span", "nm", cognome(c.nome)), el("span", "ov", String(c.ovr)));
+    loro.appendChild(r);
+  });
+  dx.appendChild(loro);
+
+  const cta = el("button", "sh-cta giu", "Palla a due");
+  cta.onclick = () => { state.vista = "D"; riavvolgi(); via(); };
+  dx.appendChild(cta);
+  grid.appendChild(dx);
+
+  body.appendChild(grid);
+  root.appendChild(body);
+}
+
+// I cinque reparti su cui gira game/partita.js, tuoi contro loro.
+function duelloReparti(g) {
+  const REP = [["t3", "Tiro da tre"], ["fin", "Finalizzazione"], ["dif", "Difesa"],
+    ["reb", "Rimbalzo"], ["reg", "Regia"]];
+  const media = (rosa, k) => Math.round(
+    rosa.filter((c) => c.tipo !== "riserva").reduce((a, c) => a + c.reparti[k], 0) /
+    rosa.filter((c) => c.tipo !== "riserva").length);
+  const w = el("div", "sh-duel");
+  const head = el("div", "head");
+  app(head, el("span", null, nomeMio()), el("span", null, nomeAvv()));
+  w.appendChild(head);
+  for (const [k, lab] of REP) {
+    const mio = media(g.mio, k), loro = media(g.loro, k);
+    const r = el("div", "r");
+    const sx = el("div", "side sx");
+    const b1 = el("div", "bar"); app(b1, el("i")).firstChild.style.width = mio + "%";
+    app(sx, el("div", "val" + (mio >= loro ? " win" : ""), String(mio)), b1);
+    const dx = el("div", "side dx");
+    const b2 = el("div", "bar"); app(b2, el("i")).firstChild.style.width = loro + "%";
+    app(dx, el("div", "val" + (loro > mio ? " win" : ""), String(loro)), b2);
+    app(r, sx, el("div", "lab", lab), dx);
+    w.appendChild(r);
+  }
+  return w;
+}
+
+/* ========================== SCHERMATA: TABELLINO ========================== */
+function vistaTabellino(root) {
+  root.appendChild(header());
+  const body = el("div", "sh-body");
+  const g = P();
+  // Il tabellino è quello di fine partita, sempre: qui non si guarda un
+  // momento, si guarda il risultato.
+  const righe = tabellinoAl(g.azioni.length - 1);
+  const wrap = el("div", "t-wrap");
+
+  const top = el("div", "t-top");
+  const alto = el("div", "sh-panel");
+  const salva = state.k; state.k = g.azioni.length - 1;
+  app(alto, scoreline(), tabellaQuarti(), verdetto());
+  state.k = salva;
+  // Sotto il verdetto la cronaca del motore, una riga per quarto: dice come si
+  // è arrivati a quel punteggio senza rileggere trecento azioni.
+  const capCr = el("div", "sh-cap");
+  app(capCr, el("span", null, "Come è andata"), el("b", null, "Quarto per quarto"));
+  alto.appendChild(capCr);
+  const cr = el("ul", "t-cronaca");
+  g.cronaca.forEach((c) => {
+    const li = el("li");
+    app(li, el("b", null, c.quarto), el("span", null, perEsteso(c.testo)));
+    cr.appendChild(li);
+  });
+  alto.appendChild(cr);
+  top.appendChild(alto);
+
+  const pan = el("div", "sh-panel t-side");
+  const cap = el("div", "sh-cap");
+  app(cap, el("span", null, "Migliore in campo"), el("b", null, "Della partita"));
+  pan.appendChild(cap);
+  const tutte = [...righe.casa.map((r) => ({ ...r, lato: "casa" })),
+    ...righe.ospite.map((r) => ({ ...r, lato: "ospite" }))];
+  const mvp = tutte.slice().sort((a, b) => b.pts - a.pts)[0];
+  const box = el("div", "t-mvp");
+  const f = el("div", "sh-face");
+  const [t1, t2] = tinta(mvp.lato === "casa" ? 0 : 3);
+  f.style.setProperty("--tc1", t1); f.style.setProperty("--tc2", t2);
+  app(f, el("div", "ini", iniziali(mvp.carta.nome)));
+  const who = el("div", "who");
+  app(who, el("div", "n", mvp.carta.nome),
+    el("div", "s", (mvp.carta.teamNome || mvp.carta.team) + " " + mvp.carta.stagione +
+      (mvp.lato === "casa" ? " · " + nomeMio() : "")));
+  const line = el("div", "line");
+  line.innerHTML = mvp.pts + '<i>PT</i>' + mvp.reb + '<i>RIMB</i>' + mvp.ast + '<i>AST</i>' +
+    mvp.fgm + "/" + mvp.fga + '<i>dal campo</i>';
+  who.appendChild(line);
+  app(box, f, who);
+  pan.appendChild(box);
+
+  const capC = el("div", "sh-cap");
+  app(capC, el("span", null, "Le cifre della partita"), el("b", null, "Tu · loro"));
+  pan.appendChild(capC);
+  pan.appendChild(cifre(righe));
+
+  const nota = el("p", "sh-nota");
+  nota.innerHTML = "La colonna <b>FALLI</b> è quella del motore. In diretta conta solo i falli che " +
+    "mandano in lunetta, perché sono gli unici a cui il racconto sa dare un nome.";
+  pan.appendChild(nota);
+  top.appendChild(pan);
+  wrap.appendChild(top);
+
+  // A fine partita le colonne si vedono TUTTE: qui non serve scegliere, c'è
+  // spazio in larghezza e questo è il momento in cui si guardano le percentuali.
+  [["casa", nomeMio()], ["ospite", avvCompleto()]].forEach(([lato, lab]) => {
+    const p = el("div", "sh-panel");
+    const c = el("div", "sh-cap");
+    app(c, el("span", null, lato === "casa" ? "Il tuo tabellino" : "Il loro tabellino"),
+      el("b", null, lab));
+    p.appendChild(c);
+    p.appendChild(tabellaPiena(righe[lato], lato));
+    wrap.appendChild(p);
+  });
+
+  body.appendChild(wrap);
+  root.appendChild(body);
+}
+
+// Le quattro cifre che spiegano il risultato meglio del punteggio: come hanno
+// tirato le due squadre e quante palle hanno buttato via.
+function cifre(righe) {
+  const somma = (lato, k) => righe[lato].reduce((a, r) => a + r[k], 0);
+  const pct = (f, t) => (t === 0 ? "-" : Math.round((f / t) * 100) + "%");
+  const voci = [
+    ["Dal campo", (l) => somma(l, "fgm") + "/" + somma(l, "fga") + " · " + pct(somma(l, "fgm"), somma(l, "fga"))],
+    ["Da tre", (l) => somma(l, "tpm") + "/" + somma(l, "tpa") + " · " + pct(somma(l, "tpm"), somma(l, "tpa"))],
+    ["Liberi", (l) => somma(l, "ftm") + "/" + somma(l, "fta") + " · " + pct(somma(l, "ftm"), somma(l, "fta"))],
+    ["Rimbalzi", (l) => String(somma(l, "reb"))],
+    ["Palle perse", (l) => String(somma(l, "tov"))],
+  ];
+  const w = el("div", "t-cifre");
+  for (const [lab, f] of voci) {
+    const r = el("div", "r");
+    app(r, el("span", "a", f("casa")), el("span", "k", lab), el("span", "b", f("ospite")));
+    w.appendChild(r);
+  }
+  return w;
+}
+
+// Tabellino completo: base + tiro nella stessa tabella. Sta in piedi solo a
+// larghezza piena, quindi vive solo qui.
+function tabellaPiena(righe, lato) {
+  const g = P();
+  const cols = [...COL_BASE, { f: ["fgm", "fga"], h: "TIRI" }, { f: ["tpm", "tpa"], h: "3PT" },
+    { f: ["ftm", "fta"], h: "TL" }, { k: "pf", h: "FALLI" }];
+  // I falli veri sono quelli del motore, non quelli nominati nel log.
+  const conFalli = righe.map((r, i) => ({ ...r, pf: g.falli[lato][i] }));
+  return tabella(conFalli, lato, "piena", cols);
+}
+
+/* ---- controllo: il mockup deve dire il vero -------------------------------
+   Somma le azioni fino all'ultima e confronta con quello che dice il motore.
+   Punteggio e tiri devono coincidere al numero. Assist, recuperi e stoppate
+   possono restare INDIETRO (il log non ha sempre un canestro o un possesso a cui
+   appoggiarli) ma non devono mai superare il box score. */
+function controllo() {
+  const problemi = [];
+  const salvaP = state.partita, salvaK = state.k;
+  window.PARTITE.forEach((g, i) => {
+    state.partita = i;
+    const righe = tabellinoAl(g.azioni.length - 1);
+    for (const lato of ["casa", "ospite"]) {
+      const punti = righe[lato].reduce((a, r) => a + r.pts, 0);
+      if (punti !== g.punti[lato]) problemi.push(`${g.scenario}/${lato}: punti ${punti} invece di ${g.punti[lato]}`);
+      righe[lato].forEach((r, j) => {
+        const tiri = g.tiri[lato][j];
+        for (const k of ["fgm", "fga", "tpm", "tpa", "ftm", "fta"]) {
+          if (r[k] !== tiri[k]) problemi.push(`${g.scenario}/${lato}/${r.carta.nome}: ${k} ${r[k]} invece di ${tiri[k]}`);
+        }
+        for (const k of ["ast", "stl", "blk"]) {
+          if (r[k] > g.box[lato][j].tot[k]) {
+            problemi.push(`${g.scenario}/${lato}/${r.carta.nome}: ${k} ${r[k]} sopra il box score ${g.box[lato][j].tot[k]}`);
+          }
+        }
+      });
+    }
+  });
+  state.partita = salvaP; state.k = salvaK;
+  const chip = document.getElementById("mk-esito");
+  if (problemi.length === 0) {
+    chip.textContent = "torna col motore";
+    chip.classList.remove("ko");
+  } else {
+    chip.textContent = problemi.length + " scarti";
+    chip.classList.add("ko");
+    console.error("Il mockup non torna col motore:", problemi);
+  }
+}
+
+/* ---- render -------------------------------------------------------------- */
+function render() {
+  const root = document.getElementById("screen");
+  root.textContent = "";
+  if (state.vista === "V") vistaPrimaDelVia(root);
+  else if (state.vista === "T") vistaTabellino(root);
+  else vistaDiretta(root);
+
+  document.getElementById("mk-title").textContent =
+    state.vista === "V" ? "Prima del via" : state.vista === "T" ? "Tabellino" : "Diretta";
+  document.getElementById("mk-desc").textContent = DESC[state.vista];
+  document.querySelectorAll("[data-vista]").forEach((b) => {
+    b.setAttribute("aria-pressed", String(b.dataset.vista === state.vista));
+  });
+  document.querySelectorAll("[data-scenario]").forEach((b) => {
+    b.setAttribute("aria-pressed", String(Number(b.dataset.scenario) === state.partita));
+  });
+}
+
+/* ---- avvio --------------------------------------------------------------- */
+if (!window.PARTITE || !window.PARTITE.length || !window.PARTITE[0].azioni) {
+  document.getElementById("screen").appendChild(el("div", "sh-empty",
+    "Manca 78-partita-data.js con le azioni. Si rigenera con: node tools/dati-tabellone.mjs --azioni > mockups/78-partita-data.js"));
+} else {
+  window.PARTITE.forEach(preparaBadge);
+  state.squadra = (window.PROFILO && window.PROFILO.squadra) || "Dinamo Sofà";
+
+  const sc = document.getElementById("mk-scenari");
+  sc.appendChild(el("span", "mk-lbl", "Scenario"));
+  window.PARTITE.forEach((g, i) => {
+    const b = el("button", "mk-chip", g.scenario + " " + g.punti.casa + "-" + g.punti.ospite);
+    b.dataset.scenario = String(i);
+    b.setAttribute("aria-pressed", String(i === state.partita));
+    b.onclick = () => { state.partita = i; riavvolgi(); };
+    sc.appendChild(b);
+  });
+  // Esc chiude la scheda del giocatore: è il gesto che tutti provano per primo.
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && state.scheda) { e.preventDefault(); chiudiScheda(); }
+  });
+  document.querySelectorAll("[data-vista]").forEach((b) => {
+    b.onclick = () => {
+      state.vista = b.dataset.vista;
+      if (state.vista !== "D") stop();
+      if (state.vista === "V") { state.k = -1; logCache = null; }
+      render();
+    };
+  });
+
+  controllo();
+  render();
+}
+</script>
+</body>
+</html>

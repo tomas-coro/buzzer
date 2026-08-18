@@ -5,6 +5,7 @@ import { CARDS_BY_TEAM_SEASON } from "../prototype/imbattuto/cards.js";
 import { pickCoaches } from "../prototype/imbattuto/coaches.js";
 import { opponentPool, spinRoster } from "../prototype/imbattuto/pool.js";
 import { toDisplayOvr } from "../prototype/imbattuto/display.js";
+import { teamName } from "../prototype/imbattuto/team-names.js";
 import { ROLES, canPlay } from "../game/roster.js";
 import { SLOTS, slotLibero, minutiRosa } from "../game/rosa.js";
 import { votoCarta } from "../game/rating.js";
@@ -12,24 +13,35 @@ import { attacco, difesa } from "../game/partita.js";
 import { medieCarriera } from "../game/boxscore.js";
 import {
   newRun, draftPick, chooseCoach, startRun, resolveRound, partitaRound,
-  boxScoreRound, ROTAZIONE_AVVERSARIO,
+  boxScoreRound, playByPlayRound, ROTAZIONE_AVVERSARIO,
 } from "../game/run.js";
+
+// Con `--azioni` i tre scenari portano anche il punto a punto (azioni, tiri,
+// falli). E' un flag e non il comportamento normale perche' il file passa da
+// ~200 KB a qualche MB, e il mockup 77 quelle azioni non le usa.
+const CON_AZIONI = process.argv.includes("--azioni");
 
 const SQUADRA = "Dinamo Sofà";
 const POOL = opponentPool(CARDS_BY_TEAM_SEASON);
 const rngFrom = (s) => () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648;
 
 function draftaBene(state, giri, rng) {
+  // Una carta si prende UNA volta sola. Senza questo, la stessa rosa esce da due
+  // giri diversi e in squadra finiscono due James Harden 2016-17 identici: nel
+  // tabellino sono due righe uguali e nel racconto due nomi indistinguibili.
+  const presi = new Set();
   for (const _ of SLOTS) {
     const liberi = ROLES.filter((r) => slotLibero(state.rosa, r) !== null);
     let migliore = null, ruolo = null;
     for (let g = 0; g < giri; g++) {
       const { cards } = spinRoster(CARDS_BY_TEAM_SEASON, liberi, {}, rng);
       for (const c of cards) for (const r of liberi) {
-        if (!canPlay(c, r)) continue;
+        if (!canPlay(c, r) || presi.has(c.player_id)) continue;
         if (!migliore || votoCarta(c) > votoCarta(migliore)) { migliore = c; ruolo = r; }
       }
     }
+    if (!migliore) throw new Error("draftaBene: nessuna carta libera per gli slot rimasti");
+    presi.add(migliore.player_id);
     state = draftPick(state, ruolo, migliore);
   }
   return state;
@@ -44,7 +56,9 @@ const attDif = (reparti) => ({
 });
 
 const carta = (c, ruolo) => ({
-  nome: c.name, ruolo, team: c.team_abbr, stagione: c.season,
+  // `team` resta la sigla per le colonne strette, `teamNome` è il nome per
+  // esteso da usare dove c'è spazio (scheda giocatore, migliore in campo).
+  nome: c.name, ruolo, team: c.team_abbr, teamNome: teamName(c.team_abbr), stagione: c.season,
   ovr: toDisplayOvr(votoCarta(c)), ovr2k: c.ovr,
   ...attDif(c.reparti),
   reparti: c.reparti,
@@ -81,8 +95,16 @@ for (let seme = 1; seme <= 200 && finite.length < 40; seme++) {
       loroAttDif: attDif(s.avversario.voto.reparti),
       avv: `${s.avversario.team} ${s.avversario.season}`,
       avvSigla: s.avversario.rosa.PG.titolare?.team_abbr ?? s.avversario.team,
+      // Nome per esteso e annata separati: a schermo grande "Miami Heat 2014-15"
+      // dice contro chi giochi, "MIA" no. La sigla resta per le colonne strette.
+      avvNome: teamName(s.avversario.rosa.PG.titolare?.team_abbr ?? s.avversario.team),
+      avvAnno: s.avversario.season,
       mio,
       loro: rosaCarte(s.avversario.rosa, ROTAZIONE_AVVERSARIO),
+      // Sotto il cofano fino alla scelta degli scenari: servono a ricavare il
+      // punto a punto solo per le tre partite che finiscono nel mockup, non
+      // per tutte le duecento simulate. Ripuliti prima di stampare.
+      _s: s, _p: p, _box: box,
       punti: p.punti, quarti: p.quarti, cronaca: p.cronaca, vincitore: p.vincitore,
       possessi: p.possessi,
       box: {
@@ -103,6 +125,24 @@ const volata = corse.filter((g) => g.vincitore === "casa" && m(g) <= 4)[0];
 const dominio = corse.filter((g) => g.vincitore === "casa" && m(g) >= 14)[0];
 const sconfitta = corse.filter((g) => g.vincitore === "ospite")[0];
 const scelti = [volata, dominio, sconfitta].filter(Boolean);
+const NOMI_SCENARIO = ["Volata", "Dominio", "Sconfitta"];
+scelti.forEach((g, i) => { g.scenario = NOMI_SCENARIO[i]; });
+
+// Il punto a punto delle sole tre partite scelte. `playByPlayRound` e' puro e
+// ha il suo seme staccato: rigenerarlo qui da' esattamente le azioni che l'app
+// mostrera' quando la partita si giochera' davvero.
+if (CON_AZIONI) {
+  for (const g of scelti) {
+    const pbp = playByPlayRound(g._s, g._p, g._box);
+    g.azioni = pbp.azioni;
+    // Totali di tiro e falli per giocatore, nello stesso ordine delle righe del
+    // box score. Il mockup li accumula dalle azioni, quindi questi servono come
+    // controllo: se le due strade non danno lo stesso numero, il mockup mente.
+    g.tiri = pbp.tiri;
+    g.falli = pbp.falli;
+  }
+}
+for (const g of corse) { delete g._s; delete g._p; delete g._box; }
 
 // ---------------------------------------------------------------------------
 // Fine corsa: la più lunga fra quelle simulate. Serve la schermata con le medie
@@ -169,13 +209,25 @@ const profilo = {
     .slice(0, 30),
 };
 
+// Tutto in ASCII puro: un file .js servito senza `charset` viene letto in
+// latin-1 da Chrome, e "Dinamo Sofa'" diventa "Dinamo SofA". Le lettere accentate
+// escono come \uXXXX, che e' la stessa stringa senza dipendere dagli header.
+const ascii = (s) => s.replace(/[\u0080-\uffff]/g,
+  (c) => "\\u" + c.charCodeAt(0).toString(16).padStart(4, "0"));
+
 // `window.X` e non `export`: i mockup si aprono con file://, e un modulo ESM
 // da file:// viene bloccato dal CORS del browser. Stessa scelta del mockup 76.
 console.log("// dati veri dal motore - generati da tools/dati-tabellone.mjs, non a mano.");
 console.log("// Box score, cronaca, medie e OVR sono quelli che il motore produce davvero.");
-console.log("window.PARTITE = " + JSON.stringify(scelti, null, 1) + ";");
-console.log("window.FINE_RUN = " + JSON.stringify(fineRun, null, 1) + ";");
-console.log("window.PROFILO = " + JSON.stringify(profilo, null, 1) + ";");
+// Con le azioni l'indentazione triplica il peso del file per niente: e' roba
+// generata, non si legge a mano.
+console.log("window.PARTITE = " + ascii(JSON.stringify(scelti, null, CON_AZIONI ? 0 : 1)) + ";");
+console.log("window.FINE_RUN = " + ascii(JSON.stringify(fineRun, null, 1)) + ";");
+console.log("window.PROFILO = " + ascii(JSON.stringify(profilo, null, 1)) + ";");
 console.error("scenari:", scelti.map((g) => `${g.punti.casa}-${g.punti.ospite} vs ${g.avv}`));
 console.error("fine run:", fineRun.map((f) => `${f.esito} ${f.vittorie}/16`).join(" + "));
 console.error("profilo:", profilo.partite, "partite,", profilo.giocatori.length, "giocatori in classifica");
+if (CON_AZIONI) {
+  console.error("azioni:", scelti.map((g) =>
+    `${g.scenario} ${g.azioni.length} (${g.azioni.filter((a) => a.notevole).length} notevoli)`).join(" · "));
+}

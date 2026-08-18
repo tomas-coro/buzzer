@@ -452,13 +452,95 @@ perché ritarare il racconto non cambi né chi vince né il tabellino.
 tiro. Suite: 232 test, tutti verdi. Taratura 16-0 invariata (banco a 200 corse:
 37% · 13% · 3% · 0,5%).
 
-### G4b - da fare
+### G4b - FATTA (mockup)
 
-1. Mockup unico con le tre schermate, dati veri da `tools/dati-tabellone.mjs`.
-   Va deciso lì quante righe di log stanno a schermo e a che velocità scorrono:
-   79 righe notevoli su 48 minuti si sentono, non si calcolano.
-2. Porting nell'app: `app.js`, `screens/draft.js` e `screens/run.js` usano ancora
+`mockups/78-partita-diretta.html`, regia A · Cruscotto scelta al grill, tre
+schermate: **prima del via** (carte con i cinque reparti, quintetto avversario,
+duello dei reparti), **diretta** (log che scorre ad azioni, punteggio, orologio,
+tabellino che si riempie), **tabellino** (colonne di tiro, migliore in campo,
+cifre di squadra, cronaca quarto per quarto).
+
+Le tre decisioni prese guardandolo, non a tavolino:
+
+1. **La velocità si dichiara in durata della partita**, non in millisecondi per
+   riga: con "Essenziale" le righe sono ~96 e con "Tutto" ~333, e un passo fisso
+   darebbe due partite lunghe il triplo l'una dell'altra. Lenta 120s · Normale
+   60s · Rapida 20s · Salta (tarate a mano da Tomas, 2026-08-18).
+2. **Il tabellino si allinea a ogni fine quarto.** Dentro il quarto in corso si
+   accumula dalle azioni, sui quarti chiusi vale quello che dice `boxscore.js`.
+   Serve perché il log è una vista LOSSY del box score: un assist ha bisogno di
+   un canestro a cui appoggiarsi, e quelli che avanzano restano nel box senza una
+   riga. Con lo snap, a fine partita il tabellino del mockup coincide col motore
+   su tutte le colonne (verificato: 0 differenze).
+3. **La colonna FALLI in diretta conta meno del vero**, perché il log dà un nome
+   solo ai falli che mandano in lunetta. Il mockup lo dichiara a schermo e nel
+   tabellino finale usa il numero del motore.
+
+Due difetti veri trovati costruendolo:
+
+- **`chi2` senza indice.** L'azione portava il cognome di chi serve l'assist, ruba
+  o commette il fallo, ma non il suo posto in rosa: con due `Harden` in squadra
+  tutti gli assist finivano sullo stesso. Aggiunto `chi2Idx` in `playbyplay.js`,
+  con due test (uno costruisce apposta una rosa di dieci omonimi).
+- **La stessa carta draftata due volte** in `tools/dati-tabellone.mjs`: il draft
+  greedy non escludeva chi aveva già preso, e in squadra finivano due James
+  Harden 2016-17 identici. Resta aperto se il draft VERO debba impedirlo.
+
+Il generatore ha ora `--azioni` (aggiunge azioni, tiri e falli ai tre scenari) e
+stampa in ASCII puro: un `.js` servito senza `charset` veniva letto in latin-1 e
+"Dinamo Sofà" diventava "Dinamo SofÃ".
+
+### G4b2 - pausa che si può guardare + nomi per esteso - FATTA (2026-08-18)
+
+Il bottone Pausa c'era già, ma da fermi non c'era niente da guardare. Aggiunti
+tre pezzi alla diretta, tutti sui dati che il motore produce già:
+
+1. **Barra del tempo.** Si trascina e la partita torna a quel momento: punteggio,
+   quarti, tabellini, log e analisi si ricalcolano da `state.k`, perché nessuno
+   di quei pezzi tiene un totale suo. Accanto, due frecce da un'azione e i salti
+   a inizio quarto. Trascinare mette in pausa.
+   Il prezzo tecnico: i pezzi della diretta sono diventati nodi **persistenti**
+   riempiti da `aggiornaDiretta()`, perché un `input[type=range]` ricreato a metà
+   trascinamento perde il dito. `render()` resta il disegno completo.
+2. **Scheda del giocatore.** Click su una riga del tabellino (o su un nome in
+   "chi sta decidendo"): la partita si ferma e a destra si apre la sua scheda -
+   OVR, cinque reparti, cifre, tiri, e tutte le azioni in cui compare, da
+   protagonista o da comprimario (`azioniDi` guarda `chiIdx` e `chi2Idx`). Esc
+   chiude.
+3. **Pannello Analisi**, secondo volto della colonna destra: margine azione per
+   azione (SVG senza testo dentro, così non si deforma), i tre che stanno
+   decidendo, e il confronto di squadra. Le righe in percentuale usano scala
+   0-100 e non l'una contro l'altra: 50% contro 47% disegnava due barre quasi
+   piene, il contrario di quello che dicono i numeri.
+
+Nomi delle squadre: nuovo `prototype/imbattuto/team-names.js` (30 franchigie,
+gemello di `team-colors.js`, solo presentazione). Il generatore mette `avvNome` +
+`avvAnno` sulla partita e `teamNome` su ogni carta; il mockup usa il nome per
+esteso dove c'è spazio ("Miami Heat 2014-15") e tiene la sigla nelle colonne
+strette. La cronaca del motore nomina l'avversaria con la sigla: nel mockup si
+allarga a schermo con `perEsteso()`. **Alla fonte va sistemato nell'app**: il
+nome nasce in `prototype/imbattuto/pool.js`, non nel motore.
+
+### G4c - da fare
+
+1. Porting nell'app: `app.js`, `screens/draft.js` e `screens/run.js` usano ancora
    cinque slot e `state.quintetto`, quindi oggi sono rotti contro il motore.
+2. Nome squadra per esteso alla fonte (`pool.js`), così la cronaca del motore
+   non ha bisogno della sostituzione a schermo.
+
+### G5 - cambi e minutaggi decisi da chi gioca - DA DECIDERE
+
+Chiesto da Tomas il 2026-08-18: in pausa poter fare un cambio o forzare i minuti
+di un giocatore, con i limiti imposti dal coach. **Oggi il motore non può**:
+`simulaPartita` calcola l'intera partita in un colpo (possessi, ppp, quattro
+quarti) e i minuti sono un INPUT fisso che `boxscore.js` usa per spalmare le
+statistiche. Non esiste un "adesso" in cui infilare un cambio.
+
+Cosa servirebbe: spezzare la simulazione in segmenti (per quarto, o per finestra
+di sei minuti), calcolare i reparti di chi è in campo in ogni segmento, e poter
+far ripartire il calcolo dal punto di pausa con minuti nuovi. Mezza giornata sul
+motore più il mockup. Nel 78 NON è stato messo un bottone finto: il mockup
+srotola azioni già prodotte, quindi un cambio non sposterebbe un punto.
 
 ## Stime
 

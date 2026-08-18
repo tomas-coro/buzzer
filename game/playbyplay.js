@@ -810,6 +810,11 @@ function grezza(o) {
     // avere lo stesso cognome (LeBron 2013 e LeBron 2018 in due slot diversi):
     // cercare per nome pescherebbe il profilo dell'altro.
     chiIdx: o.chiIdx ?? null,
+    // Indice del comprimario: chi serve l'assist, chi ruba, chi stoppa, chi
+    // commette il fallo. Sta nella rosa di `lato` per l'assist e in quella
+    // avversaria per tutto il resto. Senza, chi legge le azioni deve risalire
+    // dal cognome e con due Harden in rosa sbaglia giocatore.
+    chi2Idx: o.chi2Idx ?? null,
     dentro: o.dentro ?? null, dettaglio: o.dettaglio ?? null,
     casa: 0, ospite: 0, notevole: false, testo: "",
   };
@@ -873,27 +878,30 @@ function intreccia({ materiale, box, indici, squadre, rng }) {
           dettaglio: { fatti: p.fatti, tentati: p.tentati },
         }));
       } else {
-        const ass = p.assist !== undefined ? nome(materiale[lato].inCampo[p.assist]) : null;
+        const assIdx = p.assist !== undefined ? materiale[lato].inCampo[p.assist] : null;
         eventi.push(grezza({
-          lato, tipo: "canestro", chi: nome(idx), chiIdx: idx, chi2: ass,
+          lato, tipo: "canestro", chi: nome(idx), chiIdx: idx,
+          chi2: assIdx !== null ? nome(assIdx) : null, chi2Idx: assIdx,
           punti: p.punti, dettaglio: p.tipo,
         }));
       }
     } else if (p.genere === "persa") {
       // Una palla persa su due nasce da un recupero avversario, se ne restano.
       const ladro = serbatoio[altro].stl.shift();
+      const ladroIdx = ladro !== undefined ? materiale[altro].inCampo[ladro] : null;
       eventi.push(grezza({
         lato, tipo: ladro !== undefined ? "recupero" : "palla-persa",
         chi: nome(idx), chiIdx: idx,
-        chi2: ladro !== undefined ? nomeAltro(materiale[altro].inCampo[ladro]) : null,
+        chi2: ladroIdx !== null ? nomeAltro(ladroIdx) : null, chi2Idx: ladroIdx,
       }));
     } else {
       // Errore: può essere stoppato, e comunque produce un rimbalzo.
       const stoppatore = p.tipo === "t2" ? serbatoio[altro].blk.shift() : undefined;
+      const stopIdx = stoppatore !== undefined ? materiale[altro].inCampo[stoppatore] : null;
       eventi.push(grezza({
-        lato, tipo: stoppatore !== undefined ? "stoppata" : "errore",
+        lato, tipo: stopIdx !== null ? "stoppata" : "errore",
         chi: nome(idx), chiIdx: idx,
-        chi2: stoppatore !== undefined ? nomeAltro(materiale[altro].inCampo[stoppatore]) : null,
+        chi2: stopIdx !== null ? nomeAltro(stopIdx) : null, chi2Idx: stopIdx,
         dettaglio: p.tipo,
       }));
       // Il rimbalzo: offensivo o difensivo secondo la quota NBA, ma solo se il
@@ -968,6 +976,7 @@ function nominaFalli(azioni, squadre, falli, rng) {
     if (residuo[altro][i] > 0) {
       residuo[altro][i]--;
       a.chi2 = cognome(g[i].nome ?? g[i].name);
+      a.chi2Idx = i;
     }
   }
 }
