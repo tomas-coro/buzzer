@@ -547,6 +547,26 @@ far ripartire il calcolo dal punto di pausa con minuti nuovi. Mezza giornata sul
 motore più il mockup. Nel 78 NON è stato messo un bottone finto: il mockup
 srotola azioni già prodotte, quindi un cambio non sposterebbe un punto.
 
+### G6 - dal giro di prova sul draft (Tomas, 2026-08-18)
+
+Tre cose viste giocando la tappa 1, da fare **prima** di andare avanti col coach:
+
+1. **Facile non può avere switch infiniti.** `DIFFICULTIES.facile.freeSwitch` rende
+   "↺ squadra" e "↺ stagione" illimitati: infinito vuol dire nessuna scelta, si
+   ripesca finché non esce quello che serve. Rimetterli a numero e ritarare la
+   scala degli aiuti su tutte e quattro le difficoltà. Riferimenti che Tomas
+   vuole guardare: i giochi **7-0** e **38-0-0**, e **eraball.com**. Le soglie
+   avversario NON si toccano: sono tarate sul 16-0.
+2. **Carta non piazzabile = non cliccabile.** Se tutti i ruoli di una carta sono
+   coperti, oggi la riga si seleziona lo stesso e risponde "i suoi ruoli sono già
+   coperti": il feedback arriva dopo il click. Va spenta al disegno (stato
+   disabilitato, niente selezione) e deve saltare all'occhio prima di toccarla.
+   `eligibleRoles(card)` sa già quando la lista è vuota.
+3. **Lo spin mostra 10 giocatori, non 5.** Deciso il 2026-07-27 e ribadito ora:
+   il pool di ogni spin è la squadra piena con copertura ruoli garantita,
+   titolari / 6° uomo / panchina distinti. Tocca `pool.js` (`spinRoster`,
+   `topFive`) e la lista candidati di `screens/draft.js`.
+
 ## Stime
 
 A ~3 ore · B ~4 ore · C ~2 ore · D ~2 ore · E ~4 ore · G1-G3 ~5 ore ·
