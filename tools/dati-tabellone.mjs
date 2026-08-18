@@ -6,8 +6,9 @@ import { pickCoaches } from "../prototype/imbattuto/coaches.js";
 import { opponentPool, spinRoster } from "../prototype/imbattuto/pool.js";
 import { toDisplayOvr } from "../prototype/imbattuto/display.js";
 import { teamName } from "../game/team-names.js";
-import { ROLES, canPlay } from "../game/roster.js";
-import { SLOTS, slotLibero, minutiRosa } from "../game/rosa.js";
+import {
+  SLOTS, caselleLibere, caselleDove, cartaIn, minutiRosa, TITOLARE,
+} from "../game/rosa.js";
 import { votoCarta } from "../game/rating.js";
 import { attacco, difesa } from "../game/partita.js";
 import { medieCarriera } from "../game/boxscore.js";
@@ -25,24 +26,35 @@ const SQUADRA = "Dinamo Sofà";
 const POOL = opponentPool(CARDS_BY_TEAM_SEASON);
 const rngFrom = (s) => () => (s = (s * 1103515245 + 12345) % 2147483648) / 2147483648;
 
+// Dove va la carta appena presa: nel quintetto se può giocarci (più minuti),
+// altrimenti nel posto di panchina libero più alto. Prendendo a ogni giro la
+// carta migliore rimasta, la panchina esce già in ordine di forza.
+function scegliCasella(rosa, carta) {
+  const dove = caselleDove(rosa, carta);
+  if (dove.length === 0) return null;
+  return dove.find((s) => s.tipo === TITOLARE) ?? dove[0];
+}
+
 function draftaBene(state, giri, rng) {
   // Una carta si prende UNA volta sola. Senza questo, la stessa rosa esce da due
   // giri diversi e in squadra finiscono due James Harden 2016-17 identici: nel
   // tabellino sono due righe uguali e nel racconto due nomi indistinguibili.
   const presi = new Set();
   for (const _ of SLOTS) {
-    const liberi = ROLES.filter((r) => slotLibero(state.rosa, r) !== null);
-    let migliore = null, ruolo = null;
+    const libere = caselleLibere(state.rosa);
+    let migliore = null, casella = null;
     for (let g = 0; g < giri; g++) {
-      const { cards } = spinRoster(CARDS_BY_TEAM_SEASON, liberi, {}, rng);
-      for (const c of cards) for (const r of liberi) {
-        if (!canPlay(c, r) || presi.has(c.player_id)) continue;
-        if (!migliore || votoCarta(c) > votoCarta(migliore)) { migliore = c; ruolo = r; }
+      const { cards } = spinRoster(CARDS_BY_TEAM_SEASON, libere, {}, rng);
+      for (const c of cards) {
+        if (presi.has(c.player_id)) continue;
+        const slot = scegliCasella(state.rosa, c);
+        if (!slot) continue;
+        if (!migliore || votoCarta(c) > votoCarta(migliore)) { migliore = c; casella = slot; }
       }
     }
-    if (!migliore) throw new Error("draftaBene: nessuna carta libera per gli slot rimasti");
+    if (!migliore) throw new Error("draftaBene: nessuna carta libera per le caselle rimaste");
     presi.add(migliore.player_id);
-    state = draftPick(state, ruolo, migliore);
+    state = draftPick(state, casella, migliore);
   }
   return state;
 }
@@ -65,11 +77,11 @@ const carta = (c, ruolo) => ({
 });
 
 // Le dieci righe di una rosa nell'ordine degli slot: prima il quintetto PG→C,
-// poi la panchina. `tipo` e `minuti` servono al mockup, che deve poter mettere
-// una riga di separazione tra titolari e riserve e stampare i minuti.
+// poi la panchina dal 6° al 10°. `tipo`, `posto` e `minuti` servono al mockup,
+// che deve poter separare quintetto e panchina e stampare "8° uomo · 16 min".
 const rosaCarte = (rosa, rotazione) =>
-  minutiRosa(rosa, rotazione).map(({ carta: c, ruolo, tipo, minuti }) =>
-    ({ ...carta(c, ruolo), tipo, minuti }));
+  minutiRosa(rosa, rotazione).map(({ carta: c, ruolo, tipo, slot, minuti }) =>
+    ({ ...carta(c, ruolo), tipo, posto: slot.posto ?? null, minuti }));
 
 const corse = [];
 const finite = [];
@@ -94,10 +106,10 @@ for (let seme = 1; seme <= 200 && finite.length < 40; seme++) {
       ovrLoro: toDisplayOvr(s.avversario.voto.ovr),
       loroAttDif: attDif(s.avversario.voto.reparti),
       avv: `${s.avversario.team} ${s.avversario.season}`,
-      avvSigla: s.avversario.rosa.PG.titolare?.team_abbr ?? s.avversario.team,
+      avvSigla: cartaIn(s.avversario.rosa, { tipo: TITOLARE, ruolo: "PG" })?.team_abbr ?? s.avversario.team,
       // Nome per esteso e annata separati: a schermo grande "Miami Heat 2014-15"
       // dice contro chi giochi, "MIA" no. La sigla resta per le colonne strette.
-      avvNome: teamName(s.avversario.rosa.PG.titolare?.team_abbr ?? s.avversario.team),
+      avvNome: teamName(cartaIn(s.avversario.rosa, { tipo: TITOLARE, ruolo: "PG" })?.team_abbr ?? s.avversario.team),
       avvAnno: s.avversario.season,
       mio,
       loro: rosaCarte(s.avversario.rosa, ROTAZIONE_AVVERSARIO),

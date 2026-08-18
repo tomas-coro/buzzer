@@ -1,5 +1,5 @@
 import { votoRosa, DEFAULT_K } from "./rating.js";
-import { costruisciRosa, listaRosa, TITOLARE } from "./rosa.js";
+import { costruisciRosa, listaRosa, cartaIn, TITOLARE } from "./rosa.js";
 import { ROLES } from "./roster.js";
 
 // Gli avversari: una rosa da 10 per ogni squadra-stagione del dataset.
@@ -19,7 +19,7 @@ export const MIN_CARTE_ROSA = 10;
  * Da { "TEAM|SEASON": Card[] } → lista di avversari pronti.
  *
  * Ogni voce porta:
- *   rosa    le dieci caselle (2 per ruolo, titolare + riserva)
+ *   rosa    le dieci caselle (5 titolari per ruolo + 5 posti di panchina)
  *   lista   le dieci carte nell'ordine degli slot: il box score legge da qui
  *   quintet i cinque titolari, per le schermate che mostrano solo chi parte
  *   voto    ovr + reparti PESATI PER MINUTI, cioè quello che scende in campo
@@ -33,7 +33,7 @@ export function buildHistoricalRose(cardsByTeamSeason, _k = DEFAULT_K) {
     out.push({
       team, season, rosa,
       lista: listaRosa(rosa),
-      quintet: ROLES.map((r) => rosa[r][TITOLARE]),
+      quintet: ROLES.map((r) => cartaIn(rosa, { tipo: TITOLARE, ruolo: r })),
       voto: votoRosa(rosa),
     });
   }

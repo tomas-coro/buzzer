@@ -1,25 +1,42 @@
-// Dati VERI per il mockup 79 (lista candidati da dieci).
+// Dati VERI per i mockup del draft da dieci.
 //
 // Come per dati-tabellone.mjs: il mockup non inventa niente. Le dieci carte di
 // ogni spin escono da `costruisciRosa`, cioè dallo stesso motore che costruisce
-// le rose avversarie, e la rosa parziale del giocatore esce da draftPick veri.
+// le rose avversarie, e la rosa parziale del giocatore ha la forma vera della
+// rosa: cinque titolari legati al ruolo, cinque posti di panchina liberi.
 //
-// Uso: node tools/dati-draft10.mjs > mockups/79-draft10-data.js
+// NOTA sul mockup 79. `mockups/79-draft10-data.js` è stato generato con la
+// forma VECCHIA (ruolo → titolare/riserva), quella di prima di G7: il file su
+// disco resta buono per quel mockup, ma rigenerarlo con questo script gli
+// cambia la forma sotto i piedi. Questo script serve al mockup NUOVO del campo,
+// quello con le caselle 6°-10° e i minuti scritti sopra.
+//
+// Uso: node tools/dati-draft10.mjs > mockups/NN-draft-data.js
 import { CARDS_BY_TEAM_SEASON } from "../prototype/imbattuto/cards.js";
-import { costruisciRosa, SLOTS, slotLibero, TITOLARE, RISERVA } from "../game/rosa.js";
-import { ROLES } from "../game/roster.js";
+import {
+  costruisciRosa, emptyRosa, assegnaRosa, cartaIn, caselleLibere, caselleDove,
+  etichettaSlot, minutiSlot, SLOTS, TITOLARE, PANCA,
+} from "../game/rosa.js";
 
 // Tre squadre-stagione scelte a mano, non pescate a caso: un mockup deve essere
 // stabile fra un'apertura e l'altra. Il dataset oggi copre 2014-15 → 2019-20.
 const SPIN = ["GSW|2016-17", "MIL|2018-19", "LAL|2019-20"];
 
-// La rosa parziale su cui si guarda il mockup: sei caselle piene, quattro libere.
-// Serve a vedere le carte SPENTE (ruoli già coperti), che è metà del punto.
+// La rotazione con cui si scrivono i minuti sulle caselle. Normale è quella di
+// partenza: il coach si sceglie dopo il draft, quindi durante il draft il
+// giocatore vede i minuti "di base".
+const ROTAZIONE = "normale";
+
+// La rosa parziale su cui si guarda il mockup: sei caselle piene, quattro
+// libere. Serve a vedere le carte SPENTE (nessuna casella per loro) e la
+// panchina riempita a salti, che è metà del punto della schermata nuova.
 const PIENE = [
-  ["PG", TITOLARE], ["PG", RISERVA],
-  ["SG", TITOLARE],
-  ["C", TITOLARE], ["C", RISERVA],
-  ["SF", TITOLARE],
+  { tipo: TITOLARE, ruolo: "PG" },
+  { tipo: TITOLARE, ruolo: "SG" },
+  { tipo: TITOLARE, ruolo: "SF" },
+  { tipo: TITOLARE, ruolo: "C" },
+  { tipo: PANCA, posto: 6 },
+  { tipo: PANCA, posto: 8 },
 ];
 
 const carta = (c) => ({
@@ -31,49 +48,60 @@ const carta = (c) => ({
   stats_real: c.stats_real,
 });
 
+// Le dieci caselle come le disegna la schermata: etichetta ("6° uomo") e minuti
+// li dà il motore, così il mockup non se li riscrive a mano e non può sbagliarli.
+const casella = (slot) => ({
+  ...slot, etichetta: etichettaSlot(slot), minuti: minutiSlot(slot, ROTAZIONE),
+});
+
 function spin(key) {
   const rosa = costruisciRosa(CARDS_BY_TEAM_SEASON[key]);
   const [team, season] = key.split("|");
   return {
     key, team, season,
-    // Le dieci in ordine di casella: quintetto PG→C, poi panchina PG→C.
-    cards: SLOTS.map(({ ruolo, tipo }) => ({
-      ...carta(rosa[ruolo][tipo]), ruolo, tipo,
-    })),
+    // Le dieci in ordine di casella: quintetto PG→C, poi panchina 6°→10°. La
+    // casella è quella che la carta occupa nella SUA squadra: serve a mostrare
+    // da dove viene, non a decidere dove la metti tu.
+    cards: SLOTS.map((slot) => ({ ...carta(cartaIn(rosa, slot)), da: casella(slot) })),
   };
 }
 
 // La rosa del giocatore: prendo carte da una squadra che NON è fra gli spin,
-// così nessun candidato risulta già preso e le carte spente lo sono per il
-// ruolo coperto, non per il doppione.
+// così nessun candidato risulta già preso e le carte spente lo sono per le
+// caselle finite, non per il doppione.
 function rosaParziale() {
   const mia = costruisciRosa(CARDS_BY_TEAM_SEASON["SAS|2015-16"]);
-  const out = {};
-  for (const r of ROLES) out[r] = { [TITOLARE]: null, [RISERVA]: null };
-  for (const [ruolo, tipo] of PIENE) out[ruolo][tipo] = carta(mia[ruolo][tipo]);
+  let out = emptyRosa();
+  for (const slot of PIENE) out = assegnaRosa(out, slot, cartaIn(mia, slot));
   return out;
 }
 
+const mia = rosaParziale();
+
+// La rosa in forma piatta, una voce per casella: il mockup disegna il campo
+// scorrendo questa lista e non deve sapere com'è fatta la rosa dentro.
+const caselle = SLOTS.map((slot) => {
+  const c = cartaIn(mia, slot);
+  return { ...casella(slot), carta: c ? carta(c) : null };
+});
+
 const dati = {
+  rotazione: ROTAZIONE,
   spin: SPIN.map(spin),
-  rosa: rosaParziale(),
-  // Quali ruoli hanno ancora una casella libera, e quale: lo calcola il motore,
-  // il mockup lo rilegge e basta.
-  liberi: Object.fromEntries(ROLES.map((r) => {
-    const rosa = rosaParziale();
-    return [r, slotLibero(rosa, r)];
-  })),
+  caselle,
+  libere: caselleLibere(mia).map(casella),
 };
 
 // Controllo che il mockup mostri davvero il caso interessante: almeno una carta
 // spenta e almeno una piazzabile in ogni spin. Se salta, il mockup mentirebbe.
+//
+// Da G7 una carta è spenta solo se NON ha nessuna casella libera: con un posto
+// di panchina vuoto non succede mai, ed è giusto così - il caso "spento" torna
+// quando resta libero solo il quintetto.
 for (const s of dati.spin) {
-  const rosa = dati.rosa;
-  const piazzabili = s.cards.filter((c) =>
-    ROLES.some((r) => (rosa[r][TITOLARE] === null || rosa[r][RISERVA] === null)
-      && (c.pos.primary === r || c.pos.secondary === r)));
-  if (piazzabili.length === 0 || piazzabili.length === s.cards.length) {
-    console.error(`ATTENZIONE ${s.key}: ${piazzabili.length}/10 piazzabili, scenario poco utile`);
+  const piazzabili = s.cards.filter((c) => caselleDove(mia, c).length > 0);
+  if (piazzabili.length === 0) {
+    console.error(`ATTENZIONE ${s.key}: nessuna carta piazzabile, scenario inutile`);
   }
 }
 

@@ -1,6 +1,6 @@
 import { canPlay } from "../../game/roster.js";
 import { buildHistoricalRose } from "../../game/opponents.js";
-import { costruisciRosa, SLOTS } from "../../game/rosa.js";
+import { costruisciRosa, SLOTS, cartaIn, TITOLARE } from "../../game/rosa.js";
 
 // L'identità di una carta: giocatore + stagione. LeBron 2013 e LeBron 2018 sono
 // due carte diverse; lo stesso LeBron 2013 pescato due volte è la stessa carta,
@@ -12,21 +12,29 @@ export const chiaveCarta = (c) => `${c.player_id}|${c.season}`;
 // perde 5: le squadre-stagione che non arrivano a dieci carte.
 const MIN_CARTE = 10;
 
-// Dalla rosa (mappa ruolo → {titolare, riserva}) alle due liste parallele che
-// la schermata disegna: le carte in ordine di casella (quintetto PG→C, poi
-// panchina PG→C) e, allo stesso indice, la casella da cui vengono.
+// Dalla rosa alle due liste parallele che la schermata disegna: le carte in
+// ordine di casella (quintetto PG→C, poi panchina 6°→10°) e, allo stesso
+// indice, la casella da cui vengono.
 // Le carte restano carte pulite: la casella sta a parte, così quando l'utente
-// piazza un candidato non si porta dietro il ruolo che aveva nella SUA squadra.
+// piazza un candidato non si porta dietro il posto che aveva nella SUA squadra.
 function vistaRosa(rosa) {
   return {
-    cards: SLOTS.map(({ ruolo, tipo }) => rosa[ruolo][tipo]),
-    slots: SLOTS.map(({ ruolo, tipo }) => ({ ruolo, tipo })),
+    cards: SLOTS.map((slot) => cartaIn(rosa, slot)),
+    slots: SLOTS.map((slot) => ({ ...slot })),
   };
 }
 
-// Una rosa "serve" se almeno una delle sue dieci carte può coprire uno slot ancora libero.
-function rosaFits(cards, freeRoles) {
-  return cards.some((c) => freeRoles.some((r) => canPlay(c, r)));
+/**
+ * Una rosa "serve" se almeno una delle sue dieci carte può finire in una
+ * casella ancora libera della TUA squadra.
+ *
+ * Da quando la panchina è libera (G7) basta un posto di panchina vuoto perché
+ * qualsiasi rosa vada bene: là dentro ci sta chiunque. Il filtro sui ruoli
+ * conta solo quando restano da riempire soltanto caselle del quintetto.
+ */
+function rosaFits(cards, libere) {
+  if (libere.some((slot) => slot.tipo !== TITOLARE)) return true;
+  return cards.some((c) => libere.some((slot) => canPlay(c, slot.ruolo)));
 }
 
 // Pesca una team-stagione e ne mostra la ROSA INTERA da dieci (G6, 2026-08-18):
@@ -35,12 +43,14 @@ function rosaFits(cards, freeRoles) {
 // La rosa la costruisce `costruisciRosa`, lo stesso motore che monta le rose
 // avversarie: quello che vedi allo spin è una squadra vera, non una classifica.
 // Piazzamento libero: non filtro per un ruolo singolo, mostro tutti e dieci.
+// `libere` sono le caselle ancora vuote della tua rosa (da `caselleLibere`):
+// servono solo a scartare le squadre che non ti darebbero comunque niente.
 // filtro { sameTeam, sameSeason, excludeKey } serve agli aiuti squadra/stagione;
 // filtro.escludi è l'insieme delle carte GIÀ IN ROSA (chiaveCarta): spariscono
 // dalle rose pescate, così lo stesso giocatore-stagione non finisce due volte in
 // squadra. Con la rosa da 10 capitava spesso: dieci pick sullo stesso pool.
 // La chiave del dataset è "TEAM|SEASON".
-export function spinRoster(cardsByKey, freeRoles, filtro = {}, rng = Math.random) {
+export function spinRoster(cardsByKey, libere, filtro = {}, rng = Math.random) {
   const { sameTeam = null, sameSeason = null, excludeKey = null, escludi = null } = filtro;
   const fuori = escludi instanceof Set ? escludi : new Set(escludi ?? []);
 
@@ -53,7 +63,7 @@ export function spinRoster(cardsByKey, freeRoles, filtro = {}, rng = Math.random
       : cardsByKey[k].filter((c) => !fuori.has(chiaveCarta(c)));
     if (disp.length < MIN_CARTE) continue;
     const vista = vistaRosa(costruisciRosa(disp));
-    if (rosaFits(vista.cards, freeRoles)) rose.set(k, vista);
+    if (rosaFits(vista.cards, libere)) rose.set(k, vista);
   }
   const validKeys = [...rose.keys()];
 
@@ -72,7 +82,7 @@ export function spinRoster(cardsByKey, freeRoles, filtro = {}, rng = Math.random
     fallback = true;
   }
   if (pool.length === 0) pool = validKeys; // ultima spiaggia: anche la stessa
-  if (pool.length === 0) throw new Error("spinRoster: nessuna rosa copre gli slot liberi");
+  if (pool.length === 0) throw new Error("spinRoster: nessuna rosa copre le caselle libere");
 
   const key = pool[Math.floor(rng() * pool.length)];
   const { cards, slots } = rose.get(key);

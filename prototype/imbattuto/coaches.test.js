@@ -4,7 +4,9 @@ import { COACHES, pickCoaches, descriviEffetto, NOME_REPARTO } from "./coaches.j
 import { applyCoach, VALORE_MIRATO, VALORE_DIFFUSO, VALORE_MALUS } from "../../game/coach.js";
 import { REPARTI } from "../../game/reparti.js";
 import { ROLES } from "../../game/roster.js";
-import { emptyRosa, assegnaRosa, MINUTI, TITOLARE, RISERVA } from "../../game/rosa.js";
+import {
+  emptyRosa, assegnaRosa, cartaIn, MINUTI, TITOLARE, PANCA,
+} from "../../game/rosa.js";
 import { card } from "../../game/fixtures.js";
 
 test("trenta coach, tutti con id diverso", () => {
@@ -86,12 +88,18 @@ test("pickCoaches cambia terna tra una run e l'altra", () => {
 
 // --- le schede funzionano davvero nel motore --------------------------------
 
+// La casella del titolare di un ruolo, e quella del panchinaro che gli sta
+// dietro in questi test (6°=PG, 7°=SG ... 10°=C). La panchina non ha ruoli:
+// l'accoppiata è una convenzione del test, non una regola del motore.
+const tit = (ruolo) => ({ tipo: TITOLARE, ruolo });
+const panca = (ruolo) => ({ tipo: PANCA, posto: 6 + ROLES.indexOf(ruolo) });
+
 // Rosa da 10 tutta a 50: quello che si muove viene dal coach e da nient'altro.
 function rosaPiatta() {
   let r = emptyRosa();
   for (const ruolo of ROLES) {
-    for (const tipo of [TITOLARE, RISERVA]) {
-      r = assegnaRosa(r, ruolo, tipo, card({
+    for (const [slot, tipo] of [[tit(ruolo), TITOLARE], [panca(ruolo), PANCA]]) {
+      r = assegnaRosa(r, slot, card({
         player_id: `${ruolo}-${tipo}`, pos: { primary: ruolo, secondary: null },
         reparti: { t3: 50, fin: 50, dif: 50, reb: 50, reg: 50 },
       }));
@@ -112,19 +120,19 @@ test("ogni scheda passa nel motore e sposta qualcosa in campo", () => {
 test("Thibodeau alza la difesa dei lunghi e non quella dei playmaker", () => {
   const thibs = COACHES.find((c) => c.id === "thibodeau");
   const out = applyCoach(rosaPiatta(), thibs);
-  assert.equal(out.rosa.C[TITOLARE].reparti.dif, 50 + VALORE_MIRATO);
-  assert.equal(out.rosa.PG[TITOLARE].reparti.dif, 50);
+  assert.equal(cartaIn(out.rosa, tit("C")).reparti.dif, 50 + VALORE_MIRATO);
+  assert.equal(cartaIn(out.rosa, tit("PG")).reparti.dif, 50);
   // e il prezzo lo paga tutta la squadra
-  assert.equal(out.rosa.PG[TITOLARE].reparti.reg, 50 - VALORE_MALUS);
+  assert.equal(cartaIn(out.rosa, tit("PG")).reparti.reg, 50 - VALORE_MALUS);
 });
 
 test("D'Antoni fa correre e alza il tiro degli esterni", () => {
   const dantoni = COACHES.find((c) => c.id === "dantoni");
   const out = applyCoach(rosaPiatta(), dantoni);
   assert.equal(out.ritmo, 1);
-  assert.equal(out.rosa.SG[TITOLARE].reparti.t3, 50 + VALORE_MIRATO);
-  assert.equal(out.rosa.C[TITOLARE].reparti.t3, 50, "il centro non tira da tre per decreto");
-  assert.equal(out.rosa.C[TITOLARE].reparti.reg, 50 + VALORE_DIFFUSO);
+  assert.equal(cartaIn(out.rosa, tit("SG")).reparti.t3, 50 + VALORE_MIRATO);
+  assert.equal(cartaIn(out.rosa, tit("C")).reparti.t3, 50, "il centro non tira da tre per decreto");
+  assert.equal(cartaIn(out.rosa, tit("C")).reparti.reg, 50 + VALORE_DIFFUSO);
 });
 
 test("gli anelli si sentono: Jackson alza il voto più di un coach senza titoli", () => {

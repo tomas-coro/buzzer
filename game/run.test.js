@@ -5,34 +5,48 @@ import {
   esitoRound, partitaRound, boxScoreRound, playByPlayRound, titolari,
 } from "./run.js";
 import { ROLES } from "./roster.js";
-import { SLOTS, costruisciRosa } from "./rosa.js";
-import { DIFFICULTIES } from "./difficulty.js";
+import { SLOTS, costruisciRosa, cartaIn, TITOLARE, PANCA } from "./rosa.js";
+import { DIFFICULTIES, TETTI } from "./difficulty.js";
 import { card } from "./fixtures.js";
 import { votoRosa } from "./rating.js";
+import { salarioCarta, SALARIO_MIN } from "./salary.js";
+import { applyCoach } from "./coach.js";
 
 // `liv` è il livello di tutti e cinque i reparti: 80 = squadra forte, 30 = scarsa.
 const repartiA = (liv) => ({ t3: liv, fin: liv, dif: liv, reb: liv, reg: liv });
 
-// Dieci carte, due per ruolo: è la rosa che il draft deve riempire adesso.
-// Gli id sono distinti perché `costruisciRosa` non riassegna la stessa carta
-// due volte, e perché il box score aggrega per persona.
+// Dieci carte, due per ruolo, nell'ordine degli SLOTS: le prime cinque (una per
+// ruolo, PG→C) stanno ai titolari, le seconde cinque vanno in panchina dal 6° al
+// 10°. Gli id sono distinti perché `costruisciRosa` non riassegna la stessa
+// carta due volte, e perché il box score aggrega per persona.
 function dieciCarte(liv, prefisso) {
-  return SLOTS.map(({ ruolo, tipo }) => card({
-    player_id: `${prefisso}-${ruolo}-${tipo}`,
-    name: `${prefisso} ${ruolo} ${tipo}`,
+  return [1, 2].flatMap((giro) => ROLES.map((ruolo) => card({
+    player_id: `${prefisso}-${ruolo}-${giro}`,
+    name: `${prefisso} ${ruolo} ${giro}`,
     pos: { primary: ruolo, secondary: null },
     reparti: repartiA(liv),
-  }));
+  })));
 }
 
-// Draft completo: dieci tocchi, due per ruolo (il primo va titolare, il secondo
-// riserva - lo decide `slotLibero`, non chi chiama).
+// Draft completo: dieci tocchi, una casella per tocco. Adesso la casella la
+// sceglie chi gioca (i posti di panchina accettano chiunque), quindi qui la
+// passo esplicita: `dieciCarte` è già nell'ordine degli SLOTS.
+// I test di questo file misurano il motore, non il portafogli: il draft finto
+// firma dieci titolari veri, che sotto il tetto di una difficoltà vera non
+// entrerebbero mai. Quindi qui il tetto si alza e basta. Il tetto di spesa ha i
+// suoi test, più in basso.
+const TETTO_LARGO = 10_000_000_000;
+
 function fullDraft(state, liv = 50) {
-  for (const carta of dieciCarte(liv, "MIO")) {
-    state = draftPick(state, carta.pos.primary, carta);
-  }
-  return state;
+  const carte = dieciCarte(liv, "MIO");
+  let s = { ...state, tetto: TETTO_LARGO };
+  SLOTS.forEach((slot, i) => { s = draftPick(s, slot, carte[i]); });
+  return s;
 }
+
+// Scorciatoie per le caselle, così i test si leggono.
+const tit = (ruolo) => ({ tipo: TITOLARE, ruolo });
+const panca = (posto) => ({ tipo: PANCA, posto });
 
 // Un coach che non sposta niente: serve ai test che misurano il motore e non
 // l'allenatore. Zero plus, zero malus, ritmo neutro, rotazione normale.
@@ -72,13 +86,15 @@ test("newRun parte in fase draft con aiuti della difficoltà", () => {
   assert.equal(s.aids.respin, 1);
 });
 
-test("draftPick riempie le dieci caselle; prima i titolari, poi le riserve", () => {
+test("draftPick mette la carta nella casella scelta, quintetto o panchina", () => {
   let s = newRun({ formato: "playoff", difficolta: "normale" });
   const carte = dieciCarte(60, "MIO");
-  s = draftPick(s, "PG", carte[0]);
-  assert.equal(s.rosa.PG.titolare, carte[0], "la prima carta di un ruolo parte in quintetto");
-  s = draftPick(s, "PG", carte[5]);
-  assert.equal(s.rosa.PG.riserva, carte[5], "la seconda va in panchina");
+  s = draftPick(s, tit("PG"), carte[0]);
+  assert.equal(cartaIn(s.rosa, tit("PG")), carte[0], "il titolare va nella casella del ruolo");
+  // Un playmaker come 8° uomo: in panchina il ruolo non vincola più.
+  s = draftPick(s, panca(8), carte[5]);
+  assert.equal(cartaIn(s.rosa, panca(8)), carte[5], "la panchina accetta chiunque");
+  assert.equal(cartaIn(s.rosa, panca(6)), null, "il 6° uomo resta libero: l'ordine lo scelgo io");
   assert.equal(s.stato, "draft", "con due su dieci il draft non è finito");
 });
 
@@ -87,16 +103,21 @@ test("draftPick: a dieci carte si passa in fase coach", () => {
   assert.equal(s.stato, "coach");
 });
 
-test("draftPick su un ruolo già pieno lancia (niente terza carta per ruolo)", () => {
-  let s = fullDraft(nuovaRun());
-  // La fase è cambiata, ma l'errore sul ruolo pieno deve restare leggibile
-  // anche su una rosa a metà: lo provo su una rosa fresca.
+test("draftPick su una casella già occupata lancia", () => {
   let t = newRun({ formato: "playoff", difficolta: "normale" });
   const carte = dieciCarte(60, "MIO");
-  t = draftPick(t, "PG", carte[0]);
-  t = draftPick(t, "PG", carte[5]);
-  assert.throws(() => draftPick(t, "PG", card({ player_id: "terzo" })), /già titolare e riserva/);
-  assert.equal(s.stato, "coach");
+  t = draftPick(t, tit("PG"), carte[0]);
+  assert.throws(() => draftPick(t, tit("PG"), carte[5]), /già occupata/);
+  t = draftPick(t, panca(6), carte[5]);
+  assert.throws(() => draftPick(t, panca(6), card({ player_id: "terzo" })), /già occupata/);
+});
+
+test("draftPick rifiuta un titolare fuori ruolo, la panchina no", () => {
+  let t = newRun({ formato: "playoff", difficolta: "normale" });
+  const centro = card({ player_id: "big", pos: { primary: "C", secondary: null } });
+  assert.throws(() => draftPick(t, tit("PG"), centro), /incompatibile/);
+  t = draftPick(t, panca(10), centro);
+  assert.equal(cartaIn(t.rosa, panca(10)), centro);
 });
 
 test("useAid consuma un aiuto; se esaurito lancia", () => {
@@ -147,10 +168,10 @@ test("startRun allena la rosa: la rosa draftata resta intatta accanto a quella a
     ritmo: 0.5, rotazione: "corta",
   };
   const s = pronta(60, 60, coach);
-  assert.equal(s.rosa.C.titolare.reparti.dif, 60, "la rosa draftata non si tocca");
-  assert.equal(s.rosaAllenata.C.titolare.reparti.dif, 68, "il centro prende il plus mirato");
-  assert.equal(s.rosaAllenata.PG.titolare.reparti.dif, 60, "il playmaker no: il plus è mirato");
-  assert.equal(s.rosaAllenata.PG.titolare.reparti.t3, 55, "il malus lo paga tutta la squadra");
+  assert.equal(cartaIn(s.rosa, tit("C")).reparti.dif, 60, "la rosa draftata non si tocca");
+  assert.equal(cartaIn(s.rosaAllenata, tit("C")).reparti.dif, 68, "il centro prende il plus mirato");
+  assert.equal(cartaIn(s.rosaAllenata, tit("PG")).reparti.dif, 60, "il playmaker no: il plus è mirato");
+  assert.equal(cartaIn(s.rosaAllenata, tit("PG")).reparti.t3, 55, "il malus lo paga tutta la squadra");
   assert.equal(s.ritmo, 0.5);
   assert.equal(s.rotazione, "corta");
   assert.ok(s.effetti.length > 0, "gli effetti servono alla schermata di scelta coach");
@@ -281,8 +302,9 @@ test("boxScoreRound: dieci righe per lato, i punti tornano al punteggio", () => 
 test("boxScoreRound: i minuti sono quelli della rotazione del coach", () => {
   const s = pronta(70, 50, { ...COACH, rotazione: "corta" });
   const righe = boxScoreRound(s).casa.righe;
-  assert.equal(righe[0].minuti, 36, "titolare con rotazione corta");
-  assert.equal(righe[5].minuti, 12, "riserva con rotazione corta");
+  assert.equal(righe[0].minuti, 34, "titolare con rotazione corta");
+  assert.equal(righe[5].minuti, 26, "il 6° uomo con rotazione corta gioca quasi da titolare");
+  assert.equal(righe[9].minuti, 8, "il 10° uomo raccoglie le briciole");
   assert.equal(righe.reduce((a, r) => a + r.minuti, 0), 240, "cinque uomini per 48 minuti");
 });
 
@@ -331,4 +353,58 @@ test("le azioni NON finiscono in storia: si ricalcolano dal seme", () => {
 test("playByPlayRound fuori dal run è un errore, non un log vuoto", () => {
   const s = pronta(70, 50);
   assert.throws(() => playByPlayRound({ ...s, stato: "draft" }), /run non attivo/);
+});
+
+// ---- il tetto di spesa e il secondo apron ----
+
+test("una corsa nuova parte col tetto della sua difficoltà e la cassa intatta", () => {
+  for (const liv of ["facile", "normale", "difficile", "incubo"]) {
+    const s = newRun({ formato: "playoff", difficolta: liv, seme: SEME });
+    assert.equal(s.tetto, TETTI[liv]);
+    assert.equal(s.speso, 0);
+  }
+});
+
+test("ogni firma toglie dalla cassa quello che costa il cartellino", () => {
+  const carte = dieciCarte(50, "MIO");
+  let s = { ...nuovaRun(), tetto: TETTO_LARGO };
+  s = draftPick(s, tit("PG"), carte[0]);
+  assert.equal(s.speso, salarioCarta(carte[0]));
+  s = draftPick(s, tit("SG"), carte[1]);
+  assert.equal(s.speso, salarioCarta(carte[0]) + salarioCarta(carte[1]));
+});
+
+test("oltre il secondo apron non si firma, e l'errore dice perché", () => {
+  const carte = dieciCarte(50, "MIO");
+  // Tetto piccolo apposta: la prima carta vera non ci sta nemmeno con l'apron.
+  const s = { ...nuovaRun(), tetto: 10_000_000 };
+  assert.throws(() => draftPick(s, tit("PG"), carte[0]), /costa troppo/);
+});
+
+test("la firma di ripiego passa il suo costo e non quello del cartellino", () => {
+  const carte = dieciCarte(50, "MIO");
+  const s = draftPick({ ...nuovaRun(), tetto: 30_000_000 }, tit("PG"), carte[0], SALARIO_MIN);
+  assert.equal(s.speso, SALARIO_MIN);
+  assert.notEqual(SALARIO_MIN, salarioCarta(carte[0]));
+});
+
+test("chi resta sotto il tetto non paga nessuna tassa", () => {
+  let s = fullDraft(nuovaRun(), 50);
+  s = chooseCoach({ ...s, tetto: TETTO_LARGO }, COACH);
+  const lordo = applyCoach(s.rosa, COACH).voto;
+  const run = startRun(s, poolAt(50));
+  assert.deepEqual(run.voto.reparti, lordo.reparti);
+});
+
+test("chi sfora il tetto scende di reparti, in proporzione allo sforo", () => {
+  const base = fullDraft(nuovaRun(), 50);
+  const lordo = applyCoach(base.rosa, COACH).voto;
+  // 25 milioni sopra il tetto: cinque punti di reparto, cioè circa cinque punti
+  // di margine a partita.
+  const s = chooseCoach({ ...base, tetto: 100_000_000, speso: 125_000_000 }, COACH);
+  const run = startRun(s, poolAt(50));
+  for (const [r, v] of Object.entries(lordo.reparti)) {
+    assert.equal(run.voto.reparti[r], Math.max(0, v - 5), `reparto ${r} non tassato`);
+  }
+  assert.ok(run.voto.ovr <= lordo.ovr, "il voto della squadra non è sceso");
 });

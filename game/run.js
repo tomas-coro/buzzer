@@ -3,7 +3,8 @@
 //
 // COSA È CAMBIATO CON LA ROSA DA 10. Prima lo stato teneva un `quintetto` di
 // cinque caselle e il coach moltiplicava un voto medio. Adesso lo stato tiene
-// una `rosa` di dieci caselle (titolare + riserva per ruolo), e il coach allena
+// una `rosa` di dieci caselle (cinque titolari per ruolo + cinque posti di
+// panchina liberi, 6°-10°), e il coach allena
 // le CARTE una per una: da lì nasce `rosaAllenata`, che è quella che scende in
 // campo. Le due rose restano separate di proposito - `rosa` è quello che hai
 // draftato, `rosaAllenata` è quello che il coach ne ha fatto - così la
@@ -15,11 +16,14 @@
 
 import { ROLES } from "./roster.js";
 import {
-  emptyRosa, assegnaRosa, slotLibero, rosaCompleta, minutiRosa, TITOLARE,
+  emptyRosa, assegnaRosa, rosaCompleta, minutiRosa, caselleDove, cartaIn,
+  etichettaSlot, TITOLARE, caselleLibere,
 } from "./rosa.js";
 import { applyCoach } from "./coach.js";
 import { pickOpponent, chiaveAvversario } from "./opponents.js";
-import { DIFFICULTIES } from "./difficulty.js";
+import { DIFFICULTIES, TETTI } from "./difficulty.js";
+import { salarioCarta, limiteDuro, firmabile, malusApron } from "./salary.js";
+import { votoDaReparti } from "./rating.js";
 import { simulaPartita, rngSeed } from "./partita.js";
 import { boxScorePartita } from "./boxscore.js";
 import { playByPlay } from "./playbyplay.js";
@@ -46,6 +50,12 @@ export function newRun({
   return {
     formato, difficolta, k, seme, squadra: squadra.trim(),
     rosa: emptyRosa(),
+    // Il tetto di spesa della difficoltà, e quanto ne hai già impegnato. Stanno
+    // nello stato e non si ricalcolano dalla rosa perché il prezzo pagato può
+    // essere diverso dal cartellino: la firma di ripiego costa il minimo (vedi
+    // draftPick e `firmaDiRipiego` in salary.js).
+    tetto: TETTI[difficolta],
+    speso: 0,
     rosaAllenata: null,
     coach: null,
     aids: { ...d.aids },
@@ -66,17 +76,38 @@ export function newRun({
 }
 
 /**
- * Piazza una carta nel ruolo scelto. Il giocatore mira il RUOLO, non la
- * casella: la prima carta di quel ruolo va titolare, la seconda riserva. Un
- * tocco solo, come deciso al grill - nessuna schermata di smistamento.
+ * Piazza una carta in una casella scelta.
+ *
+ * La casella arriva da chi gioca, non la decide più il motore: da quando la
+ * panchina è libera e numerata (6°-10°), DOVE metti una carta è una scelta di
+ * minuti, cioè di strategia. `slot` è { tipo: "titolare", ruolo } oppure
+ * { tipo: "panca", posto }.
  */
-export function draftPick(state, ruolo, carta) {
+export function draftPick(state, slot, carta, costo = salarioCarta(carta)) {
   if (state.stato !== "draft") throw new Error("draftPick: non in fase draft");
-  const tipo = slotLibero(state.rosa, ruolo);
-  if (!tipo) throw new Error(`draftPick: il ruolo ${ruolo} ha già titolare e riserva`);
-  const rosa = assegnaRosa(state.rosa, ruolo, tipo, carta);
+  if (cartaIn(state.rosa, slot) !== null) {
+    throw new Error(`draftPick: la casella ${etichettaSlot(slot)} è già occupata`);
+  }
+  // Il tetto non è un muro: si firma fino al secondo apron, e quello che sta
+  // sopra il tetto si paga in campo (vedi `malusApron` in salary.js, applicato
+  // in startRun). Oltre l'apron invece non si firma, punto.
+  const residuo = limiteDuro(state.tetto) - state.speso;
+  const vuote = caselleLibere(state.rosa).length;
+  if (!firmabile(costo, residuo, vuote)) {
+    throw new Error(
+      `draftPick: ${carta?.name ?? "la carta"} costa troppo (${costo} su ${residuo} disponibili, `
+      + `${vuote - 1} caselle ancora da coprire)`,
+    );
+  }
+  const rosa = assegnaRosa(state.rosa, slot, carta);
   const stato = rosaCompleta(rosa) ? "coach" : "draft";
-  return { ...state, rosa, stato };
+  return { ...state, rosa, speso: state.speso + costo, stato };
+}
+
+// Dove può andare questa carta nella rosa di adesso: serve alle schermate e ai
+// banchi di prova, che così non devono conoscere la forma della rosa.
+export function caselleDisponibili(state, carta) {
+  return caselleDove(state.rosa, carta);
 }
 
 const AID_TYPES = ["squadra", "stagione", "respin"];
@@ -95,12 +126,25 @@ export function chooseCoach(state, coach) {
   return { ...state, coach, stato: "coach" };
 }
 
+// Abbassa tutti i reparti della squadra di `punti` e rifà il voto complessivo.
+// I reparti sono percentili: sotto zero non si scende.
+function tassaSuiReparti(voto, punti) {
+  if (punti <= 0) return voto;
+  const reparti = {};
+  for (const [r, v] of Object.entries(voto.reparti)) reparti[r] = Math.max(0, v - punti);
+  return { ovr: votoDaReparti(reparti), reparti };
+}
+
 export function startRun(state, pool) {
   if (state.stato !== "coach") throw new Error("startRun: non in fase coach");
   if (!state.coach) throw new Error("startRun: manca il coach");
   // Qui il coach entra davvero in campo: alza e abbassa i reparti dei singoli,
   // e da quelle carte allenate nascono voto, ritmo e minuti della corsa.
-  const { rosa, voto, ritmo, rotazione, effetti } = applyCoach(state.rosa, state.coach);
+  const { rosa, voto: votoLordo, ritmo, rotazione, effetti } = applyCoach(state.rosa, state.coach);
+  // La tassa del secondo apron si paga qui, una volta sola, sui reparti della
+  // squadra: da questo momento partita, box score e cronaca leggono i reparti
+  // già tassati e nessuno di loro deve sapere che esiste un tetto di spesa.
+  const voto = tassaSuiReparti(votoLordo, malusApron(state.speso, state.tetto));
   const d = DIFFICULTIES[state.difficolta];
   const round = 1;
   const avversario = pickOpponent(pool, round, d, semeAvversario(state.seme, round));
@@ -114,7 +158,7 @@ export function startRun(state, pool) {
 // quintetto e non per dieci righe (l'esito, il tabellone) leggono da qui.
 export function titolari(state) {
   const rosa = state.rosaAllenata ?? state.rosa;
-  return ROLES.map((r) => rosa[r][TITOLARE]);
+  return ROLES.map((r) => cartaIn(rosa, { tipo: TITOLARE, ruolo: r }));
 }
 
 // L'rng che pesca l'avversario del round. Ha un seme tutto suo, staccato da
@@ -160,8 +204,10 @@ export function partitaRound(state) {
 // gioca. È l'unico punto in cui la rotazione entra nelle statistiche dei
 // singoli, e per questo sta qui e non dentro boxscore.js.
 function giocatoriConMinuti(rosa, rotazione) {
-  return minutiRosa(rosa, rotazione).map(({ carta, minuti, ruolo, tipo }) => ({
-    ...carta, minuti, ruolo, tipo,
+  // `ruolo` qui è quello con cui il motore tratta la carta: della casella se è
+  // titolare, della carta se è in panchina (la panchina non ha posizioni).
+  return minutiRosa(rosa, rotazione).map(({ carta, minuti, ruolo, tipo, slot }) => ({
+    ...carta, minuti, ruolo, tipo, slot,
   }));
 }
 

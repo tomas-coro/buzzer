@@ -2,16 +2,25 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { card } from "./fixtures.js";
 import { ROLES } from "./roster.js";
-import { emptyRosa, assegnaRosa, listaRosa, TITOLARE, RISERVA, repartiRosa } from "./rosa.js";
+import {
+  emptyRosa, assegnaRosa, listaRosa, cartaIn, TITOLARE, PANCA, repartiRosa,
+} from "./rosa.js";
 import { applyCoach, VALORE_MIRATO, VALORE_DIFFUSO, VALORE_MALUS } from "./coach.js";
+
+// Le due caselle di un ruolo in questi test: il titolare, e il panchinaro che
+// gli sta dietro. La panchina non ha più ruoli, quindi la corrispondenza
+// posto→ruolo è una convenzione del test (6°=PG, 7°=SG ... 10°=C): serve solo a
+// verificare che il coach miri sul ruolo della CARTA, non su quello del posto.
+const tit = (ruolo) => ({ tipo: TITOLARE, ruolo });
+const panca = (ruolo) => ({ tipo: PANCA, posto: 6 + ROLES.indexOf(ruolo) });
 
 // Rosa piena di carte identiche a 50: ogni scostamento nei reparti viene dal
 // coach e da nient'altro.
 function rosaPiatta(liv = 50) {
   let r = emptyRosa();
   for (const ruolo of ROLES) {
-    for (const tipo of [TITOLARE, RISERVA]) {
-      r = assegnaRosa(r, ruolo, tipo, card({
+    for (const [slot, tipo] of [[tit(ruolo), TITOLARE], [panca(ruolo), PANCA]]) {
+      r = assegnaRosa(r, slot, card({
         player_id: `${ruolo}-${tipo}`,
         name: `${ruolo} ${tipo}`,
         pos: { primary: ruolo, secondary: null },
@@ -24,7 +33,8 @@ function rosaPiatta(liv = 50) {
 
 const NEUTRO = { id: "neutro", name: "Nessuno", plus: [], malus: null };
 
-const cerca = (rosa, ruolo, tipo) => rosa[ruolo][tipo];
+const cerca = (rosa, ruolo, tipo) =>
+  cartaIn(rosa, tipo === TITOLARE ? tit(ruolo) : panca(ruolo));
 
 test("un coach neutro non sposta niente", () => {
   const rosa = rosaPiatta();
@@ -39,7 +49,7 @@ test("un plus mirato alza il reparto SOLO ai ruoli bersaglio", () => {
   const coach = { ...NEUTRO, plus: [{ reparto: "dif", ruoli: ["PF", "C"] }] };
   const out = applyCoach(rosaPiatta(), coach);
   assert.equal(cerca(out.rosa, "C", TITOLARE).reparti.dif, 50 + VALORE_MIRATO);
-  assert.equal(cerca(out.rosa, "PF", RISERVA).reparti.dif, 50 + VALORE_MIRATO);
+  assert.equal(cerca(out.rosa, "PF", PANCA).reparti.dif, 50 + VALORE_MIRATO);
   assert.equal(cerca(out.rosa, "PG", TITOLARE).reparti.dif, 50, "le guardie non c'entrano");
   assert.equal(cerca(out.rosa, "C", TITOLARE).reparti.t3, 50, "gli altri reparti non si toccano");
 });
@@ -104,7 +114,7 @@ test("il delta elencato è quello vero, non quello chiesto: col tetto a 99 si ac
 
 test("gli anelli sono un bonus piccolo su tutti i reparti di tutti", () => {
   const out = applyCoach(rosaPiatta(), { ...NEUTRO, champ_bonus: 2 });
-  const c = cerca(out.rosa, "SF", RISERVA).reparti;
+  const c = cerca(out.rosa, "SF", PANCA).reparti;
   assert.equal(c.t3, 52);
   assert.equal(c.dif, 52);
 });
@@ -120,11 +130,11 @@ test("il voto della squadra nasce dalla rosa già allenata, pesata per minuti", 
 test("la rotazione del coach cambia i minuti e quindi il voto", () => {
   let rosa = emptyRosa();
   for (const ruolo of ROLES) {
-    rosa = assegnaRosa(rosa, ruolo, TITOLARE, card({
+    rosa = assegnaRosa(rosa, tit(ruolo), card({
       player_id: `t-${ruolo}`, pos: { primary: ruolo, secondary: null },
       reparti: { t3: 90, fin: 90, dif: 90, reb: 90, reg: 90 },
     }));
-    rosa = assegnaRosa(rosa, ruolo, RISERVA, card({
+    rosa = assegnaRosa(rosa, panca(ruolo), card({
       player_id: `r-${ruolo}`, pos: { primary: ruolo, secondary: null },
       reparti: { t3: 30, fin: 30, dif: 30, reb: 30, reg: 30 },
     }));

@@ -594,6 +594,212 @@ sono finite.
    Normale si sono avvicinati al bersaglio; difficile e incubo lo hanno superato
    (bersagli 3% e 0,5%) e vanno ritarati - decisione di Tomas, non fatta.
 
+### G7 - panchina libera e gerarchia dei minuti (Tomas, 2026-08-18) - IN CORSO
+
+Deciso al grill, con eraball come riferimento letto davvero (How to Play v2.6:
+9 slot, 5 titolari con posizione + 4 panchinari senza, titolari 35 minuti,
+fuori posizione -10%/-25% invece del divieto, un solo re-spin per draft).
+
+**Le regole nuove**
+
+1. Il quintetto tiene i ruoli (PG SG SF PF C, solo chi può giocarci); i cinque
+   posti di panchina - 6°, 7°, 8°, 9°, 10° - accettano CHIUNQUE. Cinque
+   playmaker in panchina sono una scelta, non un errore.
+2. I minuti diventano una gerarchia, non più "titolare/riserva". Tre rotazioni
+   del coach, tutte a 240: corta 34 · 26/14/14/8/8 · normale 32 · 24/16/16/12/12
+   · larga 30 · 22/18/18/16/16.
+3. Il ruolo di un panchinaro lo dà la sua carta (`ruoloDi`), non la casella:
+   serve a playbyplay.js:273 (chi è "lungo") e ai plus/malus del coach mirati.
+4. L'ordine della panchina lo sceglie chi gioca, casella per casella: dove metti
+   una carta è una scelta di minuti. Niente badge "6° uomo" sui candidati dello
+   spin - il 6° uomo è una casella della TUA rosa, non una proprietà della carta.
+5. Le rose avversarie hanno la stessa struttura: quintetto per ruolo, panchina
+   ordinata per forza (il più forte è il 6° uomo).
+
+**Fatto (motore e banchi: `npm test` è verde, 290 test)**
+
+- `game/rosa.js` riscritto: forma `{ titolari: {PG..C}, panca: {6..10} }`, SLOTS,
+  MINUTI a quattro livelli, `assegnaRosa(rosa, slot, carta)`, `cartaIn`,
+  `titolareLibero`, `postiPancaLiberi`, `caselleLibere`, `caselleDove`,
+  `etichettaSlot`, `ruoloDi`, `minutiSlot`, `costruisciRosa` nuova.
+- `game/rosa.test.js` riscritto: 31 test, tutti verdi.
+- `game/run.js`: `draftPick(state, slot, carta)` prende la casella scelta (non
+  più il ruolo), nuova `caselleDisponibili(state, carta)`, `giocatoriConMinuti`
+  porta anche `slot`.
+- `game/coach.js` e `game/opponents.js` adeguati alla forma nuova.
+- Test aggiornati: `run.test.js` (draft per casella, titolare fuori ruolo
+  rifiutato e panchina che accetta chiunque), `coach.test.js`,
+  `opponents.test.js` (la panchina avversaria è una scala di forza, non più il
+  secondo di ogni ruolo), `playbyplay.test.js`, `coaches.test.js`.
+- `prototype/imbattuto/pool.js`: `spinRoster(cardsByKey, libere, ...)` ragiona
+  sulle CASELLE libere e non più su una lista di ruoli. Con un posto di panchina
+  vuoto qualsiasi squadra va bene: il filtro sui ruoli conta solo quando resta
+  libero soltanto il quintetto.
+- Tools: `banco-corse.mjs` e `dati-tabellone.mjs` draftano per casella
+  (quintetto prima, poi la panchina in ordine di forza); `dati-draft10.mjs`
+  riscritto sulla forma nuova, con etichetta e minuti di ogni casella presi dal
+  motore. `banco-punto-a-punto.mjs` e `taratura-soglie.mjs` non toccavano la
+  rosa: girano già.
+
+**Da fare**
+
+1. ~~Mockup del campo con le caselle 6°-10° e i minuti scritti sopra~~ FATTO in
+   G8, insieme al tetto di spesa: `mockups/80-draft-cap.html`.
+2. Dopo il mockup, l'app vera: `prototype/imbattuto/app.js` (freeRoles e il
+   dispatch di assign) e `screens/draft.js` (campo e piazzamento) parlano ancora
+   la vecchia lingua, quindi il prototipo nel browser adesso NON gira. Anche
+   `screens/coach.js:72` legge `state.quintetto`, che non esiste più.
+3. Rimisurare col banco corse: con la panchina libera il draft è più permissivo,
+   e le percentuali di 16-0 saliranno ancora. Prima misura a caldo, 20 corse per
+   livello: facile 45% · normale 10% · difficile 0% · incubo 0% (bersagli
+   40/12/3/0,5) - va rifatta a 600 corse, venti sono troppo poche per decidere.
+4. `mockups/79-draft10-data.js` resta la generazione VECCHIA: rigenerarlo con il
+   `dati-draft10.mjs` di adesso cambia forma ai dati e rompe il mockup 79.
+
+
+## G8 · Il tetto di spesa (2026-08-18)
+
+**Il problema.** Incubo si era incagliato al 3,1% di 16-0 con un bersaglio dello
+0,5%, e non per una taratura sbagliata: col tetto degli avversari già sulla
+squadra più forte di sempre, alzare `oppMin` non sposta più niente. Le soglie
+erano esaurite.
+
+**La leva, presa da fuori.** Guardati eraball e 7-0 per capire come graduano la
+difficoltà: nessuno dei due alza la forza dell'avversario. eraball non ha
+livelli, ha la modalità Salary Cap (nove caselle sotto un tetto fisso, il costo
+di un giocatore è il suo rating). 7-0 ha tre modalità - Classic, Blind, Daily
+senza re-roll - e cambia informazione e aiuti, non gli avversari. Da lì la
+scelta: il tetto di spesa lavora sull'ALTRO lato del tavolo, non rende
+l'avversario più forte, rende te più povero.
+
+**Deciso al grill del 18/08**
+
+- Curva del costo CONVESSA come nella NBA vera: un fuoriclasse costa cinque
+  volte un titolare, non il doppio. Con una retta il cap sarebbe solo "voto medio
+  massimo" e non ci sarebbe niente da decidere.
+- Tetto su tutti e quattro i livelli, non solo su Incubo: è una meccanica del
+  gioco, non la stranezza dell'ultimo livello.
+- Il costo è della CARTA, non della casella: un panchinaro strapagato pesa
+  uguale, esattamente come nella NBA.
+- Sforare è vietato (carta grigia, non cliccabile), niente luxury tax per ora.
+- Dollari veri: minimo 2, max contract 55, tetti fra 100 e 170 milioni.
+- Il salario porta un RUMORE di ±25% rispetto al voto. Serve al buio di Incubo:
+  senza, il prezzo sarebbe il voto travestito e il draft al buio sparirebbe. In
+  più è la cosa più NBA che ci sia - rookie sottopagati, veterani strapagati.
+- In Incubo la carta non mostra né voto né ruolo: restano nome, squadra e
+  cartellino. La posizione si scopre quando selezioni la carta e le caselle si
+  accendono, non mentre confronti le dieci.
+- Il coach resta fuori dal cap. Le rose storiche avversarie non hanno tetto:
+  sono squadre vere, il vincolo è solo tuo.
+
+**Fatto**
+
+- `game/salary.js`: curva `salarioDaVoto` (potenza 2.8 fra minimo e max
+  contract), `fattoreContratto` (hash FNV-1a su giocatore+stagione, quindi lo
+  stesso contratto a ogni partita), `salarioCarta`, `prenotato`, `firmabile`,
+  `firmaDiRipiego`, `formattaSalario`. 16 test.
+- Ancoraggi MISURATI, non scelti a occhio: sulle 2412 carte i voti stanno fra 10
+  e 91 con mediana 48, e la curva è tarata perché la mediana costi 6 milioni,
+  come il salario mediano NBA vero. Le 175 rose storiche vengono a costare da
+  48,7 a 246,1 milioni, mediana 102,7 - i GSW 2017-18 sono il superteam da 246.
+- `game/difficulty.js`: `TETTI` (facile 170 · normale 150 · difficile 125 ·
+  incubo 100 milioni). PROVVISORI, non ancora passati dal banco corse.
+- `tools/dati-draft-cap.mjs` + `mockups/80-draft-cap.html`: il mockup del campo a
+  dieci caselle con i minuti, in due direzioni per il budget - termometro (una
+  barra: firmato, preventivo della carta selezionata, minimi bloccati) e libro
+  paga (dieci righe di contratto che si sommano, stile busta paga).
+
+**Il draft si bloccava davvero.** Provata al mockup la strategia "firma sempre il
+più caro": in Incubo si inchiodava a 6 caselle su 10, con 8 milioni in cassa e
+nessun candidato sotto i 2,6 in nessuno dei cinque spin. Da lì `firmaDiRipiego`,
+che è l'eccezione del minimo della NBA: se NESSUNA carta dello spin è firmabile,
+la meno cara accetta il contratto minimo. Rimisurato dopo: 10 caselle su 10 e
+240 minuti coperti in tutti i livelli.
+
+**Da fare**
+
+1. ~~Tarare i quattro tetti al banco corse~~ FATTO in G9: 400/380/350/260, misurati.
+2. Portare cap, apron e scala del reveal nell'app vera (il prototipo nel browser
+   è ancora quello rotto da G7).
+3. La pagella del GM a fine run: in Incubo, senza box score, un errore da 34
+   milioni su una carta da 61 non lo scopriresti mai, e un errore che non vedi
+   non insegna niente.
+
+## G9 · Reveal a gradini, secondo apron, cap nel motore (2026-08-18)
+
+Tre decisioni di Tomas dopo il mockup 81, e il codice che ne è uscito.
+
+**Il reveal scende a gradini, non è più tutto o niente.** Prima l'informazione si
+toglieva una volta sola, in Incubo: tre livelli identici e poi un muro. Adesso
+ogni gradino toglie uno strato, e nome e prezzo restano sempre.
+
+| livello | vedi | hai perso |
+| --- | --- | --- |
+| Facile | voto, stat, annata, squadra, ruolo | niente |
+| Normale | uguale a Facile | niente: cambiano aiuti e tetto |
+| Difficile | stat, squadra, ruolo | il voto e l'annata |
+| Incubo | nome e cartellino | tutto il resto |
+
+Normale identico a Facile è scelta esplicita di Tomas: il salto di Normale si
+deve sentire nel portafogli, non negli occhi. Sta in `REVEAL` + `mostra()` in
+`game/difficulty.js`. **Il banco non può misurare questa scala**: il giocatore
+simulato legge il voto dai dati, quindi nascondergli il voto non gli cambia un
+pick. Il reveal si tara giocando, il tetto al banco.
+
+**Il tetto non è un muro: è il secondo apron.** Cinque carte da 90+ costano circa
+250 milioni e non entrano sotto nessun tetto ragionevole; con un tetto-muro "mi
+sono capitati cinque fuoriclasse" diventa "ne firmo due e guardo gli altri
+passare". Quindi si firma fino al +25% sopra il tetto, e ogni 5 milioni di sforo
+tolgono 1 punto a tutti e cinque i reparti, cioè circa 1 punto di margine a
+partita. La tassa si paga in reparti e non in punti perché toglierli a fine
+partita spaccherebbe il tabellino, che non sommerebbe più il punteggio. Entra una
+volta sola, in `startRun`: da lì partita, box score e cronaca leggono reparti già
+tassati e nessuno di loro deve sapere che esiste un tetto.
+
+Scartata l'alternativa dei diritti di Bird (sconto sui compagni della stessa rosa
+storica): premia solo chi riconosce le rose ed è in balia degli spin, mentre
+l'apron funziona con qualunque combinazione esca.
+
+**Il cap è nel motore.** `newRun` porta `tetto` e `speso`, `draftPick` rifiuta
+quello che sfonda l'apron e accumula la spesa, e accetta un costo esplicito per
+la firma di ripiego. 322 test verdi.
+
+**Il banco ha due teste, e una era una trappola.** Col tetto, "quanto è possibile
+fare" dipende da come si spende. La strategia *stelle* (il più forte firmabile)
+brucia la cassa nei primi pick; la *quintetto* (soldi ai titolari, minimo alla
+panchina) spende meglio dove i minuti pesano. Provata e **scartata** la strategia
+che sembrava furba, il miglior voto per dollaro: è la peggiore di tutte (0,7
+vittorie di media, 32 milioni spesi su un tetto da 200), perché il rapporto
+voto/prezzo è massimo sui contratti al minimo e il bot si riempiva di scarsi.
+
+**La scala storica dei tetti era sbagliata, e la misura l'ha smentita.** I
+170/150/125/100 milioni venivano dai monte ingaggi delle 175 rose vere (48-246
+milioni). Ma la squadra che si drafta non è una rosa vera: è il fiore di venti
+rose diverse, e costa in media **300 milioni**. Sotto quei tetti il 16-0 crollava
+a **0% in tutti e quattro i livelli**. Senza tetto il banco tornava ai numeri di
+prima (Facile 34%, Incubo 3,5%): il motore era sano, erano i tetti a stare nel
+posto sbagliato.
+
+**I tetti veri, misurati** con `tools/taratura-tetti.mjs` (dieci tetti per
+livello, due strategie di draft) e confermati a 1000 corse per punto:
+
+| livello | tetto | 16-0 misurato | bersaglio | corse che sforano |
+| --- | --- | --- | --- | --- |
+| facile | 400M | 34,6% | 33% | 0% |
+| normale | 380M | 12,7% | 12% | 1% |
+| difficile | 350M | 3,0% | 3% | 5% |
+| incubo | 260M | **0,5%** | 0,5% | 79% |
+
+**Il tetto serve solo a Incubo, ed è il buco che doveva tappare.** Là morde su
+quattro corse su cinque e porta il livello dal 3,1% allo 0,5%, cosa che le soglie
+avversarie non sapevano più fare perché il pool ha un pavimento. Negli altri tre
+livelli i bersagli erano già centrati dalle soglie: sopra i 380 milioni la curva
+è piatta, quindi lì il tetto è una regola che impari, non un vincolo che senti.
+
+Facile paga 1,6 punti di scarto (34,6% contro 33%) ed è una scelta: per centrare
+il 33 esatto servirebbe un tetto da 340, cioè più stretto di quello di Normale, e
+una scala che si allarga mentre la difficoltà sale non la capisce nessuno.
+
 ## Stime
 
 A ~3 ore · B ~4 ore · C ~2 ore · D ~2 ore · E ~4 ore · G1-G3 ~5 ore ·
@@ -602,6 +808,7 @@ G4a ~4 ore. Restano: mockup ~3 ore, porting ~4 ore.
 ## Aperti
 
 - Tempi esatti dei preset velocità: si sentono nel mockup, non si decidono a tavolino.
-- Incubo allo 0,5%: serve una manopola oltre le soglie, oppure si accetta l'1%.
+- ~~Incubo allo 0,5%: serve una manopola oltre le soglie~~ RISOLTO in G8: la
+  manopola è il tetto di spesa. Resta da tararlo al banco.
 - Peso dei reparti nel voto sintetico mostrato in scheda (resta una sintesi, non
   decide più la partita).

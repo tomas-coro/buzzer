@@ -1,0 +1,76 @@
+// Dati VERI per il mockup del draft col tetto di spesa (mockup 80).
+//
+// Come tutti gli altri generatori: il mockup non inventa niente. Le dieci carte
+// di ogni spin escono da `costruisciRosa`, il voto da `votoCarta`, il numero a
+// schermo da `toDisplayOvr` e il cartellino da `salarioCarta`. Se un domani la
+// curva dei salari cambia, il mockup cambia con lei senza toccarlo.
+//
+// La rosa parte VUOTA, al contrario del mockup 79: qui il punto è vedere il
+// budget consumarsi pick dopo pick, e con una rosa già piena a metà non si
+// vedrebbe.
+//
+// Uso: node tools/dati-draft-cap.mjs > mockups/80-draft-cap-data.js
+import { CARDS_BY_TEAM_SEASON } from "../prototype/imbattuto/cards.js";
+import { costruisciRosa, cartaIn, etichettaSlot, minutiSlot, SLOTS } from "../game/rosa.js";
+import { votoCarta } from "../game/rating.js";
+import { toDisplayOvr } from "../prototype/imbattuto/display.js";
+import { salarioCarta, SALARIO_MIN, SALARIO_MAX, RUMORE } from "../game/salary.js";
+import { TETTI } from "../game/difficulty.js";
+
+// Cinque squadre-stagione scelte a mano, non pescate a caso: un mockup deve
+// essere stabile fra un'apertura e l'altra. Cinque e non tre perché con la rosa
+// vuota servono dieci pick, e con tre spin da dieci si finisce il pescato.
+// Sono scelte per coprire la scala dei monte ingaggi: GSW 2016-17 è il superteam
+// da 213 milioni che sotto il tetto non ci sta, PHX 2016-17 è la squadra mediana.
+const SPIN = ["GSW|2016-17", "SAS|2015-16", "PHX|2016-17", "MIL|2018-19", "LAL|2019-20"];
+
+// La rotazione con cui si scrivono i minuti sulle caselle: il coach si sceglie
+// dopo il draft, quindi durante il draft si vedono i minuti di base.
+const ROTAZIONE = "normale";
+
+const carta = (c) => {
+  const voto = votoCarta(c);
+  return {
+    player_id: c.player_id,
+    name: c.name,
+    team: c.team, team_abbr: c.team_abbr, season: c.season,
+    // `voto` è la scala nativa del motore (percentili), `ovr` è il numero che va
+    // a schermo. Il salario nasce dal NATIVO, che è quello che gioca.
+    voto, ovr: toDisplayOvr(voto),
+    salario: salarioCarta(c),
+    pos: { primary: c.pos.primary, secondary: c.pos.secondary ?? null },
+    stats_real: c.stats_real,
+  };
+};
+
+// Etichetta ("6° uomo") e minuti li dà il motore, così il mockup non se li
+// riscrive a mano e non può sbagliarli.
+const casella = (slot) => ({
+  ...slot, etichetta: etichettaSlot(slot), minuti: minutiSlot(slot, ROTAZIONE),
+});
+
+function spin(key) {
+  const rosa = costruisciRosa(CARDS_BY_TEAM_SEASON[key]);
+  const [team, season] = key.split("|");
+  const cards = SLOTS.map((slot) => ({ ...carta(cartaIn(rosa, slot)), da: casella(slot) }));
+  return { key, team, season, cards, monte: cards.reduce((s, c) => s + c.salario, 0) };
+}
+
+const dati = {
+  rotazione: ROTAZIONE,
+  caselle: SLOTS.map(casella),
+  spin: SPIN.map(spin),
+  salario: { min: SALARIO_MIN, max: SALARIO_MAX, rumore: RUMORE },
+  tetti: TETTI,
+};
+
+// Il mockup mente se il tetto non morde: con cinque spin da dieci carte deve
+// esistere almeno una squadra che, presa in blocco, sfonda il tetto più stretto.
+const sfondano = dati.spin.filter((s) => s.monte > TETTI.incubo);
+if (sfondano.length === 0) {
+  console.error("ATTENZIONE: nessuno spin sfonda il tetto di Incubo, scenario innocuo");
+}
+
+process.stdout.write(
+  "// GENERATO da tools/dati-draft-cap.mjs - non modificare a mano.\n" +
+  "export const DRAFTCAP = " + JSON.stringify(dati, null, 1) + ";\n");

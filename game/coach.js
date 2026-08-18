@@ -21,9 +21,9 @@
 // che tu confermi.
 
 import { REPARTI } from "./reparti.js";
-import { ROLES } from "./roster.js";
+import { ROLES, canPlay } from "./roster.js";
 import { votoRosa } from "./rating.js";
-import { SLOTS, MINUTI } from "./rosa.js";
+import { SLOTS, MINUTI, cartaIn, ruoloDi, assegnaRosa, emptyRosa } from "./rosa.js";
 
 // Quanto vale un plus. Il mirato è quasi il doppio del diffuso, ma tocca due o
 // tre ruoli su cinque: a squadra intera i due valgono quasi uguale, e la
@@ -107,12 +107,15 @@ export function applyCoach(rosa, coach) {
   const anelli = coach.champ_bonus ?? 0;
 
   const effetti = [];
-  const nuova = {};
-  for (const ruolo of ROLES) nuova[ruolo] = { ...rosa[ruolo] };
+  let nuova = emptyRosa();
 
-  for (const { ruolo, tipo } of SLOTS) {
-    const carta = rosa[ruolo][tipo];
+  for (const slot of SLOTS) {
+    const carta = cartaIn(rosa, slot);
     if (!carta) throw new Error("applyCoach: rosa incompleta, servono dieci giocatori");
+    // Il ruolo su cui il coach mira: della casella per i titolari, della carta
+    // per i panchinari - un centro messo 9° uomo resta un centro.
+    const ruolo = ruoloDi(carta, slot);
+    const tipo = slot.tipo;
 
     const reparti = { ...carta.reparti };
     // Quanto chiede il coach su ogni reparto, prima del tetto: un giocatore può
@@ -140,7 +143,13 @@ export function applyCoach(rosa, coach) {
         effetti.push({ player_id: carta.player_id, ruolo, tipo, reparto: rep, delta: vero });
       }
     }
-    nuova[ruolo][tipo] = { ...carta, reparti };
+    // `assegnaRosa` rifiuterebbe un titolare fuori ruolo, e nel draft è giusto;
+    // qui la rosa arriva già valida e per i titolari fuori ruolo di
+    // `costruisciRosa` si scrive diretto, come là.
+    const allenata = { ...carta, reparti };
+    nuova = slot.tipo === "titolare" && !canPlay(allenata, slot.ruolo)
+      ? { ...nuova, titolari: { ...nuova.titolari, [slot.ruolo]: allenata } }
+      : assegnaRosa(nuova, slot, allenata);
   }
 
   return { rosa: nuova, voto: votoRosa(nuova, rotazione), ritmo, rotazione, effetti };

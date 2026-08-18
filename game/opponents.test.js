@@ -4,7 +4,7 @@ import {
   buildHistoricalRose, pickOpponent, chiaveAvversario, CANDIDATI, MIN_CARTE_ROSA,
 } from "./opponents.js";
 import { DIFFICULTIES } from "./difficulty.js";
-import { TITOLARE, RISERVA } from "./rosa.js";
+import { cartaIn, TITOLARE, POSTI_PANCA, PANCA } from "./rosa.js";
 import { votoDaReparti } from "./rating.js";
 import { mediaReparti } from "./reparti.js";
 import { card } from "./fixtures.js";
@@ -41,17 +41,19 @@ test("salta le squadre con meno di dieci carte: niente panchina inventata", () =
   assert.deepEqual(buildHistoricalRose(src), []);
 });
 
-test("nel quintetto va il migliore di ogni ruolo, in panchina il secondo", () => {
+test("quintetto: il migliore di ogni ruolo. Panchina: i cinque rimasti, dal più forte", () => {
   const src = { "GSW|2015-16": team({ team: "GSW", ovr: 90 }, 12) };
   const [gsw] = buildHistoricalRose(src);
-  for (const ruolo of ROLES) {
-    assert.ok(
-      gsw.rosa[ruolo][TITOLARE].ovr > gsw.rosa[ruolo][RISERVA].ovr,
-      `${ruolo}: il titolare deve valere più della riserva`,
-    );
-  }
   // i cinque titolari sono i cinque OVR più alti del gruppo, uno per ruolo
   assert.deepEqual(gsw.quintet.map((c) => c.ovr), [90, 89, 88, 87, 86]);
+  // la panchina non ha ruoli: è una scala di forza, il 6° uomo è il più forte
+  // dei rimasti (deciso al grill del 2026-08-18, come le rose del giocatore).
+  const panca = POSTI_PANCA.map((posto) => cartaIn(gsw.rosa, { tipo: PANCA, posto }));
+  assert.deepEqual(panca.map((c) => c.ovr), [85, 84, 83, 82, 81]);
+  for (const ruolo of ROLES) {
+    const titolare = cartaIn(gsw.rosa, { tipo: TITOLARE, ruolo });
+    assert.ok(titolare.ovr > panca[0].ovr, `${ruolo}: il titolare vale più del 6° uomo`);
+  }
 });
 
 test("il voto pesa i minuti: una panchina scarsa abbassa la rosa sotto la top-5", () => {

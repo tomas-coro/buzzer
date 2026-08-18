@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>81 · Come si vede il budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css" />
+<style>
+/* ---- impalcatura del confronto ---- */
+body { padding: 0; }
+.mk-wrap { max-width: 1320px; margin: 0 auto; padding: 18px 16px 44px; }
+.mk-hd { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.mk-hd h1 { font-family: var(--arcade); font-size: 1.05rem; color: var(--yellow); margin: 0; }
+.mk-hd p { margin: 0; color: var(--bone-dim); font-size: .82rem; text-wrap: pretty; max-width: 66ch; }
+.mk-bar { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin: 14px 0 16px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #12122c; }
+.mk-grp { display: flex; align-items: center; gap: 7px; }
+.mk-grp > b { font-family: var(--body); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; }
+.mk-chip { font-family: var(--body); font-weight: 700; font-size: .72rem; color: var(--bone-dim);
+  background: #191a3d; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer;
+  transition: color .14s, border-color .14s, background .14s; }
+.mk-chip:hover { color: var(--bone); border-color: var(--brass-deep); }
+.mk-chip[aria-pressed="true"] { color: #201400; background: var(--yellow); border-color: var(--yellow); }
+.mk-state { margin-left: auto; font-family: var(--body); font-size: .72rem; color: var(--bone-dim); }
+.mk-state b { font-family: var(--led); font-weight: 900; color: var(--bone); font-variant-numeric: tabular-nums; }
+.mk-state b.tight { color: var(--brass); }
+.mk-state b.broke { color: var(--red); }
+
+/* 2x2 di direzioni, tutte con lo stesso stato sotto gli occhi */
+.dirgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.dircol { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+@media (max-width: 1040px) { .dirgrid { grid-template-columns: 1fr; } }
+.dircard { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 16px;
+  background: #101029; padding: 14px 14px 12px; min-width: 0; }
+.dircard > header { display: flex; align-items: baseline; gap: 9px; margin-bottom: 3px; }
+.dircard h2 { font-family: var(--display); font-weight: 800; font-size: .96rem; color: var(--bone); margin: 0; }
+.dircard .tag { font-family: var(--arcade); font-size: .54rem; color: #201400; background: var(--brass);
+  border-radius: 4px; padding: 3px 6px 2px; letter-spacing: .02em; }
+.dircard > p { margin: 0 0 11px; font-size: .74rem; color: var(--bone-dim); text-wrap: pretty; min-height: 2.4em; }
+.dirbody { display: flex; flex-direction: column;
+  border-top: 1px dashed #24244a; padding-top: 12px; }
+
+/* ============ A · TERMOMETRO ============ */
+.cap-hd { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+.cap-lab { font-family: var(--body); font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; }
+.cap-big { font-family: var(--led); font-weight: 900; font-size: 1.7rem; line-height: 1; color: var(--yellow);
+  font-variant-numeric: tabular-nums; }
+.cap-big.tight { color: var(--brass); }
+.cap-big.broke { color: var(--red); }
+.cap-sub { font-family: var(--body); font-size: .72rem; color: var(--bone-dim); text-align: right; }
+.cap-sub b { color: var(--bone); font-family: var(--led); font-weight: 700; }
+.track { position: relative; height: 17px; border-radius: 999px; background: #0e0d29;
+  border: 1px solid var(--line); overflow: hidden; }
+.track i { position: absolute; inset: 0 auto 0 0; display: block; border-radius: 999px;
+  transition: width .28s var(--ease); }
+.fill-spent { background: linear-gradient(90deg, var(--brass-deep), var(--brass)); z-index: 2; }
+.fill-prev { z-index: 1; background: repeating-linear-gradient(115deg,
+  rgba(255,207,51,.85) 0 6px, rgba(255,207,51,.32) 6px 12px); }
+.track .fill-hold { left: auto; right: 0; z-index: 3; background: repeating-linear-gradient(115deg,
+  #2f2f5c 0 5px, #24244a 5px 10px); border-radius: 0 999px 999px 0; }
+.track.over .fill-prev { background: repeating-linear-gradient(115deg,
+  rgba(255,80,56,.9) 0 6px, rgba(255,80,56,.35) 6px 12px); }
+.track-legend { display: flex; gap: 13px; flex-wrap: wrap; margin-top: 8px;
+  font-family: var(--body); font-size: .66rem; color: #6f6fa6; }
+.track-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.track-legend s { width: 11px; height: 11px; border-radius: 3px; text-decoration: none; flex: none; }
+.over-say { margin-top: 8px; font-family: var(--body); font-weight: 700; font-size: .72rem; color: var(--red); }
+
+/* ============ B · LIBRO PAGA ============ */
+.paylist { display: flex; flex-direction: column; gap: 2px; }
+.payrow { display: grid; grid-template-columns: 66px 1fr auto; gap: 8px; align-items: center;
+  padding: 3px 8px; border-radius: 7px; background: #12122c; border: 1px solid transparent;
+  font-size: .73rem; min-height: 25px; }
+.payrow.vuota { background: #0f0f26; border-style: dashed; border-color: #24244a; }
+.payrow.prev { border-color: var(--yellow); background: #1c1a34; }
+.payrow .pr-lab { font-family: var(--body); font-weight: 800; font-size: .58rem; letter-spacing: .06em;
+  text-transform: uppercase; color: #6f6fa6; white-space: nowrap; }
+.payrow.piena .pr-lab { color: var(--bone-dim); }
+.payrow .pr-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.payrow.vuota .pr-nm { font-weight: 500; color: #55558c; font-style: italic; }
+.payrow .pr-sal { font-family: var(--led); font-weight: 700; color: var(--bone);
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+.payrow.vuota .pr-sal { color: #45457a; }
+.payrow.prev .pr-nm, .payrow.prev .pr-sal { color: var(--yellow); }
+.paytot { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline;
+  padding: 8px 8px 0; border-top: 2px solid var(--line); margin-top: 5px; }
+.paytot .pt-lab { font-family: var(--body); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; }
+.paytot .pt-val { font-family: var(--led); font-weight: 900; font-size: 1.1rem; color: var(--bone);
+  font-variant-numeric: tabular-nums; }
+.paytot .pt-res { font-family: var(--led); font-weight: 900; font-size: 1.1rem; color: var(--yellow);
+  font-variant-numeric: tabular-nums; }
+.paytot .pt-res.tight { color: var(--brass); }
+.paytot .pt-res.broke { color: var(--red); }
+
+/* ============ C · TABELLONE ============ */
+.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.bcell { border: 1px solid var(--line); border-radius: 10px; background: #08081c;
+  padding: 9px 8px 7px; text-align: center; box-shadow: inset 0 0 22px rgba(255,91,30,.07); }
+.bcell .bl { font-family: var(--arcade); font-size: .5rem; color: #6f6fa6; letter-spacing: .02em; }
+.bcell .bv { font-family: var(--led); font-weight: 900; font-size: 1.42rem; line-height: 1.1; color: var(--brass);
+  font-variant-numeric: tabular-nums; text-shadow: 0 0 12px rgba(255,91,30,.45); }
+.bcell.res .bv { color: var(--yellow); text-shadow: 0 0 12px rgba(255,207,51,.45); }
+.bcell.res.tight .bv { color: var(--brass); }
+.bcell.res.broke .bv { color: var(--red); text-shadow: 0 0 12px rgba(255,80,56,.5); }
+.bticker { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: #08081c;
+  padding: 7px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-family: var(--body); font-size: .72rem; color: var(--bone-dim); min-height: 34px; }
+.bticker .tk-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bticker .tk-val { font-family: var(--led); font-weight: 900; font-size: .96rem; color: var(--yellow);
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bticker.no .tk-val { color: #45457a; }
+.bticker.ko .tk-val { color: var(--red); }
+.bticker .blink { animation: bk 1.1s steps(2, jump-none) infinite; }
+@keyframes bk { 50% { opacity: .25; } }
+
+/* ============ D · GETTONI ============ */
+.tokens { display: grid; grid-template-columns: repeat(20, 1fr); gap: 5px; max-width: 560px; }
+.tok { aspect-ratio: 1; border-radius: 50%; border: 1px solid #2c2a63; background: #0e0d29; }
+.tok.spent { background: radial-gradient(circle at 34% 30%, #ff7a45, var(--brass-deep));
+  border-color: var(--brass); box-shadow: 0 0 7px rgba(255,91,30,.4); }
+.tok.prev { background: repeating-linear-gradient(120deg, var(--yellow) 0 3px, rgba(255,207,51,.25) 3px 6px);
+  border-color: var(--yellow); }
+.tok.hold { background: repeating-linear-gradient(120deg, #33335f 0 3px, #1c1c40 3px 6px); border-color: #3a3a70; }
+.tok.over { background: repeating-linear-gradient(120deg, var(--red) 0 3px, rgba(255,80,56,.2) 3px 6px);
+  border-color: var(--red); }
+.tok-over-lab { font-family: var(--body); font-size: .62rem; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--red); margin: 9px 0 5px; }
+.tok-legend { display: flex; gap: 13px; flex-wrap: wrap; margin-top: 9px;
+  font-family: var(--body); font-size: .66rem; color: #6f6fa6; }
+.tok-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.tok-legend s { width: 11px; height: 11px; border-radius: 50%; text-decoration: none; flex: none; }
+.tok-foot { margin-top: 7px; font-family: var(--body); font-size: .7rem; color: var(--bone-dim); }
+.tok-foot b { font-family: var(--led); font-weight: 900; color: var(--bone); }
+
+.mk-note { border: 1px solid var(--line); border-radius: 12px; background: #12122c;
+  padding: 12px 14px; }
+.mk-note h3 { font-family: var(--display); font-weight: 800; font-size: .8rem; color: var(--yellow); margin: 0 0 5px; }
+.mk-note p { margin: 0; font-size: .76rem; color: var(--bone-dim); text-wrap: pretty; max-width: 92ch; }
+
+@media (prefers-reduced-motion: reduce) {
+  .track i { transition: none; }
+  .bticker .blink { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="mk-wrap">
+  <div class="mk-hd">
+    <h1>81 · Come si vede il budget</h1>
+    <p>
+      Quattro modi di mostrare lo stesso tetto di spesa, con lo stesso stato sotto gli occhi.
+      Cambia livello, quante caselle hai già firmato e che carta hai in mano: guarda quale dei
+      quattro ti dice al volo se puoi permettertela.
+    </p>
+  </div>
+
+  <div class="mk-bar">
+    <div class="mk-grp"><b>Livello</b><span id="chipLiv"></span></div>
+    <div class="mk-grp"><b>Rosa</b><span id="chipRosa"></span></div>
+    <div class="mk-grp"><b>Carta in mano</b><span id="chipMano"></span></div>
+    <div class="mk-state" id="stato"></div>
+  </div>
+
+  <div class="dirgrid">
+   <div class="dircol">
+    <section class="dircard">
+      <header><h2>Termometro</h2><span class="tag">A</span></header>
+      <p>Una barra sola: quanto hai speso, quanto costerebbe la carta in mano, quanto resta bloccato dai contratti minimi delle caselle vuote.</p>
+      <div class="dirbody" id="wA"></div>
+    </section>
+
+    <section class="dircard">
+      <header><h2>Libro paga</h2><span class="tag">B</span></header>
+      <p>La busta paga di una squadra vera: dieci righe, una per casella, che si sommano in fondo. Vedi chi ti pesa e quanto.</p>
+      <div class="dirbody" id="wB"></div>
+    </section>
+   </div>
+
+   <div class="dircol">
+
+    <section class="dircard">
+      <header><h2>Tabellone</h2><span class="tag">C</span></header>
+      <p>Il budget come il tabellone del palazzetto: tre cifre LED grandi e una riga che lampeggia con il prezzo della carta in mano.</p>
+      <div class="dirbody" id="wC"></div>
+    </section>
+
+    <section class="dircard">
+      <header><h2>Gettoni</h2><span class="tag">D</span></header>
+      <p>Niente cifre da leggere: un gettone vale 10 milioni. Quelli spesi si accendono, quelli che ti servono per i minimi restano bloccati.</p>
+      <div class="dirbody" id="wD"></div>
+    </section>
+
+
+    <div class="mk-note">
+    <h3>La regola che tutte e quattro devono raccontare</h3>
+    <p>
+      Per ogni casella ancora vuota devi tenere da parte un contratto minimo da 2 milioni, altrimenti
+      il draft si inchioda a metà. Quella riserva è la parte a righe scure sul fondo: è budget che vedi
+      ma non puoi spendere. Una carta è firmabile se il suo prezzo sta dentro quello che resta, riserva esclusa.
+    </p>
+  </div>
+   </div>
+  </div>
+</div>
+
+<script type="module">
+import { DRAFTCAP } from "./80-draft-cap-data.js";
+
+const { caselle: CASELLE, spin: SPIN, tetti: TETTI, salario: SAL } = DRAFTCAP;
+
+const LIVELLI = [["facile","Facile"],["normale","Normale"],["difficile","Difficile"],["incubo","Incubo"]];
+const ROSE = [["0","Vuota"],["5","Metà"],["9","Quasi piena"]];
+const MANI = [["no","Nessuna"],["min","Minimo"],["tit","Titolare"],["star","Stella"],["max","Max"]];
+// Che prezzo cerchiamo per ogni "carta in mano": dal contratto minimo al supermax.
+const MIRINO = { min: SAL.min, tit: 14_000_000, star: 32_000_000, max: SAL.max };
+
+const soldi = (d) => `${d < 0 ? "-" : ""}$${(Math.abs(d) / 1_000_000).toFixed(1)}M`;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const puoGiocare = (c, slot) => slot.tipo !== "titolare" || c.pos.primary === slot.ruolo || c.pos.secondary === slot.ruolo;
+
+// Tutte le carte dei cinque spin, senza doppioni: è il serbatoio da cui pesco
+// sia la rosa già firmata sia la carta in mano.
+const POOL = [];
+const visti = new Set();
+for (const s of SPIN) for (const c of s.cards) {
+  const k = `${c.player_id}|${c.season}`;
+  if (!visti.has(k)) { visti.add(k); POOL.push(c); }
+}
+
+// La rosa già firmata, costruita RISPETTANDO il tetto del livello: per ogni
+// casella la carta più forte che sia ancora firmabile, tenendo da parte un
+// contratto minimo per ognuna delle caselle che restano. Se non ne è firmabile
+// nessuna, si firma la più economica al minimo (la firma di ripiego del motore).
+// Cambia col livello, quindi la calcolo una volta per livello e la tengo.
+const memoRosa = new Map();
+function rosaDi(liv) {
+  if (memoRosa.has(liv)) return memoRosa.get(liv);
+  let cassa = TETTI[liv];
+  const usati = new Set(), out = [];
+  CASELLE.forEach((slot, i) => {
+    const restanti = CASELLE.length - i - 1;
+    const tengo = restanti * SAL.min;
+    const liberi = POOL.filter((c) => !usati.has(c.player_id) && puoGiocare(c, slot));
+    const ok = liberi.filter((c) => c.salario <= cassa - tengo).sort((a, b) => b.voto - a.voto);
+    const scelta = ok[0] ?? liberi.sort((a, b) => a.salario - b.salario)[0] ?? null;
+    if (!scelta) { out.push({ slot, carta: null, pagato: 0 }); return; }
+    const pagato = ok.length ? scelta.salario : SAL.min;
+    usati.add(scelta.player_id);
+    cassa -= pagato;
+    out.push({ slot, carta: scelta, pagato });
+  });
+  memoRosa.set(liv, out);
+  return out;
+}
+
+let livello = "normale", quante = 5, mano = "star";
+
+const tetto = () => TETTI[livello];
+const firmati = () => rosaDi(livello).slice(0, quante);
+const speso = () => firmati().reduce((s, r) => s + r.pagato, 0);
+const vuote = () => CASELLE.length - quante;
+// Il candidato in mano: la carta libera col prezzo più vicino al mirino.
+function carta() {
+  if (mano === "no" || vuote() === 0) return null;
+  const presi = new Set(firmati().map((r) => r.carta && r.carta.player_id));
+  const target = MIRINO[mano];
+  return POOL.filter((c) => !presi.has(c.player_id))
+    .sort((a, b) => Math.abs(a.salario - target) - Math.abs(b.salario - target))[0] ?? null;
+}
+const costo = () => { const c = carta(); return c ? c.salario : 0; };
+// Riserva: un contratto minimo per ogni casella che resterebbe vuota DOPO questa firma.
+const riserva = () => Math.max(0, vuote() - (carta() ? 1 : 0)) * SAL.min;
+// UNA SOLA DEFINIZIONE PER TUTTE E QUATTRO: "resta" è sempre tetto meno speso,
+// senza la carta in mano. L'effetto della carta si mostra a parte, altrimenti
+// due direzioni affiancate darebbero due numeri diversi per lo stesso stato.
+const resta = () => tetto() - speso();
+const restaDopo = () => resta() - costo();
+const sfora = () => carta() !== null && restaDopo() < riserva();
+// Stretto = sotto il 15% del tetto, il momento in cui devi iniziare a contare.
+const classeRes = (v) => (v < 0 ? "broke" : v < tetto() * 0.15 ? "tight" : "");
+
+// ---- controlli ----
+function chips(host, voci, attivo, onPick) {
+  host.innerHTML = voci.map(([v, lab]) =>
+    `<button class="mk-chip" data-v="${v}" aria-pressed="${v === attivo}">${lab}</button>`).join(" ");
+  host.onclick = (e) => { const b = e.target.closest("button"); if (b) { onPick(b.dataset.v); render(); } };
+}
+
+function render() {
+  chips(document.getElementById("chipLiv"), LIVELLI, livello, (v) => (livello = v));
+  chips(document.getElementById("chipRosa"), ROSE, String(quante), (v) => (quante = Number(v)));
+  chips(document.getElementById("chipMano"), MANI, mano, (v) => (mano = v));
+
+  const c = carta(), r = resta(), cl = classeRes(r);
+  document.getElementById("stato").innerHTML =
+    `Tetto <b>${soldi(tetto())}</b> · speso <b>${soldi(speso())}</b> · resta <b class="${cl}">${soldi(r)}</b>`
+    + (c ? ` · in mano <b>${esc(c.name)} ${soldi(c.salario)}</b>${sfora() ? " (non firmabile)" : ""}` : "");
+
+  renderA(); renderB(); renderC(); renderD();
+}
+
+// ---- A · termometro ----
+function renderA() {
+  const T = tetto(), sp = speso(), c = carta(), pc = costo(), hold = riserva();
+  const pct = (v) => `${Math.max(0, Math.min(100, (v / T) * 100))}%`;
+  const r = resta(), cl = classeRes(r);
+  document.getElementById("wA").innerHTML = `
+    <div class="cap-hd">
+      <div>
+        <div class="cap-lab">Ti resta</div>
+        <div class="cap-big ${cl}">${soldi(r)}</div>
+      </div>
+      <div class="cap-sub">tetto <b>${soldi(T)}</b><br />speso <b>${soldi(sp)}</b> su ${quante} caselle</div>
+    </div>
+    <div class="track ${sfora() ? "over" : ""}">
+      <i class="fill-spent" style="width:${pct(sp)}"></i>
+      <i class="fill-prev" style="width:${pct(sp + pc)}"></i>
+      <i class="fill-hold" style="width:${pct(hold)}"></i>
+    </div>
+    <div class="track-legend">
+      <span><s style="background:var(--brass)"></s>speso</span>
+      <span><s style="background:repeating-linear-gradient(115deg,rgba(255,207,51,.85) 0 4px,rgba(255,207,51,.3) 4px 8px)"></s>${c ? `${esc(c.name)}, ${soldi(pc)}` : "carta in mano"}</span>
+      <span><s style="background:repeating-linear-gradient(115deg,#2f2f5c 0 4px,#24244a 4px 8px)"></s>riserva minimi ${soldi(hold)}</span>
+    </div>
+    ${sfora() ? `<div class="over-say">${esc(c.name)} sfora il tetto di ${soldi(riserva() - (r - pc))}</div>` : ""}`;
+}
+
+// ---- B · libro paga ----
+function renderB() {
+  const c = carta(), firm = firmati();
+  const righe = CASELLE.map((slot, i) => {
+    const r = firm[i];
+    const lab = esc(slot.etichetta.replace(" titolare", ""));
+    if (r && r.carta) {
+      return `<div class="payrow piena"><span class="pr-lab">${lab}</span>
+        <span class="pr-nm">${esc(r.carta.name)}</span>
+        <span class="pr-sal">${soldi(r.pagato)}</span></div>`;
+    }
+    const isPrev = c && i === quante;
+    return `<div class="payrow ${isPrev ? "prev" : "vuota"}"><span class="pr-lab">${lab}</span>
+      <span class="pr-nm">${isPrev ? esc(c.name) : "da firmare"}</span>
+      <span class="pr-sal">${isPrev ? soldi(c.salario) : soldi(SAL.min)}</span></div>`;
+  }).join("");
+  const cl = classeRes(resta());
+  const riga3 = c
+    ? `<span class="pt-lab">Se firmi ${esc(c.name)} resta</span>
+       <span class="pt-res ${classeRes(restaDopo())}">${soldi(restaDopo())}</span>`
+    : "";
+  document.getElementById("wB").innerHTML = `
+    <div class="paylist">${righe}</div>
+    <div class="paytot">
+      <span class="pt-lab">Monte ingaggi</span><span class="pt-val">${soldi(speso())}</span>
+      <span class="pt-lab">Resta sul tetto da ${soldi(tetto())}</span><span class="pt-res ${cl}">${soldi(resta())}</span>
+      ${riga3}
+    </div>`;
+}
+
+// ---- C · tabellone ----
+function renderC() {
+  const c = carta(), cl = classeRes(resta()), ko = sfora();
+  document.getElementById("wC").innerHTML = `
+    <div class="board">
+      <div class="bcell"><div class="bl">Tetto</div><div class="bv">${soldi(tetto())}</div></div>
+      <div class="bcell"><div class="bl">Speso</div><div class="bv">${soldi(speso())}</div></div>
+      <div class="bcell res ${cl}"><div class="bl">Resta</div><div class="bv">${soldi(resta())}</div></div>
+    </div>
+    <div class="bticker ${c ? (ko ? "ko" : "") : "no"}">
+      <span class="tk-nm">${c ? esc(c.name) : "nessuna carta in mano"}</span>
+      <span class="tk-val ${ko ? "blink" : ""}">${c
+        ? (ko ? `${soldi(c.salario)} · fuori portata` : `- ${soldi(c.salario)} · resta ${soldi(restaDopo())}`)
+        : "in attesa"}</span>
+    </div>`;
+}
+
+// ---- D · gettoni ----
+function renderD() {
+  const T = tetto(), G = 10_000_000;
+  const tot = Math.round(T / G);
+  const sp = Math.min(tot, Math.ceil(speso() / G));
+  const pv = Math.ceil(costo() / G);
+  const hold = Math.ceil(riserva() / G);
+  const ko = sfora();
+  // Se la carta non ci sta, i suoi gettoni si disegnano comunque: sporgono oltre
+  // il tetto ed è quello il modo in cui il tetto ti dice di no.
+  const dentro = Math.min(tot, sp + pv);
+  const fuori = Math.max(0, sp + pv - tot);
+  const tokens = Array.from({ length: tot }, (_, i) => {
+    if (i < sp) return `<i class="tok spent"></i>`;
+    if (i < dentro) return `<i class="tok ${ko ? "over" : "prev"}"></i>`;
+    if (i >= tot - hold) return `<i class="tok hold"></i>`;
+    return `<i class="tok"></i>`;
+  }).join("");
+  const extra = fuori
+    ? `<div class="tok-over-lab">fuori dal tetto: ${soldi(restaDopo() < 0 ? -restaDopo() : 0)}</div>
+       <div class="tokens">${`<i class="tok over"></i>`.repeat(fuori)}</div>`
+    : "";
+  const liberi = Math.max(0, tot - sp - pv - hold);
+  document.getElementById("wD").innerHTML = `
+    <div class="tokens">${tokens}</div>${extra}
+    <div class="tok-legend">
+      <span><s style="background:radial-gradient(circle at 34% 30%,#ff7a45,var(--brass-deep))"></s>spesi ${sp}</span>
+      <span><s style="background:repeating-linear-gradient(120deg,var(--yellow) 0 3px,rgba(255,207,51,.25) 3px 6px)"></s>carta in mano ${pv}</span>
+      <span><s style="background:repeating-linear-gradient(120deg,#33335f 0 3px,#1c1c40 3px 6px)"></s>riserva minimi ${hold}</span>
+    </div>
+    <div class="tok-foot">Un gettone vale 10 milioni, si arrotonda per eccesso. Ti restano liberi <b>${liberi}</b> gettoni su ${tot}.</div>`;
+}
+
+render();
+</script>
+</body>
+</html>

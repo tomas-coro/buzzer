@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { card } from "./fixtures.js";
 import { ROLES } from "./roster.js";
-import { emptyRosa, assegnaRosa, minutiRosa, repartiRosa, TITOLARE, RISERVA } from "./rosa.js";
+import {
+  emptyRosa, assegnaRosa, minutiRosa, repartiRosa, POSTI_PANCA, TITOLARE, PANCA,
+} from "./rosa.js";
 import { simulaPartita, rngSeed } from "./partita.js";
 import { boxScorePartita } from "./boxscore.js";
 import {
@@ -28,13 +30,18 @@ function carta(nome, profilo = "medio", over = {}) {
   });
 }
 
-// Una rosa da dieci con i ruoli giusti: cinque titolari e cinque riserve.
+// Una rosa da dieci: cinque titolari coi ruoli giusti, e cinque panchinari che
+// li ricalcano uno per uno. Il ruolo dei panchinari viene dalla loro CARTA (la
+// casella 6°-10° non ne dà uno), ed è quello che il racconto legge per sapere
+// chi è un lungo da rimbalzo.
 function rosaFinta(prefisso, profili = ["medio", "tiratore", "medio", "lungo", "lungo"]) {
   let r = emptyRosa();
   ROLES.forEach((ruolo, i) => {
     const pos = { primary: ruolo, secondary: null };
-    r = assegnaRosa(r, ruolo, TITOLARE, carta(`${prefisso} Titolare${i}`, profili[i], { pos }));
-    r = assegnaRosa(r, ruolo, RISERVA, carta(`${prefisso} Riserva${i}`, profili[i], { pos }));
+    r = assegnaRosa(r, { tipo: TITOLARE, ruolo },
+      carta(`${prefisso} Titolare${i}`, profili[i], { pos }));
+    r = assegnaRosa(r, { tipo: PANCA, posto: POSTI_PANCA[i] },
+      carta(`${prefisso} Riserva${i}`, profili[i], { pos }));
   });
   return r;
 }

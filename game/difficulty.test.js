@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { DIFFICULTIES } from "./difficulty.js";
+import { DIFFICULTIES, TETTI, REVEAL, mostra } from "./difficulty.js";
 
 test("esistono i 4 livelli", () => {
   assert.deepEqual(Object.keys(DIFFICULTIES), ["facile", "normale", "difficile", "incubo"]);
@@ -59,16 +59,18 @@ test("la difficoltà cresce: la banda avversari non cala (N resta costante)", ()
   assert.ok(DIFFICULTIES.incubo.oppMin > DIFFICULTIES.facile.oppMin);
 });
 
-// Le 175 rose storiche stanno tra 38 e 67 sulla scala nativa del voto (erano
-// 40-74 quando l'avversario era una top-5: la panchina pesata per minuti ha
-// abbassato tutti). Soglie fuori da lì non sono "difficili": sono rotte, perché
-// pickOpponent finirebbe per pescare sempre le stesse squadre - è esattamente
-// quello che è successo quando il voto è passato dagli overall 2K ai reparti e
-// le soglie sono rimaste a 70-99. La taratura si rifà con
-// `node tools/taratura-soglie.mjs`.
+// Le 175 rose storiche stanno tra 38 e 69 sulla scala nativa del voto, mediana
+// 52. Il tetto si è mosso due volte: 74 quando l'avversario era una top-5, 67
+// con le rose da dieci pesate per minuti, 69 da G7 - la panchina avversaria
+// adesso prende i cinque migliori rimasti invece del secondo di ogni ruolo,
+// quindi le squadre storiche sono un po' più forti. Soglie fuori da lì non sono
+// "difficili": sono rotte, perché pickOpponent finirebbe per pescare sempre le
+// stesse squadre - è esattamente quello che è successo quando il voto è passato
+// dagli overall 2K ai reparti e le soglie sono rimaste a 70-99. I numeri qui
+// sotto si rimisurano con `node tools/taratura-soglie.mjs`.
 test("le soglie stanno dentro l'intervallo reale delle rose storiche", () => {
   const POOL_MIN = 38;
-  const POOL_MAX = 67;
+  const POOL_MAX = 69;
   for (const [key, d] of Object.entries(DIFFICULTIES)) {
     assert.ok(d.oppMin >= POOL_MIN, `${key}: oppMin ${d.oppMin} sotto il pool (${POOL_MIN})`);
     assert.ok(d.oppMax <= POOL_MAX, `${key}: oppMax ${d.oppMax} sopra il pool (${POOL_MAX})`);
@@ -88,4 +90,44 @@ test("Facile e Normale hanno una rampa vera, non una banda stretta", () => {
     assert.ok(d.oppMax - d.oppMin >= 15,
       `${key}: banda di ${d.oppMax - d.oppMin} punti, troppo piatta per una rampa`);
   }
+});
+
+// ---- la scala del reveal ----
+
+test("ogni difficoltà ha il suo reveal, con gli stessi campi", () => {
+  const campi = ["voto", "stat", "annata", "squadra", "ruolo"];
+  for (const liv of Object.keys(DIFFICULTIES)) {
+    assert.ok(REVEAL[liv], `manca il reveal di ${liv}`);
+    assert.deepEqual(Object.keys(REVEAL[liv]).sort(), [...campi].sort(), `campi diversi in ${liv}`);
+  }
+});
+
+test("la scala non risale mai: piu difficile non mostra piu cose", () => {
+  const scala = ["facile", "normale", "difficile", "incubo"];
+  for (let i = 1; i < scala.length; i++) {
+    for (const campo of Object.keys(REVEAL[scala[i]])) {
+      if (mostra(scala[i], campo)) {
+        assert.ok(mostra(scala[i - 1], campo),
+          `${scala[i]} mostra ${campo} ma ${scala[i - 1]} lo nasconde`);
+      }
+    }
+  }
+});
+
+test("facile e normale mostrano le stesse cose: cambiano aiuti e tetto", () => {
+  assert.deepEqual(REVEAL.facile, REVEAL.normale);
+  assert.notDeepEqual(DIFFICULTIES.facile.aids, DIFFICULTIES.normale.aids);
+  assert.notEqual(TETTI.facile, TETTI.normale);
+});
+
+test("da difficile spariscono voto e annata, in incubo resta solo il cartellino", () => {
+  assert.equal(mostra("difficile", "voto"), false);
+  assert.equal(mostra("difficile", "annata"), false);
+  assert.equal(mostra("difficile", "stat"), true);
+  for (const campo of Object.keys(REVEAL.incubo)) assert.equal(mostra("incubo", campo), false);
+});
+
+test("mostra si arrabbia su livelli e campi inventati", () => {
+  assert.throws(() => mostra("impossibile", "voto"), /Difficoltà inesistente/);
+  assert.throws(() => mostra("facile", "colore"), /Campo inesistente/);
 });

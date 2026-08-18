@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>80 · Tetto di spesa nel draft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css" />
+<style>
+/* ---- solo quello che il mockup aggiunge alla pelle del prototipo ---- */
+body { padding: 0; }
+.mk-wrap { max-width: 1240px; margin: 0 auto; padding: 18px 16px 40px; }
+.mk-hd { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.mk-hd h1 { font-family: var(--arcade); font-size: 1.05rem; color: var(--yellow); margin: 0; letter-spacing: .01em; }
+.mk-hd p { margin: 0; color: var(--bone-dim); font-size: .82rem; text-wrap: pretty; max-width: 62ch; }
+.mk-bar { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin: 14px 0 18px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #12122c; }
+.mk-grp { display: flex; align-items: center; gap: 7px; }
+.mk-grp > b { font-family: var(--body); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; }
+.mk-chip { font-family: var(--body); font-weight: 700; font-size: .72rem; color: var(--bone-dim);
+  background: #191a3d; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer;
+  transition: color .14s, border-color .14s, background .14s; }
+.mk-chip:hover { color: var(--bone); border-color: var(--brass-deep); }
+.mk-chip[aria-pressed="true"] { color: #201400; background: var(--yellow); border-color: var(--yellow); }
+.mk-reset { margin-left: auto; }
+
+.mk-stage { display: grid; grid-template-columns: minmax(320px, 430px) 1fr; gap: 20px; align-items: stretch; }
+@media (max-width: 960px) { .mk-stage { grid-template-columns: 1fr; } }
+.mk-panel { border: 1px solid var(--line); border-radius: 16px; padding: 14px; background: #101029; min-width: 0; }
+
+/* ============ DIREZIONE A · TERMOMETRO ============
+   Il budget come una barra sola sopra il campo: quanto hai speso, quanto
+   costerebbe la carta che stai guardando, quanto resta bloccato dai minimi. */
+.cap-therm { margin-bottom: 12px; }
+.cap-hd { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+.cap-lab { font-family: var(--body); font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; }
+.cap-big { font-family: var(--led); font-weight: 900; font-size: 1.5rem; line-height: 1; color: var(--yellow);
+  font-variant-numeric: tabular-nums; }
+.cap-big.tight { color: var(--brass); }
+.cap-big.broke { color: var(--red); }
+.cap-sub { font-family: var(--body); font-size: .7rem; color: var(--bone-dim); text-align: right; }
+.cap-sub b { color: var(--bone); font-family: var(--led); font-weight: 700; }
+.track { position: relative; height: 15px; border-radius: 999px; background: #0e0d29;
+  border: 1px solid var(--line); overflow: hidden; }
+.track i { position: absolute; inset: 0 auto 0 0; display: block; border-radius: 999px;
+  transition: width .28s var(--ease); }
+.fill-spent { background: linear-gradient(90deg, var(--brass-deep), var(--brass)); z-index: 2; }
+/* il preventivo: quanto occuperebbe la carta selezionata, a righe diagonali */
+.fill-prev { z-index: 1; background: repeating-linear-gradient(115deg,
+  rgba(255,207,51,.85) 0 6px, rgba(255,207,51,.32) 6px 12px); }
+/* la coda scura: i minimi che devi tenere da parte per le caselle ancora vuote */
+.track .fill-hold { left: auto; right: 0; z-index: 3; background: repeating-linear-gradient(115deg,
+  #2f2f5c 0 5px, #24244a 5px 10px); border-radius: 0 999px 999px 0; opacity: .95; }
+.track-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;
+  font-family: var(--body); font-size: .66rem; color: #6f6fa6; }
+.track-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.track-legend s { width: 11px; height: 11px; border-radius: 3px; text-decoration: none; flex: none; }
+
+/* ============ DIREZIONE B · LIBRO PAGA ============
+   Il budget come la busta paga di una squadra vera: dieci righe, una per
+   casella, che si sommano in fondo. */
+.paylist { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+.payrow { display: grid; grid-template-columns: 62px 1fr auto; gap: 8px; align-items: center;
+  padding: 4px 8px; border-radius: 7px; background: #12122c; border: 1px solid transparent;
+  font-size: .74rem; min-height: 27px; }
+.payrow.vuota { background: #0f0f26; border-style: dashed; border-color: #24244a; color: #6f6fa6; }
+.payrow.prev { border-color: var(--yellow); background: #1c1a34; }
+.payrow .pr-lab { font-family: var(--body); font-weight: 800; font-size: .6rem; letter-spacing: .07em;
+  text-transform: uppercase; color: #6f6fa6; white-space: nowrap; }
+.payrow.piena .pr-lab { color: var(--bone-dim); }
+.payrow .pr-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.payrow.vuota .pr-nm { font-weight: 500; color: #55558c; font-style: italic; }
+.payrow .pr-min { font-size: .62rem; color: #6f6fa6; font-weight: 500; }
+.payrow .pr-sal { font-family: var(--led); font-weight: 700; color: var(--bone);
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+.payrow.vuota .pr-sal { color: #45457a; }
+.payrow.prev .pr-nm, .payrow.prev .pr-sal { color: var(--yellow); }
+.paytot { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline;
+  padding: 9px 8px 2px; border-top: 2px solid var(--line); margin-top: 4px; }
+.paytot .pt-lab { font-family: var(--body); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; }
+.paytot .pt-val { font-family: var(--led); font-weight: 900; font-size: 1.15rem; color: var(--bone);
+  font-variant-numeric: tabular-nums; }
+.paytot .pt-cap { font-family: var(--body); font-size: .72rem; color: #6f6fa6; }
+.paytot .pt-res { font-family: var(--led); font-weight: 900; font-size: 1.15rem; color: var(--yellow);
+  font-variant-numeric: tabular-nums; }
+.paytot .pt-res.tight { color: var(--brass); }
+.paytot .pt-res.broke { color: var(--red); }
+
+/* Il palco cambia forma con la direzione: col termometro basta una colonna
+   stretta, col libro paga il campo e la busta stanno affiancati. */
+.leftgrid { display: grid; gap: 14px; }
+body[data-dir="pay"] .mk-stage { grid-template-columns: minmax(520px, 660px) 1fr; }
+body[data-dir="pay"] .leftgrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr); align-items: start; }
+@media (max-width: 1100px) {
+  body[data-dir="pay"] .mk-stage { grid-template-columns: 1fr; }
+  body[data-dir="pay"] .leftgrid { grid-template-columns: 1fr; }
+}
+
+/* quale direzione è a vista */
+body[data-dir="therm"] .only-pay { display: none; }
+body[data-dir="pay"] .only-therm { display: none; }
+
+/* ---- il campo ---- */
+.dcourt .dslot.full .fbadge { bottom: auto; top: 0; background: linear-gradient(0deg, transparent, rgba(5,3,15,.85)); }
+.dcourt .dslot.full .fbadge { justify-content: flex-start; gap: 5px; right: 26px; padding-right: 0; }
+.dcourt .dslot .ds-min { position: absolute; top: 4px; right: 5px; font-family: var(--led); font-weight: 700;
+  font-size: .56rem; color: #6f6fa6; letter-spacing: -.02em; }
+.dcourt .dslot.full .ds-min { color: var(--bone); text-shadow: 0 1px 3px #000; z-index: 3; }
+.dcourt .dslot .ds-sal { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 2px 0 3px;
+  font-family: var(--led); font-weight: 700; font-size: .58rem; text-align: center; color: var(--bone);
+  background: linear-gradient(180deg, transparent, rgba(6,5,24,.92) 55%); }
+.dcourt .dslot .ds-num { font-family: var(--arcade); font-size: .52rem; color: #5d5e93; }
+
+/* Quando lo spin si assottiglia la colonna resterebbe mezza vuota: al suo posto
+   l'invito a pescare un'altra rosa, che è poi la mossa giusta in quel momento. */
+.mk-panel.dx { display: flex; flex-direction: column; }
+.mk-invito { flex: 1; min-height: 90px; margin-top: 12px; display: grid; place-items: center;
+  border: 1.5px dashed #2a2a52; border-radius: 12px; padding: 16px; text-align: center; }
+.mk-invito p { margin: 0; color: #6f6fa6; font-size: .78rem; max-width: 34ch; text-wrap: pretty; }
+.mk-invito b { color: var(--bone-dim); display: block; font-family: var(--arcade); font-size: .58rem;
+  letter-spacing: .08em; margin-bottom: 6px; }
+
+/* ---- righe candidato ---- */
+.rlist { display: flex; flex-direction: column; gap: 6px; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+@media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
+.grp-lab { display: flex; align-items: center; gap: 8px; margin: 2px 0 7px;
+  font-family: var(--arcade); font-size: .54rem; letter-spacing: .1em; color: #6f6fa6; }
+.grp-lab::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.r-top { display: grid; grid-template-columns: 30px 34px 1fr auto; gap: 7px; align-items: center;
+  padding: 6px 8px 6px 11px; }
+.r-port { width: 30px; height: 36px; display: block; }
+.r-ovr { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.r-ovr b { font-family: var(--led); font-weight: 900; font-size: .95rem; color: var(--bone); }
+.r-ovr small { font-size: .42rem; letter-spacing: .1em; color: #6f6fa6; }
+.r-ovr.oro b { color: var(--yellow); } .r-ovr.arg b { color: #cfd3ea; } .r-ovr.brz b { color: #c98b5e; }
+.r-id { min-width: 0; }
+.r-id .nm { display: block; font-weight: 800; font-size: .84rem; color: var(--bone);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.r-id .sub { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 2px; }
+.r-id .sub > span { font-size: .58rem; color: #6f6fa6; }
+/* Le tre statistiche stanno su una riga tutta loro e non si spezzano mai: prima
+   la terza finiva da sola sotto le altre due, orfana. */
+.r-id .stats { display: flex; gap: 7px; width: 100%; margin-top: 3px; white-space: nowrap;
+  font-size: .58rem; color: #6f6fa6; }
+.r-id .stats b { font-family: var(--led); font-weight: 700; color: var(--bone-dim); font-size: .62rem; }
+.r-pos { font-weight: 800; color: var(--bone-dim) !important; letter-spacing: .04em; }
+.r-team { font-family: var(--led); font-weight: 700; }
+.r-sixth { font-family: var(--arcade); font-size: .38rem; letter-spacing: .05em; color: #201400;
+  background: var(--yellow); border-radius: 4px; padding: 2px 5px; flex: none; }
+.r-cover { color: #ff8a6e !important; font-weight: 700; }
+/* il cartellino: il numero che in Incubo è l'unico dato duro della riga */
+.r-sal { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; flex: none; }
+.r-sal b { font-family: var(--led); font-weight: 900; font-size: .92rem; color: var(--bone);
+  font-variant-numeric: tabular-nums; }
+.r-sal small { font-size: .42rem; letter-spacing: .1em; color: #6f6fa6; }
+.crd.over .r-sal b { color: var(--red); }
+.crd.over { opacity: .55; }
+.crd.minimo .r-sal b { color: var(--green); }
+.mk-badge { font-family: var(--body); font-size: .55rem; font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase; border-radius: 4px; padding: 2px 5px; flex: none; }
+.mk-badge.over { background: #3a1414; color: #ff8a6e; }
+.mk-badge.min { background: #14331f; color: var(--green); }
+
+/* Sintesi sotto il campo: tre numeri che riempiono di densità utile lo spazio
+   che restava morto in fondo alla colonna, e che servono davvero durante il draft. */
+.mk-sint { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px solid var(--line); }
+.mk-sint > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mk-sint b { font-family: var(--led); font-weight: 900; font-size: .98rem; color: var(--bone);
+  font-variant-numeric: tabular-nums; line-height: 1; }
+.mk-sint i { font-style: normal; font-size: .55rem; letter-spacing: .11em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; font-family: var(--body); }
+
+.mk-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+@media (max-width: 960px) { .mk-notes { grid-template-columns: 1fr; } }
+.mk-notes .mk-note { margin: 0; }
+
+.mk-note { margin: 12px 0 0; padding: 11px 13px; border-left: 3px solid var(--brass);
+  background: #14132f; border-radius: 0 10px 10px 0; color: var(--bone-dim); font-size: .78rem;
+  line-height: 1.5; text-wrap: pretty; }
+.mk-note b { color: var(--bone); }
+.mk-note code { font-family: var(--led); color: var(--yellow); font-size: .82rem; }
+.mk-empty { color: #6f6fa6; font-size: .76rem; text-align: center; padding: 14px 0; }
+#spin-lab { white-space: nowrap; }
+.mk-panel .seclab { flex-wrap: wrap; row-gap: 6px; }
+.prompt { margin: 10px 0 0; font-size: .78rem; color: var(--bone-dim); min-height: 2.4em; text-wrap: pretty; }
+.prompt b { color: var(--bone); }
+.prompt .ko { color: #ff8a6e; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body data-dir="therm">
+<div class="mk-wrap">
+  <div class="mk-hd">
+    <h1>80 · Il tetto di spesa</h1>
+    <p>Dieci caselle, un monte ingaggi. Carte, voti e cartellini sono veri: escono da
+       <code>costruisciRosa</code> e da <code>salarioCarta</code>. Due modi di far vedere
+       il budget - scegline uno.</p>
+  </div>
+
+  <div class="mk-bar">
+    <div class="mk-grp">
+      <b>Budget</b>
+      <button class="mk-chip" data-dir="therm" aria-pressed="true" type="button">Termometro</button>
+      <button class="mk-chip" data-dir="pay" aria-pressed="false" type="button">Libro paga</button>
+    </div>
+    <div class="mk-grp" id="liv-chips"><b>Livello</b></div>
+    <button class="mk-chip mk-reset" id="reset" type="button">↺ Ricomincia il draft</button>
+  </div>
+
+  <div class="mk-stage">
+    <div class="mk-panel">
+      <!-- DIREZIONE A -->
+      <div class="cap-therm only-therm">
+        <div class="cap-hd">
+          <div>
+            <div class="cap-lab">Spazio libero</div>
+            <div class="cap-big" id="t-res">$0.0M</div>
+          </div>
+          <div class="cap-sub">
+            speso <b id="t-spe">$0.0M</b> di <b id="t-cap">$0.0M</b><br />
+            <span id="t-hold">bloccati per le caselle vuote</span>
+          </div>
+        </div>
+        <div class="track">
+          <i class="fill-prev" id="t-fprev" style="width:0"></i>
+          <i class="fill-spent" id="t-fspe" style="width:0"></i>
+          <i class="fill-hold" id="t-fhold" style="width:0"></i>
+        </div>
+        <div class="track-legend">
+          <span><s style="background:var(--brass)"></s>firmato</span>
+          <span><s style="background:repeating-linear-gradient(115deg,rgba(255,207,51,.85) 0 4px,rgba(255,207,51,.3) 4px 8px)"></s>in preventivo</span>
+          <span><s style="background:#2f2f5c"></s>minimi da tenere</span>
+        </div>
+      </div>
+
+      <div class="leftgrid">
+        <div class="lg-court">
+          <div class="seclab"><span>Il campo · <b id="conta">0</b>/10</span></div>
+          <div class="dcourt" id="court"></div>
+          <p class="prompt" id="prompt"></p>
+          <div class="mk-sint" id="sintesi"></div>
+        </div>
+        <!-- DIREZIONE B -->
+        <div class="only-pay lg-pay">
+          <div class="cap-lab" style="margin-bottom:7px">Libro paga · 10 contratti</div>
+          <div class="paylist" id="paylist"></div>
+          <div class="paytot">
+            <span class="pt-lab">Monte ingaggi</span>
+            <span class="pt-val" id="p-tot">$0.0M</span>
+            <span class="pt-cap" id="p-cap">tetto $0.0M</span>
+            <span class="pt-res" id="p-res">$0.0M liberi</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mk-panel dx">
+      <div class="seclab"><span id="spin-lab">Rosa</span>
+        <span class="aidz" id="aidz"></span>
+      </div>
+      <div class="cols" id="cols"></div>
+      <div class="mk-invito" id="invito" hidden></div>
+    </div>
+  </div>
+
+  <div class="mk-notes">
+    <p class="mk-note" id="nota-liv"></p>
+    <p class="mk-note">
+      <b>Provala.</b> Tocca un candidato: la barra mostra <b>in preventivo</b> quanto
+      occuperebbe, e si accendono solo le caselle dove può giocare. Le righe rosse
+      costano più di quello che ti resta, quelle verdi sono contratti al minimo -
+      firmabili sempre, anche a cassa vuota, così il draft non si inchioda mai.
+    </p>
+  </div>
+</div>
+
+<script type="module">
+import { DRAFTCAP } from "./80-draft-cap-data.js";
+import { teamColors, initials } from "../prototype/imbattuto/team-colors.js";
+
+const { caselle, spin: SPIN, tetti: TETTI, salario: SAL } = DRAFTCAP;
+const LIVELLI = [
+  ["facile", "Facile"], ["normale", "Normale"],
+  ["difficile", "Difficile"], ["incubo", "Incubo"],
+];
+// LA SCALA DEL REVEAL, la stessa di game/difficulty.js (ricopiata qui perché il
+// mockup gira senza build). Ogni gradino toglie uno strato: nome e cartellino
+// restano sempre, e il prezzo non è il voto travestito perché il contratto porta
+// il suo rumore.
+const REVEAL = {
+  facile:    { voto: true,  stat: true,  annata: true,  squadra: true,  ruolo: true },
+  normale:   { voto: true,  stat: true,  annata: true,  squadra: true,  ruolo: true },
+  difficile: { voto: false, stat: true,  annata: false, squadra: true,  ruolo: true },
+  incubo:    { voto: false, stat: false, annata: false, squadra: false, ruolo: false },
+};
+const mostra = (campo) => REVEAL[livello][campo];
+// Come si chiama uno spin quando squadra e annata sono nascoste: "Rosa 3" e
+// basta, altrimenti l'etichetta dice quello che le carte tacciono.
+function etichettaSpin(s, i) {
+  if (mostra("annata")) return `Rosa · ${s.team} · ${s.season}`;
+  if (mostra("squadra")) return `Rosa · ${s.team}`;
+  return `Rosa ${i + 1}`;
+}
+const alBuio = (liv) => !REVEAL[liv].voto;
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt1 = (v) => v.toFixed(1);
+const soldi = (d) => `$${(d / 1_000_000).toFixed(1)}M`;
+const fascia = (o) => (o >= 88 ? "oro" : o >= 82 ? "arg" : "brz");
+const lastName = (n) => { const p = String(n).split(/\s+/); return p[p.length - 1] || n; };
+const chiave = (c) => `${c.player_id}|${c.season}`;
+const keySlot = (s) => (s.tipo === "titolare" ? `T-${s.ruolo}` : `P-${s.posto}`);
+// Stesse due funzioni del motore, ricopiate qui perché il mockup gira senza build.
+const prenotato = (vuote) => Math.max(0, vuote) * SAL.min;
+const firmabile = (costo, residuo, vuote) => costo <= residuo - prenotato(vuote - 1);
+// Se NESSUNA carta dello spin è firmabile, la meno cara scende al minimo: senza
+// questa rete il draft si inchioda davvero, provato - 6 caselle su 10 e cassa a
+// 8 milioni con il candidato più economico a 2,6. È `firmaDiRipiego` in salary.js.
+function calcolaRipiego() {
+  const vivi = SPIN[iSpin].cards.map((c, i) => ({ c, i })).filter(({ c }) => !presi.has(chiave(c)));
+  if (vivi.length === 0) return -1;
+  if (vivi.some(({ c }) => firmabile(c.salario, residuo(), vuote()))) return -1;
+  return vivi.reduce((best, x) => (x.c.salario < best.c.salario ? x : best), vivi[0]).i;
+}
+// Quanto costa DAVVERO firmare questa carta: il suo prezzo, o il minimo se è la
+// carta di ripiego. `ripiego` lo aggiorna `render`, una volta per disegno.
+let ripiego = -1;
+const ripiegoDi = (i) => i === ripiego && ripiego !== -1;
+const costoDi = (c, i) => (ripiegoDi(i) ? SAL.min : c.salario);
+
+const puoGiocare = (c, slot) =>
+  slot.tipo !== "titolare" || c.pos.primary === slot.ruolo || c.pos.secondary === slot.ruolo;
+
+// ---- stato ----
+let dir = "therm";
+let livello = "normale";
+let iSpin = 0;
+let sel = null;                 // indice della carta selezionata nello spin
+let rosa = new Map();           // keySlot -> carta
+let presi = new Set();
+
+const tetto = () => TETTI[livello];
+const speso = () => [...rosa.values()].reduce((s, c) => s + c.salario, 0);
+const residuo = () => tetto() - speso();
+const vuote = () => caselle.length - rosa.size;
+const libere = () => caselle.filter((s) => !rosa.has(keySlot(s)));
+
+// Le caselle dove QUESTA carta può finire: libere, compatibili di ruolo e
+// dentro il budget. Il vincolo dei soldi non guarda la casella, quindi o valgono
+// tutte o nessuna - ma tenerlo qui rende il codice uguale a quello dell'app.
+const caselleDove = (c, i) => (firmabile(costoDi(c, i), residuo(), vuote())
+  ? libere().filter((s) => puoGiocare(c, s)) : []);
+
+// Il minimo è sempre firmabile: se una carta costa il minimo non può mai essere
+// fuori budget, perché ogni casella vuota ne tiene uno da parte.
+const alMinimo = (c, i) => costoDi(c, i) <= SAL.min;
+const fuoriBudget = (c, i) => !firmabile(costoDi(c, i), residuo(), vuote());
+// Di quanto sfori: quello che puoi spendere su questa casella è il residuo meno i
+// minimi da tenere per le altre. Scritto sulla riga, così si vede PRIMA del click.
+const sforo = (c) => c.salario - (residuo() - prenotato(vuote() - 1));
+
+function reset() { rosa = new Map(); presi = new Set(); sel = null; render(); }
+
+// ---- pezzi di disegno ----
+function faceHTML(card, { ovr = null, role = null, buio = false } = {}) {
+  const { c1, c2 } = teamColors(card.team_abbr);
+  const badge = (ovr != null || role != null)
+    ? `<span class="fbadge">${role ? `<span class="r">${esc(role)}</span>` : ""}${ovr != null ? `<span class="o">${ovr}</span>` : ""}</span>` : "";
+  return `<span class="face${buio ? " blind" : ""}" style="--tc1:${c1};--tc2:${c2}"><span class="mono">${esc(initials(card.name))}</span>${badge}</span>`;
+}
+
+function court() {
+  const buio = alBuio(livello);
+  const cella = (slot) => {
+    const c = rosa.get(keySlot(slot));
+    const nome = slot.tipo === "titolare" ? slot.ruolo : `${slot.posto}°`;
+    const min = `<span class="ds-min">${slot.minuti}'</span>`;
+    if (c) {
+      return `<span class="dslot full ${slot.tipo === "titolare" ? "titolare" : "riserva"}"
+        data-slot="${keySlot(slot)}" data-filled="1" title="${esc(c.name)} · ${soldi(c.salario)}">
+        <span class="ds-face">${faceHTML(c, { ovr: buio ? null : c.ovr, role: slot.tipo === "titolare" ? slot.ruolo : null, buio })}</span>
+        ${min}<span class="ds-sal">${soldi(c.salario)}</span></span>`;
+    }
+    return `<span class="dslot ${slot.tipo === "titolare" ? "titolare" : "riserva"}" data-slot="${keySlot(slot)}">
+      <span class="${slot.tipo === "titolare" ? "ds-role" : "ds-num"}">${nome}</span>
+      <span class="reticle"></span>${min}</span>`;
+  };
+  const tit = caselle.filter((s) => s.tipo === "titolare");
+  const pan = caselle.filter((s) => s.tipo !== "titolare");
+  return `<div class="dcrow-lab">Quintetto <small>${tit[0].minuti} minuti a testa</small></div>${tit.map(cella).join("")}
+          <div class="dcrow-lab">Panchina <small>${pan.map((s) => s.minuti).join("' · ")}'</small></div>${pan.map(cella).join("")}`;
+}
+
+// Direzione A: la barra. Tre segmenti sulla stessa traccia - firmato, preventivo
+// della carta selezionata, minimi bloccati per le caselle ancora vuote.
+function termometro() {
+  const cap = tetto(), spe = speso(), res = residuo();
+  const c = sel === null ? null : SPIN[iSpin].cards[sel];
+  const prev = c && !presi.has(chiave(c)) ? costoDi(c, sel) : 0;
+  const hold = prenotato(vuote() - (prev ? 1 : 0));
+  const pct = (v) => `${Math.min(100, Math.max(0, (v / cap) * 100))}%`;
+
+  const $ = (id) => document.getElementById(id);
+  $("t-res").textContent = soldi(res);
+  $("t-res").className = `cap-big${res <= 0 ? " broke" : res < cap * 0.15 ? " tight" : ""}`;
+  $("t-spe").textContent = soldi(spe);
+  $("t-cap").textContent = soldi(cap);
+  $("t-hold").textContent = vuote() === 0
+    ? "rosa completa"
+    : `${soldi(prenotato(vuote()))} bloccati per ${vuote()} ${vuote() === 1 ? "casella" : "caselle"}`;
+  $("t-fspe").style.width = pct(spe);
+  $("t-fprev").style.width = pct(spe + prev);
+  $("t-fhold").style.width = pct(hold);
+}
+
+// Direzione B: la busta paga. Dieci righe fisse, una per casella: quelle vuote
+// restano a vista, così il conto di quanto manca si fa a occhio.
+function libroPaga() {
+  const c = sel === null ? null : SPIN[iSpin].cards[sel];
+  // Il preventivo si appoggia alla prima casella dove la carta potrebbe andare.
+  // Le carte fuori budget non sono selezionabili, quindi qui non arrivano mai.
+  const dove = c ? (caselleDove(c, sel)[0] ?? null) : null;
+  const kPrev = dove ? keySlot(dove) : null;
+
+  document.getElementById("paylist").innerHTML = caselle.map((slot) => {
+    const dentro = rosa.get(keySlot(slot));
+    const prev = !dentro && keySlot(slot) === kPrev;
+    const carta = dentro ?? (prev ? { ...c, salario: costoDi(c, sel) } : null);
+    const cls = dentro ? "piena" : prev ? "vuota prev" : "vuota";
+    const nome = carta
+      ? (prev ? `→ ${lastName(carta.name)}` : lastName(carta.name))
+      : "libera";
+    return `<div class="payrow ${cls}">
+      <span class="pr-lab">${esc(slot.etichetta)}</span>
+      <span class="pr-nm">${esc(nome)} <span class="pr-min">${slot.minuti}'</span></span>
+      <span class="pr-sal">${carta ? soldi(carta.salario) : "-"}</span>
+    </div>`;
+  }).join("");
+
+  const res = residuo();
+  document.getElementById("p-tot").textContent = soldi(speso());
+  document.getElementById("p-cap").textContent = `tetto ${soldi(tetto())}`;
+  const el = document.getElementById("p-res");
+  el.textContent = `${soldi(res)} liberi`;
+  el.className = `pt-res${res <= 0 ? " broke" : res < tetto() * 0.15 ? " tight" : ""}`;
+}
+
+// I tre numeri sotto il campo: quanto hai firmato, quanti dei 240 minuti sono
+// coperti, quanto costa in media un tuo contratto. Il secondo è quello che si
+// dimentica sempre: una rosa da 6 lascia scoperto un quarto della partita.
+function sintesi() {
+  const dentro = [...rosa.entries()];
+  const minCop = dentro.reduce((s, [k]) => s + caselle.find((c) => keySlot(c) === k).minuti, 0);
+  const minTot = caselle.reduce((s, c) => s + c.minuti, 0);
+  const medio = dentro.length ? speso() / dentro.length : 0;
+  document.getElementById("sintesi").innerHTML = `
+    <span><b>${rosa.size}/10</b><i>contratti</i></span>
+    <span><b>${minCop}/${minTot}</b><i>minuti coperti</i></span>
+    <span><b>${dentro.length ? soldi(medio) : "-"}</b><i>contratto medio</i></span>`;
+}
+
+// L'invito compare quando la rosa pescata non basta più a riempire le caselle
+// che restano: nell'app vera è il momento in cui si fa un altro spin.
+function invito() {
+  const vivi = SPIN[iSpin].cards.filter((c) => !presi.has(chiave(c))).length;
+  const el = document.getElementById("invito");
+  const serve = vuote() > 0 && vivi < vuote() + 2;
+  el.hidden = !serve;
+  if (!serve) return;
+  el.innerHTML = vivi === 0
+    ? `<p><b>Rosa esaurita</b>Tutti presi da questa squadra: pesca un'altra rosa dai
+       bottoni qui sopra. Nell'app vera è quello che fa il re-spin.</p>`
+    : `<p><b>Restano ${vivi} candidati</b>Per ${vuote()} ${vuote() === 1 ? "casella" : "caselle"} da
+       riempire la scelta è poca: puoi pescare un'altra rosa dai bottoni qui sopra.</p>`;
+}
+
+function riga(c, i) {
+  const { c1, c2 } = teamColors(c.team_abbr);
+  const buio = alBuio(livello);
+  const senzaCasella = libere().filter((s) => puoGiocare(c, s)).length === 0;
+  const over = fuoriBudget(c, i);
+  const off = senzaCasella || over;
+  const min = alMinimo(c, i);
+  const rip = ripiegoDi(i);
+  const two = c.pos.secondary;
+  const trio = [["pts", "PT"], ["reb", "RB"], ["ast", "AS"]];
+  return `<div class="crd${off ? " off" : ""}${over ? " over" : ""}${min ? " minimo" : ""}${sel === i ? " sel" : ""}"
+      data-i="${i}" ${off ? 'aria-disabled="true"' : ""} style="--tc1:${c1};--tc2:${c2}">
+    <div class="r-top">
+      <span class="r-port">${faceHTML(c, { buio })}</span>
+      ${mostra("voto") ? `<span class="r-ovr ${fascia(c.ovr)}"><b>${c.ovr}</b><small>OVR</small></span>`
+             : `<span class="r-ovr"><b style="color:#45457a">?</b><small>OVR</small></span>`}
+      <span class="r-id">
+        <span class="nm">${esc(lastName(c.name))}</span>
+        <span class="sub">
+          ${mostra("ruolo") ? `<span class="r-pos">${esc(c.pos.primary)}${two ? " · " + esc(two) : ""}</span>` : ""}
+          ${mostra("squadra") || mostra("annata")
+            ? `<span class="r-team">${[mostra("squadra") ? esc(c.team_abbr) : null,
+                 mostra("annata") ? esc(c.season) : null].filter(Boolean).join(" · ")}</span>`
+            : ""}
+          ${over ? `<span class="mk-badge over">sfori di ${soldi(sforo(c))}</span>` : ""}
+          ${min ? `<span class="mk-badge min">${rip ? "accetta il minimo" : "contratto minimo"}</span>` : ""}
+          ${senzaCasella && !over ? `<span class="r-cover">nessuna casella</span>` : ""}
+        </span>
+        ${mostra("stat") ? `<span class="stats">${trio.map(([k, l]) =>
+          `<span><b>${fmt1(c.stats_real[k])}</b> ${l}</span>`).join("")}</span>` : ""}
+      </span>
+      <span class="r-sal"><b>${rip ? soldi(SAL.min) : soldi(c.salario)}</b><small>ANNUI</small></span>
+    </div>
+  </div>`;
+}
+
+function lista() {
+  const vivi = SPIN[iSpin].cards.map((c, i) => ({ c, i })).filter(({ c }) => !presi.has(chiave(c)));
+  if (vivi.length === 0) return `<p class="mk-empty">Tutti presi da questa rosa: passa a un altro spin.</p>`;
+  const tit = vivi.filter(({ c }) => c.da.tipo === "titolare");
+  const pan = vivi.filter(({ c }) => c.da.tipo !== "titolare");
+  const blocco = (voci, lab) => voci.length === 0 ? "" :
+    `<div><div class="grp-lab">${lab}</div><div class="rlist">${voci.map(({ c, i }) => riga(c, i)).join("")}</div></div>`;
+  return blocco(tit, "Quintetto") + blocco(pan, "Panchina");
+}
+
+function illumina() {
+  const c = sel === null ? null : SPIN[iSpin].cards[sel];
+  const ok = c ? caselleDove(c, sel).map(keySlot) : [];
+  document.querySelectorAll(".dslot").forEach((s) => {
+    const acceso = ok.includes(s.dataset.slot);
+    s.classList.toggle("elig", acceso);
+    s.classList.toggle("dim", s.dataset.filled !== "1" && !acceso && c !== null);
+  });
+  const p = document.getElementById("prompt");
+  if (!c) {
+    p.innerHTML = vuote() === 0
+      ? `<b>Rosa completa.</b> Monte ingaggi ${soldi(speso())} sotto un tetto di ${soldi(tetto())}.`
+      : `Tocca un candidato: si accendono le caselle dove può giocare e che ti puoi permettere.`;
+    return;
+  }
+  const n = esc(lastName(c.name));
+  if (ok.length === 0) {
+    p.innerHTML = `<b>${n}</b> non ha caselle libere dove giocare.`;
+  } else {
+    const dopo = residuo() - costoDi(c, sel);
+    p.innerHTML = alBuio(livello)
+      ? `<b>${n}</b> a ${soldi(costoDi(c, sel))} - tocca una casella accesa, dopo la firma restano <b>${soldi(dopo)}</b>.`
+      : `<b>${n}</b> può giocare ${ok.length === 1 ? "in una casella" : `in ${ok.length} caselle`} - dopo la firma restano <b>${soldi(dopo)}</b>.`;
+  }
+}
+
+function notaLivello() {
+  const nome = LIVELLI.find(([k]) => k === livello)[1];
+  const rumore = Math.round(SAL.rumore * 100);
+  let testo;
+  if (!mostra("stat")) {
+    testo = `<b>Incubo.</b> Della carta restano il nome e il <b>cartellino</b>: niente voto,
+       niente statistiche, niente ruolo, nemmeno l'anno. Il prezzo non è il voto travestito -
+       il contratto è firmato in passato e porta un rumore di ±${rumore}%, quindi esistono
+       rookie sottopagati e veterani strapagati. La posizione la scopri quando selezioni la
+       carta e le caselle si accendono.`;
+  } else if (!mostra("voto")) {
+    testo = `<b>Difficile.</b> Via il voto e via l'annata: leggi il nome, la squadra e le
+       statistiche, e l'anno lo deduci da quelle e dai nove compagni di squadra dello spin.
+       È il modo in cui lo saprebbe un tifoso vero.`;
+  } else {
+    testo = `<b>${nome}.</b> La carta dice tutto: voto, statistiche, squadra, annata e ruolo.
+       Fra Facile e Normale cambiano gli aiuti e il tetto di spesa, non quello che vedi -
+       il salto si sente nel portafogli, non negli occhi.`;
+  }
+  document.getElementById("nota-liv").innerHTML = testo;
+}
+
+function render() {
+  document.body.dataset.dir = dir;
+  ripiego = calcolaRipiego();
+  document.getElementById("court").innerHTML = court();
+  document.getElementById("cols").innerHTML = lista();
+  document.getElementById("conta").textContent = String(rosa.size);
+  // L'intestazione dello spin rispetta la stessa scala delle carte: se l'annata
+  // è nascosta sulle carte, scriverla qui sopra la rimetterebbe in chiaro.
+  document.getElementById("spin-lab").textContent = etichettaSpin(SPIN[iSpin], iSpin);
+  etichetteSpin();
+  termometro();
+  libroPaga();
+  sintesi();
+  invito();
+  notaLivello();
+  illumina();
+  document.querySelectorAll("[data-dir]").forEach((b) => {
+    if (b.tagName === "BUTTON") b.setAttribute("aria-pressed", String(b.dataset.dir === dir));
+  });
+  document.querySelectorAll("[data-liv]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.liv === livello)));
+  attacca();
+}
+
+function attacca() {
+  document.querySelectorAll(".crd:not(.off)").forEach((row) => {
+    row.onclick = () => { sel = +row.dataset.i; render(); };
+  });
+  document.querySelectorAll(".dslot").forEach((s) => {
+    s.onclick = () => {
+      if (sel === null || !s.classList.contains("elig")) return;
+      const c = { ...SPIN[iSpin].cards[sel], salario: costoDi(SPIN[iSpin].cards[sel], sel) };
+      rosa.set(s.dataset.slot, c);
+      presi.add(chiave(c));
+      sel = null;
+      render();
+    };
+  });
+}
+
+// ---- controlli ----
+const chips = document.getElementById("liv-chips");
+for (const [k, lab] of LIVELLI) {
+  const b = document.createElement("button");
+  b.className = "mk-chip"; b.type = "button"; b.dataset.liv = k; b.textContent = lab;
+  b.onclick = () => { livello = k; sel = null; render(); };
+  chips.appendChild(b);
+}
+// Gli spin stanno fra gli aiuti, dove staranno nell'app: è il re-spin che cambia rosa.
+const aidz = document.getElementById("aidz");
+const bottoniSpin = SPIN.map((s, i) => {
+  const b = document.createElement("button");
+  b.className = "aid"; b.type = "button";
+  b.onclick = () => { iSpin = i; sel = null; render(); };
+  aidz.appendChild(b);
+  return b;
+});
+// Le etichette si riscrivono a ogni disegno, non una volta sola: cambiando
+// livello cambia quello che possono dire.
+function etichetteSpin() {
+  bottoniSpin.forEach((b, i) => {
+    const s = SPIN[i];
+    b.innerHTML = mostra("annata")
+      ? `${s.team} <b>${s.season.slice(2)}</b>`
+      : (mostra("squadra") ? s.team : `Rosa <b>${i + 1}</b>`);
+  });
+}
+document.querySelectorAll("button[data-dir]").forEach((b) => {
+  b.onclick = () => { dir = b.dataset.dir; render(); };
+});
+document.getElementById("reset").onclick = reset;
+
+reset();
+</script>
+</body>
+</html>
