@@ -1,9 +1,16 @@
 import { ROLES, canPlay } from "../../../game/roster.js";
+import { slotLibero, listaRosa, TITOLARE, RISERVA } from "../../../game/rosa.js";
 import { teamColors, initials } from "../team-colors.js";
 
 // ctx: { state, draftView, dispatch, go }
 //
 // DRAFT A PIAZZAMENTO LIBERO (mockup 72, direzione "mirino + snap").
+//
+// ROSA DA 10, NON PIÙ QUINTETTO. Il campo ha due file: cinque titolari sopra,
+// cinque riserve sotto. Miri il RUOLO con un tocco solo, come prima: la prima
+// carta di quel ruolo va titolare, la seconda riserva, e a deciderlo è il motore
+// (`slotLibero`), non la schermata. Per questo si accende una casella sola per
+// ruolo - quella davvero libera - e non tutte e due.
 // Ogni spin pesca una squadra-stagione e ne mostra la top-5 come rosa. Tocchi un
 // candidato: si accendono SOLO gli slot dove può giocare (ruolo primario/secondario)
 // e ancora liberi. Tocchi lo slot: la carta ci vola dentro (mirino+snap) e viene
@@ -115,7 +122,8 @@ export function render(ctx) {
   const el = document.createElement("section");
   el.className = "screen draft draft-free";
 
-  const nFilled = ROLES.filter((r) => state.quintetto[r]).length;
+  const inRosa = listaRosa(state.rosa);
+  const nFilled = inRosa.length;
   const [team, season] = draftView.key.split("|");
 
   // ---- Header ----
@@ -126,18 +134,23 @@ export function render(ctx) {
       <div class="mode-pill"><span class="mp-ico">${FLAME}</span><span class="mp-txt">${diffName}</span></div>
     </div>`;
 
-  // ---- Court: 5 slot ----
-  const court = ROLES.map((r) => {
-    const c = state.quintetto[r];
+  // ---- Court: 10 caselle, titolari sopra e panchina sotto ----
+  const fila = (tipo) => ROLES.map((r) => {
+    const c = state.rosa[r][tipo];
     if (c) {
-      return `<button class="dslot full" data-role="${r}" data-filled="1" type="button" aria-label="Scheda ${esc(c.name)}">
+      return `<button class="dslot full ${tipo}" data-role="${r}" data-tipo="${tipo}" data-filled="1" type="button" aria-label="Scheda ${esc(c.name)}">
         <span class="ds-face">${faceHTML(c, { ovr: rv.ovr ? c.ovr : null, role: r })}</span></button>`;
     }
-    return `<span class="dslot" data-role="${r}">
+    return `<span class="dslot ${tipo}" data-role="${r}" data-tipo="${tipo}">
       <span class="ds-role">${r}</span>
       <span class="reticle"></span>
       <span class="ds-stamp">${r}</span></span>`;
   }).join("");
+  const court = `
+    <div class="dcrow-lab">Titolari <small>32 minuti</small></div>
+    ${fila(TITOLARE)}
+    <div class="dcrow-lab">Panchina <small>16 minuti</small></div>
+    ${fila(RISERVA)}`;
 
   // ---- Scaletta livelli (stato) ----
   const ladder = LADDER.map((L) =>
@@ -180,7 +193,7 @@ export function render(ctx) {
   el.innerHTML = `
     ${header}
     <div class="court-block">
-      <div class="seclab"><span>Il tuo quintetto · ${nFilled}/5</span><span class="ladder">${ladder}</span></div>
+      <div class="seclab"><span>La tua rosa · ${nFilled}/10</span><span class="ladder">${ladder}</span></div>
       <div class="dcourt">${court}</div>
     </div>
     <p class="prompt" id="prompt">Tocca un candidato: si accendono gli slot dove può giocare</p>
@@ -188,7 +201,7 @@ export function render(ctx) {
       <div class="seclab"><span>Rosa · ${esc(team)} · ${esc(season)}</span>${aids}</div>
       <div class="rlist morph" id="rlist">${rows}</div>
     </div>
-    <p class="src">Slot liberi: <b>${5 - nFilled}</b> · piazza dove vuoi</p>
+    <p class="src">Caselle libere: <b>${10 - nFilled}</b> · piazza dove vuoi</p>
   `;
 
   // La classe .morph resta: ogni re-render crea un nuovo #rlist, così il glitch-in
@@ -199,10 +212,13 @@ export function render(ctx) {
 
   const setPrompt = (h) => { const p = el.querySelector("#prompt"); if (p) p.innerHTML = h; };
 
-  // Ruoli liberi in cui il candidato può giocare.
+  // Ruoli con una casella libera in cui il candidato può giocare.
+  const liberoIn = (r) => slotLibero(state.rosa, r);
   function eligibleRoles(card) {
-    return ROLES.filter((r) => !state.quintetto[r] && canPlay(card, r));
+    return ROLES.filter((r) => liberoIn(r) && canPlay(card, r));
   }
+  // Come si legge la casella che si accenderà: "PG da titolare", "C in panchina".
+  const dove = (r) => (liberoIn(r) === TITOLARE ? `<b>${r}</b> da titolare` : `<b>${r}</b> in panchina`);
 
   function selectCand(i) {
     if (busy) return;
@@ -213,22 +229,25 @@ export function render(ctx) {
     el.querySelectorAll(".dslot").forEach((slot) => {
       const r = slot.dataset.role;
       const isFilled = slot.dataset.filled === "1";
-      slot.classList.toggle("elig", elig.includes(r));
-      slot.classList.toggle("dim", !isFilled && !elig.includes(r));
+      // Si accende SOLO la casella dove la carta andrebbe davvero: se il ruolo
+      // ha il titolare libero, la riserva resta spenta anche se è vuota.
+      const acceso = elig.includes(r) && slot.dataset.tipo === liberoIn(r);
+      slot.classList.toggle("elig", acceso);
+      slot.classList.toggle("dim", !isFilled && !acceso);
     });
     const name = lastName(card.name);
     if (elig.length === 0) setPrompt(`<b>${esc(name)}</b>: i suoi ruoli sono già coperti - scegline un altro`);
-    else if (elig.length === 1) setPrompt(`<b>${esc(name)}</b> può fare <b>${elig[0]}</b> - tocca lo slot`);
-    else setPrompt(`<b>${esc(name)}</b> può fare <b>${elig.join(" o ")}</b> - scegli lo slot`);
+    else if (elig.length === 1) setPrompt(`<b>${esc(name)}</b> può giocare ${dove(elig[0])} - tocca la casella`);
+    else setPrompt(`<b>${esc(name)}</b> può giocare ${elig.map(dove).join(" o ")} - scegli la casella`);
   }
 
   function placeIn(role) {
     if (busy || sel == null) return;
     const card = draftView.cards[sel];
-    if (!canPlay(card, role) || state.quintetto[role]) return;
+    if (!canPlay(card, role) || !liberoIn(role)) return;
     busy = true;
     const row = el.querySelector(`.crd[data-i="${sel}"]`);
-    const slot = el.querySelector(`.dslot[data-role="${role}"]`);
+    const slot = el.querySelector(`.dslot[data-role="${role}"][data-tipo="${liberoIn(role)}"]`);
     el.querySelectorAll(".dslot").forEach((s) => s.classList.remove("elig", "dim"));
     el.querySelectorAll(".crd").forEach((r) => r.classList.remove("sel"));
 
@@ -269,7 +288,7 @@ export function render(ctx) {
   });
   el.querySelectorAll(".dslot").forEach((slot) => {
     slot.onclick = () => {
-      if (slot.dataset.filled === "1") { openSheet(state.quintetto[slot.dataset.role]); return; }
+      if (slot.dataset.filled === "1") { openSheet(state.rosa[slot.dataset.role][slot.dataset.tipo]); return; }
       if (slot.classList.contains("elig")) placeIn(slot.dataset.role);
     };
   });

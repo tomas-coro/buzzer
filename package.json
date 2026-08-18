@@ -3,6 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "node --test game/*.test.js"
+    "test": "node --test game/*.test.js prototype/imbattuto/*.test.js"
   }
 }

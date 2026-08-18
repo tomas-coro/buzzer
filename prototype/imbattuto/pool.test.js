@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { topFive, spinRoster, opponentPool } from "./pool.js";
+import { topFive, spinRoster, opponentPool, chiaveCarta } from "./pool.js";
 
 // fixture: carte con ruolo noto
 function card(name, ovr, primary, secondary = null, season = "2015-16", team = "X") {
@@ -63,8 +63,52 @@ test("spinRoster lancia se nessuna rosa copre gli slot liberi", () => {
   assert.throws(() => spinRoster(soloGuardie, ["C"], {}, () => 0), /nessuna/i);
 });
 
-test("opponentPool costruisce quintetti valutati", () => {
-  const pool = opponentPool(byKey);
+test("opponentPool costruisce rose valutate", () => {
+  // Dieci carte: da G1 un avversario è una rosa da 10 (due per ruolo), e sotto
+  // quella soglia la squadra resta fuori dal pool (MIN_CARTE_ROSA).
+  const dieci = {
+    [KEY]: [...byKey[KEY],
+      card("SG2", 58, "SG"), card("SF2", 57, "SF"), card("PF2", 56, "PF"),
+      card("C2", 55, "C"), card("PG3", 54, "PG")],
+  };
+  const pool = opponentPool(dieci);
   assert.equal(pool.length, 1);
+  assert.equal(pool[0].lista.length, 10);
   assert.ok(pool[0].voto.ovr > 0);
+});
+
+test("opponentPool scarta le squadre-stagione sotto le dieci carte", () => {
+  assert.equal(opponentPool(byKey).length, 0);
+});
+
+// --- carte già in rosa: non si ripescano (rosa da 10, dieci pick sullo stesso pool) ---
+
+test("spinRoster non ripesca le carte già in rosa", () => {
+  const sei = {
+    [KEY]: [...byKey[KEY],
+      card("SG2", 58, "SG"), card("SF2", 57, "SF"), card("PF2", 56, "PF"), card("C2", 55, "C")],
+  };
+  const presi = new Set(["PG1|2015-16", "SG1|2015-16"]);
+  const r = spinRoster(sei, ALL_ROLES, { escludi: presi }, () => 0);
+  assert.equal(r.cards.length, 5);
+  assert.ok(!r.cards.some((c) => presi.has(chiaveCarta(c))), "nessuna carta già presa");
+});
+
+test("chiaveCarta separa lo stesso giocatore in due stagioni", () => {
+  const a = card("LBJ", 96, "SF", null, "2012-13");
+  const b = card("LBJ", 94, "SF", null, "2017-18");
+  assert.notEqual(chiaveCarta(a), chiaveCarta(b));
+  assert.equal(chiaveCarta(a), "LBJ|2012-13");
+});
+
+test("spinRoster salta le rose che senza le carte prese scendono sotto i cinque", () => {
+  const due = {
+    "X|2015-16": byKey[KEY].slice(0, 5),
+    "Z|2015-16": [card("z1",70,"PG",null,"2015-16","Z"), card("z2",69,"SG",null,"2015-16","Z"),
+      card("z3",68,"SF",null,"2015-16","Z"), card("z4",67,"PF",null,"2015-16","Z"),
+      card("z5",66,"C",null,"2015-16","Z"), card("z6",65,"C",null,"2015-16","Z")],
+  };
+  // una sola carta presa dalla X la porta a quattro disponibili: resta fuori
+  const r = spinRoster(due, ALL_ROLES, { escludi: ["PG1|2015-16"] }, () => 0);
+  assert.equal(r.key, "Z|2015-16");
 });

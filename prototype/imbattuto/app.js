@@ -1,8 +1,9 @@
 import { newRun, draftPick, useAid, chooseCoach, startRun, resolveRound } from "../../game/run.js";
 import { ROLES } from "../../game/roster.js";
+import { slotLibero, listaRosa } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
-import { opponentPool, spinRoster } from "./pool.js";
+import { opponentPool, spinRoster, chiaveCarta } from "./pool.js";
 import { recordRun } from "./meta.js";
 import { render as home } from "./screens/home.js";
 import { render as difficolta } from "./screens/difficolta.js";
@@ -31,20 +32,33 @@ function ctx() {
 
 function go(nextUi) { ui = nextUi; render(); }
 
-// Slot ancora liberi (piazzamento libero: nessun ordine forzato).
+// Ruoli con almeno una casella libera. La rosa è da 10 (titolare + riserva per
+// ruolo): un ruolo resta "libero" finché non ha entrambe le caselle piene, e a
+// quale delle due va la carta lo decide il motore (`slotLibero`), non la UI.
 function freeRoles() {
-  return ROLES.filter((r) => state.quintetto[r] === null);
+  return ROLES.filter((r) => slotLibero(state.rosa, r) !== null);
+}
+// Le carte già in squadra: escluse dalle rose pescate, così lo stesso
+// giocatore-stagione non può finire due volte in rosa.
+function giaPresi() {
+  return new Set(listaRosa(state.rosa).map(chiaveCarta));
 }
 // Pesca una rosa che copra almeno uno slot libero. filtro = vincoli aiuto.
 function spinRosterView(filtro = {}) {
-  const { key, cards: shown } = spinRoster(cards, freeRoles(), filtro);
+  const { key, cards: shown } = spinRoster(cards, freeRoles(), { ...filtro, escludi: giaPresi() });
   return { key, cards: shown };
 }
 
 function dispatch(action) {
   switch (action.type) {
     case "newRun":
-      state = newRun({ formato: action.formato, difficolta: action.difficolta });
+      state = newRun({
+        formato: action.formato,
+        difficolta: action.difficolta,
+        // Il nome finisce nella cronaca della partita: se manca, il motore usa
+        // il suo default ("La tua squadra") invece di una stringa vuota.
+        ...(action.squadra ? { squadra: action.squadra } : {}),
+      });
       ui = null;                 // d'ora in poi la schermata deriva da state.stato
       draftView = spinRosterView();  // primo turno: pesca subito una rosa
       break;

@@ -254,7 +254,24 @@ button.bz-mode{cursor:pointer}
 .diff-head{margin:14px 0 20px}
 .diff-wm{font-size:1.5rem;text-align:left}
 .diff-sub{font-size:.82rem;color:var(--txt-dim);margin:10px 0 0}
-.diff-list{display:flex;flex-direction:column;gap:10px}
+/* Nome squadra: campo unico, già compilato. Sta sopra i livelli perché si legge
+   prima di scegliere, ma non sbarra la strada a chi vuole solo partire. */
+.diff-nome{display:flex;flex-direction:column;gap:5px;margin:0 0 18px}
+.dn-lab{font-family:"Bungee";font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--pop)}
+.dn-in{font-family:"Bungee";font-size:.92rem;color:var(--txt);background:var(--surf);
+  border:2px solid var(--surf-bd);border-radius:12px;padding:11px 13px;width:100%;
+  transition:border-color .16s,background .16s}
+.dn-in:hover{border-color:var(--pop)}
+.dn-in:focus{outline:none;border-color:var(--pop2);background:var(--surf-on)}
+.dn-help{font-size:.7rem;color:var(--txt-dim)}
+/* La lista prende lo spazio che avanza e lo distribuisce fra i quattro chip,
+   invece di lasciarne un blocco morto in fondo. Su schermi corti torna a 10px
+   di gap e la pagina scorre. */
+.diff-list{display:flex;flex-direction:column;gap:10px;flex:1;justify-content:space-evenly;min-height:0}
+/* Chiude la schermata invece di lasciare il fondo vuoto, e dice l'unica cosa
+   che non si capisce dai chip: il livello non si cambia a corsa iniziata. */
+.diff-foot{margin-top:0;padding-top:20px;font-size:.74rem;line-height:1.5;color:var(--txt-dim);text-wrap:pretty}
+.diff-foot b{color:var(--pop2)}
 .diff-chip{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;text-align:left;cursor:pointer;
   background:var(--surf);border:2px solid var(--surf-bd);border-radius:14px;padding:14px 16px;
   transition:border-color .16s,background .16s,transform .1s}
@@ -379,6 +396,11 @@ button.bz-mode{cursor:pointer}
   box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .7);
 }
 .sheet::backdrop { background: rgba(6, 6, 20, .72); }
+/* Sfondo FERMO con un modal aperto: `showModal()` blocca i click ma non lo
+   scroll, e la pagina dietro scorreva sotto la scheda del giocatore. :has()
+   copre ogni dialog, anche quelli delle schermate che verranno. */
+html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
+.sheet { overscroll-behavior: contain; }
 .sheet[open] { animation: sheetIn .28s var(--ease) both; }
 .sheet-hd { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; margin-bottom: 14px; }
 .sheet-hd .face { width: 58px; height: 70px; }
@@ -402,13 +424,30 @@ button.bz-mode{cursor:pointer}
 @keyframes sheetIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
 
 /* =================== DRAFT LIBERO (mirino + snap) =================== */
-/* Court a griglia: 5 slot uguali. */
+/* Court a griglia: dieci caselle, cinque titolari sopra e cinque riserve sotto,
+   ognuna con la sua etichetta a tutta larghezza. */
 .dcourt {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
   padding: 9px; border-radius: 14px;
   background: linear-gradient(180deg, #1a1640, #120f33); border: 1px solid var(--line);
   background-image: radial-gradient(120% 90% at 50% 0, rgba(255, 91, 30, .1), transparent 60%);
 }
+/* Etichetta di fila: dice anche i minuti, così si capisce subito perché la
+   panchina conta meno del quintetto senza aprire la schermata del coach. */
+.dcrow-lab {
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px;
+  font-family: var(--arcade); font-size: .5rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--bone-dim); padding: 2px 2px 0;
+}
+.dcrow-lab::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.dcrow-lab small { font-family: var(--body); font-size: .62rem; letter-spacing: 0; color: #6f6fa6; }
+.dcrow-lab + .dslot ~ .dcrow-lab { margin-top: 4px; }
+/* La panchina è più bassa e più spenta del quintetto: la gerarchia si vede
+   prima di leggere le etichette. */
+.dcourt .dslot.riserva { aspect-ratio: 1 / .92; }
+.dcourt .dslot.riserva:not(.full) { background: linear-gradient(160deg, #141238, #0e0d29); }
+.dcourt .dslot.riserva.full { filter: saturate(.9) brightness(.94); }
+.dcourt .dslot.riserva.full:hover, .dcourt .dslot.riserva.elig { filter: none; }
 .dslot {
   position: relative; aspect-ratio: 1 / 1.18; border-radius: 11px;
   border: 1.5px dashed #34356a; background: linear-gradient(160deg, #171545, #100f30);
@@ -480,7 +519,9 @@ button.bz-mode{cursor:pointer}
   display: block; font-family: var(--display); font-weight: 800; font-size: .92rem; line-height: 1;
   color: var(--bone); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em;
 }
-.r-id .sub { display: flex; align-items: center; gap: 6px; margin-top: 5px; min-width: 0; }
+/* Va a capo invece di tagliare: con la riga stretta "MIA · 2019-20" diventava
+   "MIA · 2..." e la stagione - che è metà dell'identità di una carta - spariva. */
+.r-id .sub { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 5px; min-width: 0; }
 .r-pos {
   font-family: var(--arcade); font-size: .42rem; letter-spacing: .02em; color: #0c0d22;
   background: var(--tc1, #6b6ba0); border-radius: 5px; padding: 2px 6px; flex: none;
@@ -488,7 +529,17 @@ button.bz-mode{cursor:pointer}
 .r-pos.two { background: linear-gradient(90deg, var(--tc1), var(--tc2)); color: #fff; }
 .r-arch {
   font-family: var(--body); font-weight: 800; font-size: .52rem; letter-spacing: .05em; text-transform: uppercase;
-  color: var(--brass); white-space: nowrap; flex: none;
+  color: var(--brass); white-space: nowrap;
+  /* Si stringe invece di sfondare: con flex:none su uno schermo da 320px usciva
+     dalla sua colonna e finiva SOPRA le cifre PT/RB/AS. */
+  flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+}
+/* Sotto i 360px l'archetipo è il primo a cadere: è un'etichetta di comodo, il
+   nome e le cifre no. */
+@media (max-width: 359px) {
+  .r-arch { display: none; }
+  .r-top { gap: 7px; padding: 7px 8px 7px 10px; }
+  .r-id .nm { font-size: .84rem; }
 }
 .r-team {
   font-family: var(--body); font-weight: 700; font-size: .54rem; letter-spacing: .04em; text-transform: uppercase;
