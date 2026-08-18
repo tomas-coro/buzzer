@@ -31,48 +31,44 @@ body { padding: 0; }
 @media (max-width: 960px) { .mk-stage { grid-template-columns: 1fr; } }
 .mk-panel { border: 1px solid var(--line); border-radius: 16px; padding: 14px; background: #101029; min-width: 0; }
 
-/* ============ DIREZIONE A · TERMOMETRO ============
-   Il budget come una barra sola sopra il campo: quanto hai speso, quanto
-   costerebbe la carta che stai guardando, quanto resta bloccato dai minimi. */
-.cap-therm { margin-bottom: 12px; }
-.cap-hd { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
-.cap-lab { font-family: var(--body); font-size: .58rem; letter-spacing: .14em; text-transform: uppercase;
-  color: #6f6fa6; font-weight: 800; }
-.cap-big { font-family: var(--led); font-weight: 900; font-size: 1.5rem; line-height: 1; color: var(--yellow);
-  font-variant-numeric: tabular-nums; }
-.cap-big.tight { color: var(--brass); }
-.cap-big.broke { color: var(--red); }
-.cap-sub { font-family: var(--body); font-size: .7rem; color: var(--bone-dim); text-align: right; }
-.cap-sub b { color: var(--bone); font-family: var(--led); font-weight: 700; }
-.track { position: relative; height: 15px; border-radius: 999px; background: #0e0d29;
-  border: 1px solid var(--line); overflow: hidden; }
-.track i { position: absolute; inset: 0 auto 0 0; display: block; border-radius: 999px;
-  transition: width .28s var(--ease); }
-.fill-spent { background: linear-gradient(90deg, var(--brass-deep), var(--brass)); z-index: 2; }
-/* il preventivo: quanto occuperebbe la carta selezionata, a righe diagonali */
-.fill-prev { z-index: 1; background: repeating-linear-gradient(115deg,
-  rgba(255,207,51,.85) 0 6px, rgba(255,207,51,.32) 6px 12px); }
-/* la coda scura: i minimi che devi tenere da parte per le caselle ancora vuote */
-.track .fill-hold { left: auto; right: 0; z-index: 3; background: repeating-linear-gradient(115deg,
-  #2f2f5c 0 5px, #24244a 5px 10px); border-radius: 0 999px 999px 0; opacity: .95; }
-/* la zona di tassa: dal tetto all'apron. Non è "vietato", è "caro", quindi
-   niente rosso pieno - una fascia a righe che si legge come un pedaggio. */
-.track .capline { left: 80%; right: auto; width: 2px; z-index: 5; border-radius: 0;
-  background: var(--bone); opacity: .85; box-shadow: 0 0 0 1px rgba(11,10,38,.9); }
-.track::after { content: ""; position: absolute; inset: 0 0 0 80%; z-index: 0;
-  background: repeating-linear-gradient(115deg, rgba(255,90,90,.30) 0 5px, rgba(255,90,90,.10) 5px 10px); }
-.fill-spent.tax { background: linear-gradient(90deg, var(--brass-deep) 0 60%, var(--red)); }
-.lg-cap { background: var(--bone); width: 2px !important; height: 11px !important; border-radius: 0 !important; }
-.cap-tax { display: block; margin-top: 3px; color: var(--red); font-weight: 700; }
-.pt-res.tax, .cap-big.tax { color: var(--red); }
-/* la riga del candidato che ti porta sopra il tetto: firmabile, ma cara */
+/* ============ DIREZIONE A · TABELLONE ============
+   Il budget come il tabellone del palazzetto: tre cifre LED grandi e una riga
+   che lampeggia col prezzo della carta in mano. È la direzione scelta nel
+   mockup 81 (C), portata qui dentro al posto del termometro. */
+.board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.bcell { border: 1px solid var(--line); border-radius: 10px; background: #08081c;
+  padding: 9px 8px 7px; text-align: center; box-shadow: inset 0 0 22px rgba(255,91,30,.07); }
+.bcell .bl { font-family: var(--arcade); font-size: .5rem; color: #6f6fa6; letter-spacing: .02em; }
+.bcell .bv { font-family: var(--led); font-weight: 900; font-size: 1.42rem; line-height: 1.1; color: var(--brass);
+  font-variant-numeric: tabular-nums; text-shadow: 0 0 12px rgba(255,91,30,.45); }
+.bcell .bsub { font-family: var(--body); font-size: .6rem; font-weight: 700; color: #6f6fa6;
+  margin-top: 2px; min-height: .9em; }
+.bcell.res .bv { color: var(--yellow); text-shadow: 0 0 12px rgba(255,207,51,.45); }
+.bcell.res.tight .bv { color: var(--brass); }
+/* Oltre il tetto non è un errore, è un conto aperto: rosso, ma con scritto
+   quanto costa. Il muro vero è l'apron, e quello lo dice il ticker. */
+.bcell.res.tax .bv { color: var(--red); text-shadow: 0 0 12px rgba(255,80,56,.5); }
+.bcell.res.tax .bsub { color: var(--red); }
+.bticker { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: #08081c;
+  padding: 7px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-family: var(--body); font-size: .72rem; color: var(--bone-dim); min-height: 34px; }
+.bticker .tk-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bticker .tk-val { font-family: var(--led); font-weight: 900; font-size: .96rem; color: var(--yellow);
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bticker.no .tk-val { color: #45457a; }
+.bticker.tax .tk-val { color: var(--red); }
+.bticker.ko .tk-val { color: var(--red); }
+.bticker .blink { animation: bk 1.1s steps(2, jump-none) infinite; }
+@keyframes bk { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .bticker .blink { animation: none; opacity: .85; } }
+.cap-board { margin-bottom: 12px; }
+
+/* Lo stato nuovo del tetto tarato: la carta entra, ma ti porta sopra il tetto e
+   te lo dice PRIMA del click. Non è "vietato" (quello è l'apron, e quelle righe
+   si spengono), è "caro" - quindi rosso tenue, non rosso pieno. */
 .crd.tassa { border-color: rgba(255,90,90,.45); }
 .mk-badge.tassa { color: #ffd9d9; background: rgba(255,90,90,.16); border-color: rgba(255,90,90,.42); }
-
-.track-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;
-  font-family: var(--body); font-size: .66rem; color: #6f6fa6; }
-.track-legend span { display: inline-flex; align-items: center; gap: 5px; }
-.track-legend s { width: 11px; height: 11px; border-radius: 3px; text-decoration: none; flex: none; }
+.paytot .pt-res.tax { color: var(--red); }
 
 /* ============ DIREZIONE B · LIBRO PAGA ============
    Il budget come la busta paga di una squadra vera: dieci righe, una per
@@ -116,8 +112,8 @@ body[data-dir="pay"] .leftgrid { grid-template-columns: minmax(0, 1fr) minmax(0,
 }
 
 /* quale direzione è a vista */
-body[data-dir="therm"] .only-pay { display: none; }
-body[data-dir="pay"] .only-therm { display: none; }
+body[data-dir="board"] .only-pay { display: none; }
+body[data-dir="pay"] .only-board { display: none; }
 
 /* ---- il campo ---- */
 .dcourt .dslot.full .fbadge { bottom: auto; top: 0; background: linear-gradient(0deg, transparent, rgba(5,3,15,.85)); }
@@ -212,7 +208,7 @@ body[data-dir="pay"] .only-therm { display: none; }
 }
 </style>
 </head>
-<body data-dir="therm">
+<body data-dir="board">
 <div class="mk-wrap">
   <div class="mk-hd">
     <h1>80 · Il tetto di spesa</h1>
@@ -224,7 +220,7 @@ body[data-dir="pay"] .only-therm { display: none; }
   <div class="mk-bar">
     <div class="mk-grp">
       <b>Budget</b>
-      <button class="mk-chip" data-dir="therm" aria-pressed="true" type="button">Termometro</button>
+      <button class="mk-chip" data-dir="board" aria-pressed="true" type="button">Tabellone</button>
       <button class="mk-chip" data-dir="pay" aria-pressed="false" type="button">Libro paga</button>
     </div>
     <div class="mk-grp" id="liv-chips"><b>Livello</b></div>
@@ -234,32 +230,15 @@ body[data-dir="pay"] .only-therm { display: none; }
   <div class="mk-stage">
     <div class="mk-panel">
       <!-- DIREZIONE A -->
-      <div class="cap-therm only-therm">
-        <div class="cap-hd">
-          <div>
-            <div class="cap-lab">Spazio libero</div>
-            <div class="cap-big" id="t-res">$0.0M</div>
-          </div>
-          <div class="cap-sub">
-            speso <b id="t-spe">$0.0M</b> di <b id="t-cap">$0.0M</b><br />
-            <span id="t-hold">bloccati per le caselle vuote</span>
-            <span id="t-tax" class="cap-tax" hidden></span>
-          </div>
+      <div class="cap-board only-board">
+        <div class="board">
+          <div class="bcell"><div class="bl">Tetto</div><div class="bv" id="b-cap">$0.0M</div><div class="bsub" id="b-apron"></div></div>
+          <div class="bcell"><div class="bl">Speso</div><div class="bv" id="b-spe">$0.0M</div><div class="bsub" id="b-hold"></div></div>
+          <div class="bcell res" id="b-res-cell"><div class="bl" id="b-res-lab">Resta</div><div class="bv" id="b-res">$0.0M</div><div class="bsub" id="b-tax"></div></div>
         </div>
-        <div class="track">
-          <i class="fill-prev" id="t-fprev" style="width:0"></i>
-          <i class="fill-spent" id="t-fspe" style="width:0"></i>
-          <i class="fill-hold" id="t-fhold" style="width:0"></i>
-          <!-- La linea del tetto sta sempre all'80% della traccia, perché la
-               traccia arriva all'apron (+25%): 1 / 1.25 = 0.8. Oltre la linea si
-               firma lo stesso, ma si paga. -->
-          <i class="capline" aria-hidden="true"></i>
-        </div>
-        <div class="track-legend">
-          <span><s style="background:var(--brass)"></s>firmato</span>
-          <span><s style="background:repeating-linear-gradient(115deg,rgba(255,207,51,.85) 0 4px,rgba(255,207,51,.3) 4px 8px)"></s>in preventivo</span>
-          <span><s style="background:#2f2f5c"></s>minimi da tenere</span>
-          <span><s class="lg-cap"></s>tetto · oltre si paga</span>
+        <div class="bticker" id="b-tick">
+          <span class="tk-nm" id="b-nm">nessuna carta in mano</span>
+          <span class="tk-val" id="b-val">in attesa</span>
         </div>
       </div>
 
@@ -296,15 +275,16 @@ body[data-dir="pay"] .only-therm { display: none; }
   <div class="mk-notes">
     <p class="mk-note" id="nota-liv"></p>
     <p class="mk-note">
-      <b>Provala.</b> Tocca un candidato: la barra mostra <b>in preventivo</b> quanto
-      occuperebbe, e si accendono solo le caselle dove può giocare. Le righe verdi
+      <b>Provala.</b> Tocca un candidato: il ticker sotto il tabellone dice cosa
+      costa quella firma, e si accendono solo le caselle dove può giocare. Le righe verdi
       sono contratti al minimo, firmabili sempre anche a cassa vuota, così il draft
       non si inchioda mai.</p>
     <p class="mk-note">
-      <b>Il tetto non è un muro, è il punto dove cominci a pagare.</b> La linea
-      chiara sulla barra è il tetto; oltre si firma lo stesso, fino al secondo
-      apron (+25%), ma ogni cinque milioni di sforo tolgono un punto a tutti e
-      cinque i reparti - circa un punto di margine a partita. Le righe con la
+      <b>Il tetto non è un muro, è il punto dove cominci a pagare.</b> La terza
+      cifra del tabellone dice quanto ti resta, e quando sfori cambia mestiere:
+      diventa di quanto sei <b>Oltre</b>, in rosso, con sotto il prezzo in campo.
+      Si firma fino al secondo apron (+25%), ma ogni cinque milioni di sforo
+      tolgono un punto a tutti e cinque i reparti - circa un punto di margine a partita. Le righe con la
       pastiglia rossa ti portano oltre il tetto e dicono quanto costa PRIMA del
       click; solo quelle spente sfondano l'apron, e quelle non si firmano affatto.
       È la regola vera della NBA di oggi: sopra il tetto c'è la tassa di lusso, e
@@ -458,39 +438,51 @@ function court() {
           <div class="dcrow-lab">Panchina <small>${pan.map((s) => s.minuti).join("' · ")}'</small></div>${pan.map(cella).join("")}`;
 }
 
-// Direzione A: la barra. Tre segmenti sulla stessa traccia - firmato, preventivo
-// della carta selezionata, minimi bloccati per le caselle ancora vuote.
-function termometro() {
-  const cap = tetto(), spe = speso(), sotto = sottoTetto();
+// Direzione A: il tabellone. Tre cifre LED e un ticker che dice cosa costa la
+// carta che hai in mano - la scelta del mockup 81. Sotto le cifre c'è la riga
+// piccola: quanto vale l'apron, quanto è bloccato per le caselle vuote, quanto
+// ti costa in campo lo sforo.
+function tabellone() {
+  const $ = (id) => document.getElementById(id);
+  const sotto = sottoTetto(), oltre = sotto < 0;
   const c = sel === null ? null : SPIN[iSpin].cards[sel];
   const prev = c && !presi.has(chiave(c)) ? costoDi(c, sel) : 0;
-  const hold = prenotato(vuote() - (prev ? 1 : 0));
-  // La traccia arriva all'APRON, non al tetto: se si fermasse al tetto, la parte
-  // di gioco che comincia proprio lì - spendere di più e pagarla - non avrebbe
-  // dove essere disegnata.
-  const fondo = limiteDuro();
-  const pct = (v) => `${Math.min(100, Math.max(0, (v / fondo) * 100))}%`;
 
-  const $ = (id) => document.getElementById(id);
-  // Il numero grosso resta lo spazio sotto il TETTO, ed è giusto che vada sotto
-  // zero: "sei oltre di 12" è l'informazione che decide il pick, non "ti restano
-  // 40 prima del muro".
-  const oltre = sotto < 0;
-  $("t-res").textContent = oltre ? `+${soldi(-sotto)}` : soldi(sotto);
-  $("t-res").className = `cap-big${oltre ? " tax" : sotto < cap * 0.15 ? " tight" : ""}`;
-  $("t-res").previousElementSibling.textContent = oltre ? "Oltre il tetto" : "Spazio libero";
-  $("t-spe").textContent = soldi(spe);
-  $("t-cap").textContent = soldi(cap);
-  const tax = $("t-tax");
-  tax.hidden = !oltre;
-  if (oltre) tax.textContent = `tassa ${malusTxt(malusOra())}`;
-  $("t-fspe").classList.toggle("tax", oltre);
-  $("t-hold").textContent = vuote() === 0
+  $("b-cap").textContent = soldi(tetto());
+  $("b-apron").textContent = `apron ${soldi(limiteDuro())}`;
+  $("b-spe").textContent = soldi(speso());
+  $("b-hold").textContent = vuote() === 0
     ? "rosa completa"
-    : `${soldi(prenotato(vuote()))} bloccati per ${vuote()} ${vuote() === 1 ? "casella" : "caselle"}`;
-  $("t-fspe").style.width = pct(spe);
-  $("t-fprev").style.width = pct(spe + prev);
-  $("t-fhold").style.width = pct(hold);
+    : `${soldi(prenotato(vuote()))} per ${vuote()} ${vuote() === 1 ? "casella" : "caselle"}`;
+
+  // La terza cifra cambia mestiere quando sfori: da "quanto puoi ancora
+  // spendere gratis" a "di quanto sei oltre". È il numero su cui decidi.
+  $("b-res-lab").textContent = oltre ? "Oltre" : "Resta";
+  $("b-res").textContent = oltre ? soldi(-sotto) : soldi(sotto);
+  $("b-tax").textContent = oltre ? malusTxt(malusOra()) : "";
+  $("b-res-cell").className = `bcell res${oltre ? " tax" : sotto < tetto() * 0.15 ? " tight" : ""}`;
+
+  const tick = $("b-tick");
+  if (!c) {
+    tick.className = "bticker no";
+    $("b-nm").textContent = "nessuna carta in mano";
+    $("b-val").textContent = "in attesa";
+    $("b-val").classList.remove("blink");
+    return;
+  }
+  // Cognome soltanto, come sulle righe dei candidati: due modi di scrivere lo
+  // stesso giocatore nella stessa schermata si notano.
+  const nome = mostra("squadra") ? `${lastName(c.name)} · ${c.team_abbr}` : lastName(c.name);
+  const ko = fuoriBudget(c, sel);
+  const paga = !ko && costaTassa(c, sel);
+  $("b-nm").textContent = nome;
+  $("b-val").textContent = ko
+    ? `${soldi(prev)} · sfonda l'apron`
+    : paga
+      ? `- ${soldi(prev)} · costa ${malusTxt(malusCarta(c, sel))}`
+      : `- ${soldi(prev)} · resta ${soldi(sotto - prev)}`;
+  tick.className = `bticker${ko ? " ko" : paga ? " tax" : ""}`;
+  $("b-val").classList.toggle("blink", ko);
 }
 
 // Direzione B: la busta paga. Dieci righe fisse, una per casella: quelle vuote
@@ -662,7 +654,7 @@ function render() {
   // è nascosta sulle carte, scriverla qui sopra la rimetterebbe in chiaro.
   document.getElementById("spin-lab").textContent = etichettaSpin(SPIN[iSpin], iSpin);
   etichetteSpin();
-  termometro();
+  tabellone();
   libroPaga();
   sintesi();
   invito();
