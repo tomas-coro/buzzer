@@ -24,6 +24,12 @@
 //   difficile   1/1/0     63-69        3.2%           3%            3.5
 //   incubo      1/1/0     63-69        3.1%         0.5%            3.4
 //
+//   4. QUESTA TABELLA È STORIA, NON LO STATO DI OGGI. Da G10 le soglie non si
+//      tarano più da sole: si tarano INSIEME al tetto di spesa, perché le due
+//      leve tirano la stessa corda. I numeri veri stanno più in basso, nel
+//      blocco del tetto, e il cercatore giusto è tools/taratura-congiunta.mjs -
+//      taratura-soglie.mjs tiene il tetto fermo e quindi oggi mente.
+//
 //   3. RITARATE IL 2026-08-18 DOPO G7 (panchina libera). Due cose si sono mosse
 //      insieme: con la panchina libera ogni pick è utile, quindi la squadra che
 //      draftí è più forte a ogni livello; e le rose storiche, che adesso mettono
@@ -33,15 +39,17 @@
 //      misura, non calato dall'alto.
 //
 // INCUBO NON ARRIVA ALLO 0,5% E NON È UN ERRORE DI TARATURA: è il pavimento del
-// pool. Col tetto già sulla squadra più forte di sempre, alzare ancora oppMin
-// non sposta più niente (misurato prima di G7: 63-67 → 1,05%, 65-67 → 1,15%,
-// 67-67 → 1,07%; dopo G7 il pavimento si è alzato al 3,1%).
+// pool. RISOLTO IN G10 COL TETTO DI SPESA (vedi sotto): oggi Incubo sta allo
+// 0,46% misurato su 5000 corse. Il paragrafo resta perché spiega perché le
+// soglie da sole non ci arrivavano: col tetto degli avversari già sulla squadra
+// più forte di sempre, alzare ancora oppMin non spostava più niente (misurato
+// prima di G7: 63-67 → 1,05%, 65-67 → 1,15%, 67-67 → 1,07%; dopo G7 il pavimento
+// si era alzato al 3,1%).
 //
-// PER QUESTO OGGI DIFFICILE E INCUBO HANNO LA STESSA BANDA (63-69), ed è uno
-// stato di passaggio, non un assetto finito: Tomas vuole Incubo attorno allo
-// 0,5%, e lì le soglie non ci arrivano. Serve una leva diversa (candidata: in
-// Incubo lo spin pesca da un pool di squadre più deboli). Finché non c'è, i due
-// livelli si distinguono solo per il draft al buio.
+// PER QUESTO DIFFICILE E INCUBO AVEVANO LA STESSA BANDA (63-69). Era uno stato
+// di passaggio ed è finito: la leva diversa è arrivata e non è il pool più
+// debole ipotizzato qui, è il tetto di spesa. Oggi i due livelli si distinguono
+// su entrambe le leve (260M/46-67 contro 240M/53-69).
 //
 // Il salto vero tra un livello e l'altro non viene da qui ma dagli AIUTI, che
 // cambiano quanto forte è la squadra che riesci a draftare: voto medio 79 in
@@ -60,8 +68,8 @@
 // più generoso di entrambi.
 //
 // INCUBO HA GLI STESSI AIUTI DI DIFFICILE, e non è una svista: si distingue per
-// la banda avversari (61-67 contro 54-67) e perché il draft è al buio, senza voti
-// né box score. Prima aveva zero aiuti, ed era l'unica differenza che non si
+// la banda avversari (53-69 contro 46-67), per il tetto di spesa più stretto e
+// perché il draft è al buio, senza voti né box score. Prima aveva zero aiuti, ed era l'unica differenza che non si
 // vedeva mai - a quel punto non giocavi diversamente, avevi solo meno strumenti.
 //
 // TETTO DI FACILE ABBASSATO A 58. Tolti gli infiniti, Facile era crollato al 17%
@@ -69,11 +77,11 @@
 // da 38: perfino 30-67 si ferma al 24%), quindi si muove il tetto, cioè quanto
 // forte è l'avversario del round 16. È la stessa correzione che eraball ha dovuto
 // fare sulla sua finale ("Finals opponent difficulty reduced").
-// IL TETTO DI SPESA, cioè la leva che mancava a Incubo (2026-08-18, G8). Le
-// soglie avversarie sono esaurite - vedi sopra: Incubo si ferma al 3,1% e il
-// pavimento è il pool, non la taratura. Il tetto lavora dall'ALTRA parte del
-// tavolo: non rende l'avversario più forte, rende TE più povero. La curva dei
-// salari sta in game/salary.js.
+// IL TETTO DI SPESA, cioè la seconda leva della difficoltà (2026-08-18, G8-G10).
+// Non rende l'avversario più forte, rende TE più povero: è nato per Incubo, dove
+// le soglie avversarie erano esaurite contro il pavimento del pool, ed è poi
+// diventato una leva di tutti e quattro i livelli. La curva dei salari sta in
+// game/salary.js.
 //
 // LA SCALA STORICA ERA SBAGLIATA, E LA MISURA L'HA SMENTITA. I primi quattro
 // numeri (170/150/125/100) venivano dai monte ingaggi delle 175 rose vere del
@@ -83,38 +91,66 @@
 // in media 300 milioni. Il monte ingaggi storico dice se un numero è plausibile,
 // non se è giusto: l'unico giudice resta la percentuale di 16-0.
 //
-// MISURATI IL 2026-08-18 con `node tools/taratura-tetti.mjs`, poi confermati a
-// 1000 corse per punto:
+// LA SECONDA SCALA (400/380/350/260) ERA SOLO DECORAZIONE, E ANCHE QUESTA L'HA
+// DETTA LA MISURA. Tolto il tetto del tutto, il 16-0 si muoveva dello 0,0% a
+// Facile, dello 0,3% a Normale, dello 0,5% a Difficile: sopra i 320 milioni il
+// tetto non tocca un draft che ne spende 300. Era un meccanismo del solo Incubo
+// travestito da regola del gioco, e la barra del budget non si sarebbe mai
+// riempita nei primi tre livelli.
 //
-//   livello     tetto   16-0 misurato   bersaglio   quante corse sforano
-//   facile      400M        34.6%          33%              0%
-//   normale     380M        12.7%          12%              1%
-//   difficile   350M         3.0%           3%              5%
-//   incubo      260M         0.5%         0.5%             79%
+// I NUMERI DI OGGI ESCONO DA `node tools/taratura-congiunta.mjs`, che tara le due
+// leve INSIEME perché tirano la stessa corda. La separazione non è "prima una poi
+// l'altra", è per ruolo:
 //
-// IL TETTO SERVE SOLO A INCUBO, ed è esattamente il buco che doveva tappare. Là
-// morde su quattro corse su cinque e porta il livello dal 3,1% allo 0,5%, cosa
-// che le soglie avversarie non sapevano più fare (vedi sopra: il pool ha un
-// pavimento). Negli altri tre livelli i bersagli erano già centrati dalle
-// soglie, quindi un tetto che morde li spingerebbe SOTTO bersaglio: sopra i 380
-// la curva è piatta e il tetto è, di fatto, solo una regola che impari.
+//   il TETTO decide COME si sente la difficoltà - quanto spesso, draftando
+//   d'istinto, finisci a pagare la tassa dell'apron. È una cosa che il giocatore
+//   VEDE mentre gioca, quindi si sceglie a tavolino e si misura per conferma.
+//   le SOGLIE decidono QUANTE corse finiscono 16-0. È un numero che il giocatore
+//   non vede mai, quindi non si sceglie: si insegue col banco.
 //
-// FACILE PAGA 1,6 PUNTI DI SCARTO (34,6% contro 33%) e va bene così: per
-// centrare il 33 esatto servirebbe un tetto da 340, cioè più stretto di quello
-// di Normale, e una scala che si allarga mentre la difficoltà sale è una scala
-// che nessuno capisce. La monotonia vale più di un punto e mezzo.
+// IL MORSO VOLUTO è la decisione di Tomas del 2026-08-18: "a Facile va bene
+// potersi fare lo squadrone, ma già a Normale non dev'essere così scontato".
+// Tradotto: quante corse su cento finiscono sopra il tetto, cioè a pagare.
+//
+//   livello    tetto   soglie   16-0 misurato   bersaglio   sforano   corse
+//   facile      320M    41-61       30.5%          30%        33%       800
+//   normale     280M    43-63       14.6%          15%        57%      2000
+//   difficile   260M    46-67        3.2%         3.25%       71%      3000
+//   incubo      240M    53-69        0.5%          0.5%       86%      5000
+//
+// INCUBO NON È PIÙ INCAGLIATO. Stava al 3,1% da due sessioni e non per una
+// taratura sbagliata: col tetto degli avversari già sulla squadra più forte di
+// sempre, alzare `oppMin` non spostava più niente. Il tetto di spesa scioglie il
+// nodo dall'altra parte del tavolo, e il livello arriva allo 0,46% misurato su
+// 5000 corse.
+//
+// DIFFICILE E INCUBO SONO FINALMENTE DUE LIVELLI DIVERSI. Prima avevano soglie
+// identiche (63-69) e si distinguevano solo per il draft al buio - uno stato di
+// passaggio, scritto qui come tale. Adesso differiscono su entrambe le leve:
+// 260M contro 240M, 46-67 contro 53-69.
+//
+// LA BANDA È LARGA UNA VENTINA DI PUNTI A OGNI LIVELLO, e non è un dettaglio:
+// 63-69 erano sei punti, cioè sedici partite quasi identiche contro il meglio
+// del pool. Una banda stretta non è più difficile, è più PIATTA - sparisce la
+// sensazione di scalare i playoff. Le vittorie medie dicono la scala meglio
+// della percentuale: 9,5 a Normale, 6,9 a Difficile, 3,5 a Incubo.
+//
+// PERCHÉ NORMALE È SALITO DA 12% A 15%. Non è un ammorbidimento: la difficoltà
+// che prima stava tutta negli avversari adesso è divisa in due, e la metà nuova
+// - il tetto - si paga durante il draft, dove si vede. Il 16-0 sale, ma sfori il
+// tetto in sei corse su dieci contro le tre di Facile.
 export const TETTI = {
-  facile: 400_000_000,
-  normale: 380_000_000,
-  difficile: 350_000_000,
-  incubo: 260_000_000,
+  facile: 320_000_000,
+  normale: 280_000_000,
+  difficile: 260_000_000,
+  incubo: 240_000_000,
 };
 
 export const DIFFICULTIES = {
-  facile:    { aids: { squadra: 2, stagione: 2, respin: 1 }, N: 16, oppMin: 41, oppMax: 62 },
-  normale:   { aids: { squadra: 1, stagione: 1, respin: 1 }, N: 16, oppMin: 46, oppMax: 69 },
-  difficile: { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 63, oppMax: 69 },
-  incubo:    { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 63, oppMax: 69 },
+  facile:    { aids: { squadra: 2, stagione: 2, respin: 1 }, N: 16, oppMin: 41, oppMax: 61 },
+  normale:   { aids: { squadra: 1, stagione: 1, respin: 1 }, N: 16, oppMin: 43, oppMax: 63 },
+  difficile: { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 46, oppMax: 67 },
+  incubo:    { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 53, oppMax: 69 },
 };
 
 // ---------------------------------------------------------------------------

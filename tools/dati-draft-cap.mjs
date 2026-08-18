@@ -64,11 +64,28 @@ const dati = {
   tetti: TETTI,
 };
 
-// Il mockup mente se il tetto non morde: con cinque spin da dieci carte deve
-// esistere almeno una squadra che, presa in blocco, sfonda il tetto più stretto.
-const sfondano = dati.spin.filter((s) => s.monte > TETTI.incubo);
-if (sfondano.length === 0) {
-  console.error("ATTENZIONE: nessuno spin sfonda il tetto di Incubo, scenario innocuo");
+// IL CONTROLLO GUARDAVA LA COSA SBAGLIATA. Prima chiedeva se una singola rosa
+// storica, presa in blocco, sfondasse il tetto: ma nel draft non si prende una
+// rosa in blocco, si pesca il meglio da cinque spin diversi. La rosa più cara
+// del mazzo costa 213 milioni e da sola non sfonda niente, mentre dieci carte
+// scelte fra cinquanta arrivano molto più in alto. Il controllo diceva "scenario
+// innocuo" su uno scenario che innocuo non è.
+//
+// Le due domande vere sono: il draft PUÒ sfondare il tetto più largo (se no, il
+// budget è decorazione) e PUÒ starci sotto quello più stretto (se no, è
+// impossibile e il mockup si inchioda)?
+const tutte = dati.spin.flatMap((s) => s.cards).sort((a, b) => b.salario - a.salario);
+const massimo = tutte.slice(0, SLOTS.length).reduce((s, c) => s + c.salario, 0);
+const minimo = tutte.slice(-SLOTS.length).reduce((s, c) => s + c.salario, 0);
+const M = 1_000_000;
+console.error(`draft più caro possibile ${(massimo / M).toFixed(0)}M, `
+  + `più economico ${(minimo / M).toFixed(0)}M, tetti `
+  + Object.entries(TETTI).map(([k, v]) => `${k} ${(v / M).toFixed(0)}M`).join(", "));
+if (massimo <= TETTI.facile) {
+  console.error("ATTENZIONE: nemmeno il draft più caro tocca il tetto di Facile, budget decorativo");
+}
+if (minimo > TETTI.incubo) {
+  console.error("ATTENZIONE: nemmeno il draft più economico sta sotto il tetto di Incubo, livello impossibile");
 }
 
 process.stdout.write(

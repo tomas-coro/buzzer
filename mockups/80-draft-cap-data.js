@@ -1811,9 +1811,9 @@ export const DRAFTCAP = {
   "rumore": 0.25
  },
  "tetti": {
-  "facile": 400000000,
-  "normale": 380000000,
-  "difficile": 350000000,
-  "incubo": 260000000
+  "facile": 320000000,
+  "normale": 280000000,
+  "difficile": 260000000,
+  "incubo": 240000000
  }
 };

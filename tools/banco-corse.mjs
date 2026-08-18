@@ -143,7 +143,15 @@ function unaCorsa(difficolta, seme, rng, { tetto = null, strategia = "stelle" } 
 // la panchina libera ogni pick è utile e il 16-0 è più facile ovunque, quindi il
 // 40% si sarebbe preso solo mettendo a Facile avversari da livello Normale. Il
 // numero viene dalla misura, guardata e accettata.
-export const BERSAGLI = { facile: 33, normale: 12, difficile: 3, incubo: 0.5 };
+//
+// BERSAGLI RIVISTI IL 2026-08-18 (G10), quando il tetto di spesa è diventato una
+// leva vera a tutti e quattro i livelli e non più un meccanismo del solo Incubo:
+// 30 / 15 / 3,25 / 0,5. Normale SALE da 12 a 15 e non è un ammorbidimento: la
+// difficoltà che prima stava tutta negli avversari adesso è divisa in due, e la
+// metà nuova - il tetto - si paga durante il draft. Detto da Tomas così: "a
+// Facile va bene potersi fare lo squadrone, ma già a Normale non dev'essere
+// scontato".
+export const BERSAGLI = { facile: 30, normale: 15, difficile: 3.25, incubo: 0.5 };
 
 /**
  * Misura un livello: quante corse su cento finiscono 16-0.

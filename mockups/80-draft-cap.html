@@ -55,6 +55,20 @@ body { padding: 0; }
 /* la coda scura: i minimi che devi tenere da parte per le caselle ancora vuote */
 .track .fill-hold { left: auto; right: 0; z-index: 3; background: repeating-linear-gradient(115deg,
   #2f2f5c 0 5px, #24244a 5px 10px); border-radius: 0 999px 999px 0; opacity: .95; }
+/* la zona di tassa: dal tetto all'apron. Non è "vietato", è "caro", quindi
+   niente rosso pieno - una fascia a righe che si legge come un pedaggio. */
+.track .capline { left: 80%; right: auto; width: 2px; z-index: 5; border-radius: 0;
+  background: var(--bone); opacity: .85; box-shadow: 0 0 0 1px rgba(11,10,38,.9); }
+.track::after { content: ""; position: absolute; inset: 0 0 0 80%; z-index: 0;
+  background: repeating-linear-gradient(115deg, rgba(255,90,90,.30) 0 5px, rgba(255,90,90,.10) 5px 10px); }
+.fill-spent.tax { background: linear-gradient(90deg, var(--brass-deep) 0 60%, var(--red)); }
+.lg-cap { background: var(--bone); width: 2px !important; height: 11px !important; border-radius: 0 !important; }
+.cap-tax { display: block; margin-top: 3px; color: var(--red); font-weight: 700; }
+.pt-res.tax, .cap-big.tax { color: var(--red); }
+/* la riga del candidato che ti porta sopra il tetto: firmabile, ma cara */
+.crd.tassa { border-color: rgba(255,90,90,.45); }
+.mk-badge.tassa { color: #ffd9d9; background: rgba(255,90,90,.16); border-color: rgba(255,90,90,.42); }
+
 .track-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px;
   font-family: var(--body); font-size: .66rem; color: #6f6fa6; }
 .track-legend span { display: inline-flex; align-items: center; gap: 5px; }
@@ -229,17 +243,23 @@ body[data-dir="pay"] .only-therm { display: none; }
           <div class="cap-sub">
             speso <b id="t-spe">$0.0M</b> di <b id="t-cap">$0.0M</b><br />
             <span id="t-hold">bloccati per le caselle vuote</span>
+            <span id="t-tax" class="cap-tax" hidden></span>
           </div>
         </div>
         <div class="track">
           <i class="fill-prev" id="t-fprev" style="width:0"></i>
           <i class="fill-spent" id="t-fspe" style="width:0"></i>
           <i class="fill-hold" id="t-fhold" style="width:0"></i>
+          <!-- La linea del tetto sta sempre all'80% della traccia, perché la
+               traccia arriva all'apron (+25%): 1 / 1.25 = 0.8. Oltre la linea si
+               firma lo stesso, ma si paga. -->
+          <i class="capline" aria-hidden="true"></i>
         </div>
         <div class="track-legend">
           <span><s style="background:var(--brass)"></s>firmato</span>
           <span><s style="background:repeating-linear-gradient(115deg,rgba(255,207,51,.85) 0 4px,rgba(255,207,51,.3) 4px 8px)"></s>in preventivo</span>
           <span><s style="background:#2f2f5c"></s>minimi da tenere</span>
+          <span><s class="lg-cap"></s>tetto · oltre si paga</span>
         </div>
       </div>
 
@@ -277,9 +297,18 @@ body[data-dir="pay"] .only-therm { display: none; }
     <p class="mk-note" id="nota-liv"></p>
     <p class="mk-note">
       <b>Provala.</b> Tocca un candidato: la barra mostra <b>in preventivo</b> quanto
-      occuperebbe, e si accendono solo le caselle dove può giocare. Le righe rosse
-      costano più di quello che ti resta, quelle verdi sono contratti al minimo -
-      firmabili sempre, anche a cassa vuota, così il draft non si inchioda mai.
+      occuperebbe, e si accendono solo le caselle dove può giocare. Le righe verdi
+      sono contratti al minimo, firmabili sempre anche a cassa vuota, così il draft
+      non si inchioda mai.</p>
+    <p class="mk-note">
+      <b>Il tetto non è un muro, è il punto dove cominci a pagare.</b> La linea
+      chiara sulla barra è il tetto; oltre si firma lo stesso, fino al secondo
+      apron (+25%), ma ogni cinque milioni di sforo tolgono un punto a tutti e
+      cinque i reparti - circa un punto di margine a partita. Le righe con la
+      pastiglia rossa ti portano oltre il tetto e dicono quanto costa PRIMA del
+      click; solo quelle spente sfondano l'apron, e quelle non si firmano affatto.
+      È la regola vera della NBA di oggi: sopra il tetto c'è la tassa di lusso, e
+      più spendi più cose non puoi più fare.
     </p>
   </div>
 </div>
@@ -349,9 +378,29 @@ let sel = null;                 // indice della carta selezionata nello spin
 let rosa = new Map();           // keySlot -> carta
 let presi = new Set();
 
+// IL SECONDO APRON, ricopiato da game/salary.js come il REVEAL qui sopra: il
+// mockup gira senza build, quindi le costanti si duplicano e si tengono in pari
+// a mano. Il tetto NON è un muro - si firma fino al +25%, e ogni milione oltre
+// il tetto toglie punti a tutti e cinque i reparti. Senza questo il mockup
+// mentirebbe proprio dove il gioco decide: col tetto tarato, fra un terzo
+// (Facile) e l'86% (Incubo) delle corse finisce oltre il tetto.
+const APRON = 0.25;
+const TASSA_PER_MILIONE = 0.2;
+
 const tetto = () => TETTI[livello];
+const limiteDuro = () => Math.round(tetto() * (1 + APRON));
 const speso = () => [...rosa.values()].reduce((s, c) => s + c.salario, 0);
-const residuo = () => tetto() - speso();
+// `residuo` è quanto puoi ANCORA firmare, e il muro vero è l'apron, non il
+// tetto. Sotto il tetto si spende gratis, in mezzo si paga.
+const residuo = () => limiteDuro() - speso();
+// Quanto manca al tetto: è il numero grosso in cima, e va sotto zero.
+const sottoTetto = () => tetto() - speso();
+// Di quanto hai superato il tetto, e cosa costa in campo.
+const sforoOra = (extra = 0) => Math.max(0, speso() + extra - tetto());
+const malusOra = (extra = 0) => (sforoOra(extra) / 1_000_000) * TASSA_PER_MILIONE;
+// "-1,4 a ogni reparto": il prezzo dello sforo, scritto come lo leggeresti su
+// una scheda squadra. Una cifra decimale, perché 0,2 per milione fa passi fini.
+const malusTxt = (m) => `-${m.toFixed(1)} a ogni reparto`;
 const vuote = () => caselle.length - rosa.size;
 const libere = () => caselle.filter((s) => !rosa.has(keySlot(s)));
 
@@ -365,9 +414,17 @@ const caselleDove = (c, i) => (firmabile(costoDi(c, i), residuo(), vuote())
 // fuori budget, perché ogni casella vuota ne tiene uno da parte.
 const alMinimo = (c, i) => costoDi(c, i) <= SAL.min;
 const fuoriBudget = (c, i) => !firmabile(costoDi(c, i), residuo(), vuote());
-// Di quanto sfori: quello che puoi spendere su questa casella è il residuo meno i
-// minimi da tenere per le altre. Scritto sulla riga, così si vede PRIMA del click.
+// Di quanto sfori l'APRON, cioè il muro vero: quello che puoi spendere su questa
+// casella è il residuo meno i minimi da tenere per le altre. Scritto sulla riga,
+// così si vede PRIMA del click.
 const sforo = (c) => c.salario - (residuo() - prenotato(vuote() - 1));
+// La carta entra, ma ti porta oltre il tetto: firmabile e cara. È lo stato nuovo
+// del tetto tarato, quello che prima non esisteva perché il tetto era un muro.
+const costaTassa = (c, i) => !fuoriBudget(c, i) && sforoOra(costoDi(c, i)) > sforoOra();
+// QUANTO COSTA QUESTA FIRMA, non quanto sarà la tassa dopo. Sono due numeri
+// diversi appena sei già sopra il tetto, e quello che serve per decidere è il
+// primo: stai scegliendo un pick, non guardando il bilancio di fine draft.
+const malusCarta = (c, i) => malusOra(costoDi(c, i)) - malusOra();
 
 function reset() { rosa = new Map(); presi = new Set(); sel = null; render(); }
 
@@ -404,17 +461,30 @@ function court() {
 // Direzione A: la barra. Tre segmenti sulla stessa traccia - firmato, preventivo
 // della carta selezionata, minimi bloccati per le caselle ancora vuote.
 function termometro() {
-  const cap = tetto(), spe = speso(), res = residuo();
+  const cap = tetto(), spe = speso(), sotto = sottoTetto();
   const c = sel === null ? null : SPIN[iSpin].cards[sel];
   const prev = c && !presi.has(chiave(c)) ? costoDi(c, sel) : 0;
   const hold = prenotato(vuote() - (prev ? 1 : 0));
-  const pct = (v) => `${Math.min(100, Math.max(0, (v / cap) * 100))}%`;
+  // La traccia arriva all'APRON, non al tetto: se si fermasse al tetto, la parte
+  // di gioco che comincia proprio lì - spendere di più e pagarla - non avrebbe
+  // dove essere disegnata.
+  const fondo = limiteDuro();
+  const pct = (v) => `${Math.min(100, Math.max(0, (v / fondo) * 100))}%`;
 
   const $ = (id) => document.getElementById(id);
-  $("t-res").textContent = soldi(res);
-  $("t-res").className = `cap-big${res <= 0 ? " broke" : res < cap * 0.15 ? " tight" : ""}`;
+  // Il numero grosso resta lo spazio sotto il TETTO, ed è giusto che vada sotto
+  // zero: "sei oltre di 12" è l'informazione che decide il pick, non "ti restano
+  // 40 prima del muro".
+  const oltre = sotto < 0;
+  $("t-res").textContent = oltre ? `+${soldi(-sotto)}` : soldi(sotto);
+  $("t-res").className = `cap-big${oltre ? " tax" : sotto < cap * 0.15 ? " tight" : ""}`;
+  $("t-res").previousElementSibling.textContent = oltre ? "Oltre il tetto" : "Spazio libero";
   $("t-spe").textContent = soldi(spe);
   $("t-cap").textContent = soldi(cap);
+  const tax = $("t-tax");
+  tax.hidden = !oltre;
+  if (oltre) tax.textContent = `tassa ${malusTxt(malusOra())}`;
+  $("t-fspe").classList.toggle("tax", oltre);
   $("t-hold").textContent = vuote() === 0
     ? "rosa completa"
     : `${soldi(prenotato(vuote()))} bloccati per ${vuote()} ${vuote() === 1 ? "casella" : "caselle"}`;
@@ -447,12 +517,14 @@ function libroPaga() {
     </div>`;
   }).join("");
 
-  const res = residuo();
+  const sotto = sottoTetto();
   document.getElementById("p-tot").textContent = soldi(speso());
   document.getElementById("p-cap").textContent = `tetto ${soldi(tetto())}`;
   const el = document.getElementById("p-res");
-  el.textContent = `${soldi(res)} liberi`;
-  el.className = `pt-res${res <= 0 ? " broke" : res < tetto() * 0.15 ? " tight" : ""}`;
+  el.textContent = sotto < 0
+    ? `${soldi(-sotto)} oltre · ${malusTxt(malusOra())}`
+    : `${soldi(sotto)} liberi`;
+  el.className = `pt-res${sotto < 0 ? " tax" : sotto < tetto() * 0.15 ? " tight" : ""}`;
 }
 
 // I tre numeri sotto il campo: quanto hai firmato, quanti dei 240 minuti sono
@@ -488,13 +560,14 @@ function riga(c, i) {
   const { c1, c2 } = teamColors(c.team_abbr);
   const buio = alBuio(livello);
   const senzaCasella = libere().filter((s) => puoGiocare(c, s)).length === 0;
-  const over = fuoriBudget(c, i);
+  const over = fuoriBudget(c, i);      // oltre l'apron: non si firma, nemmeno pagando
+  const tassa = !over && costaTassa(c, i); // dentro l'apron ma sopra il tetto: si paga
   const off = senzaCasella || over;
   const min = alMinimo(c, i);
   const rip = ripiegoDi(i);
   const two = c.pos.secondary;
   const trio = [["pts", "PT"], ["reb", "RB"], ["ast", "AS"]];
-  return `<div class="crd${off ? " off" : ""}${over ? " over" : ""}${min ? " minimo" : ""}${sel === i ? " sel" : ""}"
+  return `<div class="crd${off ? " off" : ""}${over ? " over" : ""}${tassa ? " tassa" : ""}${min ? " minimo" : ""}${sel === i ? " sel" : ""}"
       data-i="${i}" ${off ? 'aria-disabled="true"' : ""} style="--tc1:${c1};--tc2:${c2}">
     <div class="r-top">
       <span class="r-port">${faceHTML(c, { buio })}</span>
@@ -508,7 +581,8 @@ function riga(c, i) {
             ? `<span class="r-team">${[mostra("squadra") ? esc(c.team_abbr) : null,
                  mostra("annata") ? esc(c.season) : null].filter(Boolean).join(" · ")}</span>`
             : ""}
-          ${over ? `<span class="mk-badge over">sfori di ${soldi(sforo(c))}</span>` : ""}
+          ${over ? `<span class="mk-badge over">sfori l'apron di ${soldi(sforo(c))}</span>` : ""}
+          ${tassa ? `<span class="mk-badge tassa">costa ${malusTxt(malusCarta(c, i))}</span>` : ""}
           ${min ? `<span class="mk-badge min">${rip ? "accetta il minimo" : "contratto minimo"}</span>` : ""}
           ${senzaCasella && !over ? `<span class="r-cover">nessuna casella</span>` : ""}
         </span>
