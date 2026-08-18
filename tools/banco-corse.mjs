@@ -28,11 +28,9 @@ import {
 const CORSE = Number(process.argv[2] ?? 400);
 const POOL = opponentPool(CARDS_BY_TEAM_SEASON);
 
-// Quanti giri di draft in più concede la difficoltà. Facile ha gli switch
-// illimitati: gli do tre giri extra per slot, oltre i quali un giocatore vero
-// smette di ruotare per noia.
+// Quanti giri di draft in più concede la difficoltà: uno per aiuto, perché da
+// G6 nessun livello ha più switch illimitati.
 function giriExtra(d) {
-  if (d.freeSwitch) return 30;
   return d.aids.squadra + d.aids.stagione + d.aids.respin;
 }
 

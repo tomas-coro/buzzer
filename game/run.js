@@ -83,10 +83,8 @@ const AID_TYPES = ["squadra", "stagione", "respin"];
 
 export function useAid(state, type) {
   if (!AID_TYPES.includes(type)) throw new Error(`Tipo aiuto inesistente: ${type}`);
-  const d = DIFFICULTIES[state.difficolta];
-  if (d.freeSwitch && (type === "squadra" || type === "stagione")) {
-    return state; // switch illimitati in Facile
-  }
+  // Ogni aiuto costa, in ogni difficoltà: finite le scorte l'unico modo di
+  // vedere una rosa nuova è piazzare una carta (vedi difficulty.js).
   if (state.aids[type] <= 0) throw new Error(`Aiuto '${type}' esaurito`);
   return { ...state, aids: { ...state.aids, [type]: state.aids[type] - 1 } };
 }

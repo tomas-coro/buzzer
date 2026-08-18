@@ -18,7 +18,7 @@ const app = document.getElementById("app");
 // Stato del prototipo: lo State del motore (o null) + la fase UI corrente.
 let state = null;          // State del motore
 let ui = "home";           // "home" | "leaderboard" | (altrimenti deriva da state.stato)
-let draftView = null;      // { key, cards } della rosa pescata (top-5) da cui piazzi liberamente
+let draftView = null;      // { key, cards, slots } della rosa da dieci pescata, da cui piazzi liberamente
 const cards = CARDS_BY_TEAM_SEASON;
 const pool = opponentPool(cards); // pool avversari, calcolato una volta
 
@@ -45,8 +45,10 @@ function giaPresi() {
 }
 // Pesca una rosa che copra almeno uno slot libero. filtro = vincoli aiuto.
 function spinRosterView(filtro = {}) {
-  const { key, cards: shown } = spinRoster(cards, freeRoles(), { ...filtro, escludi: giaPresi() });
-  return { key, cards: shown };
+  // `slots` dice da quale casella della SUA squadra viene ogni candidato
+  // (quintetto o panchina): serve solo a raggruppare la lista, non al motore.
+  const { key, cards: shown, slots } = spinRoster(cards, freeRoles(), { ...filtro, escludi: giaPresi() });
+  return { key, cards: shown, slots };
 }
 
 function dispatch(action) {

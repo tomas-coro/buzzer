@@ -26,8 +26,7 @@ export function render(ctx) {
 
   const chips = Object.entries(DIFFICULTIES).map(([key, d]) => {
     const m = META[key];
-    const sw = d.freeSwitch ? "∞" : null;
-    const aiuti = `${d.aids.respin} re-spin · ${sw ?? d.aids.squadra} squadra · ${sw ?? d.aids.stagione} stagione`;
+    const aiuti = `${d.aids.respin} re-spin · ${d.aids.squadra} squadra · ${d.aids.stagione} stagione`;
     return `
       <button class="diff-chip" data-diff="${key}" type="button">
         <span class="dc-l">

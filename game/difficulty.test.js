@@ -17,14 +17,30 @@ test("ogni livello ha aiuti, N e banda avversari coerenti", () => {
   }
 });
 
-test("Incubo ha zero aiuti e nessuno switch libero", () => {
-  const inc = DIFFICULTIES.incubo;
-  assert.deepEqual(inc.aids, { squadra: 0, stagione: 0, respin: 0 });
-  assert.equal(inc.freeSwitch, false);
+// Incubo non ha più zero aiuti (G6): ha gli stessi di Difficile, e si distingue
+// per la banda avversari e per il draft al buio. Quello che deve restare vero è
+// che nessun livello ne ha più di Facile.
+test("Incubo non ha più aiuti di Facile", () => {
+  const tot = (k) => Object.values(DIFFICULTIES[k].aids).reduce((s, n) => s + n, 0);
+  assert.ok(tot("incubo") < tot("facile"));
 });
 
-test("Facile ha switch liberi", () => {
-  assert.equal(DIFFICULTIES.facile.freeSwitch, true);
+// Il flag freeSwitch è stato tolto in G6: nessun livello ha più aiuti infiniti,
+// e questo test è la sentinella che impedisce di reintrodurlo di soppiatto.
+test("nessun livello ha switch illimitati", () => {
+  for (const [key, d] of Object.entries(DIFFICULTIES)) {
+    assert.equal(d.freeSwitch, undefined, `${key}: freeSwitch non deve esistere`);
+  }
+});
+
+// Gli aiuti non risalgono mai: Incubo e Difficile pareggiano di proposito, ma
+// nessun livello più duro può averne di più di uno più facile.
+test("gli aiuti non crescono al salire della difficoltà", () => {
+  const order = ["facile", "normale", "difficile", "incubo"];
+  const tot = (k) => Object.values(DIFFICULTIES[k].aids).reduce((s, n) => s + n, 0);
+  for (let i = 1; i < order.length; i++) {
+    assert.ok(tot(order[i]) <= tot(order[i - 1]), `${order[i]} non può avere più aiuti di ${order[i - 1]}`);
+  }
 });
 
 test("il target è sempre 16-0, in ogni difficoltà", () => {

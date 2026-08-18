@@ -99,7 +99,7 @@ test("draftPick su un ruolo già pieno lancia (niente terza carta per ruolo)", (
   assert.equal(s.stato, "coach");
 });
 
-test("useAid consuma un aiuto; se esaurito e non freeSwitch lancia", () => {
+test("useAid consuma un aiuto; se esaurito lancia", () => {
   let s = newRun({ formato: "playoff", difficolta: "difficile" }); // respin 0, squadra 1
   s = useAid(s, "squadra");
   assert.equal(s.aids.squadra, 0);
@@ -118,10 +118,12 @@ test("chooseCoach/startRun fuori dalla fase coach lanciano", () => {
   assert.throws(() => startRun(s, poolAt(10)), /non in fase coach/);
 });
 
-test("Facile: switch liberi non si esauriscono", () => {
-  let s = newRun({ formato: "playoff", difficolta: "facile" });
-  for (let i = 0; i < 9; i++) s = useAid(s, "squadra");
-  assert.ok(s.aids.squadra >= 0);
+// Da G6 nemmeno Facile ha aiuti infiniti: il quarto "↺ squadra" deve fallire.
+test("Facile: anche gli switch si esauriscono", () => {
+  let s = newRun({ formato: "playoff", difficolta: "facile" }); // squadra 2
+  for (let i = 0; i < 2; i++) s = useAid(s, "squadra");
+  assert.equal(s.aids.squadra, 0);
+  assert.throws(() => useAid(s, "squadra"), /esaurit/);
 });
 
 test("chooseCoach prima della rosa completa lancia", () => {

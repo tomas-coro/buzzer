@@ -549,23 +549,50 @@ srotola azioni già prodotte, quindi un cambio non sposterebbe un punto.
 
 ### G6 - dal giro di prova sul draft (Tomas, 2026-08-18)
 
-Tre cose viste giocando la tappa 1, da fare **prima** di andare avanti col coach:
+Tre cose viste giocando la tappa 1, da fare **prima** di andare avanti col coach.
+**Tutte e tre fatte il 2026-08-18**: qui sotto resta il perché, con accanto come
+sono finite.
 
-1. **Facile non può avere switch infiniti.** `DIFFICULTIES.facile.freeSwitch` rende
+1. **Facile non può avere switch infiniti.** FATTO: `freeSwitch` non esiste più
+   (tolto da difficulty, run, banco corse e schermate; in `difficulty.test.js`
+   c'è una sentinella che fallisce se qualcuno lo rimette). Scala scelta da
+   Tomas: facile 2/2/1 · normale 1/1/1 · difficile 1/1/0 · incubo 1/1/0
+   (squadra/stagione/respin) - Incubo non ha più zero aiuti, si distingue per
+   banda avversari e draft al buio. Soglia di Facile scesa a `oppMax: 58`: senza
+   gli infiniti era crollata al 17% di 16-0, addosso a Normale.
+   *Testo originale del punto, per memoria:* `DIFFICULTIES.facile.freeSwitch` `DIFFICULTIES.facile.freeSwitch` rende
    "↺ squadra" e "↺ stagione" illimitati: infinito vuol dire nessuna scelta, si
    ripesca finché non esce quello che serve. Rimetterli a numero e ritarare la
    scala degli aiuti su tutte e quattro le difficoltà. Riferimenti che Tomas
    vuole guardare: i giochi **7-0** e **38-0-0**, e **eraball.com**. Le soglie
    avversario NON si toccano: sono tarate sul 16-0.
-2. **Carta non piazzabile = non cliccabile.** Se tutti i ruoli di una carta sono
+2. **Carta non piazzabile = non cliccabile.** FATTO: la riga nasce spenta, con
+   chip "ruolo pieno", `aria-disabled` e nessun listener di click (il bottone "i"
+   resta vivo, la scheda si legge sempre). Se NESSUN candidato è piazzabile lo
+   dice il prompt, invece di lasciarlo scoprire a tentativi.
+   *Testo originale del punto:* Se tutti i ruoli di una carta sono
    coperti, oggi la riga si seleziona lo stesso e risponde "i suoi ruoli sono già
    coperti": il feedback arriva dopo il click. Va spenta al disegno (stato
    disabilitato, niente selezione) e deve saltare all'occhio prima di toccarla.
    `eligibleRoles(card)` sa già quando la lista è vuota.
-3. **Lo spin mostra 10 giocatori, non 5.** Deciso il 2026-07-27 e ribadito ora:
-   il pool di ogni spin è la squadra piena con copertura ruoli garantita,
-   titolari / 6° uomo / panchina distinti. Tocca `pool.js` (`spinRoster`,
-   `topFive`) e la lista candidati di `screens/draft.js`.
+3. **Lo spin mostra 10 giocatori, non 5.** FATTO: `spinRoster` non usa più
+   `topFive` (funzione rimossa) ma `costruisciRosa`, lo stesso motore delle rose
+   avversarie, e restituisce `{ key, cards, slots, fallback }` - `slots` dice da
+   quale casella della sua squadra viene ogni candidato. Solo le squadre-stagione
+   con almeno dieci carte entrano nel pescaggio: sulle 180 del dataset se ne
+   perdono 5. La lista è a due colonne (layout scelto da Tomas nel mockup 79):
+   Quintetto a sinistra, Panchina a destra, badge "6° uomo" sulla riserva più
+   forte - solo dove l'OVR è scoperto, perché a difficile e incubo direbbe da
+   solo chi è il migliore. Il badge è descrittivo: nel motore le riserve giocano
+   tutte 16 minuti (`MINUTI` in `game/rosa.js`), i minuti differenziati sono G5.
+   La schermata draft è l'unica che si allarga a 760px; il campo resta a 440.
+
+   Effetto collaterale misurato: con dieci candidati per spin la rosa che si
+   riesce a montare è più forte, e il banco corse (600 corse) è salito da
+   facile 34,7% · normale 10,3% · difficile 3,5% · incubo 1,2% a
+   **facile 37,7% · normale 11,2% · difficile 4,7% · incubo 1,8%**. Facile e
+   Normale si sono avvicinati al bersaglio; difficile e incubo lo hanno superato
+   (bersagli 3% e 0,5%) e vanno ritarati - decisione di Tomas, non fatta.
 
 ## Stime
 

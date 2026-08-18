@@ -11,7 +11,10 @@ import { teamColors, initials } from "../team-colors.js";
 // carta di quel ruolo va titolare, la seconda riserva, e a deciderlo è il motore
 // (`slotLibero`), non la schermata. Per questo si accende una casella sola per
 // ruolo - quella davvero libera - e non tutte e due.
-// Ogni spin pesca una squadra-stagione e ne mostra la top-5 come rosa. Tocchi un
+// Ogni spin pesca una squadra-stagione e ne mostra la ROSA INTERA da dieci
+// (`costruisciRosa`, lo stesso motore delle rose avversarie): cinque titolari e
+// cinque riserve, in due colonne affiancate - così il sesto uomo si vede insieme
+// al quintetto e non finisce sotto il taglio della lista. Tocchi un
 // candidato: si accendono SOLO gli slot dove può giocare (ruolo primario/secondario)
 // e ancora liberi. Tocchi lo slot: la carta ci vola dentro (mirino+snap) e viene
 // piazzata (nessun bottone "Metti"). Dopo il piazzamento si pesca una nuova rosa.
@@ -82,6 +85,8 @@ function faceHTML(card, { hidden = false, ovr = null, role = null } = {}) {
 }
 
 // Stat-firma (PT/RB/AS) nella riga candidato: la stat che definisce l'archetipo è accesa.
+// Sta sotto il nome, non a destra: in due colonne la riga è larga la metà e le
+// cifre di fianco al nome lo strozzavano fino ai puntini.
 function rowStatsHTML(card, rv) {
   if (rv.stats === "none") return `<span class="r-blind">scout chiuso</span>`;
   const s = card.stats_real;
@@ -91,7 +96,7 @@ function rowStatsHTML(card, rv) {
     { k: "reb", l: "RB", v: fmt1(s.reb) },
     { k: "ast", l: "AS", v: fmt1(s.ast) },
   ];
-  return `<span class="r-box">${trio.map((b) =>
+  return `<span class="r-mini">${trio.map((b) =>
     `<span class="bx${b.k === sig ? " sig" : ""}"><b>${b.v}</b><i>${b.l}</i></span>`
   ).join("")}</span>`;
 }
@@ -126,6 +131,12 @@ export function render(ctx) {
   const nFilled = inRosa.length;
   const [team, season] = draftView.key.split("|");
 
+  // Dove va la prossima carta di questo ruolo, e in quali ruoli una carta può
+  // ancora entrare. Stanno qui in alto e non più accanto ai listener perché ora
+  // servono già al DISEGNO: una carta senza ruoli liberi nasce spenta.
+  const liberoIn = (r) => slotLibero(state.rosa, r);
+  const eligibleRoles = (card) => ROLES.filter((r) => liberoIn(r) && canPlay(card, r));
+
   // ---- Header ----
   const diffName = state.difficolta.charAt(0).toUpperCase() + state.difficolta.slice(1);
   const header = `
@@ -159,36 +170,63 @@ export function render(ctx) {
 
   // ---- Aiuti ----
   const a = state.aids;
-  const free = state.difficolta === "facile"; // switch illimitati in facile
-  const aidChip = (tipo, label, infinite) => {
-    const n = infinite ? "∞" : a[tipo];
-    const off = infinite ? false : a[tipo] <= 0;
-    return `<button class="aid" data-aid="${tipo}" ${off ? "disabled" : ""} type="button">${label} <b>${n}</b></button>`;
+  const aidChip = (tipo, label) => {
+    const off = a[tipo] <= 0;
+    return `<button class="aid" data-aid="${tipo}" ${off ? "disabled" : ""} type="button">${label} <b>${a[tipo]}</b></button>`;
   };
   const aids = `<div class="aidz">
-    ${aidChip("respin", "re-spin", false)}
-    ${aidChip("squadra", "↺ squadra", free)}
-    ${aidChip("stagione", "↺ stagione", free)}
+    ${aidChip("respin", "re-spin")}
+    ${aidChip("squadra", "↺ squadra")}
+    ${aidChip("stagione", "↺ stagione")}
   </div>`;
 
   // ---- Righe candidato ----
-  const rows = draftView.cards.map((c, i) => {
+  // CARTA NON PIAZZABILE = SPENTA AL DISEGNO (G6, 2026-08-18). Se tutti i ruoli
+  // di una carta sono già coperti non si seleziona più: prima si poteva cliccare
+  // e la risposta ("i suoi ruoli sono già coperti") arrivava DOPO il tocco. Ora
+  // si vede prima, con il chip "ruolo pieno" e la riga desaturata.
+  if (!draftView.slots) throw new Error("draft: lo spin non ha portato le caselle di provenienza (slots)");
+  const piazzabile = draftView.cards.map((c) => eligibleRoles(c).length > 0);
+
+  // Nessun badge "6° uomo" sui candidati: il 6° uomo è una CASELLA DELLA TUA
+  // ROSA, non una proprietà della carta pescata. Chi mandi dentro per primo lo
+  // decidi tu piazzando (deciso al grill del 2026-08-18); scriverlo sulla carta
+  // dell'altra squadra confondeva le due cose.
+
+  const riga = (c, i) => {
     const two = c.pos.secondary;
     const posBadge = `<span class="r-pos ${two ? "two" : ""}">${esc(c.pos.primary)}${two ? " · " + esc(two) : ""}</span>`;
-    const arch = rv.stats === "none" ? "" : `<span class="r-arch">${esc(archetype(c.stats_real).label)}</span>`;
-    return `<div class="crd" data-i="${i}" style="--tc1:${teamColors(c.team_abbr).c1};--tc2:${teamColors(c.team_abbr).c2}">
+    const off = !piazzabile[i];
+    // Sulla carta spenta l'archetipo lascia il posto a "ruolo pieno": l'etichetta
+    // serve a scegliere, e qui non c'è niente da scegliere. Toglierla tiene la
+    // riga su una riga sola - con tutti e due i chip andava a capo e le due
+    // colonne si disallineavano.
+    const arch = (rv.stats === "none" || off) ? "" : `<span class="r-arch">${esc(archetype(c.stats_real).label)}</span>`;
+    const cover = off ? `<span class="r-cover">ruolo pieno</span>` : "";
+    return `<div class="crd${off ? " off" : ""}" data-i="${i}" ${off ? 'aria-disabled="true"' : ""} style="--tc1:${teamColors(c.team_abbr).c1};--tc2:${teamColors(c.team_abbr).c2}">
       <div class="r-top">
         <span class="r-port">${faceHTML(c, { hidden: rv.stats === "none" })}</span>
         <span class="r-ovr ${rv.ovr ? fascia(c.ovr) : ""}">${rv.ovr ? `<b>${c.ovr}</b><small>OVR</small>` : `<b class="q">?</b>`}</span>
         <span class="r-id">
           <span class="nm">${esc(lastName(c.name))}</span>
-          <span class="sub">${posBadge}${arch}<span class="r-team">${esc(c.team_abbr)} · ${esc(c.season)}</span></span>
+          <span class="sub">${posBadge}${arch}<span class="r-team">${esc(c.team_abbr)} · ${esc(c.season)}</span>${cover}</span>
+          ${rowStatsHTML(c, rv)}
         </span>
-        ${rowStatsHTML(c, rv)}
         <button class="r-info" data-info="${i}" type="button" aria-label="Scheda ${esc(c.name)}">i</button>
       </div>
     </div>`;
-  }).join("");
+  };
+
+  // Le dieci in due colonne: quintetto a sinistra, panchina a destra. Il gruppo
+  // dice da quale casella della SUA squadra viene il candidato - non dove
+  // andrebbe nella tua, che lo decide il piazzamento.
+  const gruppo = (tipo, lab) => {
+    const voci = draftView.cards.map((c, i) => ({ c, i })).filter(({ i }) => draftView.slots[i].tipo === tipo);
+    if (voci.length === 0) return "";
+    return `<div class="rgrp"><div class="grp-lab">${esc(lab)}</div>
+      <div class="rlist morph">${voci.map(({ c, i }) => riga(c, i)).join("")}</div></div>`;
+  };
+  const rows = gruppo(TITOLARE, "Quintetto") + gruppo(RISERVA, "Panchina");
 
   el.innerHTML = `
     ${header}
@@ -196,32 +234,30 @@ export function render(ctx) {
       <div class="seclab"><span>La tua rosa · ${nFilled}/10</span><span class="ladder">${ladder}</span></div>
       <div class="dcourt">${court}</div>
     </div>
-    <p class="prompt" id="prompt">Tocca un candidato: si accendono gli slot dove può giocare</p>
+    <p class="prompt" id="prompt">${piazzabile.some(Boolean)
+      ? "Tocca un candidato: si accendono gli slot dove può giocare"
+      : "<b>Nessuno di questi entra nella tua rosa</b> - usa un aiuto per ripescare"}</p>
     <div class="cand-block">
       <div class="seclab"><span>Rosa · ${esc(team)} · ${esc(season)}</span>${aids}</div>
-      <div class="rlist morph" id="rlist">${rows}</div>
+      <div class="rcols" id="rlist">${rows}</div>
     </div>
     <p class="src">Caselle libere: <b>${10 - nFilled}</b> · piazza dove vuoi</p>
   `;
 
-  // La classe .morph resta: ogni re-render crea un nuovo #rlist, così il glitch-in
-  // riparte da solo a ogni spin/aiuto (animazione CSS one-shot).
+  // La classe .morph resta su ogni colonna: ogni re-render crea nuovi .rlist, così
+  // il glitch-in riparte da solo a ogni spin/aiuto (animazione CSS one-shot), e i
+  // ritardi a scaletta (nth-child fino a 5) coprono esatti i cinque di una colonna.
 
   let sel = null;   // indice candidato selezionato
   let busy = false; // animazione in corso
 
   const setPrompt = (h) => { const p = el.querySelector("#prompt"); if (p) p.innerHTML = h; };
 
-  // Ruoli con una casella libera in cui il candidato può giocare.
-  const liberoIn = (r) => slotLibero(state.rosa, r);
-  function eligibleRoles(card) {
-    return ROLES.filter((r) => liberoIn(r) && canPlay(card, r));
-  }
   // Come si legge la casella che si accenderà: "PG da titolare", "C in panchina".
   const dove = (r) => (liberoIn(r) === TITOLARE ? `<b>${r}</b> da titolare` : `<b>${r}</b> in panchina`);
 
   function selectCand(i) {
-    if (busy) return;
+    if (busy || !piazzabile[i]) return;
     sel = i;
     const card = draftView.cards[i];
     const elig = eligibleRoles(card);
@@ -236,8 +272,8 @@ export function render(ctx) {
       slot.classList.toggle("dim", !isFilled && !acceso);
     });
     const name = lastName(card.name);
-    if (elig.length === 0) setPrompt(`<b>${esc(name)}</b>: i suoi ruoli sono già coperti - scegline un altro`);
-    else if (elig.length === 1) setPrompt(`<b>${esc(name)}</b> può giocare ${dove(elig[0])} - tocca la casella`);
+    // Il caso "zero ruoli liberi" non arriva più qui: quelle righe sono spente.
+    if (elig.length === 1) setPrompt(`<b>${esc(name)}</b> può giocare ${dove(elig[0])} - tocca la casella`);
     else setPrompt(`<b>${esc(name)}</b> può giocare ${elig.map(dove).join(" o ")} - scegli la casella`);
   }
 
@@ -280,7 +316,7 @@ export function render(ctx) {
   }
 
   // ---- Listener ----
-  el.querySelectorAll(".crd").forEach((row) => {
+  el.querySelectorAll(".crd:not(.off)").forEach((row) => {
     row.onclick = () => selectCand(+row.dataset.i);
   });
   el.querySelectorAll(".r-info").forEach((b) => {

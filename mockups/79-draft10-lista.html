@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>79 · Lista candidati da dieci</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css" />
+<style>
+/* ---- solo quello che il mockup aggiunge alla pelle del prototipo ---- */
+body { padding: 0; }
+.mk-wrap { max-width: 1180px; margin: 0 auto; padding: 18px 16px 40px; }
+.mk-hd { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.mk-hd h1 { font-family: var(--arcade); font-size: 1.05rem; color: var(--yellow); margin: 0; letter-spacing: .01em; }
+.mk-hd p { margin: 0; color: var(--bone-dim); font-size: .82rem; text-wrap: pretty; }
+.mk-bar { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin: 14px 0 18px;
+  padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #12122c; }
+.mk-grp { display: flex; align-items: center; gap: 7px; }
+.mk-grp > b { font-family: var(--body); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
+  color: #6f6fa6; font-weight: 800; }
+.mk-chip { font-family: var(--body); font-weight: 700; font-size: .72rem; color: var(--bone-dim);
+  background: #191a3d; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; cursor: pointer;
+  transition: color .14s, border-color .14s, background .14s; }
+.mk-chip:hover { color: var(--bone); border-color: var(--brass-deep); }
+.mk-chip[aria-pressed="true"] { color: #201400; background: var(--yellow); border-color: var(--yellow); }
+.mk-reset { margin-left: auto; }
+
+/* il palco: campo a sinistra, candidati a destra; su schermo stretto uno sotto l'altro */
+.mk-stage { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .mk-stage { grid-template-columns: 1fr; } }
+.mk-panel { border: 1px solid var(--line); border-radius: 16px; padding: 14px; background: #101029; min-width: 0; }
+
+/* ---- gruppi della lista candidati ---- */
+.grp-lab { display: flex; align-items: center; gap: 8px; margin: 2px 0 7px;
+  font-family: var(--arcade); font-size: .54rem; letter-spacing: .1em; color: #6f6fa6; }
+.grp-lab::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.grp-lab + .grp-lab { margin-top: 10px; }
+.rlist + .grp-lab { margin-top: 12px; }
+
+/* VARIANTE A - due colonne: quintetto e panchina affiancati, tutti e dieci a vista */
+.due-col .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+@media (max-width: 640px) { .due-col .cols { grid-template-columns: 1fr; } }
+.due-col .r-top { grid-template-columns: 30px 34px 1fr auto; gap: 7px; padding: 6px 8px 6px 11px; }
+.due-col .r-port { width: 30px; height: 36px; }
+.due-col .r-box { display: none; }          /* le stat stanno nella riga sotto il nome */
+.due-col .r-id .nm { font-size: .84rem; }
+.due-col .mini { display: flex; gap: 7px; align-items: baseline; }
+.due-col .mini b { font-family: var(--led); font-weight: 700; font-size: .74rem; color: var(--bone); }
+.due-col .mini i { font-style: normal; font-size: .5rem; letter-spacing: .06em; color: #6f6fa6; }
+
+/* VARIANTE B - una colonna che scorre: righe piene come nell'app di oggi */
+.una-col .cols { display: block; }
+.una-col .scroller { max-height: 460px; overflow-y: auto; padding-right: 6px;
+  scrollbar-width: thin; scrollbar-color: #3a3a6e transparent; }
+.una-col .mini { display: none; }
+.una-col .scroller::-webkit-scrollbar { width: 8px; }
+.una-col .scroller::-webkit-scrollbar-thumb { background: #2f2f5c; border-radius: 99px; }
+
+/* il sesto uomo: badge sulla prima riserva, non un gruppo a parte */
+.r-sixth { font-family: var(--arcade); font-size: .38rem; letter-spacing: .05em; color: #201400;
+  background: var(--yellow); border-radius: 4px; padding: 2px 5px; flex: none; }
+
+.mk-note { margin: 14px 0 0; padding: 11px 13px; border-left: 3px solid var(--brass);
+  background: #14132f; border-radius: 0 10px 10px 0; color: var(--bone-dim); font-size: .78rem;
+  line-height: 1.5; text-wrap: pretty; }
+.mk-note b { color: var(--bone); }
+.mk-note code { font-family: var(--led); color: var(--yellow); font-size: .82rem; }
+/* la stagione non si spezza mai a metà ("2016-" / "17"): è identità della rosa */
+#spin-lab { white-space: nowrap; }
+.mk-panel .seclab { flex-wrap: wrap; row-gap: 6px; }
+.mk-empty { color: #6f6fa6; font-size: .76rem; text-align: center; padding: 14px 0; }
+
+/* fascia in fondo: le stesse due varianti dentro un telefono da 390px, così la
+   scelta si fa vedendo anche il caso stretto e non solo il desktop */
+.mk-mob { margin-top: 20px; }
+.mk-mob-hd { font-family: var(--arcade); font-size: .54rem; letter-spacing: .1em; color: #6f6fa6;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.mk-mob-hd::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.mk-phones { display: flex; gap: 18px; flex-wrap: wrap; }
+.mk-phone { flex: 0 1 390px; min-width: 0; }
+.mk-phone > span { display: block; font-family: var(--body); font-weight: 700; font-size: .7rem;
+  color: var(--bone-dim); margin-bottom: 6px; }
+.mk-phone iframe { width: 100%; height: 430px; border: 1px solid var(--line); border-radius: 14px;
+  background: #101029; display: block; }
+
+/* vista incorporata: solo la lista, senza intestazione né campo */
+body.embed .mk-wrap { padding: 10px; }
+body.embed .mk-hd, body.embed .mk-bar, body.embed .mk-stage > .mk-panel:first-child,
+body.embed .mk-mob { display: none; }
+body.embed .mk-stage { grid-template-columns: 1fr; }
+/* dentro l'iframe la barra di scorrimento di sistema è bianca e spacca la pelle scura */
+body.embed { scrollbar-width: thin; scrollbar-color: #3a3a6e transparent; }
+body.embed::-webkit-scrollbar { width: 8px; }
+body.embed::-webkit-scrollbar-thumb { background: #2f2f5c; border-radius: 99px; }
+body.embed::-webkit-scrollbar-track { background: transparent; }
+</style>
+</head>
+<body>
+<div class="mk-wrap">
+  <div class="mk-hd">
+    <h1>79 · Candidati da dieci</h1>
+    <p>Stessa rosa, due modi di farci stare dieci righe. Le carte sono vere e vengono
+       da <code>costruisciRosa</code>, la rosa è a 6 caselle su 10.</p>
+  </div>
+
+  <div class="mk-bar">
+    <div class="mk-grp">
+      <b>Layout</b>
+      <button class="mk-chip" data-var="due-col" aria-pressed="true" type="button">Due colonne</button>
+      <button class="mk-chip" data-var="una-col" aria-pressed="false" type="button">Una colonna che scorre</button>
+    </div>
+    <div class="mk-grp" id="spin-chips"><b>Spin</b></div>
+    <button class="mk-chip mk-reset" id="reset" type="button">↺ Rimetti la rosa a 6/10</button>
+  </div>
+
+  <div class="mk-stage">
+    <div class="mk-panel">
+      <div class="seclab"><span>La tua rosa · <b id="conta">6</b>/10</span></div>
+      <div class="dcourt" id="court"></div>
+      <p class="prompt" id="prompt">Tocca un candidato: si accendono gli slot dove può giocare</p>
+      <p class="mk-note">
+        <b>Cosa guardare.</b> Le righe spente sono i candidati i cui ruoli sono già coperti:
+        da oggi non si selezionano più, e si vede <b>prima</b> di toccarle.
+        Il badge <b>6° uomo</b> sta sulla riserva più forte dello spin: oggi è solo
+        un'etichetta descrittiva, nel motore tutte le riserve giocano 16 minuti uguali.
+        Gli aiuti in barra sono quelli veri di Facile: <code>2 · 2 · 1</code>.
+      </p>
+      <p class="mk-note">
+        <b>Provala.</b> Tocca un candidato, poi la casella che si accende: la carta entra
+        in rosa davvero e sparisce dalla lista, come nell'app. Il bottone in alto a destra
+        rimette tutto a 6 caselle su 10.
+      </p>
+    </div>
+    <div class="mk-panel due-col" id="cand">
+      <div class="seclab"><span id="spin-lab">Rosa</span>
+        <span class="aidz">
+          <button class="aid" type="button">re-spin <b>1</b></button>
+          <button class="aid" type="button">↺ squadra <b>2</b></button>
+          <button class="aid" type="button">↺ stagione <b>2</b></button>
+        </span>
+      </div>
+      <div class="cols" id="cols"></div>
+    </div>
+  </div>
+
+  <div class="mk-mob">
+    <div class="mk-mob-hd">Le stesse due varianti a 390px</div>
+    <div class="mk-phones">
+      <div class="mk-phone"><span>Due colonne</span>
+        <iframe title="Due colonne a 390px" src="79-draft10-lista.html?embed=1&amp;var=due-col" loading="lazy"></iframe></div>
+      <div class="mk-phone"><span>Una colonna che scorre</span>
+        <iframe title="Una colonna a 390px" src="79-draft10-lista.html?embed=1&amp;var=una-col" loading="lazy"></iframe></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { DRAFT10 } from "./79-draft10-data.js";
+import { teamColors, initials } from "../prototype/imbattuto/team-colors.js";
+
+const ROLES = ["PG", "SG", "SF", "PF", "C"];
+const TITOLARE = "titolare", RISERVA = "riserva";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt1 = (v) => v.toFixed(1);
+const fascia = (o) => (o >= 88 ? "oro" : o >= 82 ? "arg" : "brz");
+const lastName = (n) => { const p = String(n).split(/\s+/); return p[p.length - 1] || n; };
+
+// Stessa logica del prototipo: l'etichetta viene dalla stat dominante.
+function archetype(s) {
+  const norm = [{ k: "pts", v: s.pts / 30 }, { k: "reb", v: s.reb / 14 }, { k: "ast", v: s.ast / 10 }]
+    .sort((a, b) => b.v - a.v);
+  const sig = norm[0].k;
+  if (sig === "ast") return { label: s.ast >= 7 ? "Regista" : "Playmaker", sig };
+  if (sig === "reb") return { label: s.blk >= 1.7 ? "Stoppatore" : s.reb >= 10 ? "Rimbalzista" : "Lungo", sig };
+  return { label: s.pts >= 25 ? "Bomber" : (s.tp_pct >= 39 && s.pts >= 13) ? "Tiratore" : "Realizzatore", sig };
+}
+
+function faceHTML(card, { ovr = null, role = null } = {}) {
+  const { c1, c2 } = teamColors(card.team_abbr);
+  const badge = (ovr != null || role != null)
+    ? `<span class="fbadge">${role ? `<span class="r">${esc(role)}</span>` : ""}${ovr != null ? `<span class="o">${ovr}</span>` : ""}</span>` : "";
+  return `<span class="face" style="--tc1:${c1};--tc2:${c2}"><span class="mono">${esc(initials(card.name))}</span>${badge}</span>`;
+}
+
+// ---- stato locale del mockup ----
+const QS = new URLSearchParams(location.search);
+if (QS.has("embed")) document.body.classList.add("embed");
+let variante = QS.get("var") === "una-col" ? "una-col" : "due-col";
+let iSpin = 0;
+let rosa = null;          // { PG: {titolare, riserva}, ... }
+let sel = null;           // indice della carta selezionata
+let presi = new Set();    // chiavi delle carte già piazzate: spariscono dalla lista
+
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const chiave = (c) => `${c.player_id}|${c.season}`;
+const slotLibero = (r) => (rosa[r][TITOLARE] === null ? TITOLARE : rosa[r][RISERVA] === null ? RISERVA : null);
+const eligibili = (c) => ROLES.filter((r) => slotLibero(r) && (c.pos.primary === r || c.pos.secondary === r));
+const dove = (r) => (slotLibero(r) === TITOLARE ? `<b>${r}</b> da titolare` : `<b>${r}</b> in panchina`);
+
+function reset() { rosa = clone(DRAFT10.rosa); presi = new Set(); sel = null; render(); }
+
+// ---- disegno ----
+function court() {
+  const fila = (tipo) => ROLES.map((r) => {
+    const c = rosa[r][tipo];
+    if (c) return `<span class="dslot full ${tipo}" data-role="${r}" data-tipo="${tipo}" data-filled="1">
+      <span class="ds-face">${faceHTML(c, { ovr: c.ovr, role: r })}</span></span>`;
+    return `<span class="dslot ${tipo}" data-role="${r}" data-tipo="${tipo}">
+      <span class="ds-role">${r}</span><span class="reticle"></span><span class="ds-stamp">${r}</span></span>`;
+  }).join("");
+  return `<div class="dcrow-lab">Titolari <small>32 minuti</small></div>${fila(TITOLARE)}
+          <div class="dcrow-lab">Panchina <small>16 minuti</small></div>${fila(RISERVA)}`;
+}
+
+function riga(c, i, { sesto = false } = {}) {
+  const { c1, c2 } = teamColors(c.team_abbr);
+  const off = eligibili(c).length === 0;
+  const two = c.pos.secondary;
+  const a = archetype(c.stats_real);
+  const trio = [["pts", "PT"], ["reb", "RB"], ["ast", "AS"]];
+  return `<div class="crd${off ? " off" : ""}${sel === i ? " sel" : ""}" data-i="${i}"
+      ${off ? 'aria-disabled="true"' : ""} style="--tc1:${c1};--tc2:${c2}">
+    <div class="r-top">
+      <span class="r-port">${faceHTML(c)}</span>
+      <span class="r-ovr ${fascia(c.ovr)}"><b>${c.ovr}</b><small>OVR</small></span>
+      <span class="r-id">
+        <span class="nm">${esc(lastName(c.name))}</span>
+        <span class="sub">
+          <span class="r-pos ${two ? "two" : ""}">${esc(c.pos.primary)}${two ? " · " + esc(two) : ""}</span>
+          <span class="r-arch">${esc(a.label)}</span>
+          <span class="r-team">${esc(c.team_abbr)} · ${esc(c.season)}</span>
+          ${sesto ? `<span class="r-sixth">6° uomo</span>` : ""}
+          ${off ? `<span class="r-cover">ruolo pieno</span>` : ""}
+        </span>
+        <span class="mini">${trio.map(([k, l]) =>
+          `<span><b>${fmt1(c.stats_real[k])}</b> <i>${l}</i></span>`).join("")}</span>
+      </span>
+      <span class="r-box">${trio.map(([k, l]) =>
+        `<span class="bx${k === a.sig ? " sig" : ""}"><b>${fmt1(c.stats_real[k])}</b><i>${l}</i></span>`).join("")}</span>
+    </div>
+  </div>`;
+}
+
+function lista() {
+  const spin = DRAFT10.spin[iSpin];
+  const vivi = spin.cards.map((c, i) => ({ c, i })).filter(({ c }) => !presi.has(chiave(c)));
+  if (vivi.length === 0) return `<p class="mk-empty">Tutti presi da questa rosa. Nella app vera parte un nuovo spin.</p>`;
+  const tit = vivi.filter(({ c }) => c.tipo === TITOLARE);
+  const pan = vivi.filter(({ c }) => c.tipo === RISERVA);
+  // Il sesto uomo è la riserva più forte dello spin - la prima che un allenatore
+  // manderebbe in campo. Qui è solo un'etichetta: i minuti veri sono 16 per tutti.
+  const sesto = pan.reduce((best, x) => (!best || x.c.ovr > best.c.ovr ? x : best), null);
+  const blocco = (voci, lab) => voci.length === 0 ? "" :
+    `<div><div class="grp-lab">${lab}</div><div class="rlist">${
+      voci.map(({ c, i }) => riga(c, i, { sesto: sesto && i === sesto.i })).join("")}</div></div>`;
+  const dentro = blocco(tit, "Quintetto") + blocco(pan, "Panchina");
+  return variante === "una-col" ? `<div class="scroller">${dentro}</div>` : dentro;
+}
+
+function render() {
+  const spin = DRAFT10.spin[iSpin];
+  document.getElementById("court").innerHTML = court();
+  document.getElementById("cols").innerHTML = lista();
+  document.getElementById("cand").className = `mk-panel ${variante}`;
+  document.getElementById("spin-lab").textContent = `Rosa · ${spin.team} · ${spin.season}`;
+  document.getElementById("conta").textContent =
+    ROLES.reduce((n, r) => n + (rosa[r][TITOLARE] ? 1 : 0) + (rosa[r][RISERVA] ? 1 : 0), 0);
+  document.querySelectorAll("[data-var]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(b.dataset.var === variante)));
+  document.querySelectorAll("[data-spin]").forEach((b) =>
+    b.setAttribute("aria-pressed", String(+b.dataset.spin === iSpin)));
+  if (sel === null) setPrompt("Tocca un candidato: si accendono gli slot dove può giocare");
+  else illumina();
+  attacca();
+}
+
+const setPrompt = (h) => { document.getElementById("prompt").innerHTML = h; };
+
+function illumina() {
+  const c = DRAFT10.spin[iSpin].cards[sel];
+  const elig = eligibili(c);
+  document.querySelectorAll(".dslot").forEach((s) => {
+    const r = s.dataset.role;
+    const acceso = elig.includes(r) && s.dataset.tipo === slotLibero(r);
+    s.classList.toggle("elig", acceso);
+    s.classList.toggle("dim", s.dataset.filled !== "1" && !acceso);
+  });
+  const n = lastName(c.name);
+  setPrompt(elig.length === 1
+    ? `<b>${esc(n)}</b> può giocare ${dove(elig[0])} - tocca la casella`
+    : `<b>${esc(n)}</b> può giocare ${elig.map(dove).join(" o ")} - scegli la casella`);
+}
+
+function attacca() {
+  document.querySelectorAll(".crd:not(.off)").forEach((row) => {
+    row.onclick = () => { sel = +row.dataset.i; render(); };
+  });
+  document.querySelectorAll(".dslot").forEach((s) => {
+    s.onclick = () => {
+      if (sel === null || !s.classList.contains("elig")) return;
+      const c = DRAFT10.spin[iSpin].cards[sel];
+      rosa[s.dataset.role][s.dataset.tipo] = c;
+      presi.add(chiave(c));
+      sel = null;
+      render();
+    };
+  });
+}
+
+// ---- controlli ----
+const chips = document.getElementById("spin-chips");
+DRAFT10.spin.forEach((s, i) => {
+  const b = document.createElement("button");
+  b.className = "mk-chip"; b.type = "button"; b.dataset.spin = String(i);
+  b.textContent = `${s.team} ${s.season}`;
+  b.onclick = () => { iSpin = i; sel = null; render(); };
+  chips.appendChild(b);
+});
+document.querySelectorAll("[data-var]").forEach((b) => {
+  b.onclick = () => { variante = b.dataset.var; render(); };
+});
+document.getElementById("reset").onclick = reset;
+
+reset();
+</script>
+</body>
+</html>

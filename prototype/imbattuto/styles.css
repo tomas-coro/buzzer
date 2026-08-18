@@ -490,8 +490,28 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 }
 .draft-free .prompt b { color: var(--yellow); }
 
-/* lista candidati */
-.rlist { display: grid; gap: 6px; }
+/* lista candidati - DIECI, in due colonne (G6, porting del mockup 79).
+   Lo spin mostra la rosa intera della squadra pescata: cinque titolari e cinque
+   riserve. In colonna unica il sesto uomo finiva sotto il taglio dello schermo,
+   quindi il draft è l'unica schermata che si allarga oltre i 440px della pelle;
+   il campo resta stretto e centrato, perché è una griglia da cinque caselle e
+   allargarlo lo avrebbe solo stirato. */
+.draft.draft-free { max-width: 760px; }
+.draft-free .court-block { width: 100%; max-width: 440px; margin-inline: auto; }
+.rcols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; align-items: start; }
+/* Sotto i 700px le due colonne non stanno più in riga senza strozzare i nomi:
+   tornano una sotto l'altra, quintetto prima. */
+@media (max-width: 699px) { .rcols { grid-template-columns: 1fr; } }
+.grp-lab {
+  display: flex; align-items: center; gap: 8px; margin: 2px 0 7px;
+  font-family: var(--arcade); font-size: .54rem; letter-spacing: .1em; color: #6f6fa6;
+}
+.grp-lab::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+/* La stagione non si spezza mai a metà ("2016-" / "17"): è identità della rosa. */
+.draft-free .cand-block .seclab > span:first-child { white-space: nowrap; }
+/* Altezza minima uguale per tutte: le due colonne sono griglie separate, e una
+   riga più alta dell'altra le farebbe scorrere sfalsate. */
+.rlist { display: grid; gap: 6px; grid-auto-rows: minmax(54px, auto); }
 .crd {
   position: relative; border: 1px solid var(--line); border-radius: 13px; overflow: hidden;
   cursor: pointer; background: linear-gradient(100deg, #191a3d, #141336);
@@ -503,8 +523,24 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   border-color: var(--yellow); background: linear-gradient(100deg, #232349, #181740);
   box-shadow: 0 0 0 1px var(--yellow), 0 14px 30px -18px rgba(0, 0, 0, .9);
 }
-.r-top { display: grid; grid-template-columns: 34px 38px 1fr auto auto; align-items: center; gap: 9px; padding: 7px 10px 7px 13px; }
-.r-port { width: 34px; height: 40px; }
+/* Candidato con tutti i ruoli già coperti: spento PRIMA del tocco, non dopo.
+   Il bottone "i" resta acceso e cliccabile - la scheda si può sempre leggere,
+   anche di una carta che non puoi prendere. */
+.crd.off { cursor: not-allowed; border-style: dashed; border-color: #2a2a52; background: #12122c; }
+.crd.off::before { background: #2f2f56; }
+.crd.off:hover { transform: none; border-color: #2a2a52; }
+.crd.off .r-top > *:not(.r-info) { opacity: .34; filter: grayscale(.9); }
+.r-cover {
+  font-family: var(--arcade); font-size: .4rem; letter-spacing: .06em; text-transform: uppercase;
+  color: #f0d9b5; background: #4a2733; border: 1px solid #6d3a45; border-radius: 5px;
+  /* 1px di padding, non 2: col bordo la riga spenta veniva 2px più alta delle
+     altre e in due colonne il disallineamento si sommava riga dopo riga. */
+  padding: 1px 5px; flex: none;
+}
+/* Quattro colonne, non più cinque: le cifre PT/RB/AS sono scese sotto il nome
+   (.r-mini), perché in due colonne la riga è larga la metà. */
+.r-top { display: grid; grid-template-columns: 30px 34px 1fr auto; align-items: center; gap: 8px; padding: 6px 9px 6px 12px; }
+.r-port { width: 30px; height: 36px; }
 .r-port .face { width: 100%; height: 100%; border-radius: 8px; }
 .r-port .face .mono { font-size: .62rem; }
 .r-ovr { text-align: center; }
@@ -545,14 +581,14 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   font-family: var(--body); font-weight: 700; font-size: .54rem; letter-spacing: .04em; text-transform: uppercase;
   color: var(--bone-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-/* stat-firma PT/RB/AS dentla la riga (box score reale) */
-.r-box { display: flex; gap: 10px; align-items: baseline; }
-.bx { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 26px; }
-.bx b { font-family: var(--led); font-weight: 900; font-size: .82rem; line-height: 1; color: var(--bone-dim); }
+/* stat-firma PT/RB/AS sotto il nome (box score reale) */
+.r-mini { display: flex; gap: 9px; align-items: baseline; margin-top: 4px; }
+.bx { display: flex; align-items: baseline; gap: 3px; }
+.bx b { font-family: var(--led); font-weight: 900; font-size: .78rem; line-height: 1; color: var(--bone-dim); }
 .bx i { font-family: var(--body); font-weight: 800; font-size: .4rem; letter-spacing: .06em; text-transform: uppercase; color: var(--bone-dim); font-style: normal; }
 .bx.sig b { color: var(--yellow); }
 .bx.sig i { color: var(--bone); }
-.r-blind { font-family: var(--body); font-style: italic; font-size: .62rem; color: var(--bone-dim); }
+.r-blind { display: inline-block; margin-top: 4px; font-family: var(--body); font-style: italic; font-size: .62rem; color: var(--bone-dim); }
 .r-info {
   width: 22px; height: 22px; border-radius: 6px; font-family: var(--display); font-weight: 800; font-style: italic;
   font-size: .72rem; color: var(--bone-dim); background: var(--ink-2); border: 1px solid var(--line); flex: none;
