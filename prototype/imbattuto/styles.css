@@ -359,9 +359,18 @@ button.bz-mode{cursor:pointer}
   background: radial-gradient(60% 45% at 50% 12%, rgba(255, 255, 255, .16), transparent 70%),
     repeating-linear-gradient(115deg, rgba(0, 0, 0, .09) 0 2px, transparent 2px 7px);
 }
-.face::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(255, 91, 30, .14)); }
+.face::after { content: ""; position: absolute; inset: 0; z-index: 2; background: linear-gradient(180deg, transparent 45%, rgba(255, 91, 30, .14)); }
 .face.blind { background: linear-gradient(158deg, #2a2b57, #17173a); }
 .face.blind .mono { color: rgba(255, 255, 255, .35); }
+/* ---- il volto vero (porting mockup 80) ----
+   Le headshot NBA hanno sfondo trasparente e sono ritagliate sulla testa
+   (tools/build-volti.py): sotto resta il gradiente coi colori squadra, e se il
+   file manca l'img si toglie da sola e restano le iniziali - nessun buco. Il
+   volto c'è a TUTTI i livelli, Incubo compreso: il nome è già scritto sulla
+   riga, quindi la faccia non rivela niente che non si legga già (deciso il
+   18/08 guardando il mockup). `.blind` resta solo un tono di sfondo diverso. */
+.face .ph { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; object-fit: cover; object-position: 50% 18%; }
+.face.hasph .mono { display: none; }
 .fbadge {
   position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
   display: flex; justify-content: space-between; align-items: flex-end; padding: 3px 5px;
@@ -455,6 +464,7 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   transition: transform .16s var(--ease), box-shadow .16s, border-color .16s, opacity .2s;
 }
 .dslot .ds-role { font-family: var(--arcade); font-size: .58rem; color: #5d5e93; letter-spacing: .04em; }
+.dslot .ds-num { font-family: var(--arcade); font-size: .52rem; color: #5d5e93; }
 .dslot .ds-stamp { display: none; }
 /* slot pieno */
 .dslot.full { border-style: solid; border-color: transparent; cursor: pointer; }
@@ -469,7 +479,7 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   box-shadow: 0 0 0 1px var(--yellow), 0 0 22px -4px var(--yellow);
   animation: eligpulse 1s ease-in-out infinite;
 }
-.dslot.elig .ds-role { color: var(--yellow); }
+.dslot.elig .ds-role, .dslot.elig .ds-num { color: var(--yellow); }
 @keyframes eligpulse {
   0%, 100% { box-shadow: 0 0 0 1px var(--yellow), 0 0 16px -4px var(--yellow); }
   50% { box-shadow: 0 0 0 2px var(--yellow), 0 0 30px 0 var(--yellow); }
@@ -625,6 +635,80 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .dslot.elig, .reticle, .rlist.morph, .rlist.morph .crd { animation: none !important; }
 }
+
+/* =================== IL TETTO DI SPESA (porting mockup 80) =================== */
+.cap-hd { display: flex; align-items: center; gap: 8px; margin: 2px 0 7px; }
+.cap-hd .cap-t {
+  font-family: var(--arcade); font-size: .5rem; letter-spacing: .1em;
+  text-transform: uppercase; color: #6f6fa6;
+}
+.cap-hd .cap-t b { color: var(--bone-dim); }
+.glo-b {
+  margin-left: auto; width: 22px; height: 22px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; cursor: pointer; font-family: var(--body); font-weight: 800;
+  font-size: .78rem; color: var(--bone-dim); background: var(--ink-2); border: 1px solid var(--line);
+  transition: color .14s, border-color .14s, background .14s;
+}
+.glo-b:hover, .glo-b:focus-visible { color: #201400; background: var(--yellow); border-color: var(--yellow); }
+
+.cap-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+.cap-cell {
+  padding: 8px 9px; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--ink-2); text-align: center;
+}
+.cap-cell .cl { font-family: var(--body); font-weight: 800; font-size: .46rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--bone-dim); }
+.cap-cell .cv { font-family: var(--led); font-weight: 900; font-size: 1.02rem; color: var(--bone);
+  font-variant-numeric: tabular-nums; line-height: 1.3; }
+.cap-cell .cs { font-family: var(--body); font-size: .5rem; color: #6f6fa6; }
+.cap-cell.res.tight .cv { color: var(--brass); }
+.cap-cell.res.tax .cv { color: var(--red); }
+
+/* Ticker sotto il prompt: cosa costa il candidato selezionato, prima del tocco
+   sullo slot. Stessa idea del prompt - risposta PRIMA del click, non dopo. */
+.cap-tick {
+  margin: -2px 2px 8px; padding: 6px 10px; border-radius: 8px; background: var(--ink-2);
+  border: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; font-family: var(--body); font-size: .68rem; color: var(--bone-dim); min-height: 30px;
+}
+.cap-tick .ct-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cap-tick .ct-val { font-family: var(--led); font-weight: 900; font-size: .84rem; color: var(--bone);
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cap-tick.tax { border-color: rgba(255, 80, 56, .4); }
+.cap-tick.tax .ct-val { color: var(--red); }
+.cap-tick.ko { border-color: rgba(255, 80, 56, .6); }
+.cap-tick.ko .ct-val { color: var(--red); font-weight: 800; }
+
+/* Carta che sforerebbe l'apron: spenta come "ruolo pieno", stesso trattamento
+   visivo, messaggio diverso. */
+.r-cover.sforo { color: #ffd9d9; background: #4a2733; border-color: #6d3a45; }
+
+/* ---- Glossario: dialog nativo, si apre col "?" ---- */
+.glo {
+  width: min(420px, calc(100vw - 32px)); margin: auto; padding: 0;
+  border: 1px solid #3a2a66; border-radius: 18px; color: var(--bone-dim);
+  background: linear-gradient(180deg, #241a3e, #15163a);
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .7);
+  max-height: min(86vh, 720px); overflow-y: auto; overscroll-behavior: contain;
+}
+.glo::backdrop { background: rgba(6, 6, 20, .72); }
+.glo[open] { animation: sheetIn .28s var(--ease) both; }
+.glo-in { padding: 18px 20px 20px; }
+.glo h2 { font-family: var(--arcade); font-size: .78rem; color: var(--yellow); margin: 0 0 3px;
+  letter-spacing: .02em; padding-right: 40px; }
+.glo .glo-sub { margin: 0 0 14px; font-size: .7rem; color: #6f6fa6; text-wrap: pretty; }
+.glo dl { margin: 0; display: grid; gap: 11px; }
+.glo dt { font-family: var(--body); font-weight: 800; font-size: .76rem; color: var(--bone);
+  display: flex; align-items: baseline; gap: 7px; }
+.glo dt .qt { font-family: var(--led); font-weight: 900; font-size: .68rem; color: var(--brass); }
+.glo dd { margin: 3px 0 0; font-size: .72rem; line-height: 1.5; text-wrap: pretty; }
+.glo dd b { color: var(--bone); }
+.glo-x {
+  position: sticky; float: right; top: 4px; margin: -4px -6px 0 8px; width: 30px; height: 30px;
+  border-radius: 8px; background: var(--ink-2); border: 1px solid var(--line); color: var(--bone-dim);
+  font-size: 1rem; cursor: pointer;
+}
+.glo-x:hover { color: var(--bone); border-color: var(--brass-deep); }
 
 /* =================== COACH (port mockup 75, mix direzioni A+C) =================== */
 /* Struttura della direzione A (righe dense, leggibili in verticale) con il gesso

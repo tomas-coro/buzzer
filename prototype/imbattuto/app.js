@@ -1,6 +1,5 @@
 import { newRun, draftPick, useAid, chooseCoach, startRun, resolveRound } from "../../game/run.js";
-import { ROLES } from "../../game/roster.js";
-import { slotLibero, listaRosa } from "../../game/rosa.js";
+import { caselleLibere, listaRosa } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
 import { opponentPool, spinRoster, chiaveCarta } from "./pool.js";
@@ -32,11 +31,11 @@ function ctx() {
 
 function go(nextUi) { ui = nextUi; render(); }
 
-// Ruoli con almeno una casella libera. La rosa è da 10 (titolare + riserva per
-// ruolo): un ruolo resta "libero" finché non ha entrambe le caselle piene, e a
-// quale delle due va la carta lo decide il motore (`slotLibero`), non la UI.
-function freeRoles() {
-  return ROLES.filter((r) => slotLibero(state.rosa, r) !== null);
+// Le caselle ancora vuote della rosa (5 titolari per ruolo + 5 posti di
+// panchina numerati): servono a `spinRoster` per scartare le rose che non
+// darebbero comunque niente (vedi pool.js).
+function freeSlots() {
+  return caselleLibere(state.rosa);
 }
 // Le carte già in squadra: escluse dalle rose pescate, così lo stesso
 // giocatore-stagione non può finire due volte in rosa.
@@ -47,7 +46,7 @@ function giaPresi() {
 function spinRosterView(filtro = {}) {
   // `slots` dice da quale casella della SUA squadra viene ogni candidato
   // (quintetto o panchina): serve solo a raggruppare la lista, non al motore.
-  const { key, cards: shown, slots } = spinRoster(cards, freeRoles(), { ...filtro, escludi: giaPresi() });
+  const { key, cards: shown, slots } = spinRoster(cards, freeSlots(), { ...filtro, escludi: giaPresi() });
   return { key, cards: shown, slots };
 }
 
@@ -68,8 +67,9 @@ function dispatch(action) {
       draftView = spinRosterView();
       break;
     case "assign": {
-      // Piazzamento libero: la carta va nel ruolo scelto dall'utente.
-      state = draftPick(state, action.role, action.card);
+      // Piazzamento libero: la carta va nella casella scelta dall'utente
+      // ({ tipo: "titolare", ruolo } oppure { tipo: "panca", posto }).
+      state = draftPick(state, action.slot, action.card);
       // se restano slot, pesca una nuova rosa; altrimenti lo stato passa a "coach"
       draftView = state.stato === "draft" ? spinRosterView() : null;
       break;
