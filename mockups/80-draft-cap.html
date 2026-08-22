@@ -52,7 +52,8 @@ body { padding: 0; }
 .bticker { margin-top: 8px; border: 1px solid var(--line); border-radius: 8px; background: #08081c;
   padding: 7px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
   font-family: var(--body); font-size: .72rem; color: var(--bone-dim); min-height: 34px; }
-.bticker .tk-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bticker .tk-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; flex: 0 1 auto; min-width: 6.5em; }
 .bticker .tk-val { font-family: var(--led); font-weight: 900; font-size: .96rem; color: var(--yellow);
   font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bticker.no .tk-val { color: #45457a; }
@@ -62,58 +63,53 @@ body { padding: 0; }
 @keyframes bk { 50% { opacity: .25; } }
 @media (prefers-reduced-motion: reduce) { .bticker .blink { animation: none; opacity: .85; } }
 .cap-board { margin-bottom: 12px; }
+/* L'intestazione del tabellone esiste per una ragione sola: reggere il "?".
+   Chi non ha mai seguito la NBA non sa cosa sia un apron, e la spiegazione non
+   può stare a schermo sempre - occuperebbe più spazio dei numeri che spiega. */
+.cap-hd { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+.cap-hd .cap-t { font-family: var(--arcade); font-size: .54rem; letter-spacing: .1em; color: #6f6fa6; }
+.cap-hd .cap-t b { color: var(--bone-dim); }
+.glo-b { margin-left: auto; width: 22px; height: 22px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; cursor: pointer; font-family: var(--body); font-weight: 800;
+  font-size: .78rem; color: #8b8bc4; background: #191a3d; border: 1px solid var(--line);
+  transition: color .14s, border-color .14s, background .14s; }
+.glo-b:hover, .glo-b:focus-visible { color: #201400; background: var(--yellow); border-color: var(--yellow); }
+
+/* Il glossario: si apre col "?", tiene fermo tutto quello che sta dietro. */
+.glo { width: min(520px, calc(100vw - 32px)); border: 1px solid var(--brass-deep); border-radius: 16px;
+  background: #12122c; color: var(--bone-dim); padding: 0;
+  /* su uno schermo basso il pannello scorre dentro di sè, non spinge la pagina */
+  max-height: min(86vh, 760px); overflow-y: auto; overscroll-behavior: contain; }
+.glo::backdrop { background: rgba(5, 4, 18, .78); }
+.glo-in { padding: 18px 20px 20px; }
+.glo h2 { font-family: var(--arcade); font-size: .78rem; color: var(--yellow); margin: 0 0 3px;
+  letter-spacing: .02em; padding-right: 42px; }
+.glo .glo-sub { margin: 0 0 14px; font-size: .74rem; color: #6f6fa6; text-wrap: pretty; }
+.glo dl { margin: 0; display: grid; gap: 11px; }
+.glo dt { font-family: var(--body); font-weight: 800; font-size: .78rem; color: var(--bone);
+  display: flex; align-items: baseline; gap: 7px; }
+.glo dt .qt { font-family: var(--led); font-weight: 900; font-size: .74rem; color: var(--brass); }
+.glo dd { margin: 3px 0 0; font-size: .76rem; line-height: 1.5; text-wrap: pretty; }
+.glo dd b { color: var(--bone); }
+.glo-x { position: sticky; float: right; top: 4px; margin: -4px -6px 0 8px; width: 30px; height: 30px; border-radius: 8px;
+  background: #191a3d; border: 1px solid var(--line); color: var(--bone-dim); font-size: 1rem;
+  cursor: pointer; }
+.glo-x:hover { color: var(--bone); border-color: var(--brass-deep); }
+
+/* ---- il volto ----
+   Le headshot NBA hanno lo sfondo trasparente e sono ritagliate sulla testa
+   (tools/build-volti.py): sotto resta il gradiente coi colori della squadra, e
+   se la foto manca restano le iniziali, che è il ripiego di sempre. */
+.face .ph { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
+  object-fit: cover; object-position: 50% 18%; }
+.face.hasph .mono { display: none; }
+.face.hasph::after { z-index: 2; }
 
 /* Lo stato nuovo del tetto tarato: la carta entra, ma ti porta sopra il tetto e
    te lo dice PRIMA del click. Non è "vietato" (quello è l'apron, e quelle righe
    si spengono), è "caro" - quindi rosso tenue, non rosso pieno. */
 .crd.tassa { border-color: rgba(255,90,90,.45); }
 .mk-badge.tassa { color: #ffd9d9; background: rgba(255,90,90,.16); border-color: rgba(255,90,90,.42); }
-.paytot .pt-res.tax { color: var(--red); }
-
-/* ============ DIREZIONE B · LIBRO PAGA ============
-   Il budget come la busta paga di una squadra vera: dieci righe, una per
-   casella, che si sommano in fondo. */
-.paylist { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
-.payrow { display: grid; grid-template-columns: 62px 1fr auto; gap: 8px; align-items: center;
-  padding: 4px 8px; border-radius: 7px; background: #12122c; border: 1px solid transparent;
-  font-size: .74rem; min-height: 27px; }
-.payrow.vuota { background: #0f0f26; border-style: dashed; border-color: #24244a; color: #6f6fa6; }
-.payrow.prev { border-color: var(--yellow); background: #1c1a34; }
-.payrow .pr-lab { font-family: var(--body); font-weight: 800; font-size: .6rem; letter-spacing: .07em;
-  text-transform: uppercase; color: #6f6fa6; white-space: nowrap; }
-.payrow.piena .pr-lab { color: var(--bone-dim); }
-.payrow .pr-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.payrow.vuota .pr-nm { font-weight: 500; color: #55558c; font-style: italic; }
-.payrow .pr-min { font-size: .62rem; color: #6f6fa6; font-weight: 500; }
-.payrow .pr-sal { font-family: var(--led); font-weight: 700; color: var(--bone);
-  font-variant-numeric: tabular-nums; white-space: nowrap; }
-.payrow.vuota .pr-sal { color: #45457a; }
-.payrow.prev .pr-nm, .payrow.prev .pr-sal { color: var(--yellow); }
-.paytot { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: baseline;
-  padding: 9px 8px 2px; border-top: 2px solid var(--line); margin-top: 4px; }
-.paytot .pt-lab { font-family: var(--body); font-size: .6rem; letter-spacing: .14em; text-transform: uppercase;
-  color: #6f6fa6; font-weight: 800; }
-.paytot .pt-val { font-family: var(--led); font-weight: 900; font-size: 1.15rem; color: var(--bone);
-  font-variant-numeric: tabular-nums; }
-.paytot .pt-cap { font-family: var(--body); font-size: .72rem; color: #6f6fa6; }
-.paytot .pt-res { font-family: var(--led); font-weight: 900; font-size: 1.15rem; color: var(--yellow);
-  font-variant-numeric: tabular-nums; }
-.paytot .pt-res.tight { color: var(--brass); }
-.paytot .pt-res.broke { color: var(--red); }
-
-/* Il palco cambia forma con la direzione: col termometro basta una colonna
-   stretta, col libro paga il campo e la busta stanno affiancati. */
-.leftgrid { display: grid; gap: 14px; }
-body[data-dir="pay"] .mk-stage { grid-template-columns: minmax(520px, 660px) 1fr; }
-body[data-dir="pay"] .leftgrid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr); align-items: start; }
-@media (max-width: 1100px) {
-  body[data-dir="pay"] .mk-stage { grid-template-columns: 1fr; }
-  body[data-dir="pay"] .leftgrid { grid-template-columns: 1fr; }
-}
-
-/* quale direzione è a vista */
-body[data-dir="board"] .only-pay { display: none; }
-body[data-dir="pay"] .only-board { display: none; }
 
 /* ---- il campo ---- */
 .dcourt .dslot.full .fbadge { bottom: auto; top: 0; background: linear-gradient(0deg, transparent, rgba(5,3,15,.85)); }
@@ -190,6 +186,9 @@ body[data-dir="pay"] .only-board { display: none; }
 .mk-notes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
 @media (max-width: 960px) { .mk-notes { grid-template-columns: 1fr; } }
 .mk-notes .mk-note { margin: 0; }
+/* La terza nota è lunga il doppio delle altre due: in una colonna sola
+   lasciava mezza riga vuota sotto. Prende tutta la larghezza. */
+.mk-notes .mk-note.largo { grid-column: 1 / -1; }
 
 .mk-note { margin: 12px 0 0; padding: 11px 13px; border-left: 3px solid var(--brass);
   background: #14132f; border-radius: 0 10px 10px 0; color: var(--bone-dim); font-size: .78rem;
@@ -208,21 +207,16 @@ body[data-dir="pay"] .only-board { display: none; }
 }
 </style>
 </head>
-<body data-dir="board">
+<body>
 <div class="mk-wrap">
   <div class="mk-hd">
     <h1>80 · Il tetto di spesa</h1>
     <p>Dieci caselle, un monte ingaggi. Carte, voti e cartellini sono veri: escono da
-       <code>costruisciRosa</code> e da <code>salarioCarta</code>. Due modi di far vedere
-       il budget - scegline uno.</p>
+       <code>costruisciRosa</code> e da <code>salarioCarta</code>. Il tabellone dice
+       quanto puoi ancora spendere, e il "?" dice cosa vuol dire.</p>
   </div>
 
   <div class="mk-bar">
-    <div class="mk-grp">
-      <b>Budget</b>
-      <button class="mk-chip" data-dir="board" aria-pressed="true" type="button">Tabellone</button>
-      <button class="mk-chip" data-dir="pay" aria-pressed="false" type="button">Libro paga</button>
-    </div>
     <div class="mk-grp" id="liv-chips"><b>Livello</b></div>
     <button class="mk-chip mk-reset" id="reset" type="button">↺ Ricomincia il draft</button>
   </div>
@@ -230,7 +224,12 @@ body[data-dir="pay"] .only-board { display: none; }
   <div class="mk-stage">
     <div class="mk-panel">
       <!-- DIREZIONE A -->
-      <div class="cap-board only-board">
+      <div class="cap-board">
+        <div class="cap-hd">
+          <span class="cap-t">Il budget · livello <b id="cap-liv">normale</b></span>
+          <button class="glo-b" id="glo-open" type="button"
+                  aria-label="Cosa vogliono dire questi numeri">?</button>
+        </div>
         <div class="board">
           <div class="bcell"><div class="bl">Tetto</div><div class="bv" id="b-cap">$0.0M</div><div class="bsub" id="b-apron"></div></div>
           <div class="bcell"><div class="bl">Speso</div><div class="bv" id="b-spe">$0.0M</div><div class="bsub" id="b-hold"></div></div>
@@ -248,17 +247,6 @@ body[data-dir="pay"] .only-board { display: none; }
           <div class="dcourt" id="court"></div>
           <p class="prompt" id="prompt"></p>
           <div class="mk-sint" id="sintesi"></div>
-        </div>
-        <!-- DIREZIONE B -->
-        <div class="only-pay lg-pay">
-          <div class="cap-lab" style="margin-bottom:7px">Libro paga · 10 contratti</div>
-          <div class="paylist" id="paylist"></div>
-          <div class="paytot">
-            <span class="pt-lab">Monte ingaggi</span>
-            <span class="pt-val" id="p-tot">$0.0M</span>
-            <span class="pt-cap" id="p-cap">tetto $0.0M</span>
-            <span class="pt-res" id="p-res">$0.0M liberi</span>
-          </div>
         </div>
       </div>
     </div>
@@ -279,7 +267,7 @@ body[data-dir="pay"] .only-board { display: none; }
       costa quella firma, e si accendono solo le caselle dove può giocare. Le righe verdi
       sono contratti al minimo, firmabili sempre anche a cassa vuota, così il draft
       non si inchioda mai.</p>
-    <p class="mk-note">
+    <p class="mk-note largo">
       <b>Il tetto non è un muro, è il punto dove cominci a pagare.</b> La terza
       cifra del tabellone dice quanto ti resta, e quando sfori cambia mestiere:
       diventa di quanto sei <b>Oltre</b>, in rosso, con sotto il prezzo in campo.
@@ -291,6 +279,45 @@ body[data-dir="pay"] .only-board { display: none; }
       più spendi più cose non puoi più fare.
     </p>
   </div>
+<dialog class="glo" id="glo" aria-labelledby="glo-h">
+  <div class="glo-in">
+    <button class="glo-x" id="glo-close" type="button" aria-label="Chiudi">&times;</button>
+    <h2 id="glo-h">Come si legge il budget</h2>
+    <p class="glo-sub">Sei parole che tornano in tutto il draft. Sono le regole vere
+       della NBA, ridotte all'osso.</p>
+    <dl>
+      <dt>Monte ingaggi <span class="qt">Speso</span></dt>
+      <dd>La somma degli stipendi dei giocatori che hai già preso. A fine draft sono
+          dieci contratti: cinque titolari e cinque riserve.</dd>
+
+      <dt>Tetto <span class="qt">il tuo budget</span></dt>
+      <dd>Quanto puoi spendere <b>senza pagare pegno</b>. Non è un muro: puoi superarlo,
+          ma da lì in poi ogni firma costa qualcosa in campo.</dd>
+
+      <dt>Apron <span class="qt">tetto +25%</span></dt>
+      <dd>Il muro <b>vero</b>, quello che non si passa nemmeno pagando. In NBA è il punto
+          oltre il quale una squadra non può più fare mercato. Qui le carte che ti
+          porterebbero oltre restano spente: non le puoi firmare.</dd>
+
+      <dt>Tassa <span class="qt">-1 ogni 5M</span></dt>
+      <dd>Il prezzo dello sforo, e non si paga in soldi ma <b>in campo</b>: ogni 5 milioni
+          sopra il tetto tolgono un punto a tutti e cinque i reparti della tua squadra,
+          cioè circa <b>un punto di margine a partita</b>. Sforare di 20 milioni vuol dire
+          partire ogni sera con quattro punti di svantaggio.</dd>
+
+      <dt>A casella <span class="qt">quanto vale il resto</span></dt>
+      <dd>Quello che ti resta diviso le caselle ancora da riempire. È il numero che
+          smaschera il budget: <b>40 milioni sembrano tanti, ma su quattro caselle sono
+          dieci a testa</b>, cioè quattro riserve modeste.</dd>
+
+      <dt>Contratto minimo <span class="qt">$2.0M</span></dt>
+      <dd>Il contratto più basso che esista. Per ogni casella ancora vuota il gioco ne
+          tiene uno da parte, così non puoi restare senza soldi e con la rosa incompleta.
+          Le righe verdi sono al minimo: firmabili sempre.</dd>
+    </dl>
+  </div>
+</dialog>
+
 </div>
 
 <script type="module">
@@ -351,7 +378,6 @@ const puoGiocare = (c, slot) =>
   slot.tipo !== "titolare" || c.pos.primary === slot.ruolo || c.pos.secondary === slot.ruolo;
 
 // ---- stato ----
-let dir = "therm";
 let livello = "normale";
 let iSpin = 0;
 let sel = null;                 // indice della carta selezionata nello spin
@@ -381,6 +407,9 @@ const malusOra = (extra = 0) => (sforoOra(extra) / 1_000_000) * TASSA_PER_MILION
 // "-1,4 a ogni reparto": il prezzo dello sforo, scritto come lo leggeresti su
 // una scheda squadra. Una cifra decimale, perché 0,2 per milione fa passi fini.
 const malusTxt = (m) => `-${m.toFixed(1)} a ogni reparto`;
+// La stessa cosa detta in meno spazio: nel ticker il nome e il prezzo devono
+// starci per intero, e "a ogni reparto" mangiava il nome.
+const malusCorto = (m) => `-${m.toFixed(1)} ai reparti`;
 const vuote = () => caselle.length - rosa.size;
 const libere = () => caselle.filter((s) => !rosa.has(keySlot(s)));
 
@@ -413,7 +442,17 @@ function faceHTML(card, { ovr = null, role = null, buio = false } = {}) {
   const { c1, c2 } = teamColors(card.team_abbr);
   const badge = (ovr != null || role != null)
     ? `<span class="fbadge">${role ? `<span class="r">${esc(role)}</span>` : ""}${ovr != null ? `<span class="o">${ovr}</span>` : ""}</span>` : "";
-  return `<span class="face${buio ? " blind" : ""}" style="--tc1:${c1};--tc2:${c2}"><span class="mono">${esc(initials(card.name))}</span>${badge}</span>`;
+  // LA FOTO C'È A TUTTI I LIVELLI, Incubo compreso. Il primo taglio la toglieva
+  // dove la carta non dice più la squadra, per non regalare informazione: ma il
+  // NOME sulla riga resta scritto anche in Incubo, quindi la faccia non rivela
+  // niente che non si legga già. Deciso da Tomas il 18/08 guardando il mockup.
+  // La foto è il volto ritagliato (tools/build-volti.py): la maglia non si
+  // vede, quindi LeBron 2012-13 non compare vestito da Laker. Se il file manca
+  // l'immagine si toglie da sola e restano le iniziali.
+  const foto = `<img class="ph" src="../assets/volti/${encodeURIComponent(card.player_id)}.webp"
+      alt="" loading="lazy" decoding="async"
+      onload="this.parentNode.classList.add('hasph')" onerror="this.remove()">`;
+  return `<span class="face${buio ? " blind" : ""}" style="--tc1:${c1};--tc2:${c2}"><span class="mono">${esc(initials(card.name))}</span>${foto}${badge}</span>`;
 }
 
 function court() {
@@ -451,15 +490,22 @@ function tabellone() {
   $("b-cap").textContent = soldi(tetto());
   $("b-apron").textContent = `apron ${soldi(limiteDuro())}`;
   $("b-spe").textContent = soldi(speso());
-  $("b-hold").textContent = vuote() === 0
-    ? "rosa completa"
-    : `${soldi(prenotato(vuote()))} per ${vuote()} ${vuote() === 1 ? "casella" : "caselle"}`;
+  // Sotto lo speso ci stava il minimo bloccato per le caselle vuote, e lì era
+  // illeggibile: un numero che non c'entra niente con quello che hai speso.
+  // Adesso dice quanti contratti hai firmato, che è la lettura naturale.
+  $("b-hold").textContent = `${rosa.size} contratt${rosa.size === 1 ? "o" : "i"} su ${caselle.length}`;
 
   // La terza cifra cambia mestiere quando sfori: da "quanto puoi ancora
   // spendere gratis" a "di quanto sei oltre". È il numero su cui decidi.
   $("b-res-lab").textContent = oltre ? "Oltre" : "Resta";
   $("b-res").textContent = oltre ? soldi(-sotto) : soldi(sotto);
-  $("b-tax").textContent = oltre ? malusTxt(malusOra()) : "";
+  // IL NUMERO CHE SMASCHERA IL BUDGET. "Resta $43,8M" sembra spazio; diviso le
+  // quattro caselle ancora vuote fa 11 milioni a testa, cioè quattro riserve
+  // modeste. Misurato al banco: col tetto tarato il draft d'istinto finisce
+  // sopra il tetto nel 70% delle corse in Difficile, ma a schermo non si vedeva.
+  $("b-tax").textContent = oltre
+    ? malusCorto(malusOra())
+    : (vuote() === 0 ? "rosa completa" : `${soldi(sotto / vuote())} a casella`);
   $("b-res-cell").className = `bcell res${oltre ? " tax" : sotto < tetto() * 0.15 ? " tight" : ""}`;
 
   const tick = $("b-tick");
@@ -479,44 +525,10 @@ function tabellone() {
   $("b-val").textContent = ko
     ? `${soldi(prev)} · sfonda l'apron`
     : paga
-      ? `- ${soldi(prev)} · costa ${malusTxt(malusCarta(c, sel))}`
+      ? `- ${soldi(prev)} · costa ${malusCorto(malusCarta(c, sel))}`
       : `- ${soldi(prev)} · resta ${soldi(sotto - prev)}`;
   tick.className = `bticker${ko ? " ko" : paga ? " tax" : ""}`;
   $("b-val").classList.toggle("blink", ko);
-}
-
-// Direzione B: la busta paga. Dieci righe fisse, una per casella: quelle vuote
-// restano a vista, così il conto di quanto manca si fa a occhio.
-function libroPaga() {
-  const c = sel === null ? null : SPIN[iSpin].cards[sel];
-  // Il preventivo si appoggia alla prima casella dove la carta potrebbe andare.
-  // Le carte fuori budget non sono selezionabili, quindi qui non arrivano mai.
-  const dove = c ? (caselleDove(c, sel)[0] ?? null) : null;
-  const kPrev = dove ? keySlot(dove) : null;
-
-  document.getElementById("paylist").innerHTML = caselle.map((slot) => {
-    const dentro = rosa.get(keySlot(slot));
-    const prev = !dentro && keySlot(slot) === kPrev;
-    const carta = dentro ?? (prev ? { ...c, salario: costoDi(c, sel) } : null);
-    const cls = dentro ? "piena" : prev ? "vuota prev" : "vuota";
-    const nome = carta
-      ? (prev ? `→ ${lastName(carta.name)}` : lastName(carta.name))
-      : "libera";
-    return `<div class="payrow ${cls}">
-      <span class="pr-lab">${esc(slot.etichetta)}</span>
-      <span class="pr-nm">${esc(nome)} <span class="pr-min">${slot.minuti}'</span></span>
-      <span class="pr-sal">${carta ? soldi(carta.salario) : "-"}</span>
-    </div>`;
-  }).join("");
-
-  const sotto = sottoTetto();
-  document.getElementById("p-tot").textContent = soldi(speso());
-  document.getElementById("p-cap").textContent = `tetto ${soldi(tetto())}`;
-  const el = document.getElementById("p-res");
-  el.textContent = sotto < 0
-    ? `${soldi(-sotto)} oltre · ${malusTxt(malusOra())}`
-    : `${soldi(sotto)} liberi`;
-  el.className = `pt-res${sotto < 0 ? " tax" : sotto < tetto() * 0.15 ? " tight" : ""}`;
 }
 
 // I tre numeri sotto il campo: quanto hai firmato, quanti dei 240 minuti sono
@@ -645,7 +657,6 @@ function notaLivello() {
 }
 
 function render() {
-  document.body.dataset.dir = dir;
   ripiego = calcolaRipiego();
   document.getElementById("court").innerHTML = court();
   document.getElementById("cols").innerHTML = lista();
@@ -653,16 +664,13 @@ function render() {
   // L'intestazione dello spin rispetta la stessa scala delle carte: se l'annata
   // è nascosta sulle carte, scriverla qui sopra la rimetterebbe in chiaro.
   document.getElementById("spin-lab").textContent = etichettaSpin(SPIN[iSpin], iSpin);
+  document.getElementById("cap-liv").textContent = LIVELLI.find(([k]) => k === livello)[1].toLowerCase();
   etichetteSpin();
   tabellone();
-  libroPaga();
   sintesi();
   invito();
   notaLivello();
   illumina();
-  document.querySelectorAll("[data-dir]").forEach((b) => {
-    if (b.tagName === "BUTTON") b.setAttribute("aria-pressed", String(b.dataset.dir === dir));
-  });
   document.querySelectorAll("[data-liv]").forEach((b) =>
     b.setAttribute("aria-pressed", String(b.dataset.liv === livello)));
   attacca();
@@ -711,8 +719,20 @@ function etichetteSpin() {
       : (mostra("squadra") ? s.team : `Rosa <b>${i + 1}</b>`);
   });
 }
-document.querySelectorAll("button[data-dir]").forEach((b) => {
-  b.onclick = () => { dir = b.dataset.dir; render(); };
+// Il glossario. <dialog> nativo: la pagina dietro resta ferma da sola, Esc
+// chiude, e il fuoco torna al "?" quando si richiude. L'unica cosa che manca al
+// nativo è bloccare lo scroll del corpo, e quello lo mettiamo a mano.
+const glo = document.getElementById("glo");
+const gloB = document.getElementById("glo-open");
+gloB.onclick = () => { document.body.style.overflow = "hidden"; glo.showModal(); };
+document.getElementById("glo-close").onclick = () => glo.close();
+glo.addEventListener("close", () => { document.body.style.overflow = ""; gloB.focus(); });
+// Click sul fondo scuro: il backdrop non è un elemento, quindi si riconosce da
+// dove è caduto il click - fuori dal riquadro del pannello.
+glo.addEventListener("click", (e) => {
+  const r = glo.getBoundingClientRect();
+  const dentro = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+  if (!dentro) glo.close();
 });
 document.getElementById("reset").onclick = reset;
 
