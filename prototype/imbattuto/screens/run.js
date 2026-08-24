@@ -1,5 +1,5 @@
 import { ROLES } from "../../../game/roster.js";
-import { partitaRound, boxScoreRound } from "../../../game/run.js";
+import { partitaRound, boxScoreRound, titolari } from "../../../game/run.js";
 import { attacco, difesa } from "../../../game/partita.js";
 import { votoCarta } from "../../../game/rating.js";
 import { toDisplayOvr } from "../display.js";
@@ -120,7 +120,7 @@ export function render(ctx) {
   // Gli stessi due array che `boxScoreRound` passa al motore, nello stesso
   // ordine: le righe del box score sono allineate per indice, non per nome. Il
   // quintetto avversario arriva già ordinato per ruolo da opponents.js.
-  const mieCarte = ROLES.map((r) => state.quintetto[r]);
+  const mieCarte = titolari(state);
   const loroCarte = avv.quintet;
   const loroRuoli = loroCarte.map((c) => c.pos?.primary ?? "");
   const mieiReparti = repartiSquadra(mieCarte);

@@ -773,20 +773,21 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   text-wrap: pretty;
 }
 
-/* Voti OFF/DEF come celle da tabellone: etichetta + lettera LED colorata per fascia.
-   Il colore sta sul <b> (`.gr b.g-A`): la vecchia coppia `.coach-gr .gr b` +
-   `.coach-gr .g-A` perdeva sempre per specificità e le fasce erano tutte crema. */
-.coach-gr { grid-area: gr; display: flex; gap: 7px; }
-.coach-gr .gr {
-  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 10px;
-  border: 1px solid var(--line); border-radius: 9px; background: rgba(0, 0, 0, .28);
+/* Chip plus/malus (mockup 82, variante A): reparto + segno invece delle
+   lettere OFF/DEF morte col motore a reparti. Bordo pieno = MIRATO (tocca solo
+   certi ruoli, vale il doppio), bordo debole = DIFFUSO (tocca tutta la rosa). */
+.chips { grid-area: gr; display: flex; gap: 6px; }
+.chip {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line);
+  background: rgba(0, 0, 0, .28); min-width: 40px;
 }
-.coach-gr .gr i { font-style: normal; font-weight: 800; font-size: .48rem; letter-spacing: .12em; color: var(--bone-dim); }
-.coach-gr .gr b { font-family: var(--led); font-weight: 900; font-size: 1.05rem; line-height: 1; color: var(--bone); }
-.coach-gr .gr b.g-A { color: var(--green); }
-.coach-gr .gr b.g-B { color: var(--yellow); }
-.coach-gr .gr b.g-C { color: var(--brass); }
-.coach-gr .gr b.g-D { color: var(--red); }
+.chip .cod { font-family: var(--led); font-weight: 900; font-size: .78rem; line-height: 1; }
+.chip.plus .cod { color: var(--green); }
+.chip.malus .cod { color: var(--red); }
+.chip .sub { font-size: .42rem; letter-spacing: .06em; color: var(--bone-dim); text-transform: uppercase; }
+.chip.mirato { border-color: rgba(92, 207, 142, .4); }
+.chip.malus.mirato { border-color: rgba(255, 80, 56, .4); }
 
 /* Anteprima dell'effetto: da quanto vale la squadra a quanto varrà col coach. */
 .ct-prev {

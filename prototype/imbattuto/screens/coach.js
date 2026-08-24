@@ -1,6 +1,9 @@
 import { ROLES } from "../../../game/roster.js";
-import { teamRating } from "../../../game/rating.js";
+import { votoRosa } from "../../../game/rating.js";
 import { applyCoach } from "../../../game/coach.js";
+import { titolari, tassaSuiReparti } from "../../../game/run.js";
+import { malusApron } from "../../../game/salary.js";
+import { ETICHETTE } from "../../../game/reparti.js";
 import { toDisplayOvr } from "../display.js";
 import { teamColors, initials } from "../team-colors.js";
 import { pickCoaches } from "../coaches.js";
@@ -44,11 +47,16 @@ const LAVAGNA = `
     </svg>
   </div>`;
 
-// Cella voto in stile tabellone: etichetta minuscola + lettera LED colorata per
-// fascia. La classe di colore sta sul <b> (`.gr b.g-A`): il vecchio markup la
-// metteva su una regola meno specifica di `.coach-gr .gr b`, che vinceva sempre,
-// e i colori per fascia erano di fatto morti.
-const gradeCell = (lab, g) => `<span class="gr"><i>${lab}</i><b class="g-${g}">${g}</b></span>`;
+// Chip plus/malus: reparto + segno, bordo pieno se MIRATO (tocca solo certi
+// ruoli, vale il doppio) contro bordo debole se DIFFUSO (tocca tutta la rosa).
+// Scelto al mockup 82 sulla variante A: le lettere A-F non esistono più, il
+// coach non alza un voto astratto, sposta reparti precisi.
+const chip = (rep, cls, segno) => `
+  <span class="chip ${cls} ${rep.ruoli ? "mirato" : ""}" title="${esc(ETICHETTE[rep.reparto])}${rep.ruoli ? " · " + rep.ruoli.join(" ") : ""}">
+    <span class="cod">${segno} ${rep.reparto.toUpperCase()}</span>
+    <span class="sub">${rep.ruoli ? rep.ruoli.join(" ") : "tutti"}</span>
+  </span>`;
+const chipsCoach = (c) => `<div class="chips">${chip(c.plus[0], "plus", "▲")}${chip(c.plus[1], "plus", "▲")}${chip(c.malus, "malus", "▼")}</div>`;
 
 // Badge anelli. Il singolare conta: Mazzulla ha un anello solo e "1 anelli" a
 // schermo fa sembrare il gioco scritto male.
@@ -69,8 +77,12 @@ export function render(ctx) {
   const el = document.createElement("section");
   el.className = "screen coach";
 
-  const cards = ROLES.map((r) => state.quintetto[r]);
-  const base = teamRating(cards, state.k);          // voto squadra senza coach
+  const cards = titolari(state);
+  // Il tetto morde qui, non solo a fine draft: la tassa del secondo apron si
+  // applica una volta sola in startRun, ma la scheda deve mostrare lo stesso
+  // numero che uscirà dopo, non il voto lordo di prima della tassa.
+  const punitiApron = malusApron(state.speso, state.tetto);
+  const base = tassaSuiReparti(votoRosa(state.rosa, "normale"), punitiApron); // voto squadra senza coach
   const baseDisp = toDisplayOvr(base.ovr);
 
   // Tre coach pescati una volta sola per questo render. app.js ri-renderizza a
@@ -86,13 +98,14 @@ export function render(ctx) {
     : `${franchigie.size} franchigie diverse`;
 
   const riga = (c) => {
-    const dopo = toDisplayOvr(applyCoach(base, c).ovr);
+    const lordo = applyCoach(state.rosa, c).voto;
+    const dopo = toDisplayOvr(tassaSuiReparti(lordo, punitiApron).ovr);
     return `
       <button class="ct-row" type="button" data-id="${c.id}" data-dopo="${dopo}" aria-pressed="false">
         ${FRECCE[c.profilo]}
         <span class="ct-n">${esc(c.name)}${c.anelli ? ringsHTML(c.anelli) : ""}</span>
         <span class="ct-tac">${esc(c.tattica)}</span>
-        <span class="coach-gr">${gradeCell("OFF", c.off)}${gradeCell("DEF", c.def)}</span>
+        ${chipsCoach(c)}
       </button>`;
   };
 

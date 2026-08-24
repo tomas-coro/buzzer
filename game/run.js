@@ -128,7 +128,7 @@ export function chooseCoach(state, coach) {
 
 // Abbassa tutti i reparti della squadra di `punti` e rifà il voto complessivo.
 // I reparti sono percentili: sotto zero non si scende.
-function tassaSuiReparti(voto, punti) {
+export function tassaSuiReparti(voto, punti) {
   if (punti <= 0) return voto;
   const reparti = {};
   for (const [r, v] of Object.entries(voto.reparti)) reparti[r] = Math.max(0, v - punti);
