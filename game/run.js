@@ -22,7 +22,9 @@ import {
 import { applyCoach } from "./coach.js";
 import { pickOpponent, chiaveAvversario } from "./opponents.js";
 import { DIFFICULTIES, TETTI } from "./difficulty.js";
-import { salarioCarta, limiteDuro, firmabile, malusApron } from "./salary.js";
+import {
+  salarioCarta, limiteDuro, firmabile, malusApron, firmaDiRipiego, SALARIO_MIN, TASSA_PER_MILIONE,
+} from "./salary.js";
 import { votoDaReparti } from "./rating.js";
 import { simulaPartita, rngSeed } from "./partita.js";
 import { boxScorePartita } from "./boxscore.js";
@@ -108,6 +110,49 @@ export function draftPick(state, slot, carta, costo = salarioCarta(carta)) {
 // banchi di prova, che così non devono conoscere la forma della rosa.
 export function caselleDisponibili(state, carta) {
   return caselleDove(state.rosa, carta);
+}
+
+/**
+ * La scelta che farebbe l'auto-draft su UNA rosa pescata: quale carta prendere
+ * e in quale casella, senza toccare lo stato.
+ *
+ * `malusPunti` è quanti punti di reparto Tomas accetta di pagare pur di
+ * prendere carte più forti (0 = resta sempre sotto il tetto pulito). Si
+ * traduce in un budget più alto invertendo `malusApron`, e resta comunque
+ * tagliato all'apron: oltre lì draftPick rifiuterebbe la firma comunque.
+ *
+ * Fra le carte piazzabili nel budget sceglie l'OVR più alto - la stessa
+ * informazione che il draft manuale mostra in carta. Se nello spin nessuna
+ * carta piazzabile ci sta nel budget, si appoggia a `firmaDiRipiego` (stesso
+ * criterio del draft manuale bloccato): la più economica fra quelle che hanno
+ * almeno una casella libera firma al minimo.
+ *
+ * @returns {{carta: object, slot: object, costo: number}|null} `null` se in
+ *          questo spin NESSUNA carta ha una casella libera dove andare: tocca
+ *          pescarne un'altra, non è un errore.
+ */
+export function sceltaAutoDraft(state, candidati, malusPunti = 0) {
+  if (malusPunti < 0) throw new Error("sceltaAutoDraft: malusPunti non può essere negativo");
+  const sforoAccettato = TASSA_PER_MILIONE > 0 ? (malusPunti / TASSA_PER_MILIONE) * 1_000_000 : 0;
+  const budget = Math.min(limiteDuro(state.tetto), state.tetto + sforoAccettato);
+  const residuo = budget - state.speso;
+  const vuote = caselleLibere(state.rosa).length;
+
+  const opzioni = candidati
+    .map((carta) => ({ carta, slots: caselleDove(state.rosa, carta), costo: salarioCarta(carta) }))
+    .filter((o) => o.slots.length > 0);
+  if (opzioni.length === 0) return null;
+
+  const piazzabili = opzioni.filter((o) => firmabile(o.costo, residuo, vuote));
+  if (piazzabili.length > 0) {
+    const scelta = piazzabili.reduce((m, o) => (o.carta.ovr > m.carta.ovr ? o : m));
+    return { carta: scelta.carta, slot: scelta.slots[0], costo: scelta.costo };
+  }
+
+  const idx = firmaDiRipiego(opzioni.map((o) => o.costo), residuo, vuote);
+  if (idx === -1) return null;
+  const ripiego = opzioni[idx];
+  return { carta: ripiego.carta, slot: ripiego.slots[0], costo: SALARIO_MIN };
 }
 
 const AID_TYPES = ["squadra", "stagione", "respin"];

@@ -185,6 +185,25 @@ export function render(ctx) {
       </div>
     </div>`;
 
+  // ---- Auto-draft: completa da sola le caselle rimaste ----
+  // `malusAuto` è quanti punti di reparto Tomas accetta di pagare pur di
+  // prendere carte più forti (vedi sceltaAutoDraft in game/run.js): 0 resta
+  // sempre sotto il tetto pulito, ogni gradino sale nell'apron. Non tocca
+  // dispatch finché non si preme "Completa rosa", quindi cambiare gradino non
+  // ridisegna la schermata (vedi selectCand più sotto per lo stesso motivo).
+  const MALUS_GRADINI = [0, 1, 2, 3];
+  let malusAuto = 0;
+  const autoDraftBar = `
+    <div class="autod-bar">
+      <span class="autod-lab">Auto-draft</span>
+      <div class="sh-seg" id="autod-malus" role="group" aria-label="Malus reparti accettato">
+        ${MALUS_GRADINI.map((m) =>
+          `<button type="button" data-malus="${m}" aria-pressed="${m === 0}">${m === 0 ? "Pulito" : `-${m}`}</button>`
+        ).join("")}
+      </div>
+      <button class="autod-go" id="autod-go" type="button">Completa rosa</button>
+    </div>`;
+
   // ---- Glossario: sei parole che tornano in tutto il draft ----
   const glossario = `
     <dialog class="glo" id="glo" aria-labelledby="glo-h">
@@ -324,6 +343,7 @@ export function render(ctx) {
       <div class="seclab"><span>La tua rosa · ${nFilled}/10</span><span class="ladder">${ladder}</span></div>
       ${capBoard}
       <div class="dcourt">${court}</div>
+      ${autoDraftBar}
     </div>
     <p class="prompt" id="prompt">${piazzabile.some(Boolean)
       ? "Tocca un candidato: si accendono gli slot dove può giocare"
@@ -439,6 +459,19 @@ export function render(ctx) {
   el.querySelectorAll(".aid:not([disabled])").forEach((b) => {
     b.onclick = () => ctx.dispatch({ type: "aid", aid: b.dataset.aid });
   });
+
+  // ---- Auto-draft ----
+  el.querySelectorAll("#autod-malus button").forEach((b) => {
+    b.onclick = () => {
+      malusAuto = +b.dataset.malus;
+      el.querySelectorAll("#autod-malus button").forEach((x) =>
+        x.setAttribute("aria-pressed", String(x === b)));
+    };
+  });
+  el.querySelector("#autod-go").onclick = () => {
+    if (busy) return;
+    ctx.dispatch({ type: "autoDraft", malusMax: malusAuto });
+  };
 
   // ---- Glossario: si apre col "?" del tabellone ----
   const glo = el.querySelector("#glo");

@@ -2,14 +2,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   newRun, draftPick, useAid, chooseCoach, startRun, resolveRound,
-  esitoRound, partitaRound, boxScoreRound, playByPlayRound, titolari,
+  esitoRound, partitaRound, boxScoreRound, playByPlayRound, titolari, sceltaAutoDraft,
 } from "./run.js";
 import { ROLES } from "./roster.js";
 import { SLOTS, costruisciRosa, cartaIn, TITOLARE, PANCA } from "./rosa.js";
 import { DIFFICULTIES, TETTI } from "./difficulty.js";
 import { card } from "./fixtures.js";
 import { votoRosa } from "./rating.js";
-import { salarioCarta, SALARIO_MIN } from "./salary.js";
+import { salarioCarta, SALARIO_MIN, limiteDuro } from "./salary.js";
 import { applyCoach } from "./coach.js";
 
 // `liv` è il livello di tutti e cinque i reparti: 80 = squadra forte, 30 = scarsa.
@@ -118,6 +118,85 @@ test("draftPick rifiuta un titolare fuori ruolo, la panchina no", () => {
   assert.throws(() => draftPick(t, tit("PG"), centro), /incompatibile/);
   t = draftPick(t, panca(10), centro);
   assert.equal(cartaIn(t.rosa, panca(10)), centro);
+});
+
+// Riempie le prime nove caselle (SLOTS.slice(0,9): i cinque titolari e la
+// panchina dal 6° al 9°) con filler deboli e a budget largo, lasciando libero
+// solo il 10° uomo: serve ai test di sceltaAutoDraft che vogliono un budget
+// residuo piccolo e controllato, senza farlo dipendere da nove costi veri.
+function statoUltimaCasella(tetto, speso) {
+  let s = { ...newRun({ formato: "playoff", difficolta: "normale" }), tetto: TETTO_LARGO };
+  const filler = dieciCarte(20, "FILL");
+  SLOTS.slice(0, 9).forEach((slot, i) => { s = draftPick(s, slot, filler[i]); });
+  return { ...s, tetto, speso };
+}
+
+test("sceltaAutoDraft: fra le carte piazzabili sceglie l'OVR più alto", () => {
+  const s = newRun({ formato: "playoff", difficolta: "normale" }); // rosa vuota, budget largo
+  const debole = card({ player_id: "debole", ovr: 60, pos: { primary: "PG", secondary: null }, reparti: repartiA(40) });
+  const forte = card({ player_id: "forte", ovr: 88, pos: { primary: "SG", secondary: null }, reparti: repartiA(70) });
+  const scelta = sceltaAutoDraft(s, [debole, forte], 0);
+  assert.equal(scelta.carta, forte);
+  assert.deepEqual(scelta.slot, { tipo: TITOLARE, ruolo: "SG" }, "il titolare libero viene prima della panchina");
+  assert.equal(scelta.costo, salarioCarta(forte));
+});
+
+test("sceltaAutoDraft: con malusPunti 0 resta sotto il tetto pulito anche a costo dell'OVR più alto", () => {
+  const s = statoUltimaCasella(20_000_000, 15_000_000); // 5M puliti rimasti, un'unica casella libera
+  const economica = card({ player_id: "eco", ovr: 60, reparti: repartiA(25) });
+  const cara = card({ player_id: "cara", ovr: 95, reparti: repartiA(88) });
+  assert.ok(salarioCarta(cara) > 5_000_000, "il fixture deve sforare i 5M rimasti, o il test non prova niente");
+  assert.ok(salarioCarta(economica) <= 5_000_000, "l'economica deve starci dentro");
+  const scelta = sceltaAutoDraft(s, [economica, cara], 0);
+  assert.equal(scelta.carta, economica, "la cara sfora il tetto pulito: resta fuori anche col suo OVR più alto");
+});
+
+test("sceltaAutoDraft: alzando malusPunti la stessa carta cara ora entra nel budget", () => {
+  const cara = card({ player_id: "cara2", ovr: 95, reparti: repartiA(88) });
+  const costo = salarioCarta(cara);
+  // Tetto derivato dal costo vero della carta (non un numero a caso): sfora il
+  // pulito del 10% ma sta comodo sotto l'apron (+25%), qualunque sia il rumore
+  // del suo contratto.
+  const tetto = Math.round(costo / 1.1);
+  const speso = 1_000_000;
+  assert.ok(costo > tetto - speso, "deve sforare il tetto pulito, o il test non prova niente");
+  assert.ok(costo <= limiteDuro(tetto) - speso, "deve starci sotto l'apron, o il test non prova niente");
+  const s = statoUltimaCasella(tetto, speso);
+
+  const pulito = sceltaAutoDraft(s, [cara], 0);
+  assert.equal(pulito.costo, SALARIO_MIN, "pulito: non ce la fa, ripiega al minimo");
+
+  const conMalus = sceltaAutoDraft(s, [cara], 25); // abbastanza da arrivare all'apron
+  assert.equal(conMalus.carta, cara);
+  assert.equal(conMalus.costo, costo, "col budget alzato firma al prezzo pieno, non al minimo");
+});
+
+test("sceltaAutoDraft: il budget non supera mai l'apron, qualunque malusPunti", () => {
+  const s = statoUltimaCasella(20_000_000, 0);
+  const fuoriApron = card({ player_id: "top", ovr: 99, reparti: repartiA(90) });
+  assert.ok(salarioCarta(fuoriApron) > limiteDuro(20_000_000),
+    "il fixture deve costare più dell'apron, o il test non prova niente");
+  const scelta = sceltaAutoDraft(s, [fuoriApron], 1000); // malus enorme, apposta
+  // È l'unica carta piazzabile (l'ultima casella): sopra l'apron non si firma
+  // al prezzo pieno, quindi ripiega sul minimo - stesso criterio del draft
+  // manuale bloccato (vedi firmaDiRipiego in game/salary.js).
+  assert.equal(scelta.carta, fuoriApron);
+  assert.equal(scelta.costo, SALARIO_MIN);
+});
+
+test("sceltaAutoDraft: budget a zero forza la firma di ripiego sulla più economica", () => {
+  const s = { ...newRun({ formato: "playoff", difficolta: "normale" }), tetto: 0 };
+  const carte = dieciCarte(50, "SPIN").slice(0, 3);
+  const scelta = sceltaAutoDraft(s, carte, 0);
+  const laPiuEconomica = carte.reduce((m, c) => (salarioCarta(c) < salarioCarta(m) ? c : m));
+  assert.equal(scelta.carta, laPiuEconomica);
+  assert.equal(scelta.costo, SALARIO_MIN);
+});
+
+test("sceltaAutoDraft: nessuna carta ha una casella libera → null, serve un altro spin", () => {
+  const s = fullDraft(newRun({ formato: "playoff", difficolta: "normale" }));
+  const carta = card({ player_id: "senza-posto" });
+  assert.equal(sceltaAutoDraft(s, [carta], 0), null);
 });
 
 test("useAid consuma un aiuto; se esaurito lancia", () => {

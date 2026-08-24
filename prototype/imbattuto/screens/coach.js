@@ -52,7 +52,7 @@ const LAVAGNA = `
 // Scelto al mockup 82 sulla variante A: le lettere A-F non esistono più, il
 // coach non alza un voto astratto, sposta reparti precisi.
 const chip = (rep, cls, segno) => `
-  <span class="chip ${cls} ${rep.ruoli ? "mirato" : ""}" title="${esc(ETICHETTE[rep.reparto])}${rep.ruoli ? " · " + rep.ruoli.join(" ") : ""}">
+  <span class="rchip ${cls} ${rep.ruoli ? "mirato" : ""}" title="${esc(ETICHETTE[rep.reparto])}${rep.ruoli ? " · " + rep.ruoli.join(" ") : ""}">
     <span class="cod">${segno} ${rep.reparto.toUpperCase()}</span>
     <span class="sub">${rep.ruoli ? rep.ruoli.join(" ") : "tutti"}</span>
   </span>`;
@@ -62,10 +62,16 @@ const chipsCoach = (c) => `<div class="chips">${chip(c.plus[0], "plus", "▲")}$
 // schermo fa sembrare il gioco scritto male.
 const ringsHTML = (n) => `<em class="ct-rings" title="${n} ${n === 1 ? "titolo NBA vinto" : "titoli NBA vinti"} da capo allenatore">${n}&nbsp;${n === 1 ? "anello" : "anelli"}</em>`;
 
-// Segnaposto faccia: gradiente colore squadra + iniziali (le carte non hanno foto).
+// Volto vero del giocatore (tools/build-volti.py, path relativo a index.html),
+// stesso asset del draft: se il file manca l'<img> si toglie da sola e restano
+// le iniziali sul gradiente colore squadra - nessun buco (vedi draft.js).
+const VOLTI_PATH = "../../assets/volti";
 function facciaHTML(card) {
   const { c1, c2 } = teamColors(card.team_abbr);
-  return `<span class="ct-face" style="--tc1:${c1};--tc2:${c2}"><span class="ini">${esc(initials(card.name))}</span></span>`;
+  const foto = `<img class="ph" src="${VOLTI_PATH}/${encodeURIComponent(card.player_id)}.webp"
+      alt="" loading="lazy" decoding="async"
+      onload="this.parentNode.classList.add('hasph')" onerror="this.remove()">`;
+  return `<span class="ct-face" style="--tc1:${c1};--tc2:${c2}"><span class="ini">${esc(initials(card.name))}</span>${foto}</span>`;
 }
 
 // Fascia colore dell'OVR carta, la stessa del draft: oro / argento / bronzo.

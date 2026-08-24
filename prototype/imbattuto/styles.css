@@ -391,6 +391,21 @@ button.bz-mode{cursor:pointer}
 .aid:hover:not(:disabled) { border-color: var(--brass-deep); color: var(--bone); }
 .aid:disabled { opacity: .35; cursor: not-allowed; }
 
+/* ---- Auto-draft ---- */
+.autod-bar {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap;
+}
+.autod-lab {
+  font-family: var(--arcade); font-size: .5rem; letter-spacing: .1em;
+  text-transform: uppercase; color: #6f6fa6;
+}
+.autod-go {
+  margin-left: auto; font-family: var(--arcade); font-size: .48rem; letter-spacing: .04em;
+  color: #201400; background: var(--yellow); border: 1px solid var(--yellow); border-radius: 8px;
+  padding: 7px 12px; min-height: 30px; font-weight: 800; transition: filter .14s;
+}
+.autod-go:hover { filter: brightness(1.08); }
+
 /* ---- CTA (eredita .cta globale) ---- */
 .cta svg { width: 16px; height: 16px; fill: currentColor; }
 
@@ -775,19 +790,25 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 
 /* Chip plus/malus (mockup 82, variante A): reparto + segno invece delle
    lettere OFF/DEF morte col motore a reparti. Bordo pieno = MIRATO (tocca solo
-   certi ruoli, vale il doppio), bordo debole = DIFFUSO (tocca tutta la rosa). */
+   certi ruoli, vale il doppio), bordo debole = DIFFUSO (tocca tutta la rosa).
+   Classe .rchip e non .chip: .chip esiste già più sotto per il bottone
+   secondario ("Nuovo run"), stesso nome = padding e min-height del bottone
+   che si mangiavano questo pill (bug trovato il 24/08 dalle foto di Tomas -
+   i chip uscivano fuori dalla card, testo storto). */
 .chips { grid-area: gr; display: flex; gap: 6px; }
-.chip {
+.rchip {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line);
-  background: rgba(0, 0, 0, .28); min-width: 40px;
+  background: rgba(0, 0, 0, .28); min-width: 40px; flex-shrink: 0;
 }
-.chip .cod { font-family: var(--led); font-weight: 900; font-size: .78rem; line-height: 1; }
-.chip.plus .cod { color: var(--green); }
-.chip.malus .cod { color: var(--red); }
-.chip .sub { font-size: .42rem; letter-spacing: .06em; color: var(--bone-dim); text-transform: uppercase; }
-.chip.mirato { border-color: rgba(92, 207, 142, .4); }
-.chip.malus.mirato { border-color: rgba(255, 80, 56, .4); }
+.rchip .cod { font-family: var(--led); font-weight: 900; font-size: .78rem; line-height: 1; white-space: nowrap; }
+.rchip.plus .cod { color: var(--green); }
+.rchip.malus .cod { color: var(--red); }
+/* Mai a capo: un ruolo isolato su una riga sua ("PG" sopra, "SG SF" sotto)
+   sembra un refuso. Il chip cresce in larghezza invece di spezzare. */
+.rchip .sub { font-size: .42rem; letter-spacing: .06em; color: var(--bone-dim); text-transform: uppercase; white-space: nowrap; }
+.rchip.mirato { border-color: rgba(92, 207, 142, .4); }
+.rchip.malus.mirato { border-color: rgba(255, 80, 56, .4); }
 
 /* Anteprima dell'effetto: da quanto vale la squadra a quanto varrà col coach. */
 .ct-prev {
@@ -824,6 +845,10 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   font-family: var(--arcade); font-size: .8rem; color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .8);
 }
+/* Volto vero (stesso asset del draft, assets/volti/<player_id>.webp): se manca
+   il file l'<img> si toglie da sola e restano le iniziali sul gradiente. */
+.ct-face .ph { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; object-fit: cover; object-position: 50% 18%; }
+.ct-face.hasph .ini { display: none; }
 .ct-p .role { font-family: var(--arcade); font-size: .46rem; letter-spacing: .03em; color: var(--bone-dim); line-height: 1; }
 .ct-p .ovr { font-family: var(--led); font-weight: 900; font-size: 1rem; line-height: 1; color: var(--bone); }
 .ct-p .ovr.oro { color: #ffcf4d; }
@@ -1023,7 +1048,10 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 .sh-note li b { color: var(--yellow); font-weight: 800; }
 
 /* ---- cronaca che si accumula ---- */
-.sh-log { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; }
+/* Canestro per canestro arriva a ~45 righe a fine partita: senza un tetto la
+   lista sfonda l'altezza del pannello di sinistra e spinge giù tutto il resto.
+   Scrolla dentro di sé, il JS la tiene ancorata in fondo a ogni riga nuova. */
+.sh-log { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0 4px 0 0; max-height: 360px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 .sh-log li {
   list-style: none; display: grid; grid-template-columns: 52px 1fr; gap: 10px; align-items: start;
   padding: 9px 11px; border-radius: 9px; background: rgba(10, 10, 26, .42); border: 1px solid var(--line);

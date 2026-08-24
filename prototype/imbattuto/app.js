@@ -1,4 +1,6 @@
-import { newRun, draftPick, useAid, chooseCoach, startRun, resolveRound } from "../../game/run.js";
+import {
+  newRun, draftPick, useAid, chooseCoach, startRun, resolveRound, sceltaAutoDraft,
+} from "../../game/run.js";
 import { caselleLibere, listaRosa } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
@@ -72,6 +74,24 @@ function dispatch(action) {
       state = draftPick(state, action.slot, action.card);
       // se restano slot, pesca una nuova rosa; altrimenti lo stato passa a "coach"
       draftView = state.stato === "draft" ? spinRosterView() : null;
+      break;
+    }
+    case "autoDraft": {
+      // Riempie da sola le caselle rimaste, una scelta per spin, con lo stesso
+      // criterio (firmabile / firmaDiRipiego) che userebbe un piazzamento
+      // manuale: vedi sceltaAutoDraft in game/run.js. `malusMax` è quanti punti
+      // di reparto Tomas accetta di pagare pur di prendere carte più forti
+      // (scelto nella UI del draft, 0 = resta sotto il tetto pulito).
+      let giri = 0;
+      while (state.stato === "draft") {
+        if (++giri > 500) {
+          throw new Error("autoDraft: non trovo una rosa completabile dopo 500 spin");
+        }
+        const scelta = sceltaAutoDraft(state, draftView.cards, action.malusMax ?? 0);
+        if (!scelta) { draftView = spinRosterView(); continue; }
+        state = draftPick(state, scelta.slot, scelta.carta, scelta.costo);
+        draftView = state.stato === "draft" ? spinRosterView() : null;
+      }
       break;
     }
     case "aid": {

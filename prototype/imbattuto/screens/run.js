@@ -1,5 +1,6 @@
 import { ROLES } from "../../../game/roster.js";
-import { partitaRound, boxScoreRound, titolari } from "../../../game/run.js";
+import { partitaRound, boxScoreRound, playByPlayRound, titolari } from "../../../game/run.js";
+import { log } from "../../../game/playbyplay.js";
 import { attacco, difesa } from "../../../game/partita.js";
 import { votoCarta } from "../../../game/rating.js";
 import { toDisplayOvr } from "../display.js";
@@ -129,14 +130,37 @@ export function render(ctx) {
   const ovrLoro = toDisplayOvr(avv.voto.ovr);
   const nQuarti = partita.quarti.length;
 
+  // Il punto a punto vero: stesso seme di `partita` e `box` (via
+  // playByPlayRound), qui serve per animare punteggio/orologio/cronaca canestro
+  // per canestro invece che quarto per quarto.
+  const azioni = playByPlayRound(state, partita, box).azioni;
+  // Per ogni quarto: gli indici (nell'array `azioni`) dei canestri, e l'ultimo
+  // indice in assoluto - serve a chiudere il quarto includendo anche le azioni
+  // notevoli senza punti (una stoppata sulla sirena) successive all'ultimo canestro.
+  const canestriPerQuarto = partita.quarti.map(() => []);
+  const ultimaAzioneQuarto = partita.quarti.map(() => -1);
+  azioni.forEach((a, i) => {
+    if (a.punti > 0) canestriPerQuarto[a.q].push(i);
+    ultimaAzioneQuarto[a.q] = i;
+  });
+
   // ---- stato locale dell'animazione ---------------------------------------
-  let quarto = 0;            // quarti già mostrati
+  let quarto = 0;            // quarti già mostrati (box score, duello, tabellino)
+  // `azioneIdx` è invece il punto a punto: -1 prima del via, poi cresce di
+  // canestro in canestro dentro il quarto in corso. Punteggio, orologio e
+  // cronaca leggono da qui; il resto della schermata resta a grana di quarto.
+  let azioneIdx = -1;
+  let canestriQuarto = [];   // canestri del quarto in corso
+  let idxCanestro = 0;       // quanti ne ho già mostrati
   let velocita = leggiVelocita();
   let inCorso = false;
   let timer = null;
   const senzaMovimento = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   const finita = () => quarto >= nQuarti;
+  // Budget della VELOCITA del quarto (invariato) spalmato sui suoi canestri:
+  // stesso tempo totale per quarto, cambia solo quanto dura ogni singolo passo.
+  const tickMs = () => VELOCITA[velocita] / Math.max(canestriQuarto.length, 1);
 
   // ---- pezzi della schermata ----------------------------------------------
 
@@ -157,14 +181,17 @@ export function render(ctx) {
       </div>`;
   }
 
+  // Punteggio, margine e "quarto in corso" live: leggono l'ultima azione
+  // mostrata (canestro per canestro), non più il totale del quarto.
   function punteggioHTML() {
-    const p = cumulato(partita.quarti, quarto);
+    const iniziata = azioneIdx >= 0;
+    const p = iniziata ? azioni[azioneIdx] : { casa: 0, ospite: 0 };
     const d = p.casa - p.ospite;
-    const margine = quarto === 0
+    const margine = !iniziata
       ? "Palla a due"
-      : `${d > 0 ? "+" : ""}${d}${finita() ? "" : ` · ${quarto}° quarto`}`;
-    const classeMargine = quarto === 0 ? "" : d > 0 ? "pos" : d < 0 ? "neg" : "";
-    const lampo = quarto > 0 ? " sh-flash" : "";
+      : `${d > 0 ? "+" : ""}${d}${finita() ? "" : ` · ${azioni[azioneIdx].periodo}`}`;
+    const classeMargine = !iniziata ? "" : d > 0 ? "pos" : d < 0 ? "neg" : "";
+    const lampo = iniziata ? " sh-flash" : "";
     return `
       <div class="a-scoreline">
         <div class="a-team mine">
@@ -261,16 +288,19 @@ export function render(ctx) {
       </div>`;
   }
 
-  // Cronaca che si accumula. Il colore della riga viene dal PARZIALE del quarto,
-  // non dal tipo di frase: altrimenti un allungo dell'avversario finisce verde.
+  // Cronaca vera, canestro per canestro: il livello "essenziale" del motore
+  // (~45 azioni notevoli su ~350), filtrato su quanto abbiamo già mostrato. Il
+  // colore della riga viene da chi era avanti in quel momento della partita.
   function cronacaHTML() {
-    return `<ul class="sh-log">${partita.cronaca.slice(0, quarto).map((r, i) => {
-      const q = partita.quarti[i];
-      const par = q.casa - q.ospite;
-      const cls = par > 0 ? "pos" : par < 0 ? "neg" : "par";
+    if (azioneIdx < 0) return "";
+    const notevoli = log(azioni.slice(0, azioneIdx + 1), "essenziale");
+    return `<ul class="sh-log">${notevoli.map((a) => {
+      const d = a.casa - a.ospite;
+      const cls = d > 0 ? "pos" : d < 0 ? "neg" : "par";
+      const q = partita.quarti[a.q];
       return `<li class="${cls}">
-        <span class="q">${i + 1}${q.overtime ? "OT" : "°"}</span>
-        <span class="t">${esc(r.testo)}</span>
+        <span class="q">${q.overtime ? "OT" : `${a.q + 1}°`}</span>
+        <span class="t">${esc(a.testo)}</span>
       </li>`;
     }).join("")}</ul>`;
   }
@@ -324,7 +354,7 @@ export function render(ctx) {
   }
 
   function ctaHTML() {
-    if (quarto === 0) return `<button class="sh-cta" id="via">${PLAY}<span>Gioca la partita</span></button>`;
+    if (azioneIdx < 0) return `<button class="sh-cta" id="via">${PLAY}<span>Gioca la partita</span></button>`;
     if (!finita()) {
       return `<button class="sh-cta ghost" disabled>Simulazione in corso · ${VELOCITA_NOME[velocita]}</button>`;
     }
@@ -355,10 +385,10 @@ export function render(ctx) {
           </div>
           <div class="a-panel">
             <div class="sh-cap">
-              <span>${quarto === 0 ? "Prima del via" : "Cronaca"}</span>
-              <b>${quarto === 0 ? "Come si vince" : `${quarto}/${nQuarti}`}</b>
+              <span>${azioneIdx < 0 ? "Prima del via" : "Cronaca"}</span>
+              <b>${azioneIdx < 0 ? "Come si vince" : `${quarto}/${nQuarti}`}</b>
             </div>
-            ${quarto === 0 ? briefingHTML() : cronacaHTML()}
+            ${azioneIdx < 0 ? briefingHTML() : cronacaHTML()}
             ${verdettoHTML()}
           </div>
         </div>
@@ -375,6 +405,10 @@ export function render(ctx) {
         ${ctaHTML()}
       </div>`;
     aggancia();
+    // La lista scrolla dentro di sé (vedi .sh-log): senza questo resterebbe
+    // ancorata in cima e l'ultima riga arrivata finirebbe fuori vista.
+    const lista = el.querySelector(".sh-log");
+    if (lista) lista.scrollTop = lista.scrollHeight;
   }
 
   function aggancia() {
@@ -398,12 +432,12 @@ export function render(ctx) {
     const daTastiera = el.querySelector(".sh-seg button:focus") !== null;
     velocita = v;
     scriviVelocita(v);
-    // Il cambio vale SUBITO, non dal quarto dopo: a Lenta, premere Rapida e non
-    // vedere succedere niente per quattro secondi sembra un bottone rotto.
+    // Il cambio vale SUBITO, non dal prossimo canestro: a Lenta, premere Rapida
+    // e non vedere succedere niente per un pezzo sembra un bottone rotto.
     if (inCorso) {
       fermaTimer();
       if (v === "salta") { salta(); riprendiFocus(v, daTastiera); return; }
-      timer = setTimeout(passo, VELOCITA[v]);
+      timer = setTimeout(passo, tickMs());
     }
     disegna();
     riprendiFocus(v, daTastiera);
@@ -416,16 +450,40 @@ export function render(ctx) {
   function salta() {
     fermaTimer();
     quarto = nQuarti;
+    azioneIdx = azioni.length - 1;
     inCorso = false;
     disegna();
   }
 
+  // Prepara i canestri del quarto `q`: da qui `passo` sa quanti passi servono
+  // e quanto dura ciascuno (vedi `tickMs`).
+  function iniziaQuarto(q) {
+    canestriQuarto = canestriPerQuarto[q];
+    idxCanestro = 0;
+  }
+
   function passo() {
-    quarto++;
+    // Quarto senza canestri (in teoria impossibile, il motore non lo garantisce
+    // qui): un solo passo porta dritti alla fine del quarto.
+    if (canestriQuarto.length === 0) {
+      azioneIdx = ultimaAzioneQuarto[quarto];
+    } else {
+      azioneIdx = canestriQuarto[idxCanestro];
+      idxCanestro++;
+    }
+    const quartoFinito = idxCanestro >= canestriQuarto.length;
+    if (quartoFinito) {
+      // Chiude sull'ultima azione in assoluto del quarto, non sull'ultimo
+      // canestro: così un'azione notevole senza punti dopo l'ultimo canestro
+      // (una stoppata sulla sirena) resta comunque in cronaca.
+      azioneIdx = ultimaAzioneQuarto[quarto];
+      quarto++;
+    }
     disegna();
     if (finita()) { inCorso = false; return; }
     if (velocita === "salta") { salta(); return; }
-    timer = setTimeout(passo, VELOCITA[velocita]);
+    if (quartoFinito) iniziaQuarto(quarto);
+    timer = setTimeout(passo, tickMs());
   }
 
   function via() {
@@ -433,6 +491,7 @@ export function render(ctx) {
     // Chi ha chiesto meno movimento vede il finale subito: niente attesa.
     if (velocita === "salta" || senzaMovimento) { salta(); return; }
     inCorso = true;
+    iniziaQuarto(quarto);
     passo();
   }
 
