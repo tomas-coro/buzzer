@@ -413,11 +413,12 @@ button.bz-mode{cursor:pointer}
 .draft .src b { color: var(--bone); }
 
 /* ---- Sheet dettaglio (dialog nativo) ---- */
+/* Wrapper trasparente: la cornice visiva la da' la carta densa (.c1) dentro,
+   non il dialog - cosi' la scheda resta "tutta sulla carta" (mockup 67 V1). */
 .sheet {
-  width: min(420px, calc(100vw - 32px)); margin: auto; padding: 18px;
-  border: 1px solid #3a2a66; border-radius: 18px; color: var(--bone);
-  background: linear-gradient(180deg, #241a3e, #15163a);
-  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .7);
+  width: min(420px, calc(100vw - 32px)); margin: auto; padding: 0;
+  border: none; background: transparent; box-shadow: none; position: relative;
+  overflow: visible;
 }
 .sheet::backdrop { background: rgba(6, 6, 20, .72); }
 /* Sfondo FERMO con un modal aperto: `showModal()` blocca i click ma non lo
@@ -426,26 +427,44 @@ button.bz-mode{cursor:pointer}
 html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 .sheet { overscroll-behavior: contain; }
 .sheet[open] { animation: sheetIn .28s var(--ease) both; }
-.sheet-hd { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; margin-bottom: 14px; }
-.sheet-hd .face { width: 58px; height: 70px; }
-.sheet-hd .face .mono { font-size: 1.1rem; }
-.sheet-hd .nm { display: block; font-family: var(--arcade); font-size: 1rem; }
-.sheet-hd .pos { display: block; font-size: .58rem; letter-spacing: .05em; text-transform: uppercase; color: var(--bone-dim); font-weight: 700; margin-top: 4px; }
 .sheet-x {
-  align-self: start; width: 32px; height: 32px; border-radius: 8px; font-size: 1.1rem;
-  background: var(--ink-2); border: 1px solid var(--line); color: var(--bone-dim);
+  position: absolute; top: -14px; right: -10px; z-index: 2;
+  width: 32px; height: 32px; border-radius: 9px; font-size: 1.1rem;
+  background: #201f4a; border: 1px solid var(--line); color: var(--bone-dim);
+  box-shadow: 0 6px 16px -4px rgba(0, 0, 0, .6);
 }
 .sheet-x:hover { color: var(--bone); border-color: var(--brass-deep); }
-/* Box score reale: griglia di celle numero + etichetta, densità stile tabellone. */
-.bscore { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.bcell {
-  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 9px 4px;
-  border: 1px solid var(--line); border-radius: 10px; background: rgba(255, 255, 255, .02);
-}
-.bcell b { font-family: var(--led); font-weight: 900; font-size: 1.02rem; line-height: 1; color: var(--bone); }
-.bcell i { font-family: var(--body); font-weight: 800; font-size: .46rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); font-style: normal; }
-.blindnote { display: block; margin: 12px 2px 0; font-family: var(--body); font-style: italic; font-size: .68rem; line-height: 1.4; color: var(--bone-dim); text-align: center; text-wrap: pretty; }
+.blindnote { display: block; margin: 12px 16px 0; font-family: var(--body); font-style: italic; font-size: .68rem; line-height: 1.4; color: var(--bone-dim); text-align: center; text-wrap: pretty; }
 @keyframes sheetIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ---- Carta densa - "riga tabellone" (mockup 67 V1, scelta 27/08) ---- */
+.c1 {
+  border: 1px solid var(--line); border-radius: 16px;
+  background: linear-gradient(180deg, #191a3d, #111230);
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .7); overflow: hidden;
+}
+.c1-head { display: flex; align-items: center; gap: 14px; padding: 16px 18px 14px; }
+.c1-head .face { width: 56px; height: 68px; flex: none; }
+.c1-head .face .mono { font-size: 1.15rem; }
+.c1-id { min-width: 0; flex: 1; }
+.c1-id .nm { display: block; font-family: var(--arcade); font-size: 1.05rem; line-height: 1.15; color: var(--bone); letter-spacing: .01em; text-wrap: pretty; }
+.c1-id .sub { display: block; font-family: var(--body); font-weight: 800; font-size: .54rem; letter-spacing: .08em; text-transform: uppercase; color: var(--bone-dim); margin-top: 7px; text-wrap: pretty; }
+.c1-ovr { text-align: right; flex: none; }
+.c1-ovr b { display: block; font-family: var(--led); font-weight: 900; font-size: 2.5rem; line-height: .78; color: var(--yellow); text-shadow: 0 0 16px rgba(255, 207, 51, .28); }
+.c1-ovr b.q { color: var(--bone-dim); text-shadow: none; }
+.c1-ovr small { font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .14em; text-transform: uppercase; color: var(--bone-dim); }
+.c1-strip { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); background: rgba(0, 0, 0, .16); }
+.c1-strip .cell { padding: 11px 6px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .05); }
+.c1-strip .cell:first-child { border-left: 0; }
+.c1-strip .cell b { display: block; font-family: var(--led); font-weight: 900; font-size: 1.4rem; line-height: 1; color: var(--brass); }
+.c1-strip .cell small { display: block; font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); margin-top: 6px; }
+.c1-sub { display: grid; grid-template-columns: repeat(6, 1fr); border-top: 1px solid var(--line); }
+.c1-sub .cell { padding: 9px 4px; text-align: center; border-left: 1px solid rgba(255, 255, 255, .05); }
+.c1-sub .cell:first-child { border-left: 0; }
+.c1-sub .cell b { display: block; font-family: var(--led); font-weight: 700; font-size: .84rem; color: var(--bone); line-height: 1; }
+.c1-sub .cell small { display: block; font-family: var(--body); font-weight: 800; font-size: .4rem; letter-spacing: .05em; text-transform: uppercase; color: var(--bone-dim); margin-top: 5px; }
+.c1-foot { display: flex; justify-content: space-between; align-items: center; padding: 9px 18px; border-top: 1px solid var(--line); font-family: var(--body); font-weight: 800; font-size: .48rem; letter-spacing: .08em; text-transform: uppercase; color: var(--bone-dim); }
+.c1-foot .gp-lo { color: var(--red); }
 
 /* =================== DRAFT LIBERO (mirino + snap) =================== */
 /* Court a griglia: dieci caselle, cinque titolari sopra e cinque riserve sotto,

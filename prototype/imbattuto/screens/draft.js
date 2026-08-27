@@ -110,23 +110,53 @@ function rowStatsHTML(card, rv) {
   ).join("")}</span>`;
 }
 
-// Box score completo per lo sheet, raggruppato. A "sig" mostra solo la firma; a "none" chiuso.
-function sheetStatsHTML(card, rv) {
+// Carta densa per lo sheet (mockup 67 V1 "riga tabellone"): tutto sulla carta,
+// nessuna griglia bcell separata dall'identità del giocatore. Header con foto +
+// OVR gigante, striscia PT/RB/AS, sotto-riga a 6 (tiro + difesa) solo dove la
+// difficoltà la scopre, footer con partite/minuti e squadra.
+function denseSheetHTML(card, rv) {
+  const two = card.pos.secondary;
+  const posTxt = `${esc(card.pos.primary)}${two ? " · " + esc(two) : ""}`;
+  const arch = rv.stats === "none" ? "" : ` · ${esc(archetype(card.stats_real).label)}`;
+  const ovrHTML = rv.ovr
+    ? `<b>${card.ovr}</b><small>Overall 2K</small>`
+    : `<b class="q">?</b><small>Overall 2K</small>`;
+  const head = `<div class="c1-head">
+      ${faceHTML(card, { hidden: rv.stats === "none" })}
+      <span class="c1-id"><span class="nm">${esc(card.name)}</span><span class="sub">${posTxt}${arch} · ${esc(card.team)} · ${esc(card.season)}</span></span>
+      <span class="c1-ovr">${ovrHTML}</span>
+    </div>`;
+
   if (rv.stats === "none") {
-    return `<p class="blindnote">A questa difficoltà lo scouting è chiuso: niente numeri. Fidati dell'occhio.</p>`;
+    return `<div class="c1">${head}
+      <p class="blindnote">A questa difficoltà lo scouting è chiuso: niente numeri. Fidati dell'occhio.</p>
+      <div class="c1-foot"><span>${esc(card.team_abbr)} · ${esc(card.season)}</span><span></span></div>
+    </div>`;
   }
+
   const s = card.stats_real;
-  const cell = (l, v) => `<span class="bcell"><b>${v}</b><i>${l}</i></span>`;
-  if (rv.stats === "sig") {
-    return `<div class="bscore">
-      ${cell("PTS", fmt1(s.pts))}${cell("REB", fmt1(s.reb))}${cell("AST", fmt1(s.ast))}
-    </div><p class="blindnote">Box score completo scoperto solo in Facile.</p>`;
-  }
-  return `<div class="bscore">
-    ${cell("PTS", fmt1(s.pts))}${cell("REB", fmt1(s.reb))}${cell("AST", fmt1(s.ast))}
-    ${cell("STL", fmt1(s.stl))}${cell("BLK", fmt1(s.blk))}${cell("TOV", fmt1(s.tov))}
-    ${cell("FG%", fmtPct(s.fg_pct))}${cell("3P%", fmtPct(s.tp_pct))}${cell("FT%", fmtPct(s.ft_pct))}
-    ${cell("MIN", fmt1(s.min))}${cell("GP", String(s.gp))}${cell("+/-", (s.plus_minus > 0 ? "+" : "") + fmt1(s.plus_minus))}
+  const strip = `<div class="c1-strip">
+      <span class="cell"><b>${fmt1(s.pts)}</b><small>Punti</small></span>
+      <span class="cell"><b>${fmt1(s.reb)}</b><small>Rimbalzi</small></span>
+      <span class="cell"><b>${fmt1(s.ast)}</b><small>Assist</small></span>
+    </div>`;
+  const subOrNote = rv.stats === "full"
+    ? `<div class="c1-sub">
+        <span class="cell"><b>${fmtPct(s.fg_pct)}</b><small>FG%</small></span>
+        <span class="cell"><b>${fmtPct(s.tp_pct)}</b><small>3P%</small></span>
+        <span class="cell"><b>${fmtPct(s.ft_pct)}</b><small>FT%</small></span>
+        <span class="cell"><b>${fmt1(s.stl)}</b><small>Rub.</small></span>
+        <span class="cell"><b>${fmt1(s.blk)}</b><small>Stop.</small></span>
+        <span class="cell"><b>${fmt1(s.tov)}</b><small>Persi</small></span>
+      </div>`
+    : `<p class="blindnote">Box score completo scoperto solo in Facile.</p>`;
+  const gpLo = s.gp < 15;
+  const footTxt = `${gpLo ? `<span class="gp-lo">solo ${s.gp} partite</span>` : `${s.gp} partite`} · ${fmt1(s.min)} min`;
+
+  return `<div class="c1">${head}
+    ${strip}
+    ${subOrNote}
+    <div class="c1-foot"><span>${footTxt}</span><span>${esc(card.team_abbr)} · ${esc(card.season)}</span></div>
   </div>`;
 }
 
@@ -490,18 +520,9 @@ export function render(ctx) {
       dlg.className = "sheet";
       document.body.appendChild(dlg);
     }
-    const two = card.pos.secondary;
-    const arch = rv.stats === "none" ? "" : ` · ${esc(archetype(card.stats_real).label)}`;
     dlg.innerHTML = `
-      <div class="sheet-hd">
-        ${faceHTML(card, { hidden: rv.stats === "none", ovr: rv.ovr ? card.ovr : null })}
-        <div>
-          <span class="nm">${esc(card.name)}</span>
-          <span class="pos">${esc(card.pos.primary)}${two ? " · " + esc(two) : ""}${arch} · ${esc(card.team)} · ${esc(card.season)}</span>
-        </div>
-        <button class="sheet-x" id="sheet-x" type="button" aria-label="Chiudi">×</button>
-      </div>
-      ${sheetStatsHTML(card, rv)}`;
+      <button class="sheet-x" id="sheet-x" type="button" aria-label="Chiudi">×</button>
+      ${denseSheetHTML(card, rv)}`;
     dlg.querySelector("#sheet-x").onclick = () => dlg.close();
     dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
     dlg.showModal();
