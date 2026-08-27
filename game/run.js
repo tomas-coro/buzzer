@@ -326,7 +326,7 @@ export function resolveRound(state) {
   const partita = partitaRound(state);
   const vinto = partita.vincitore === "casa";
   const storia = [...state.storia, {
-    round: state.round, avversario: state.avversario.team, vinto,
+    round: state.round, avversario: state.avversario.team, stagione: state.avversario.season, vinto,
     tuo: state.voto.ovr, loro: state.avversario.voto.ovr,
     // Il punteggio vero e la cronaca: servono alla schermata esito e al
     // tabellone di fine corsa, che prima potevano mostrare solo due voti.

@@ -1169,23 +1169,76 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 }
 
 /* =================== ESITO =================== */
-.esito { align-items: flex-start; text-align: left; }
-.esito h1 { font-size: clamp(2.8rem, 14vw, 5rem); letter-spacing: -.03em; }
+.esito { align-items: flex-start; text-align: left; position: relative; overflow: hidden; }
+/* Il tabellone e il computo LED si animano da soli (tacche/testo con i loro
+   tempi precisi) - la "rise" generica di `.screen > *` li farebbe sfumare
+   due volte, sfasando l'accensione a gradini delle tacche. */
+.esito > .e-ladder, .esito > .e-score { animation: none; }
+
+/* Bagliore dietro al tabellone: ricetta della .flash di Home, ma sotto nome
+   proprio - .flash esiste già con un'altra animazione (buzzFlash), riusarlo
+   qui romperebbe quella. Stesso motivo del precedente .flash/.sh-flash. */
+.e-flash {
+  position: absolute; left: 50%; top: 86px; width: 320px; height: 320px; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(.6);
+  background: radial-gradient(circle, rgba(255,207,51,0) 24%, rgba(255,176,46,.5) 45%, rgba(255,91,30,.28) 60%, transparent 74%);
+  opacity: 0; pointer-events: none; mix-blend-mode: screen; z-index: 0;
+}
+.esito.lose .e-flash { background: radial-gradient(circle, rgba(255,80,56,0) 24%, rgba(255,80,56,.32) 45%, rgba(255,80,56,.18) 60%, transparent 74%); }
+
+/* Tabellone a tacche: una per round giocato, si accende in sequenza mentre il
+   punteggio sale. Sconfitta = stessa meccanica, solo più sobria (durate corte
+   e colore rosso invece che oro, non un secondo linguaggio visivo). */
+.e-ladder { position: relative; z-index: 1; width: 100%; display: flex; gap: 3px; justify-content: center; margin: 0 0 14px; flex-wrap: wrap; }
+.e-tacca { width: 15px; height: 8px; border-radius: 2px; background: var(--ink-3); border: 1px solid var(--line); }
+.e-tacca.lit { background: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 6px rgba(255,207,51,.6); }
+.esito.lose .e-tacca.lit { background: var(--red); border-color: var(--red); box-shadow: 0 0 6px rgba(255,80,56,.5); }
+
+.e-score { position: relative; z-index: 1; width: 100%; font-family: var(--led); font-weight: 900; font-size: 2.3rem; letter-spacing: .02em; color: var(--bone-dim); text-align: center; margin: 2px 0 0; }
+.e-score b { color: var(--yellow); }
+.esito.lose .e-score b { color: var(--red); }
+
+.esito h1 { position: relative; z-index: 1; width: 100%; font-family: var(--arcade); font-size: clamp(1.7rem, 10.5vw, 2.6rem); text-align: center; margin: 8px 0 0; letter-spacing: -.01em; opacity: 0; }
 .esito.win h1 { color: var(--brass); }
 .esito.lose h1 { color: var(--ko); }
 .esito h1::after {
-  content: ""; display: block; width: 56px; height: 4px; margin-top: 12px; border-radius: 2px;
+  content: ""; display: block; width: 56px; height: 4px; margin: 12px auto 0; border-radius: 2px;
 }
 .esito.win h1::after { background: var(--brass); }
 .esito.lose h1::after { background: var(--ko); }
-.riepilogo { font-family: var(--serif); font-style: italic; font-size: 1.2rem; color: var(--bone-dim); margin: 0; }
-.storia { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; width: 100%; }
-.storia li {
-  display: flex; gap: 10px; padding: 10px 14px;
-  background: var(--ink-2); border: 1px solid var(--line); border-radius: 10px;
-  font-size: .88rem; font-variant-numeric: tabular-nums;
+.riepilogo { position: relative; z-index: 1; width: 100%; font-family: var(--serif); font-style: italic; font-size: .96rem; color: var(--bone-dim); text-align: center; margin: 10px 0 20px; opacity: 0; }
+
+.storia { position: relative; z-index: 1; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; width: 100%; opacity: 0; }
+.storia li { display: flex; flex-direction: column; padding: 0; background: var(--ink-2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.r-row { display: flex; align-items: center; gap: 9px; padding: 10px 11px; cursor: pointer; }
+.r-fascia { flex: none; width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: var(--led); font-weight: 900; font-size: .76rem; }
+.r-fascia.oro { background: rgba(255,207,51,.14); color: var(--yellow); border: 1px solid rgba(255,207,51,.4); }
+.r-fascia.argento { background: rgba(180,186,224,.12); color: #c7cbe8; border: 1px solid rgba(180,186,224,.3); }
+.r-fascia.bronzo { background: rgba(255,91,30,.12); color: var(--brass); border: 1px solid rgba(255,91,30,.35); }
+.r-fascia.rosso { background: rgba(255,80,56,.14); color: var(--red); border: 1px solid rgba(255,80,56,.4); }
+.r-mid { flex: 1; min-width: 0; }
+.r-avv { display: block; font-weight: 700; font-size: .8rem; color: var(--bone); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.r-clou { display: block; font-size: .68rem; color: var(--bone-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+.r-pt { flex: none; font-family: var(--led); font-weight: 900; font-size: .8rem; color: var(--bone-dim); text-align: right; }
+.r-round { flex: none; font-size: .58rem; color: var(--bone-dim); letter-spacing: .07em; text-transform: uppercase; min-width: 26px; }
+.r-detail { max-height: 0; overflow: hidden; transition: max-height .25s var(--ease); border-top: 1px solid var(--line); }
+.storia li.open .r-detail { max-height: 140px; }
+.r-detail-in { padding: 10px 11px 12px; font-size: .72rem; color: var(--bone-dim); }
+.r-quarti { display: flex; gap: 6px; margin: 0 0 8px; font-family: var(--led); font-variant-numeric: tabular-nums; }
+.r-quarti span { flex: 1; text-align: center; background: var(--ink-2); border-radius: 6px; padding: 4px 0; font-size: .64rem; color: var(--bone); }
+.r-clou-full { margin: 0; line-height: 1.4; text-wrap: pretty; }
+.r-clou-full b { color: var(--yellow); }
+
+.azioni { position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; opacity: 0; }
+
+@keyframes flashBurst { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.55); } 45% { opacity: .95; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.3); } }
+@keyframes stampIn { 0% { transform: scale(1.5); opacity: 0; } 70% { transform: scale(.96); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+@keyframes tPop { from { transform: scaleY(.3); opacity: .4; } to { transform: scaleY(1); opacity: 1; } }
+@keyframes simpleIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .e-flash, .esito h1, .riepilogo, .e-tacca, .storia, .esito .azioni { animation: none !important; opacity: 1 !important; }
 }
-.azioni { display: flex; gap: 10px; flex-wrap: wrap; }
 /* Bottone secondario (es. "Nuovo run"): scuro, testo crema visibile. Prima usava una
    classe .chip senza regole, così cadeva sul default del browser (riquadro grigio,
    testo crema illeggibile). Ora è un vero secondario, spalla della .cta gialla. */
