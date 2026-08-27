@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { recordRun, leaderboard, lifetimeStats } from "./meta.js";
+import { recordRun, leaderboard, lifetimeStats, profiloGiocatori } from "./meta.js";
 
 // finto localStorage: solo getItem/setItem su una Map
 function fakeStore() {
@@ -29,4 +29,42 @@ test("lifetimeStats aggrega run/imbattuti/miglior streak", () => {
 
 test("leaderboard di un bucket vuoto è []", () => {
   assert.deepEqual(leaderboard(fakeStore(), "sfida", "incubo"), []);
+});
+
+test("profiloGiocatori aggrega presenze, medie e record per persona su più run", async () => {
+  const s = fakeStore();
+  recordRun(s, {
+    formato: "imbattuto", difficolta: "normale", vittorie: 2, esito: "sconfitta",
+    roster: { "Stephen Curry": { player_id: "stephen-curry", team_abbr: "GSW", season: "2015-16" } },
+    perRound: [
+      [{ nome: "Stephen Curry", tot: { pts: 30, reb: 5, ast: 6, stl: 2, tov: 3, blk: 0 } }],
+      [{ nome: "Stephen Curry", tot: { pts: 20, reb: 4, ast: 8, stl: 1, tov: 2, blk: 0 } }],
+    ],
+  });
+  // ts diversi per capire chi è "l'ultimo": recordRun timbra Date.now(), qui aspettiamo un tick.
+  await new Promise((r) => setTimeout(r, 2));
+  recordRun(s, {
+    formato: "imbattuto", difficolta: "normale", vittorie: 1, esito: "sconfitta",
+    roster: { "Stephen Curry": { player_id: "stephen-curry", team_abbr: "GSW", season: "2018-19" } },
+    perRound: [
+      [{ nome: "Stephen Curry", tot: { pts: 40, reb: 6, ast: 5, stl: 0, tov: 1, blk: 1 } }],
+    ],
+  });
+
+  const profilo = profiloGiocatori(s);
+
+  assert.equal(profilo.length, 1);
+  const g = profilo[0];
+  assert.equal(g.nome, "Stephen Curry");
+  assert.equal(g.presenze, 3);
+  assert.equal(g.medie.pts, 30); // (30+20+40)/3
+  assert.equal(g.record.pts, 40);
+  assert.equal(g.player_id, "stephen-curry");
+  assert.deepEqual(g.ultimo, { team_abbr: "GSW", season: "2018-19" }); // dalla run più recente
+});
+
+test("profiloGiocatori ignora le run vecchie senza roster/perRound", () => {
+  const s = fakeStore();
+  recordRun(s, { formato: "imbattuto", difficolta: "normale", vittorie: 3, esito: "sconfitta" });
+  assert.deepEqual(profiloGiocatori(s), []);
 });

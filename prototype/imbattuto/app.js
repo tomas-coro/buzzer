@@ -1,7 +1,7 @@
 import {
   newRun, draftPick, useAid, chooseCoach, startRun, resolveRound, sceltaAutoDraft,
 } from "../../game/run.js";
-import { caselleLibere, listaRosa } from "../../game/rosa.js";
+import { caselleLibere, listaRosa, minutiRosa } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
 import { opponentPool, spinRoster, chiaveCarta } from "./pool.js";
@@ -112,9 +112,19 @@ function dispatch(action) {
     case "resolveRound":
       state = resolveRound(state);
       if (state.stato === "finito") {
+        // roster = nome -> identità (per l'avatar del Profilo), perRound = una
+        // riga box per round (solo il tuo lato, solo nome+tot): la storia
+        // completa porta anche cronaca/quarti/l'avversario, che il Profilo non
+        // legge e che gonfierebbero il localStorage per niente.
+        const roster = {};
+        for (const { carta } of minutiRosa(state.rosaAllenata, state.rotazione)) {
+          roster[carta.name] = { player_id: carta.player_id, team_abbr: carta.team_abbr, season: carta.season };
+        }
+        const perRound = state.storia.map((h) => h.box.casa.righe.map((r) => ({ nome: r.nome, tot: r.tot })));
         recordRun(window.localStorage, {
           formato: state.formato, difficolta: state.difficolta,
           vittorie: state.vittorie, esito: state.esito,
+          roster, perRound,
         });
       }
       break;
