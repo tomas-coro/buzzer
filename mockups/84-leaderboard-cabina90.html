@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>84 - leaderboard Cabina 90s, 3 direzioni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,600;0,6..96,700;1,6..96,600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  html, body { background: var(--ink); }
+  body { max-width: 920px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* ---- chrome del visualizzatore (non fa parte del design finale) ---- */
+  .lab-hd { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .lab-hd h1 { font-family: var(--arcade); color: var(--yellow); font-size: .82rem; margin: 0; flex: 1 1 100%; }
+  .lab-hd p.note { color: var(--bone-dim); font-size: .72rem; line-height: 1.5; margin: 0 0 10px; flex: 1 1 100%; }
+  .lab-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lab-tab {
+    font-family: var(--display); font-weight: 800; font-size: .72rem; letter-spacing: .02em;
+    padding: 9px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--ink-2);
+    color: var(--bone-dim); cursor: pointer;
+  }
+  .lab-tab b { display: block; font-family: var(--body); font-weight: 500; font-size: .6rem; color: var(--bone-dim); margin-top: 2px; }
+  .lab-tab.on { border-color: var(--brass); color: var(--yellow); background: rgba(255, 91, 30, .1); }
+  .lab-sep { flex-basis: 100%; height: 0; }
+  .lab-toggle { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .lab-toggle button {
+    font-family: var(--display); font-weight: 800; font-size: .66rem; text-transform: uppercase;
+    padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--ink-2); color: var(--bone-dim); cursor: pointer;
+  }
+  .lab-toggle button.on { border-color: var(--brass); color: var(--yellow); background: rgba(255,91,30,.1); }
+
+  .stage { display: flex; justify-content: center; }
+  iframe#frame {
+    width: 390px; height: 780px; max-width: 100%; border: 1px solid var(--line); border-radius: 20px;
+    background: var(--ink-2); display: block;
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-hd">
+  <h1>84 - LEADERBOARD (3 direzioni)</h1>
+  <p class="note">Palette/tipografia già fissate (Cabina 90s). Grill chiuso: tab per difficoltà, riga minimal (vittorie + esito + data relativa), entrata sobria (niente LED/tacche come in Esito). Qui si sceglie SOLO l'archetipo di riga/lista. Telefono = iframe 390px reali.</p>
+  <div class="lab-tabs" id="tabs">
+    <button class="lab-tab on" data-dir="A">A · Ruolino ledger<b>righe dense, rank in chip fascia</b></button>
+    <button class="lab-tab" data-dir="B">B · Vetrina a mattonelle<b>card larghe, striscia colore</b></button>
+    <button class="lab-tab" data-dir="C">C · Tabellone high-score<b>tabella arcade monospace</b></button>
+  </div>
+  <div class="lab-sep"></div>
+  <div class="lab-toggle" id="diffs">
+    <button class="on" data-diff="facile">Facile</button>
+    <button data-diff="normale">Normale</button>
+    <button data-diff="difficile">Difficile</button>
+    <button data-diff="incubo">Incubo</button>
+  </div>
+</div>
+
+<div class="stage">
+  <iframe id="frame" src="84-leaderboard-frame.html" title="Anteprima schermata Leaderboard"></iframe>
+</div>
+
+<script>
+const frame = document.getElementById("frame");
+function callFrame(fn, arg) {
+  const w = frame.contentWindow;
+  if (w && w[fn]) w[fn](arg);
+}
+
+document.querySelectorAll("#tabs .lab-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#tabs .lab-tab").forEach(b => b.classList.remove("on"));
+    btn.classList.add("on");
+    callFrame("setDir", btn.dataset.dir);
+  });
+});
+document.querySelectorAll("#diffs button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#diffs button").forEach(b => b.classList.remove("on"));
+    btn.classList.add("on");
+    callFrame("setDiff", btn.dataset.diff);
+  });
+});
+</script>
+</body>
+</html>

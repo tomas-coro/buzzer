@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>84 - leaderboard, frame telefono</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,600;0,6..96,700;1,6..96,600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  /* Frame a larghezza telefono reale: le unità del CSS di produzione si
+     calcolano sulla larghezza vera, non su quella larga del laboratorio. */
+  html, body { background: var(--ink); }
+  body { margin: 0; padding: 0; }
+  #app { padding: 20px 18px 22px; }
+
+  .screen.leaderboard { position: relative; }
+
+  /* ---- tab difficoltà (comuni alle 3 direzioni, deciso col grill) ---- */
+  #difftabs { display: flex; gap: 6px; margin: 0 0 16px; opacity: 0; }
+  #difftabs button {
+    flex: 1; font-family: var(--arcade); font-size: .5rem; letter-spacing: .04em; text-transform: uppercase;
+    padding: 10px 4px; min-height: 44px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--ink-2); color: var(--bone-dim);
+  }
+  #difftabs button.on { border-color: var(--brass); color: var(--yellow); background: rgba(255,91,30,.12); }
+
+  h1.lb-title { font-family: var(--arcade); font-size: 1.1rem; color: var(--bone); margin: 0 0 4px; opacity: 0; }
+  .lb-sub { font-family: var(--body); font-size: .74rem; color: var(--bone-dim); margin: 0 0 16px; opacity: 0; }
+
+  #rows { position: relative; z-index: 1; width: 100%; list-style: none; margin: 0; padding: 0; opacity: 0; }
+  #rows li { animation: rowIn .3s var(--ease) both; animation-delay: calc(var(--i) * 45ms); }
+  @keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .lb-vuoto { text-align: center; padding: 30px 10px; color: var(--bone-dim); font-size: .82rem; }
+
+  #lifetime { opacity: 0; }
+  .lb-home { position: relative; z-index: 1; width: 100%; margin-top: 18px; opacity: 0; }
+
+  /* ============ direzione A - Ruolino ledger ============ */
+  .dirA #rows { display: flex; flex-direction: column; }
+  .dirA #rows li { border-bottom: 1px solid var(--line); }
+  .dirA #rows li:first-child { border-top: 1px solid var(--line); }
+  .dirA .a-row { display: flex; align-items: center; gap: 10px; padding: 11px 4px; }
+  .dirA .a-rank { flex: none; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--led); font-weight: 900; font-size: .78rem; }
+  .dirA .a-rank.oro { background: rgba(255,207,51,.14); color: var(--yellow); border: 1px solid rgba(255,207,51,.4); }
+  .dirA .a-rank.argento { background: rgba(180,186,224,.12); color: #c7cbe8; border: 1px solid rgba(180,186,224,.3); }
+  .dirA .a-rank.bronzo { background: rgba(255,91,30,.1); color: var(--bone-dim); border: 1px solid var(--line); }
+  .dirA .a-mid { flex: 1; min-width: 0; }
+  .dirA .a-esito { display: block; font-weight: 700; font-size: .82rem; }
+  .dirA .a-esito.win { color: var(--green); }
+  .dirA .a-esito.lose { color: var(--bone-dim); }
+  .dirA .a-data { display: block; font-size: .66rem; color: var(--bone-dim); margin-top: 1px; }
+  .dirA .a-vitt { flex: none; font-family: var(--led); font-weight: 900; font-size: 1rem; color: var(--bone); text-align: right; }
+  .dirA .a-vitt small { display: block; font-family: var(--body); font-weight: 700; font-size: .48rem; letter-spacing: .08em; text-transform: uppercase; color: var(--bone-dim); margin-top: 1px; }
+  .dirA #lifetime { display: flex; gap: 8px; margin-top: 18px; }
+  .dirA .a-stat { flex: 1; text-align: center; padding: 10px 6px; border-radius: 10px; background: var(--ink-2); border: 1px solid var(--line); }
+  .dirA .a-stat b { display: block; font-family: var(--led); font-weight: 900; font-size: 1rem; color: var(--yellow); }
+  .dirA .a-stat span { display: block; font-size: .56rem; letter-spacing: .06em; text-transform: uppercase; color: var(--bone-dim); margin-top: 2px; }
+
+  /* ============ direzione B - Vetrina a mattonelle ============ */
+  .dirB #rows { display: flex; flex-direction: column; gap: 10px; }
+  .dirB .b-card { position: relative; display: flex; align-items: center; gap: 12px; padding: 14px 14px 14px 16px; border-radius: 14px; background: var(--ink-2); border: 1px solid var(--line); overflow: hidden; }
+  .dirB .b-card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--bone-dim); }
+  .dirB .b-card.win::before { background: var(--green); }
+  .dirB .b-card.lose::before { background: var(--red); }
+  .dirB .b-badge { flex: none; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-weight: 800; font-size: .9rem; background: var(--ink-3); color: var(--bone); border: 1px solid var(--line); }
+  .dirB .b-card:nth-child(1) .b-badge { background: rgba(255,207,51,.16); color: var(--yellow); border-color: var(--yellow); }
+  .dirB .b-mid { flex: 1; min-width: 0; }
+  .dirB .b-esito { display: block; font-family: var(--display); font-weight: 800; font-size: .92rem; color: var(--bone); }
+  .dirB .b-data { display: block; font-size: .68rem; color: var(--bone-dim); margin-top: 2px; }
+  .dirB .b-vitt { flex: none; text-align: right; }
+  .dirB .b-vitt b { display: block; font-family: var(--led); font-weight: 900; font-size: 1.3rem; color: var(--bone); line-height: 1; }
+  .dirB .b-vitt small { display: block; font-size: .52rem; letter-spacing: .06em; text-transform: uppercase; color: var(--bone-dim); margin-top: 3px; }
+  .dirB #lifetime { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 18px; padding: 14px; border-radius: 14px; background: var(--ink-2); border: 1px solid var(--line); }
+  .dirB .b-stat { text-align: center; }
+  .dirB .b-stat b { display: block; font-family: var(--display); font-weight: 800; font-size: 1.1rem; color: var(--bone); }
+  .dirB .b-stat span { display: block; font-size: .56rem; letter-spacing: .06em; text-transform: uppercase; color: var(--bone-dim); margin-top: 3px; }
+
+  /* ============ direzione C - Tabellone high-score ============ */
+  .dirC #rows { font-family: var(--led); }
+  .dirC .c-head { display: flex; gap: 8px; padding: 0 6px 8px; font-family: var(--body); font-weight: 700; font-size: .5rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+  .dirC .c-head span:nth-child(1) { flex: none; width: 26px; }
+  .dirC .c-head span:nth-child(2) { flex: 1; }
+  .dirC .c-head span:nth-child(3) { flex: none; width: 44px; text-align: right; }
+  .dirC .c-head span:nth-child(4) { flex: none; width: 60px; text-align: right; }
+  .dirC .c-row { display: flex; align-items: center; gap: 8px; padding: 8px 6px; border-radius: 6px; }
+  .dirC .c-row:nth-child(odd) { background: rgba(255,255,255,.015); }
+  .dirC .c-row.top1 { background: rgba(255,207,51,.08); }
+  .dirC .c-rk { flex: none; width: 26px; font-weight: 900; font-size: .82rem; color: var(--bone-dim); }
+  .dirC .c-row.top1 .c-rk { color: var(--yellow); text-shadow: 0 0 8px rgba(255,207,51,.5); }
+  .dirC .c-esito { flex: 1; font-family: var(--body); font-weight: 700; font-size: .74rem; }
+  .dirC .c-esito.win { color: var(--green); }
+  .dirC .c-esito.lose { color: var(--bone-dim); }
+  .dirC .c-vitt { flex: none; width: 44px; text-align: right; font-weight: 900; font-size: .82rem; color: var(--bone); }
+  .dirC .c-data { flex: none; width: 60px; text-align: right; font-family: var(--body); font-size: .62rem; color: var(--bone-dim); }
+  .dirC #lifetime { display: flex; justify-content: space-between; margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); font-family: var(--led); }
+  .dirC .c-stat { text-align: center; }
+  .dirC .c-stat b { display: block; font-weight: 900; font-size: .92rem; color: var(--yellow); }
+  .dirC .c-stat span { display: block; font-family: var(--body); font-size: .52rem; letter-spacing: .06em; text-transform: uppercase; color: var(--bone-dim); margin-top: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #difftabs, .lb-title, .lb-sub, #rows, #rows li, #lifetime, .lb-home { animation: none !important; opacity: 1 !important; }
+  }
+</style>
+</head>
+<body>
+<main id="app">
+  <section class="screen leaderboard dirA" id="lb">
+    <div id="difftabs">
+      <button class="on" data-diff="facile">Facile</button>
+      <button data-diff="normale">Normale</button>
+      <button data-diff="difficile">Difficile</button>
+      <button data-diff="incubo">Incubo</button>
+    </div>
+    <h1 class="lb-title">Leaderboard</h1>
+    <p class="lb-sub" id="bucket-sub">imbattuto · facile</p>
+    <ol id="rows"></ol>
+    <div id="lifetime"></div>
+    <div class="lb-home"><button class="chip" id="home">Home</button></div>
+  </section>
+</main>
+
+<script>
+// Dataset finto per bucket, ordinato per vittorie desc (come fa davvero meta.js).
+const DATA = {
+  facile: [
+    { vittorie: 16, esito: "imbattuto", giorniFa: 1 },
+    { vittorie: 16, esito: "imbattuto", giorniFa: 6 },
+    { vittorie: 14, esito: "sconfitta", giorniFa: 0 },
+    { vittorie: 11, esito: "sconfitta", giorniFa: 9 },
+    { vittorie: 7, esito: "sconfitta", giorniFa: 20 },
+  ],
+  normale: [
+    { vittorie: 16, esito: "imbattuto", giorniFa: 3 },
+    { vittorie: 12, esito: "sconfitta", giorniFa: 3 },
+    { vittorie: 9, esito: "sconfitta", giorniFa: 12 },
+    { vittorie: 5, esito: "sconfitta", giorniFa: 15 },
+  ],
+  difficile: [
+    { vittorie: 10, esito: "sconfitta", giorniFa: 2 },
+    { vittorie: 6, esito: "sconfitta", giorniFa: 8 },
+    { vittorie: 2, esito: "sconfitta", giorniFa: 30 },
+  ],
+  incubo: [
+    { vittorie: 3, esito: "sconfitta", giorniFa: 5 },
+    { vittorie: 0, esito: "sconfitta", giorniFa: 5 },
+  ],
+};
+
+function dataRelativa(giorniFa) {
+  if (giorniFa === 0) return "oggi";
+  if (giorniFa === 1) return "ieri";
+  if (giorniFa < 14) return `${giorniFa} giorni fa`;
+  return `${Math.round(giorniFa / 7)} settimane fa`;
+}
+
+function lifetimeFor(diff) {
+  const runs = DATA[diff];
+  return {
+    runs: runs.length,
+    imbattuti: runs.filter(r => r.esito === "imbattuto").length,
+    migliorStreak: runs.reduce((m, r) => Math.max(m, r.vittorie), 0),
+  };
+}
+
+function fasciaRank(i) {
+  if (i === 0) return "oro";
+  if (i <= 2) return "argento";
+  return "bronzo";
+}
+
+function renderA(runs) {
+  return runs.map((r, i) => `
+    <li style="--i:${i}">
+      <div class="a-row">
+        <span class="a-rank ${fasciaRank(i)}">${i + 1}</span>
+        <span class="a-mid">
+          <span class="a-esito ${r.esito === 'imbattuto' ? 'win' : 'lose'}">${r.esito === 'imbattuto' ? 'Imbattuto' : 'Sconfitta'}</span>
+          <span class="a-data">${dataRelativa(r.giorniFa)}</span>
+        </span>
+        <span class="a-vitt">${r.vittorie}<small>vittorie</small></span>
+      </div>
+    </li>`).join("");
+}
+function renderB(runs) {
+  return runs.map((r, i) => `
+    <li style="--i:${i}">
+      <div class="b-card ${r.esito === 'imbattuto' ? 'win' : 'lose'}">
+        <span class="b-badge">${i + 1}</span>
+        <span class="b-mid">
+          <span class="b-esito">${r.esito === 'imbattuto' ? 'Imbattuto' : 'Sconfitta'}</span>
+          <span class="b-data">${dataRelativa(r.giorniFa)}</span>
+        </span>
+        <span class="b-vitt"><b>${r.vittorie}</b><small>vittorie</small></span>
+      </div>
+    </li>`).join("");
+}
+function renderC(runs) {
+  const head = `<li class="c-head-wrap"><div class="c-head"><span>#</span><span>Esito</span><span>Vitt.</span><span>Quando</span></div></li>`;
+  const body = runs.map((r, i) => `
+    <li style="--i:${i}">
+      <div class="c-row ${i === 0 ? 'top1' : ''}">
+        <span class="c-rk">${i + 1}</span>
+        <span class="c-esito ${r.esito === 'imbattuto' ? 'win' : 'lose'}">${r.esito === 'imbattuto' ? 'IMBATTUTO' : 'sconfitta'}</span>
+        <span class="c-vitt">${r.vittorie}</span>
+        <span class="c-data">${dataRelativa(r.giorniFa)}</span>
+      </div>
+    </li>`).join("");
+  return head + body;
+}
+
+const RENDERERS = { A: renderA, B: renderB, C: renderC };
+let dir = "A";
+let diff = "facile";
+
+function play() {
+  const root = document.getElementById("lb");
+  const tabs = document.getElementById("difftabs");
+  const title = document.getElementById("lb-title") || document.querySelector(".lb-title");
+  const sub = document.getElementById("bucket-sub");
+  const rows = document.getElementById("rows");
+  const lifetime = document.getElementById("lifetime");
+  const home = document.querySelector(".lb-home");
+
+  root.className = "screen leaderboard dir" + dir;
+  const runs = DATA[diff];
+  sub.textContent = `imbattuto · ${diff}`;
+  rows.innerHTML = runs.length ? RENDERERS[dir](runs) : `<li class="lb-vuoto">Ancora nessun run in questo bucket.</li>`;
+
+  const st = lifetimeFor(diff);
+  if (dir === "A") {
+    lifetime.innerHTML = `
+      <div class="a-stat"><b>${st.runs}</b><span>run</span></div>
+      <div class="a-stat"><b>${st.imbattuti}</b><span>imbattuti</span></div>
+      <div class="a-stat"><b>${st.migliorStreak}</b><span>miglior streak</span></div>`;
+  } else if (dir === "B") {
+    lifetime.innerHTML = `
+      <div class="b-stat"><b>${st.runs}</b><span>run</span></div>
+      <div class="b-stat"><b>${st.imbattuti}</b><span>imbattuti</span></div>
+      <div class="b-stat"><b>${st.migliorStreak}</b><span>miglior streak</span></div>`;
+  } else {
+    lifetime.innerHTML = `
+      <div class="c-stat"><b>${st.runs}</b><span>run</span></div>
+      <div class="c-stat"><b>${st.imbattuti}</b><span>imbattuti</span></div>
+      <div class="c-stat"><b>${st.migliorStreak}</b><span>streak</span></div>`;
+  }
+
+  [tabs, ...root.querySelectorAll('.lb-title'), sub, rows, lifetime, home].forEach(e => { if (e) { e.style.animation = "none"; e.style.opacity = 0; } });
+  void root.offsetWidth;
+
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  [tabs, sub, rows, lifetime, home].forEach(e => e && (e.style.opacity = 1));
+  document.querySelectorAll('.lb-title').forEach(e => e.style.opacity = 1);
+  if (reduced) {
+    rows.querySelectorAll('li').forEach(li => { li.style.animation = "none"; li.style.opacity = 1; });
+    return;
+  }
+  tabs.style.animation = "simpleIn .3s var(--ease) both";
+  document.querySelectorAll('.lb-title').forEach(e => e.style.animation = "simpleIn .3s var(--ease) .05s both");
+  sub.style.animation = "simpleIn .3s var(--ease) .1s both";
+  rows.style.animation = "simpleIn .2s var(--ease) .15s both";
+  rows.querySelectorAll('li').forEach(li => { li.style.animation = ""; void li.offsetWidth; });
+  lifetime.style.animation = `simpleIn .3s var(--ease) ${0.2 + runs.length * 0.045}s both`;
+  home.style.animation = `simpleIn .3s var(--ease) ${0.25 + runs.length * 0.045}s both`;
+}
+
+document.querySelectorAll('#difftabs button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#difftabs button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    diff = b.dataset.diff;
+    play();
+  });
+});
+document.getElementById('home').addEventListener('click', () => {});
+
+const styleTag = document.createElement("style");
+styleTag.textContent = `@keyframes simpleIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }`;
+document.head.appendChild(styleTag);
+
+window.setDir = (d) => { dir = d; play(); };
+window.setDiff = (d) => {
+  diff = d;
+  document.querySelectorAll('#difftabs button').forEach(x => x.classList.toggle('on', x.dataset.diff === d));
+  play();
+};
+window.replay = () => play();
+
+play();
+</script>
+</body>
+</html>

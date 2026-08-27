@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>85 - profilo giocatori, Cabina 90s</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,600;0,6..96,700;1,6..96,600&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Bungee&family=Doto:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  html, body { background: var(--ink); }
+  body { max-width: 920px; margin: 0 auto; padding: 24px 16px 80px; }
+
+  /* ---- chrome del laboratorio (non fa parte del design finale) ---- */
+  .lab-hd { margin-bottom: 20px; }
+  .lab-hd h1 { font-family: var(--arcade); color: var(--yellow); font-size: .82rem; margin: 0 0 8px; }
+  .lab-hd p.note { color: var(--bone-dim); font-size: .72rem; line-height: 1.5; margin: 0; }
+  .lab-toggle { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+  .lab-toggle button {
+    font-family: var(--display); font-weight: 800; font-size: .66rem; text-transform: uppercase;
+    padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--ink-2); color: var(--bone-dim); cursor: pointer;
+  }
+  .lab-toggle button.on { border-color: var(--brass); color: var(--yellow); background: rgba(255,91,30,.1); }
+
+  .stage { display: flex; justify-content: center; }
+  .phone {
+    width: 390px; max-width: 100%; min-height: 780px; border: 1px solid var(--line); border-radius: 20px;
+    background: var(--ink-2); overflow: hidden;
+  }
+  #app { padding: 20px 18px 22px; }
+
+  /* ============ schermata Profilo ============ */
+  .screen.profilo { position: relative; }
+
+  h1.pr-title { font-family: var(--arcade); font-size: 1.1rem; color: var(--bone); margin: 0 0 4px; }
+  .pr-sub { font-family: var(--body); font-size: .74rem; color: var(--bone-dim); margin: 0 0 16px; }
+
+  #rows { position: relative; z-index: 1; width: 100%; list-style: none; margin: 0; padding: 0; }
+  #rows li { border-bottom: 1px solid var(--line); animation: rowIn .3s var(--ease) both; animation-delay: calc(var(--i) * 45ms); }
+  #rows li:first-child { border-top: 1px solid var(--line); }
+  @keyframes rowIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .p-row {
+    display: flex; align-items: center; gap: 10px; padding: 11px 4px; width: 100%;
+    background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit;
+  }
+  .p-row:hover { background: rgba(255,255,255,.02); }
+  .p-avt {
+    flex: none; width: 34px; height: 34px; border-radius: 9px; overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .p-avt .face { width: 100%; height: 100%; border-radius: inherit; }
+  .p-avt .face .mono { font-size: .6rem; }
+  .p-avt.oro { border-color: rgba(255,207,51,.4); }
+  .p-avt.argento { border-color: rgba(180,186,224,.3); }
+  .p-avt.bronzo { border-color: var(--line); }
+  .p-mid { flex: 1; min-width: 0; }
+  .p-nome { display: block; font-weight: 700; font-size: .82rem; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .p-ult { display: block; font-size: .64rem; color: var(--bone-dim); margin-top: 1px; }
+  .p-pres { flex: none; font-family: var(--led); font-weight: 900; font-size: 1rem; color: var(--bone); text-align: right; }
+  .p-pres small { display: block; font-family: var(--body); font-weight: 700; font-size: .46rem; letter-spacing: .07em; text-transform: uppercase; color: var(--bone-dim); margin-top: 1px; }
+  .p-chev { flex: none; color: var(--bone-dim); opacity: .5; font-size: .7rem; }
+
+  .pr-vuoto { text-align: center; padding: 30px 10px; color: var(--bone-dim); font-size: .82rem; font-style: italic; }
+
+  /* lo strip già mostra PT/RIMB/AST in grande: sotto restano solo le altre 3 medie, niente doppioni */
+  .c1-sub.c1-sub-3 { grid-template-columns: repeat(3, 1fr); }
+
+  /* ---- sheet dettaglio: riusa .sheet/.c1 della scheda carta (draft), estende con record ---- */
+  .c1-record { border-top: 1px solid var(--line); padding: 10px 18px 12px; }
+  .c1-record .lbl { display: block; font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); margin-bottom: 8px; }
+  .c1-record .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .c1-record .cell { text-align: center; padding: 6px 2px; border-radius: 8px; background: rgba(255,207,51,.06); border: 1px solid rgba(255,207,51,.18); }
+  .c1-record .cell b { display: block; font-family: var(--led); font-weight: 900; font-size: .84rem; color: var(--yellow); line-height: 1; }
+  .c1-record .cell small { display: block; font-family: var(--body); font-weight: 800; font-size: .38rem; letter-spacing: .04em; text-transform: uppercase; color: var(--bone-dim); margin-top: 4px; }
+
+  /* totali di carriera: stesso schema del record ma tono neutro (non è un primato, è una somma) */
+  .c1-tot { border-top: 1px solid var(--line); padding: 10px 18px 12px; }
+  .c1-tot .lbl { display: block; font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); margin-bottom: 8px; }
+  .c1-tot .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .c1-tot .cell { text-align: center; padding: 6px 2px; border-radius: 8px; background: var(--ink-3); border: 1px solid var(--line); }
+  .c1-tot .cell b { display: block; font-family: var(--led); font-weight: 900; font-size: .84rem; color: var(--bone); line-height: 1; }
+  .c1-tot .cell small { display: block; font-family: var(--body); font-weight: 800; font-size: .38rem; letter-spacing: .04em; text-transform: uppercase; color: var(--bone-dim); margin-top: 4px; }
+
+  /* etichetta sopra le medie, per distinguerle dai totali appena sotto */
+  .c1-medielbl { padding: 10px 18px 0; }
+  .c1-medielbl .lbl { display: block; font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); }
+
+  /* selettore ordine lista, stesso schema del segmentato velocità (.sh-seg) */
+  .pr-order { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #101132; margin-bottom: 14px; }
+  .pr-order button {
+    flex: 1; border: 0; background: transparent; color: var(--bone-dim); cursor: pointer;
+    font-family: var(--body); font-weight: 800; font-size: .58rem; letter-spacing: .03em; padding: 0 4px; height: 30px;
+    border-right: 1px solid var(--line); transition: background .15s, color .15s;
+  }
+  .pr-order button:last-child { border-right: 0; }
+  .pr-order button:hover { color: var(--bone); background: #181a45; }
+  .pr-order button[aria-pressed="true"] { background: var(--yellow); color: #0c0d22; }
+  .pr-order button:focus-visible { outline: 2px solid var(--brass); outline-offset: -2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #rows li { animation: none !important; opacity: 1 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lab-hd">
+  <h1>85 - PROFILO (giocatori più usati + carriera + record)</h1>
+  <p class="note">Decisioni già chiuse col grill: elenco unico con selettore ordine (presenze / punti / assist /
+    rimbalzi, tutti totali di carriera), riga -&gt; sheet a tutto schermo che riusa il pattern della scheda densa
+    del draft (<code>.c1</code>), volto vero come in draft/leaderboard (stesso <code>team-colors.js</code>),
+    persistenza box-score completa per abilitare medie + totali + record. Qui solo QA visivo prima del porting
+    in <code>screens/profilo.js</code>. Tap su una riga per aprire la scheda.</p>
+  <div class="lab-toggle" id="empty-toggle">
+    <button class="on" data-mode="dati">Con dati</button>
+    <button data-mode="vuoto">Stato vuoto (nessuna run)</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <main id="app">
+      <section class="screen profilo">
+        <h1 class="pr-title">Profilo</h1>
+        <p class="pr-sub" id="pr-sub"></p>
+        <div class="pr-order" id="order" role="group" aria-label="Ordina per">
+          <button type="button" data-order="presenze" aria-pressed="true">Presenze</button>
+          <button type="button" data-order="pt" aria-pressed="false">Punti</button>
+          <button type="button" data-order="ast" aria-pressed="false">Assist</button>
+          <button type="button" data-order="rimb" aria-pressed="false">Rimbalzi</button>
+        </div>
+        <ol id="rows"></ol>
+      </section>
+    </main>
+  </div>
+</div>
+
+<dialog class="sheet" id="sheet">
+  <button class="sheet-x" id="sheet-x" aria-label="Chiudi">✕</button>
+  <div class="c1" id="c1"></div>
+</dialog>
+
+<script type="module">
+import { teamColors, initials } from "../prototype/imbattuto/team-colors.js";
+
+// Dataset finto: una riga per PERSONA (già aggregata, come farà profiloGiocatori()
+// leggendo chiavePersona su tutte le run salvate). Nomi presi dai campioni già
+// usati altrove nel progetto (curry/giannis/durant/...) per coerenza. player_id
+// è lo slug usato da tools/build-volti.py per il file in assets/volti/.
+const GIOCATORI = [
+  { nome: "Stephen Curry", player_id: "stephen-curry", team_abbr: "GSW", presenze: 11, ultimo: { team: "GSW", stagione: "2015-16" },
+    medie: { pt: 27.8, rimb: 4.6, ast: 6.3, rub: 1.6, pp: 3.0, stp: 0.2 },
+    record: { pt: 46, rimb: 9, ast: 13, rub: 5, pp: 6, stp: 1 } },
+  { nome: "Giannis Antetokounmpo", player_id: "giannis-antetokounmpo", team_abbr: "MIL", presenze: 9, ultimo: { team: "MIL", stagione: "2019-20" },
+    medie: { pt: 29.1, rimb: 12.4, ast: 5.5, rub: 1.1, pp: 3.3, stp: 1.5 },
+    record: { pt: 45, rimb: 20, ast: 11, rub: 4, pp: 6, stp: 4 } },
+  { nome: "Nikola Jokic", player_id: "nikola-jokic", team_abbr: "DEN", presenze: 8, ultimo: { team: "DEN", stagione: "2017-18" },
+    medie: { pt: 18.5, rimb: 10.7, ast: 6.1, rub: 1.3, pp: 3.0, stp: 0.6 },
+    record: { pt: 35, rimb: 19, ast: 15, rub: 4, pp: 6, stp: 3 } },
+  { nome: "Kevin Durant", player_id: "kevin-durant", team_abbr: "GSW", presenze: 7, ultimo: { team: "GSW", stagione: "2018-19" },
+    medie: { pt: 27.0, rimb: 6.9, ast: 5.4, rub: 0.7, pp: 2.9, stp: 1.1 },
+    record: { pt: 43, rimb: 14, ast: 12, rub: 3, pp: 5, stp: 4 } },
+  { nome: "Draymond Green", player_id: "draymond-green", team_abbr: "GSW", presenze: 6, ultimo: { team: "GSW", stagione: "2016-17" },
+    medie: { pt: 8.9, rimb: 7.4, ast: 6.9, rub: 1.5, pp: 2.6, stp: 1.4 },
+    record: { pt: 23, rimb: 15, ast: 16, rub: 5, pp: 6, stp: 5 } },
+  { nome: "Klay Thompson", player_id: "klay-thompson", team_abbr: "GSW", presenze: 5, ultimo: { team: "GSW", stagione: "2015-16" },
+    medie: { pt: 21.9, rimb: 3.8, ast: 2.1, rub: 0.9, pp: 1.6, stp: 0.6 },
+    record: { pt: 37, rimb: 8, ast: 6, rub: 3, pp: 4, stp: 2 } },
+  { nome: "Russell Westbrook", player_id: "russell-westbrook", team_abbr: "OKC", presenze: 4, ultimo: { team: "OKC", stagione: "2016-17" },
+    medie: { pt: 30.2, rimb: 9.8, ast: 10.1, rub: 1.6, pp: 4.4, stp: 0.4 },
+    record: { pt: 51, rimb: 17, ast: 17, rub: 5, pp: 6, stp: 2 } },
+  { nome: "Rudy Gobert", player_id: "rudy-gobert", team_abbr: "UTA", presenze: 3, ultimo: { team: "UTA", stagione: "2018-19" },
+    medie: { pt: 11.3, rimb: 12.9, ast: 1.4, rub: 0.7, pp: 1.5, stp: 2.2 },
+    record: { pt: 24, rimb: 21, ast: 4, rub: 2, pp: 4, stp: 5 } },
+  { nome: "LeBron James", player_id: "lebron-james", team_abbr: "CLE", presenze: 2, ultimo: { team: "CLE", stagione: "2012-13" },
+    medie: { pt: 26.4, rimb: 7.6, ast: 6.8, rub: 1.7, pp: 3.3, stp: 0.9 },
+    record: { pt: 40, rimb: 12, ast: 12, rub: 4, pp: 6, stp: 3 } },
+];
+
+// Ordini disponibili per la lista: presenze o totale di carriera di una stat.
+// get() legge dal cache dei totali (vedi totali()), non dalle medie.
+const ORDERS = [
+  { key: "presenze", label: "Presenze", get: g => g.presenze, unit: "presenze" },
+  { key: "pt", label: "Punti", get: g => totali(g).pt, unit: "punti tot" },
+  { key: "ast", label: "Assist", get: g => totali(g).ast, unit: "assist tot" },
+  { key: "rimb", label: "Rimbalzi", get: g => totali(g).rimb, unit: "rimbalzi tot" },
+];
+
+// Totali di carriera: il motore reale li avrà già sommati dal box-score
+// persistito; qui li deriviamo dalle medie finte (media * presenze, arrotondato).
+function totali(g) {
+  if (g._tot) return g._tot;
+  const m = g.medie;
+  g._tot = {
+    pt: Math.round(m.pt * g.presenze), rimb: Math.round(m.rimb * g.presenze), ast: Math.round(m.ast * g.presenze),
+    rub: Math.round(m.rub * g.presenze), pp: Math.round(m.pp * g.presenze), stp: Math.round(m.stp * g.presenze),
+  };
+  return g._tot;
+}
+
+function fasciaRank(i) {
+  if (i === 0) return "oro";
+  if (i <= 2) return "argento";
+  return "bronzo";
+}
+function n1(v) { return v.toFixed(1); }
+
+// Segnaposto volto: stesso pattern del draft (mockup 80) - iniziali + gradiente
+// colori squadra sotto, la foto ritagliata sopra. Se il file manca l'img si
+// toglie da sola e restano le iniziali, nessun buco.
+function faceHTML(g) {
+  const { c1, c2 } = teamColors(g.team_abbr);
+  const foto = `<img class="ph" src="../assets/volti/${encodeURIComponent(g.player_id)}.webp"
+      alt="" loading="lazy" decoding="async"
+      onload="this.parentNode.classList.add('hasph')" onerror="this.remove()">`;
+  return `<span class="face" style="--tc1:${c1};--tc2:${c2}"><span class="mono">${initials(g.nome)}</span>${foto}</span>`;
+}
+
+function renderRows(list, order) {
+  if (!list.length) {
+    return `<li class="pr-vuoto">Ancora nessun giocatore draftato.</li>`;
+  }
+  return list.map((g, i) => `
+    <li style="--i:${i}">
+      <button class="p-row" data-i="${i}" type="button">
+        <span class="p-avt ${fasciaRank(i)}">${faceHTML(g)}</span>
+        <span class="p-mid">
+          <span class="p-nome">${g.nome}</span>
+          <span class="p-ult">ultimo: ${g.ultimo.team} · ${g.ultimo.stagione}</span>
+        </span>
+        <span class="p-pres">${order.get(g)}<small>${order.unit}</small></span>
+        <span class="p-chev">›</span>
+      </button>
+    </li>`).join("");
+}
+
+function sheetHTML(g) {
+  const m = g.medie, t = totali(g), r = g.record;
+  const strip = `<div class="c1-strip">
+    <div class="cell"><b>${n1(m.pt)}</b><small>PT</small></div>
+    <div class="cell"><b>${n1(m.rimb)}</b><small>RIMB</small></div>
+    <div class="cell"><b>${n1(m.ast)}</b><small>AST</small></div>
+  </div>`;
+  const sub = `<div class="c1-sub c1-sub-3">
+    <div class="cell"><b>${n1(m.rub)}</b><small>RUB</small></div>
+    <div class="cell"><b>${n1(m.pp)}</b><small>PP</small></div>
+    <div class="cell"><b>${n1(m.stp)}</b><small>STP</small></div>
+  </div>`;
+  const tot = `<div class="c1-tot">
+    <span class="lbl">Totali di carriera</span>
+    <div class="grid">
+      <div class="cell"><b>${t.pt}</b><small>PT</small></div>
+      <div class="cell"><b>${t.rimb}</b><small>RIMB</small></div>
+      <div class="cell"><b>${t.ast}</b><small>AST</small></div>
+      <div class="cell"><b>${t.rub}</b><small>RUB</small></div>
+      <div class="cell"><b>${t.pp}</b><small>PP</small></div>
+      <div class="cell"><b>${t.stp}</b><small>STP</small></div>
+    </div>
+  </div>`;
+  const record = `<div class="c1-record">
+    <span class="lbl">Record singola partita</span>
+    <div class="grid">
+      <div class="cell"><b>${r.pt}</b><small>PT</small></div>
+      <div class="cell"><b>${r.rimb}</b><small>RIMB</small></div>
+      <div class="cell"><b>${r.ast}</b><small>AST</small></div>
+      <div class="cell"><b>${r.rub}</b><small>RUB</small></div>
+      <div class="cell"><b>${r.pp}</b><small>PP</small></div>
+      <div class="cell"><b>${r.stp}</b><small>STP</small></div>
+    </div>
+  </div>`;
+  return `
+    <div class="c1-head">
+      ${faceHTML(g)}
+      <span class="c1-id">
+        <span class="nm">${g.nome}</span>
+        <span class="sub">nelle tue corse</span>
+      </span>
+      <span class="c1-ovr"><b>${g.presenze}</b><small>presenze</small></span>
+    </div>
+    <div class="c1-medielbl"><span class="lbl">Medie di carriera</span></div>
+    ${strip}
+    ${sub}
+    ${tot}
+    ${record}`;
+}
+
+let mode = "dati";
+let orderKey = "presenze";
+const rows = document.getElementById("rows");
+const sub = document.getElementById("pr-sub");
+const sheet = document.getElementById("sheet");
+const c1 = document.getElementById("c1");
+
+function play() {
+  const order = ORDERS.find(o => o.key === orderKey);
+  const list = mode === "dati" ? [...GIOCATORI].sort((a, b) => order.get(b) - order.get(a)) : [];
+  sub.textContent = list.length ? `${list.length} giocatori draftati · ordinati per ${order.label.toLowerCase()}` : "";
+  rows.innerHTML = renderRows(list, order);
+  rows.querySelectorAll(".p-row").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const g = list[+btn.dataset.i];
+      c1.innerHTML = sheetHTML(g);
+      sheet.showModal();
+    });
+  });
+}
+
+document.getElementById("sheet-x").addEventListener("click", () => sheet.close());
+document.querySelectorAll("#empty-toggle button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#empty-toggle button").forEach(b => b.classList.remove("on"));
+    btn.classList.add("on");
+    mode = btn.dataset.mode;
+    play();
+  });
+});
+document.querySelectorAll("#order button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("#order button").forEach(b => b.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+    orderKey = btn.dataset.order;
+    play();
+  });
+});
+
+play();
+</script>
+</body>
+</html>
