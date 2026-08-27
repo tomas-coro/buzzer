@@ -686,6 +686,9 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   border: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between;
   gap: 8px; font-family: var(--body); font-size: .68rem; color: var(--bone-dim); min-height: 30px;
 }
+/* [hidden] ha la stessa specificità di .cap-tick sopra: senza questa regola
+   l'attributo hidden nel markup non nasconde nulla e resta un box vuoto. */
+.cap-tick[hidden] { display: none; }
 .cap-tick .ct-nm { font-weight: 700; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cap-tick .ct-val { font-family: var(--led); font-weight: 900; font-size: .84rem; color: var(--bone);
   font-variant-numeric: tabular-nums; white-space: nowrap; }
