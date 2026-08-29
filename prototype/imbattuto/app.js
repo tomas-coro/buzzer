@@ -13,6 +13,7 @@ import { render as coach } from "./screens/coach.js";
 import { render as run } from "./screens/run.js";
 import { render as esito } from "./screens/esito.js";
 import { render as leaderboard } from "./screens/leaderboard.js";
+import { render as profilo } from "./screens/profilo.js";
 
 const app = document.getElementById("app");
 
@@ -24,7 +25,7 @@ const cards = CARDS_BY_TEAM_SEASON;
 const pool = opponentPool(cards); // pool avversari, calcolato una volta
 
 // Registry di render: chiave = fase UI o state.stato.
-const screens = { home, difficolta, draft, coach, run, finito: esito, leaderboard };
+const screens = { home, difficolta, draft, coach, run, finito: esito, leaderboard, profilo };
 
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;

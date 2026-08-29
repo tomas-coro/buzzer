@@ -1318,6 +1318,75 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 }
 .lifetime span b { font-family: var(--led); font-weight: 900; font-size: 1rem; color: var(--yellow); text-transform: none; letter-spacing: 0; }
 
+/* Riga di bottoni .chip affiancati (leaderboard/profilo): niente animazione,
+   a differenza di .azioni che in esito.js parte a opacity:0 e la riporta a 1
+   via animazione inline - qui i bottoni devono essere visibili da subito. */
+.row-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* =================== PROFILO (mockup 85) =================== */
+.screen.profilo { position: relative; }
+h1.pr-title { font-family: var(--arcade); font-size: 1.1rem; color: var(--bone); margin: 0 0 4px; }
+.pr-sub { font-family: var(--body); font-size: .74rem; color: var(--bone-dim); margin: 0 0 16px; }
+
+.screen.profilo #rows { position: relative; z-index: 1; width: 100%; list-style: none; margin: 0; padding: 0; }
+.screen.profilo #rows li { border-bottom: 1px solid var(--line); animation: rowIn .3s var(--ease) both; animation-delay: calc(var(--i) * 45ms); }
+.screen.profilo #rows li:first-child { border-top: 1px solid var(--line); }
+
+.p-row {
+  display: flex; align-items: center; gap: 10px; padding: 11px 4px; width: 100%;
+  background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit;
+}
+.p-row:hover { background: rgba(255, 255, 255, .02); }
+.p-avt { flex: none; width: 34px; height: 34px; border-radius: 9px; overflow: hidden; border: 1px solid var(--line); }
+.p-avt .face { width: 100%; height: 100%; border-radius: inherit; }
+.p-avt .face .mono { font-size: .6rem; }
+.p-avt.oro { border-color: rgba(255, 207, 51, .4); }
+.p-avt.argento { border-color: rgba(180, 186, 224, .3); }
+.p-avt.bronzo { border-color: var(--line); }
+.p-mid { flex: 1; min-width: 0; }
+.p-nome { display: block; font-weight: 700; font-size: .82rem; color: var(--bone); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.p-ult { display: block; font-size: .64rem; color: var(--bone-dim); margin-top: 1px; }
+.p-pres { flex: none; font-family: var(--led); font-weight: 900; font-size: 1rem; color: var(--bone); text-align: right; }
+.p-pres small { display: block; font-family: var(--body); font-weight: 700; font-size: .46rem; letter-spacing: .07em; text-transform: uppercase; color: var(--bone-dim); margin-top: 1px; }
+.p-chev { flex: none; color: var(--bone-dim); opacity: .5; font-size: .7rem; }
+
+.pr-vuoto { list-style: none; text-align: center; padding: 30px 10px; color: var(--bone-dim); font-size: .82rem; font-style: italic; border-bottom: none; animation: none; }
+
+/* lo strip già mostra PT/RIMB/AST in grande: sotto restano solo le altre 3 medie, niente doppioni */
+.c1-sub.c1-sub-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* sheet dettaglio: riusa .sheet/.c1 della scheda carta (draft), estende con record e totali */
+.c1-record { border-top: 1px solid var(--line); padding: 10px 18px 12px; }
+.c1-record .lbl { display: block; font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); margin-bottom: 8px; }
+.c1-record .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.c1-record .cell { text-align: center; padding: 6px 2px; border-radius: 8px; background: rgba(255, 207, 51, .06); border: 1px solid rgba(255, 207, 51, .18); }
+.c1-record .cell b { display: block; font-family: var(--led); font-weight: 900; font-size: .84rem; color: var(--yellow); line-height: 1; }
+.c1-record .cell small { display: block; font-family: var(--body); font-weight: 800; font-size: .38rem; letter-spacing: .04em; text-transform: uppercase; color: var(--bone-dim); margin-top: 4px; }
+
+/* totali di carriera: stesso schema del record ma tono neutro (non è un primato, è una somma) */
+.c1-tot { border-top: 1px solid var(--line); padding: 10px 18px 12px; }
+.c1-tot .lbl { display: block; font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); margin-bottom: 8px; }
+.c1-tot .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.c1-tot .cell { text-align: center; padding: 6px 2px; border-radius: 8px; background: var(--ink-3); border: 1px solid var(--line); }
+.c1-tot .cell b { display: block; font-family: var(--led); font-weight: 900; font-size: .84rem; color: var(--bone); line-height: 1; }
+.c1-tot .cell small { display: block; font-family: var(--body); font-weight: 800; font-size: .38rem; letter-spacing: .04em; text-transform: uppercase; color: var(--bone-dim); margin-top: 4px; }
+
+/* etichetta sopra le medie, per distinguerle dai totali appena sotto */
+.c1-medielbl { padding: 10px 18px 0; }
+.c1-medielbl .lbl { display: block; font-family: var(--body); font-weight: 800; font-size: .44rem; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-dim); }
+
+/* selettore ordine lista, stesso schema del segmentato velocità (.sh-seg) */
+.pr-order { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #101132; margin-bottom: 14px; }
+.pr-order button {
+  flex: 1; border: 0; background: transparent; color: var(--bone-dim); cursor: pointer;
+  font-family: var(--body); font-weight: 800; font-size: .58rem; letter-spacing: .03em; padding: 0 4px; height: 30px;
+  border-right: 1px solid var(--line); transition: background .15s, color .15s;
+}
+.pr-order button:last-child { border-right: 0; }
+.pr-order button:hover { color: var(--bone); background: #181a45; }
+.pr-order button[aria-pressed="true"] { background: var(--yellow); color: #0c0d22; }
+.pr-order button:focus-visible { outline: 2px solid var(--brass); outline-offset: -2px; }
+
 /* =================== accessibilità =================== */
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }

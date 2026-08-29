@@ -59,6 +59,7 @@ export function render(ctx) {
     <ul class="storia" style="animation: simpleIn .3s var(--ease) ${afterLadder + 650}ms both">${state.storia.map(rigaRound).join("")}</ul>
     <div class="azioni" style="animation: simpleIn .3s var(--ease) ${afterLadder + 800}ms both">
       <button class="cta" id="leaderboard">Leaderboard</button>
+      <button class="chip" id="profilo">Profilo</button>
       <button class="chip" id="ancora">Nuovo run</button>
     </div>
   `;
@@ -81,5 +82,6 @@ export function render(ctx) {
   });
   el.querySelector("#ancora").onclick = () => ctx.dispatch({ type: "reset" });
   el.querySelector("#leaderboard").onclick = () => ctx.go("leaderboard");
+  el.querySelector("#profilo").onclick = () => ctx.go("profilo");
   return el;
 }

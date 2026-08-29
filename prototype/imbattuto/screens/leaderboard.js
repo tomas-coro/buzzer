@@ -46,7 +46,10 @@ export function render(ctx) {
     <p class="bucket" id="bucket-sub"></p>
     <ol class="classifica" id="rows"></ol>
     <div class="lifetime" id="lifetime"></div>
-    <button class="chip" id="home">Home</button>
+    <div class="row-actions">
+      <button class="chip" id="profilo">Profilo</button>
+      <button class="chip" id="home">Home</button>
+    </div>
   `;
 
   const st = lifetimeStats(store);
@@ -69,6 +72,7 @@ export function render(ctx) {
     });
   });
   el.querySelector("#home").onclick = () => ctx.dispatch({ type: "reset" });
+  el.querySelector("#profilo").onclick = () => ctx.go("profilo");
 
   paint();
   return el;
