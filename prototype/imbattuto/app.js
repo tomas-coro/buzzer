@@ -73,8 +73,11 @@ function dispatch(action) {
       // Piazzamento libero: la carta va nella casella scelta dall'utente
       // ({ tipo: "titolare", ruolo } oppure { tipo: "panca", posto }).
       state = draftPick(state, action.slot, action.card);
-      // se restano slot, pesca una nuova rosa; altrimenti lo stato passa a "coach"
-      draftView = state.stato === "draft" ? spinRosterView() : null;
+      // se restano slot, pesca una nuova rosa; altrimenti lo stato passa a "coach".
+      // `ticker: true` dice al draft di far "cercare" il ticker rosa (mockup 86,
+      // radar lock) invece di saltare di scatto: qui c'era già un valore prima,
+      // sulla primissima pesca del turno (newRun) non c'è niente da cercare.
+      draftView = state.stato === "draft" ? { ...spinRosterView(), ticker: true } : null;
       break;
     }
     case "autoDraft": {
@@ -103,7 +106,7 @@ function dispatch(action) {
         : action.aid === "stagione" ? { sameTeam: curTeam, excludeKey: draftView.key }
         : { excludeKey: draftView.key };
       state = useAid(state, action.aid);
-      draftView = spinRosterView(filtro);
+      draftView = { ...spinRosterView(filtro), ticker: true }; // vedi nota "assign"
       break;
     }
     case "chooseCoach":

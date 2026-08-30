@@ -711,6 +711,39 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   .dslot.elig, .reticle, .rlist.morph, .rlist.morph .crd { animation: none !important; }
+  .tik-corner { animation: none !important; }
+}
+
+/* ---- Ticker "ricerca" squadra-stagione del cand-block (mockup 86, direzione
+   "Radar lock · doppio aggancio"): stesso reticolo del mirino di piazzamento
+   (.reticle), sfarfalla su squadre-stagione vere prima di fermarsi su quella
+   vera - vedi scanThenLock in draft.js. Lo scatto finale è doppio invece che
+   singolo (tik-lock a due tempi): dà la sensazione di una conferma, non solo
+   di un fermo immagine. ---- */
+.tik-lab { display: inline-flex; align-items: center; gap: 6px; }
+.tik-frame {
+  position: relative; display: inline-flex; align-items: center;
+  padding: 2px 7px; border-radius: 6px;
+  font-family: var(--led); font-weight: 800; font-size: .72rem;
+  letter-spacing: 0; text-transform: none; color: var(--bone);
+}
+.tik-txt b { color: var(--yellow); }
+.tik-corner {
+  position: absolute; width: 8px; height: 8px; border: 2px solid #5a5a93;
+  opacity: .85; transition: border-color .15s ease;
+}
+.tik-corner.tl { top: -3px; left: -3px; border-right: none; border-bottom: none; }
+.tik-corner.tr { top: -3px; right: -3px; border-left: none; border-bottom: none; }
+.tik-corner.bl { bottom: -3px; left: -3px; border-right: none; border-top: none; }
+.tik-corner.br { bottom: -3px; right: -3px; border-left: none; border-top: none; }
+.tik-scanning .tik-corner { animation: tikScan .5s ease-in-out infinite alternate; }
+@keyframes tikScan { 0% { transform: scale(1); } 100% { transform: scale(1.6); } }
+.tik-locked .tik-corner { border-color: var(--yellow); animation: tikLock .38s ease-out both; }
+@keyframes tikLock {
+  0% { transform: scale(1.8); opacity: .4; }
+  40% { transform: scale(.95); opacity: 1; }
+  55% { transform: scale(1.25); opacity: .7; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* =================== IL TETTO DI SPESA (porting mockup 80) =================== */

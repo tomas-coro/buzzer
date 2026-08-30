@@ -43,6 +43,34 @@ const LADDER = [
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const reduceMotion = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Ticker "ricerca" squadra-stagione del cand-block (mockup 86, direzione "Radar
+// lock · doppio aggancio"): il reticolo sfarfalla su squadre-stagione VERE del
+// dataset (stesso principio "zero dati finti" del mockup) prima di fermarsi su
+// quella vera, che è già nota in partenza - non è un vero sorteggio, è la stessa
+// cadenza del mockup (7 tick, 55ms+8ms/tick) applicata al valore già deciso dal
+// motore. Il doppio scatto finale (invece di uno) è tutto in CSS, vedi .tik-locked.
+function scanThenLock(frame, txt, targetKey, keys) {
+  const fmt = (key) => { const [t, s] = key.split("|"); return { t, s }; };
+  const pick = (excl) => { let k; do { k = keys[Math.floor(Math.random() * keys.length)]; } while (k === excl && keys.length > 1); return k; };
+  const setTxt = (k) => { const { t, s } = fmt(k); txt.innerHTML = `<b>${esc(t)}</b> · ${esc(s)}`; };
+  frame.classList.remove("tik-locked");
+  frame.classList.add("tik-scanning");
+  const ticks = 7, delayBase = 55, delayStep = 8;
+  let n = 0, last = targetKey;
+  const tick = () => {
+    last = pick(last);
+    setTxt(last);
+    n++;
+    if (n < ticks) setTimeout(tick, delayBase + n * delayStep);
+    else {
+      setTxt(targetKey);
+      frame.classList.remove("tik-scanning");
+      frame.classList.add("tik-locked");
+    }
+  };
+  tick();
+}
+
 // Fascia cromatica dell'overall (stile tabellone): oro / argento / bronzo.
 const fascia = (o) => (o >= 88 ? "oro" : o >= 82 ? "arg" : "brz");
 
@@ -374,7 +402,11 @@ export function render(ctx) {
       : "<b>Nessuno di questi entra nella tua rosa</b> - usa un aiuto per ripescare"}</p>
     <div class="cap-tick" id="cap-tick" hidden></div>
     <div class="cand-block">
-      <div class="seclab"><span>Rosa · ${esc(team)} · ${esc(season)}</span>${aids}</div>
+      <div class="seclab"><span class="tik-lab">Rosa ·
+        <span class="tik-frame" data-tikframe>
+          <span class="tik-corner tl"></span><span class="tik-corner tr"></span><span class="tik-corner bl"></span><span class="tik-corner br"></span>
+          <span class="tik-txt" data-tiktxt><b>${esc(team)}</b> · ${esc(season)}</span>
+        </span></span>${aids}</div>
       <div class="rcols" id="rlist">${rows}</div>
     </div>
     <p class="src">Caselle libere: <b>${10 - nFilled}</b> · piazza dove vuoi</p>
@@ -386,6 +418,20 @@ export function render(ctx) {
   // La classe .morph resta su ogni colonna: ogni re-render crea nuovi .rlist, così
   // il glitch-in riparte da solo a ogni spin/aiuto (animazione CSS one-shot), e i
   // ritardi a scaletta (nth-child fino a 5) coprono esatti i cinque di una colonna.
+
+  // Ticker rosa: la ricerca (scanThenLock) parte solo su spin/aiuto veri
+  // (draftView.ticker, vedi app.js) - sulla primissima pesca del turno non c'è
+  // un valore precedente da "cercare". Lo scatto d'aggancio finale invece c'è
+  // sempre, coerente con .rlist.morph qui sopra.
+  const tikFrame = el.querySelector("[data-tikframe]");
+  const tikTxt = el.querySelector("[data-tiktxt]");
+  if (tikFrame && tikTxt) {
+    if (draftView.ticker && !reduceMotion()) {
+      scanThenLock(tikFrame, tikTxt, draftView.key, Object.keys(ctx.cards));
+    } else {
+      tikFrame.classList.add("tik-locked");
+    }
+  }
 
   let sel = null;   // indice candidato selezionato
   let busy = false; // animazione in corso

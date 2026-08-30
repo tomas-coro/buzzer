@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--
+  viewer-template.html · scocca del visualizzatore di direzioni (skill `mockup`)
+  ─────────────────────────────────────────────────────────────────────────────
+  SCOCCA FISSA, CONTENUTO VARIABILE.
+  La skill sostituisce SOLO il contenuto di <div id="panels"> con i 3/4 pannelli
+  reali. Ogni direzione è un <section class="dir-panel" data-name data-mood data-why>
+  che contiene SOLO il design di anteprima: la barra-titolo (nome+mood) e la riga
+  "perché" sono disegnate automaticamente dallo script qui sotto.
+  I chip in #chips sono generati automaticamente, uno per pannello.
+  NON modificare la scocca o lo script: cambia solo #panels (e <title>).
+-->
+<title>Ticker ricerca draft · mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;1,6..96,500&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Font arcade/LED della pelle "Cabina 90s" del gioco vero, per i pannelli sotto.
+     @import DEVE stare per primo nel blocco, altrimenti Chrome lo ignora. */
+  @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Doto:wght@700;900&display=swap');
+
+  :root{
+    --ink:#14171e; --ink-2:#1b1f28; --ink-3:#232936;
+    --line:#323a4a; --bone:#e9e4d8; --bone-dim:#a39e93;
+    --brass:#e0a96d; --brass-deep:#b9824a; --ok:#7fb59a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 80% -10%, #1d2230 0, transparent 60%), var(--ink);
+    color:var(--bone); font-family:"Hanken Grotesk",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.035;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:24px 18px 64px}
+
+  header.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:18px}
+  .eyebrow{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:700}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(1.4rem,4vw,2rem);margin:.35rem 0 0;letter-spacing:-.015em}
+  .lead{color:var(--bone-dim);font-size:.9rem;margin:.45rem 0 0;max-width:52ch}
+
+  /* chip bar */
+  #chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  #chips button{
+    font:inherit;font-weight:600;font-size:.84rem;color:var(--bone-dim);
+    background:var(--ink-2);border:1px solid var(--line);border-radius:11px;
+    padding:10px 15px;min-height:44px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    transition:color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  #chips button:hover{color:var(--bone)}
+  #chips button[aria-pressed="true"]{border-color:var(--brass);color:var(--bone);background:var(--ink-3)}
+  #chips button .swatch{width:11px;height:11px;border-radius:4px;background:var(--brass);flex:none}
+
+  /* palco */
+  #stage{position:relative}
+  .dir-panel[hidden]{display:none}
+  .dir-panel{animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .dir-card{background:var(--ink-2);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .dir-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--line)}
+  .dir-name{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:1.1rem;line-height:1.15}
+  .dir-mood{font-size:.74rem;color:var(--bone-dim);margin-top:2px}
+  .dir-tag{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:700;padding:5px 9px;border-radius:99px;white-space:nowrap;background:var(--ink-3);color:var(--bone-dim);border:1px solid var(--line)}
+  .dir-tag[data-role="Attuale"]{background:rgba(224,169,109,.16);color:var(--brass);border-color:var(--brass-deep)}
+  .dir-tag[data-role="Variante +"]{background:rgba(127,181,154,.14);color:var(--ok);border-color:#3f5a4f}
+  .dir-body{padding:20px 18px}
+  .dir-why{display:flex;gap:9px;align-items:flex-start;padding:13px 18px;border-top:1px solid var(--line);background:rgba(255,255,255,.015);font-size:.82rem;color:var(--bone-dim)}
+  .dir-why b{color:var(--bone);font-weight:600}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+
+  /* ═════════════════════════════ contenuto dei pannelli ═════════════════════════════
+     Pelle "Cabina 90s" del gioco vero: fondo indaco var(--gk) #15163a, accento giallo
+     var(--gy) #ffcf33, arcade "Bungee" per titoli/etichette, "Doto" (LED/dot-matrix,
+     già usato nell'app vera) per i numeri del ticker. Ogni riquadro replica solo il
+     contesto minimo del draft reale: la riga ".seclab" con "Rosa · TEAM · STAGIONE"
+     sopra un accenno di lista candidati, per giudicare il ticker isolato dal resto. */
+
+  .gk-stage{
+    --gk:#15163a; --gk2:#1d1e4a; --gk3:#2a2a63; --gy:#ffcf33; --bone2:#eee7d8;
+    background:var(--gk); border-radius:14px; padding:18px 16px 20px; max-width:400px;
+    margin:0 auto; font-family:"Hanken Grotesk",sans-serif; position:relative; overflow:hidden;
+  }
+  .gk-crumb{font-family:"Bungee";font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:#8d8fc9;margin-bottom:10px}
+  .gk-seclab{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;min-height:26px}
+  .gk-ghostrows{display:grid;gap:6px;opacity:.5}
+  .gk-ghostrow{height:30px;border-radius:8px;background:var(--gk2);border:1px solid #2f3070}
+  .gk-spin{
+    font-family:"Bungee";font-size:.62rem;letter-spacing:.04em;text-transform:uppercase;
+    color:#201400;background:var(--gy);border:none;border-radius:10px;padding:11px 16px;
+    min-height:44px;cursor:pointer;margin-top:14px;width:100%;transition:transform .12s ease,filter .12s ease;
+  }
+  .gk-spin:hover{filter:brightness(1.08)}
+  .gk-spin:active{transform:translateY(1px)}
+
+  /* ── A: Attuale (istantaneo + glitch carte) ── */
+  .a-txt{font-family:"Bungee";font-size:.72rem;letter-spacing:.02em;color:var(--bone2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .a-txt b{color:var(--gy)}
+  @keyframes a-cardglitch{
+    0%{filter:none;transform:none}
+    30%{filter:contrast(1.5) saturate(1.4) hue-rotate(12deg);transform:translateX(-3px) skewX(-2deg)}
+    65%{filter:contrast(.8) hue-rotate(-14deg);transform:translateX(4px) skewX(2deg)}
+    100%{filter:none;transform:none}
+  }
+  .a-glitching .gk-ghostrow{animation:a-cardglitch .42s steps(4,end) both}
+  .a-glitching .gk-ghostrow:nth-child(2){animation-delay:.03s}
+  .a-glitching .gk-ghostrow:nth-child(3){animation-delay:.06s}
+
+  /* ── B: Odometro arcade (Variante +) ── */
+  .b-reel{height:24px;overflow:hidden;position:relative;flex:1;border-radius:6px}
+  .b-col{display:flex;flex-direction:column;will-change:transform}
+  .b-row{height:24px;display:flex;align-items:center;font-family:"Doto",monospace;font-weight:800;font-size:.9rem;letter-spacing:.02em;color:var(--bone2)}
+  .b-row b{color:var(--gy);margin-right:5px}
+  .b-flash{position:absolute;inset:-2px;border-radius:8px;border:2px solid var(--gy);opacity:0;pointer-events:none}
+  .b-flash.on{animation:b-snap .32s ease-out both}
+  @keyframes b-snap{0%{opacity:.95;box-shadow:0 0 14px 1px var(--gy)}100%{opacity:0;box-shadow:none}}
+
+  /* ── C: Radar lock ── */
+  .c-frame{position:relative;flex:1;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+  .c-txt{font-family:"Doto",monospace;font-weight:800;font-size:.86rem;letter-spacing:.02em;color:var(--bone2)}
+  .c-txt b{color:var(--gy)}
+  .c-corner{position:absolute;width:9px;height:9px;border:2px solid #6f72c4;opacity:.85;transition:border-color .15s ease}
+  .c-corner.tl{top:-4px;left:-4px;border-right:none;border-bottom:none}
+  .c-corner.tr{top:-4px;right:-4px;border-left:none;border-bottom:none}
+  .c-corner.bl{bottom:-4px;left:-4px;border-right:none;border-top:none}
+  .c-corner.br{bottom:-4px;right:-4px;border-left:none;border-top:none}
+  .c-scanning .c-corner{animation:c-scan .5s ease-in-out infinite alternate}
+  @keyframes c-scan{0%{transform:scale(1)}100%{transform:scale(1.6)}}
+  .c-locked .c-corner{border-color:var(--gy);animation:c-lock .22s ease-out both}
+  @keyframes c-lock{0%{transform:scale(1.8);opacity:.4}100%{transform:scale(1);opacity:1}}
+  .c-locked .c-frame::after{content:"";position:absolute;inset:0;border-radius:6px;animation:c-fill .3s ease-out both}
+  @keyframes c-fill{0%{box-shadow:0 0 0 0 rgba(255,207,51,.5) inset}100%{box-shadow:0 0 0 0 rgba(255,207,51,0) inset}}
+
+  /* ── C2: scan lento - stesso reticolo, cadenza più diradata e decisa ── */
+  .gk-stage[data-panel="c2"] .c-scanning .c-corner{animation-duration:.85s}
+
+  /* ── C3: doppio aggancio - il reticolo si chiude in due scatti invece di uno ── */
+  .gk-stage[data-panel="c3"] .c-locked .c-corner{animation:c3-lock .38s ease-out both}
+  @keyframes c3-lock{
+    0%{transform:scale(1.8);opacity:.4}
+    40%{transform:scale(.95);opacity:1}
+    55%{transform:scale(1.25);opacity:.7}
+    100%{transform:scale(1);opacity:1}
+  }
+  .gk-stage[data-panel="c3"] .c-locked .c-frame::after{animation:c3-fill .5s ease-out both}
+  @keyframes c3-fill{
+    0%{box-shadow:0 0 0 0 rgba(255,207,51,.6) inset}
+    35%{box-shadow:0 0 0 0 rgba(255,207,51,0) inset}
+    55%{box-shadow:0 0 0 0 rgba(255,207,51,.6) inset}
+    100%{box-shadow:0 0 0 0 rgba(255,207,51,0) inset}
+  }
+
+  /* ── D: Split-flap ── */
+  .d-board{display:flex;gap:2px;flex:1;flex-wrap:nowrap;overflow:hidden}
+  .d-cell{
+    font-family:"Doto",monospace;font-weight:900;font-size:.78rem;color:var(--bone2);
+    background:var(--gk3);border-radius:3px;width:15px;height:24px;display:flex;
+    align-items:center;justify-content:center;flex:none;position:relative;
+  }
+  .d-cell.space{background:transparent}
+  .d-cell::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:#0009}
+  .d-cell.flip b{color:var(--gy)}
+  .d-cell.settling{animation:d-blur .09s linear}
+  @keyframes d-blur{0%{filter:blur(1.5px)}100%{filter:blur(0)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">Direzioni a confronto</div>
+    <h1 id="mockTitle">Ticker "ricerca" nel draft</h1>
+    <p class="lead">Oggi "Rosa · GSW · 2015-16" compare di scatto. Ogni tile mostra come far scorrere squadre-stagione vere prima di fermarsi sulla vera. Premi <b>Spin</b> quante volte vuoi.</p>
+  </header>
+
+  <nav id="chips" role="tablist" aria-label="Direzioni"></nav>
+
+  <main id="stage">
+    <div id="panels">
+
+      <section class="dir-panel" data-name="Attuale" data-mood="istantaneo · flicker carte" data-why="È lo stato di oggi: il testo salta di scatto, le carte sotto fanno solo un flicker 0.42s sul risultato già deciso. Nessuna ricerca vera - per questo Tomas lo trova piatto." data-role="Attuale">
+        <div class="gk-stage" data-panel="a">
+          <div class="gk-crumb">Draft · rosa</div>
+          <div class="gk-seclab"><span class="a-txt">Rosa · <b class="a-team">GSW</b> · <b class="a-season">2015-16</b></span></div>
+          <div class="gk-ghostrows" data-ghosts>
+            <div class="gk-ghostrow"></div><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div>
+          </div>
+          <button class="gk-spin" data-spin="a" type="button">Spin</button>
+        </div>
+      </section>
+
+      <section class="dir-panel" data-name="Odometro arcade" data-mood="giallo Cabina 90s · rullo che decelera" data-why="Il rullo verticale passa fisicamente attraverso 7 squadre-stagione vere prima di fermarsi, poi scatta con un lampo giallo: leggibile, e il più leggero da costruire (una sola striscia che scorre)." data-role="Variante +">
+        <div class="gk-stage" data-panel="b">
+          <div class="gk-crumb">Draft · rosa</div>
+          <div class="gk-seclab">
+            <span style="font-family:'Bungee';font-size:.62rem;color:#8d8fc9;white-space:nowrap">Rosa ·</span>
+            <div class="b-reel"><div class="b-col" data-reel></div><div class="b-flash" data-flash></div></div>
+          </div>
+          <div class="gk-ghostrows"><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div></div>
+          <button class="gk-spin" data-spin="b" type="button">Spin</button>
+        </div>
+      </section>
+
+      <section class="dir-panel" data-name="Radar lock · classico" data-mood="indaco/giallo · scansione poi aggancio" data-why="Riusa il reticolo che già vedi quando piazzi un giocatore in rosa (stessa iconografia del gioco): il testo sfarfalla rapido come uno scan radar, poi 'aggancia' con uno scatto - il verbo esatto di 'ricerca che si ferma'. Versione base delle tre." data-role="">
+        <div class="gk-stage" data-panel="c1">
+          <div class="gk-crumb">Draft · rosa</div>
+          <div class="gk-seclab">
+            <span style="font-family:'Bungee';font-size:.62rem;color:#8d8fc9;white-space:nowrap">Rosa ·</span>
+            <div class="c-frame" data-cframe>
+              <span class="c-corner tl"></span><span class="c-corner tr"></span><span class="c-corner bl"></span><span class="c-corner br"></span>
+              <span class="c-txt" data-ctext><b>GSW</b> · 2015-16</span>
+            </div>
+          </div>
+          <div class="gk-ghostrows"><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div></div>
+          <button class="gk-spin" data-spin="c1" type="button">Spin</button>
+        </div>
+      </section>
+
+      <section class="dir-panel" data-name="Radar lock · scan lento" data-mood="indaco/giallo · scansione lenta e sicura" data-why="Stesso reticolo, ma il testo cambia solo 4 volte con pause più lunghe invece di sfarfallare rapido: sembra un sensore che verifica con calma prima di confermare, meno arcade e più 'istituzionale' del classico." data-role="">
+        <div class="gk-stage" data-panel="c2">
+          <div class="gk-crumb">Draft · rosa</div>
+          <div class="gk-seclab">
+            <span style="font-family:'Bungee';font-size:.62rem;color:#8d8fc9;white-space:nowrap">Rosa ·</span>
+            <div class="c-frame" data-cframe>
+              <span class="c-corner tl"></span><span class="c-corner tr"></span><span class="c-corner bl"></span><span class="c-corner br"></span>
+              <span class="c-txt" data-ctext><b>GSW</b> · 2015-16</span>
+            </div>
+          </div>
+          <div class="gk-ghostrows"><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div></div>
+          <button class="gk-spin" data-spin="c2" type="button">Spin</button>
+        </div>
+      </section>
+
+      <section class="dir-panel" data-name="Radar lock · doppio aggancio" data-mood="indaco/giallo · doppio click di conferma" data-why="Identica scansione veloce del classico, ma il reticolo si chiude in due scatti invece di uno: il secondo pulso dà la sensazione di una conferma definitiva, non solo un fermo immagine." data-role="">
+        <div class="gk-stage" data-panel="c3">
+          <div class="gk-crumb">Draft · rosa</div>
+          <div class="gk-seclab">
+            <span style="font-family:'Bungee';font-size:.62rem;color:#8d8fc9;white-space:nowrap">Rosa ·</span>
+            <div class="c-frame" data-cframe>
+              <span class="c-corner tl"></span><span class="c-corner tr"></span><span class="c-corner bl"></span><span class="c-corner br"></span>
+              <span class="c-txt" data-ctext><b>GSW</b> · 2015-16</span>
+            </div>
+          </div>
+          <div class="gk-ghostrows"><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div></div>
+          <button class="gk-spin" data-spin="c3" type="button">Spin</button>
+        </div>
+      </section>
+
+      <section class="dir-panel" data-name="Split-flap" data-mood="tabellone anni 90 · ogni carattere gira" data-why="Ogni carattere gira per conto suo come le palette di un tabellone da stazione: il più 'Cabina 90s' dei tre, e mostra letteralmente lettere e cifre che si cercano prima di fermarsi." data-role="">
+        <div class="gk-stage" data-panel="d">
+          <div class="gk-crumb">Draft · rosa</div>
+          <div class="gk-seclab">
+            <span style="font-family:'Bungee';font-size:.62rem;color:#8d8fc9;white-space:nowrap">Rosa ·</span>
+            <div class="d-board" data-dboard></div>
+          </div>
+          <div class="gk-ghostrows"><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div><div class="gk-ghostrow"></div></div>
+          <button class="gk-spin" data-spin="d" type="button">Spin</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Scocca generica: chip auto-costruiti dai pannelli, uno visibile alla volta ──
+(function(){
+  const panelsBox = document.getElementById('panels');
+  const panels = [...panelsBox.querySelectorAll('.dir-panel')];
+  const chips = document.getElementById('chips');
+
+  panels.forEach(p=>{
+    const inner = p.innerHTML;
+    const role = p.dataset.role || '';
+    const tag = role ? `<span class="dir-tag" data-role="${role}">${role}</span>` : `<span class="dir-tag">Direzione</span>`;
+    p.innerHTML = `
+      <div class="dir-card">
+        <div class="dir-head">
+          <div>
+            <div class="dir-name">${p.dataset.name||'Direzione'}</div>
+            <div class="dir-mood">${p.dataset.mood||''}</div>
+          </div>${tag}
+        </div>
+        <div class="dir-body">${inner}</div>
+        ${p.dataset.why ? `<div class="dir-why">✶&nbsp;<span><b>Perché:</b> ${p.dataset.why}</span></div>` : ``}
+      </div>`;
+  });
+
+  function show(i){
+    panels.forEach((p,j)=>p.toggleAttribute('hidden', j!==i));
+    [...chips.children].forEach((c,j)=>c.setAttribute('aria-pressed', j===i));
+  }
+
+  panels.forEach((p,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-pressed', i===0 ? 'true':'false');
+    b.innerHTML = `<span class="swatch"></span>${p.dataset.name || ('Direzione '+(i+1))}`;
+    b.addEventListener('click', ()=>show(i));
+    chips.appendChild(b);
+  });
+
+  show(0);
+})();
+</script>
+
+<script>
+// ── Interazioni "ricerca" dei 4 pannelli: dati REALI (coppie squadra-stagione NBA
+//    vere), coerenti col principio "zero dati finti" del gioco. Formato identico a
+//    draftView.key nel codice vero: "TEAM|SEASON" → qui mostrato "TEAM · SEASON". ──
+(function(){
+  const POOL = [
+    "GSW|2015-16","GSW|2017-18","CHI|1995-96","LAL|2000-01","MIA|2012-13",
+    "BOS|2007-08","OKC|2015-16","CLE|2015-16","SAS|2013-14","HOU|2017-18",
+    "TOR|2018-19","MIL|2020-21","PHI|2000-01","DET|2003-04","DAL|2010-11",
+    "POR|2018-19","DEN|2019-20","PHX|2020-21","ATL|2014-15","NYK|1999-00",
+  ];
+  const reduceMotion = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const rnd = (arr) => arr[Math.floor(Math.random()*arr.length)];
+  const pick = (excl) => { let v; do{ v=rnd(POOL); }while(v===excl); return v; };
+  const fmt = (key) => { const [t,s]=key.split("|"); return {t,s}; };
+
+  const root = document.getElementById('panels');
+
+  // ── A: Attuale - swap istantaneo del testo + glitch 0.42s sulle carte-ombra ──
+  let curA = "GSW|2015-16";
+  function spinA(stage){
+    curA = pick(curA);
+    const {t,s} = fmt(curA);
+    stage.querySelector('.a-team').textContent = t;
+    stage.querySelector('.a-season').textContent = s;
+    const ghosts = stage.querySelector('[data-ghosts]');
+    ghosts.classList.remove('a-glitching'); void ghosts.offsetWidth;
+    if(!reduceMotion()) ghosts.classList.add('a-glitching');
+  }
+
+  // ── B: Odometro - rullo verticale che passa per 7 coppie vere e decelera ──
+  let curB = "GSW|2015-16";
+  function spinB(stage){
+    const target = pick(curB); curB = target;
+    const reel = stage.querySelector('[data-reel]');
+    const flash = stage.querySelector('[data-flash]');
+    const seq = []; let last = target;
+    for(let i=0;i<6;i++){ last = pick(last); seq.push(last); }
+    seq.push(target); // atterra sulla vera
+    reel.innerHTML = seq.map(k=>{ const {t,s}=fmt(k); return `<div class="b-row"><b>${t}</b>${s}</div>`; }).join("");
+    reel.style.transform = 'translateY(0)';
+    if(reduceMotion()){
+      reel.style.transform = `translateY(${-(seq.length-1)*24}px)`;
+      flash.classList.remove('on'); void flash.offsetWidth; flash.classList.add('on');
+      return;
+    }
+    requestAnimationFrame(()=>{
+      reel.animate(
+        [{transform:'translateY(0)'},{transform:`translateY(${-(seq.length-1)*24}px)`}],
+        {duration:760, easing:'cubic-bezier(.15,.75,.2,1)', fill:'forwards'}
+      ).onfinish = () => {
+        flash.classList.remove('on'); void flash.offsetWidth; flash.classList.add('on');
+      };
+    });
+  }
+
+  // ── C1/C2/C3: Radar lock - stesso reticolo, 3 cadenze di scan diverse.
+  //    C1 classico e C3 doppio aggancio condividono la stessa cadenza JS: la
+  //    differenza tra loro è solo CSS (animazione del lock finale, vedi c3-lock/c3-fill). ──
+  const radarState = { c1: "GSW|2015-16", c2: "GSW|2015-16", c3: "GSW|2015-16" };
+  const radarTimers = {};
+  function spinRadar(stage, key, {ticks, delayBase, delayStep}){
+    const target = pick(radarState[key]); radarState[key] = target;
+    const frame = stage.querySelector('[data-cframe]');
+    const txt = stage.querySelector('[data-ctext]');
+    const setTxt = (k) => { const {t,s}=fmt(k); txt.innerHTML = `<b>${t}</b> · ${s}`; };
+    frame.classList.remove('c-locked');
+    clearTimeout(radarTimers[key]);
+    if(reduceMotion()){ setTxt(target); frame.classList.add('c-locked'); return; }
+    frame.classList.add('c-scanning');
+    let n = 0, last = target;
+    const tick = () => {
+      last = pick(last); setTxt(last); n++;
+      if(n < ticks){ radarTimers[key] = setTimeout(tick, delayBase + n*delayStep); }
+      else { setTxt(target); frame.classList.remove('c-scanning'); frame.classList.add('c-locked'); }
+    };
+    tick();
+  }
+
+  // ── D: Split-flap - ogni carattere della stringa finale gira per conto suo ──
+  let curD = "GSW|2015-16";
+  const FLAP_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  function spinD(stage){
+    const target = pick(curD); curD = target;
+    const {t,s} = fmt(target);
+    const full = `${t} · ${s}`;
+    const board = stage.querySelector('[data-dboard]');
+    board.innerHTML = "";
+    const cells = [...full].map((ch) => {
+      const cell = document.createElement('div');
+      cell.className = ch === ' ' ? 'd-cell space' : 'd-cell';
+      cell.textContent = ch === ' ' ? '' : ch;
+      board.appendChild(cell);
+      return { cell, ch };
+    });
+    if(reduceMotion()) return;
+    cells.forEach(({cell,ch}, i) => {
+      if(ch === ' ' || ch === '·') return;
+      let flips = 4 + (i % 3);
+      const delay = i * 28;
+      const runFlip = () => {
+        if(flips <= 0){ cell.textContent = ch; cell.classList.remove('flip'); return; }
+        cell.classList.add('flip','settling');
+        cell.innerHTML = `<b>${rnd(FLAP_CHARS)}</b>`;
+        flips--;
+        setTimeout(runFlip, 55);
+      };
+      setTimeout(runFlip, delay);
+    });
+  }
+
+  root.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-spin]'); if(!btn) return;
+    const stage = btn.closest('.gk-stage');
+    const which = btn.dataset.spin;
+    if(which==='a') spinA(stage);
+    else if(which==='b') spinB(stage);
+    else if(which==='c1') spinRadar(stage,'c1',{ticks:7, delayBase:55, delayStep:8});
+    else if(which==='c2') spinRadar(stage,'c2',{ticks:4, delayBase:130, delayStep:25});
+    else if(which==='c3') spinRadar(stage,'c3',{ticks:7, delayBase:55, delayStep:8});
+    else if(which==='d') spinD(stage);
+  });
+
+  // stato iniziale coerente coi controlli
+  root.querySelectorAll('[data-reel]').forEach(reel=>{
+    const {t,s}=fmt("GSW|2015-16");
+    reel.innerHTML = `<div class="b-row"><b>${t}</b>${s}</div>`;
+  });
+  root.querySelectorAll('[data-dboard]').forEach(board=>{
+    const {t,s}=fmt("GSW|2015-16"); const full = `${t} · ${s}`;
+    board.innerHTML = [...full].map(ch=>`<div class="${ch===' '?'d-cell space':'d-cell'}">${ch===' '?'':ch}</div>`).join("");
+  });
+})();
+</script>
+</body>
+</html>
