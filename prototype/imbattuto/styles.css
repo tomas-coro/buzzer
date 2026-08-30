@@ -304,6 +304,19 @@ button.bz-mode{cursor:pointer}
   box-shadow: none; filter: none;
 }
 
+/* Desktop (min-width:900px): la card si allarga come .draft-free (il draft
+   attivo), ma i blocchi di contenuto restano alla larghezza pensata per loro,
+   centrati - altrimenti le tile delle modalita' e i chip livello si stirano
+   con un vuoto morto in mezzo (vietato da ui-check, blocco 1). Il mobile non
+   e' toccato: e' un min-width, non una modifica ai valori esistenti. */
+@media (min-width: 900px) {
+  .cabhome { max-width: 760px; }
+  .bz-top, .bz-stage, .bz-foot,
+  .diff-head, .diff-nome, .diff-list, .diff-foot {
+    max-width: 460px; margin-inline: auto; width: 100%;
+  }
+}
+
 /* =================== DRAFT (port mockup 40, direzione C) =================== */
 /* Il draft respira più stretto della griglia di default: gap fra blocchi ridotto.
    Larghezza "cabina" ~440px, come Home e Difficoltà: coerenza + densità (niente barre
@@ -752,6 +765,7 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
    della direzione C: frecce tattiche e schema di campo in filigrana. Il fondo
    ardesia di C NON è stato portato: la palette resta Cabina 90s ovunque. */
 .coach { flex: 1; gap: 16px; width: 100%; max-width: 440px; margin-inline: auto; }
+@media (min-width: 900px) { .coach { max-width: 760px; } }
 
 /* Il pannello-lavagnetta che raccoglie titolo e tre righe. */
 .ct-board {
