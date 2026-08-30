@@ -5,7 +5,7 @@ import { attacco, difesa } from "../../../game/partita.js";
 import { votoCarta } from "../../../game/rating.js";
 import { toDisplayOvr } from "../display.js";
 import { teamColors, initials } from "../team-colors.js";
-import { appHeader, esc } from "./_chrome.js";
+import { appHeader, wireAppHeader, esc } from "./_chrome.js";
 
 // LA PARTITA - regia "Cruscotto" (mockup 77, direzione A scelta da Tomas).
 //
@@ -412,6 +412,10 @@ export function render(ctx) {
   }
 
   function aggancia() {
+    // onExit ferma il timer di animazione prima del dispatch: il dispatch
+    // sostituisce l'intero screen, ma il setTimeout in corso resterebbe attivo
+    // nella vecchia closure e continuerebbe a schedulare passi a vuoto.
+    wireAppHeader(el, ctx, { onExit: fermaTimer });
     el.querySelector("#via")?.addEventListener("click", via);
     el.querySelector("#avanti")?.addEventListener("click", () => {
       fermaTimer();

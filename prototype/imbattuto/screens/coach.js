@@ -7,7 +7,7 @@ import { ETICHETTE } from "../../../game/reparti.js";
 import { toDisplayOvr } from "../display.js";
 import { teamColors, initials } from "../team-colors.js";
 import { pickCoaches } from "../coaches.js";
-import { appHeader, seclab, esc } from "./_chrome.js";
+import { appHeader, wireAppHeader, seclab, esc } from "./_chrome.js";
 
 // Panchina: si sceglie l'allenatore prima di entrare nel run.
 //
@@ -147,6 +147,8 @@ export function render(ctx) {
       <div class="ct-five">${quintetto}</div>
     </div>
     <button class="cta" id="vai" disabled>${PLAY}<span>Manda in campo</span></button>`;
+
+  wireAppHeader(el, ctx);
 
   // ---- selezione (stato locale) + anteprima ------------------------------
   const to = el.querySelector("#ctTo");

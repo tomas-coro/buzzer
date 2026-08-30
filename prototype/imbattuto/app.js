@@ -132,6 +132,12 @@ function dispatch(action) {
     case "reset":
       state = null; ui = "home"; draftView = null;
       break;
+    case "exitToDifficolta":
+      // Uscita volontaria da draft/coach/run (bottone nell'appHeader, vedi
+      // _chrome.js): stessa pulizia di "reset" ma si torna alla scelta
+      // difficoltà invece che alla home, la run in corso va persa.
+      state = null; ui = "difficolta"; draftView = null;
+      break;
     default:
       throw new Error(`azione sconosciuta: ${action.type}`);
   }

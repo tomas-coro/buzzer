@@ -323,10 +323,40 @@ button.bz-mode{cursor:pointer}
    tirate su desktop). */
 .draft { gap: 16px; width: 100%; max-width: 440px; margin-inline: auto; }
 
-/* ---- Header-cabina: marchio + modalità (condiviso draft/coach/run/esito) ---- */
+/* ---- Header-cabina: uscita + marchio + modalità (condiviso draft/coach/run/esito) ---- */
 .apphd { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+.apphd-left { display: flex; align-items: center; gap: 9px; }
 .wm { font-family: var(--arcade); font-size: 1rem; color: var(--yellow); line-height: 1; }
 .wm b { color: var(--brass); }
+/* Bottone uscita: area cliccabile 32px anche se l'icona è piccola (touch). */
+.app-exit {
+  display: grid; place-items: center; width: 32px; height: 32px; margin: -4px;
+  border-radius: 9px; background: transparent; border: 1px solid transparent;
+  color: var(--bone-dim); cursor: pointer; flex: none;
+  transition: color .14s, border-color .14s, background .14s;
+}
+.app-exit svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; }
+.app-exit:hover, .app-exit:focus-visible { color: var(--bone); background: var(--ink-2); border-color: var(--line); }
+
+/* ---- Conferma uscita: dialog nativo, stesso trattamento del glossario ---- */
+.exit-confirm {
+  width: min(340px, calc(100vw - 32px)); margin: auto; padding: 20px;
+  border: 1px solid #3a2a66; border-radius: 18px; color: var(--bone);
+  background: linear-gradient(180deg, #241a3e, #15163a);
+  box-shadow: 0 30px 70px -20px rgba(0, 0, 0, .7);
+}
+.exit-confirm::backdrop { background: rgba(6, 6, 20, .72); }
+.exit-confirm[open] { animation: sheetIn .28s var(--ease) both; }
+.exit-confirm .ec-txt { margin: 0 0 16px; font-size: .82rem; line-height: 1.5; text-wrap: pretty; }
+.exit-confirm .ec-actions { display: flex; gap: 10px; }
+.exit-confirm .ec-actions button {
+  flex: 1; padding: 10px; border-radius: 10px; font-family: var(--body); font-weight: 800;
+  font-size: .72rem; letter-spacing: .01em; cursor: pointer; border: 1px solid var(--line);
+}
+.exit-confirm .ec-stay { background: var(--ink-2); color: var(--bone); }
+.exit-confirm .ec-stay:hover, .exit-confirm .ec-stay:focus-visible { border-color: var(--brass-deep); }
+.exit-confirm .ec-go { background: transparent; color: var(--red); border-color: rgba(255, 80, 56, .4); }
+.exit-confirm .ec-go:hover, .exit-confirm .ec-go:focus-visible { background: rgba(255, 80, 56, .12); border-color: var(--red); }
 .mode-pill {
   display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px;
   background: rgba(255, 91, 30, .1); border: 1px solid var(--line); border-radius: 999px;
