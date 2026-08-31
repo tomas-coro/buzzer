@@ -9,6 +9,7 @@ import { recordRun } from "./meta.js";
 import { render as home } from "./screens/home.js";
 import { render as difficolta } from "./screens/difficolta.js";
 import { render as draft } from "./screens/draft.js";
+import { render as draftReveal } from "./screens/draftReveal.js";
 import { render as coach } from "./screens/coach.js";
 import { render as run } from "./screens/run.js";
 import { render as esito } from "./screens/esito.js";
@@ -25,7 +26,7 @@ const cards = CARDS_BY_TEAM_SEASON;
 const pool = opponentPool(cards); // pool avversari, calcolato una volta
 
 // Registry di render: chiave = fase UI o state.stato.
-const screens = { home, difficolta, draft, coach, run, finito: esito, leaderboard, profilo };
+const screens = { home, difficolta, draft, draftReveal, coach, run, finito: esito, leaderboard, profilo };
 
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;
@@ -64,7 +65,11 @@ function dispatch(action) {
         ...(action.squadra ? { squadra: action.squadra } : {}),
       });
       ui = null;                 // d'ora in poi la schermata deriva da state.stato
-      draftView = spinRosterView();  // primo turno: pesca subito una rosa
+      // ticker: true anche qui - scanThenLock pesca a caso da ctx.cards e blocca
+      // sulla chiave vera, non legge nessun valore "precedente": non c'è motivo
+      // per cui la primissima pesca del turno debba saltare di scatto mentre le
+      // altre cercano (playtest 31/08).
+      draftView = { ...spinRosterView(), ticker: true };  // primo turno: pesca subito una rosa
       break;
     case "spin":
       draftView = spinRosterView();
@@ -96,8 +101,18 @@ function dispatch(action) {
         state = draftPick(state, scelta.slot, scelta.carta, scelta.costo);
         draftView = state.stato === "draft" ? spinRosterView() : null;
       }
+      // La rosa è già piena (state.stato è già "coach"): invece di saltare
+      // dritti lì, ci si ferma un istante sul reveal a scaletta della squadra
+      // appena presa (draftReveal.js), che poi si fa avanzare da solo.
+      draftView = null;
+      ui = "draftReveal";
       break;
     }
+    case "autoDraftAdvance":
+      // Il reveal si è chiuso da solo (setTimeout in draftReveal.js): da qui
+      // in poi la schermata torna a derivare da state.stato, cioè "coach".
+      ui = null;
+      break;
     case "aid": {
       // Portata dell'aiuto rispetto alla rosa corrente (chiave "TEAM|SEASON"):
       // respin = tutto nuovo · squadra = stesso anno altra squadra · stagione = stessa squadra altro anno.

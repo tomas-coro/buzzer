@@ -17,7 +17,7 @@
 import { ROLES } from "./roster.js";
 import {
   emptyRosa, assegnaRosa, rosaCompleta, minutiRosa, caselleDove, cartaIn,
-  etichettaSlot, TITOLARE, caselleLibere,
+  etichettaSlot, TITOLARE, caselleLibere, listaRosa,
 } from "./rosa.js";
 import { applyCoach } from "./coach.js";
 import { pickOpponent, chiaveAvversario } from "./opponents.js";
@@ -138,9 +138,12 @@ export function sceltaAutoDraft(state, candidati, malusPunti = 0) {
   const residuo = budget - state.speso;
   const vuote = caselleLibere(state.rosa).length;
 
+  // Stessa regola del draft manuale (draft.js): un'altra annata di un
+  // giocatore già in rosa non è un'opzione, è un doppione.
+  const inRosa = listaRosa(state.rosa);
   const opzioni = candidati
     .map((carta) => ({ carta, slots: caselleDove(state.rosa, carta), costo: salarioCarta(carta) }))
-    .filter((o) => o.slots.length > 0);
+    .filter((o) => o.slots.length > 0 && !inRosa.some((r) => r.player_id === o.carta.player_id));
   if (opzioni.length === 0) return null;
 
   const piazzabili = opzioni.filter((o) => firmabile(o.costo, residuo, vuote));

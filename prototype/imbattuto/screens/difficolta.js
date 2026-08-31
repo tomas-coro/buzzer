@@ -1,4 +1,5 @@
-import { DIFFICULTIES } from "../../../game/difficulty.js";
+import { DIFFICULTIES, TETTI } from "../../../game/difficulty.js";
+import { formattaSalario } from "../../../game/salary.js";
 
 // Scelta difficolta di L'IMBATTUTO. Passo-ponte (non tra i mockup finiti):
 // tenuto minimale nel linguaggio della home Cabina 90s, chip verticali.
@@ -37,6 +38,8 @@ export function render(ctx) {
         <span class="dc-r">
           <span class="dc-see-lab">Vedi</span>
           <span class="dc-see">${m.vedi}</span>
+          <span class="dc-cap-lab">Tetto</span>
+          <span class="dc-cap">${formattaSalario(TETTI[key])}</span>
         </span>
       </button>`;
   }).join("");

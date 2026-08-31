@@ -344,7 +344,13 @@ export function render(ctx) {
   const costi = draftView.cards.map((c) => salarioCarta(c));
   const haCasella = draftView.cards.map((c) => eligibleSlots(c).length > 0);
   const sottoTetto = costi.map((costo) => firmabile(costo, residuo, vuoteOra));
-  const piazzabile = draftView.cards.map((_, i) => haCasella[i] && sottoTetto[i]);
+  // Un'altra ANNATA dello stesso giocatore già in rosa non si piazza: due carte
+  // dello stesso player_id in squadra sarebbero due copie della stessa persona.
+  // giaPresi (pool.js) esclude solo la carta IDENTICA (stesso player_id+season)
+  // dal prossimo spin; questa è una carta diversa (altra stagione) che può
+  // ancora comparire nello spin, quindi va spenta qui.
+  const giaAltraVersione = draftView.cards.map((c) => inRosa.some((r) => r.player_id === c.player_id));
+  const piazzabile = draftView.cards.map((_, i) => haCasella[i] && sottoTetto[i] && !giaAltraVersione[i]);
 
   // Nessun badge "6° uomo" sui candidati: il 6° uomo è una CASELLA DELLA TUA
   // ROSA, non una proprietà della carta pescata. Chi mandi dentro per primo lo
@@ -360,14 +366,22 @@ export function render(ctx) {
     // riga su una riga sola - con tutti e due i chip andava a capo e le due
     // colonne si disallineavano.
     const arch = (rv.stats === "none" || off) ? "" : `<span class="r-arch">${esc(archetype(c.stats_real).label)}</span>`;
-    // Due motivi diversi per una carta spenta: il ruolo è già coperto, oppure
-    // la firma sforerebbe l'apron. Non sono la stessa cosa e il messaggio lo dice.
-    const cover = !haCasella[i] ? `<span class="r-cover">nessuna casella</span>`
+    // Tre motivi diversi per una carta spenta, in ordine di priorità: già in
+    // rosa un'altra sua annata (il più specifico - un giocatore con casella
+    // libera E sotto tetto è comunque doppione), ruolo già coperto, o firma
+    // che sforerebbe l'apron. Non sono la stessa cosa e il messaggio lo dice.
+    const cover = giaAltraVersione[i] ? `<span class="r-cover">già in rosa</span>`
+      : !haCasella[i] ? `<span class="r-cover">nessuna casella</span>`
       : !sottoTetto[i] ? `<span class="r-cover sforo">sfora l'apron</span>` : "";
+    // Il prezzo resta SEMPRE visibile, a ogni difficoltà (game/difficulty.js:
+    // "nome e prezzo restano sempre" - il prezzo non è il voto travestito).
+    // Sta nel r-top insieme a OVR, non in .sub: due chip lì avevano già
+    // strozzato la riga in due colonne (vedi commento cover sopra).
+    const prezzo = `<span class="r-sal">${formattaSalario(costi[i])}</span>`;
     return `<div class="crd${off ? " off" : ""}" data-i="${i}" ${off ? 'aria-disabled="true"' : ""} style="--tc1:${teamColors(c.team_abbr).c1};--tc2:${teamColors(c.team_abbr).c2}">
       <div class="r-top">
         <span class="r-port">${faceHTML(c, { hidden: rv.stats === "none" })}</span>
-        <span class="r-ovr ${rv.ovr ? fascia(c.ovr) : ""}">${rv.ovr ? `<b>${c.ovr}</b><small>OVR</small>` : `<b class="q">?</b>`}</span>
+        <span class="r-ovr ${rv.ovr ? fascia(c.ovr) : ""}">${rv.ovr ? `<b>${c.ovr}</b><small>OVR</small>` : `<b class="q">?</b>`}${prezzo}</span>
         <span class="r-id">
           <span class="nm">${esc(lastName(c.name))}</span>
           <span class="sub">${posBadge}${arch}<span class="r-team">${esc(c.team_abbr)} · ${esc(c.season)}</span>${cover}</span>
@@ -419,10 +433,10 @@ export function render(ctx) {
   // il glitch-in riparte da solo a ogni spin/aiuto (animazione CSS one-shot), e i
   // ritardi a scaletta (nth-child fino a 5) coprono esatti i cinque di una colonna.
 
-  // Ticker rosa: la ricerca (scanThenLock) parte solo su spin/aiuto veri
-  // (draftView.ticker, vedi app.js) - sulla primissima pesca del turno non c'è
-  // un valore precedente da "cercare". Lo scatto d'aggancio finale invece c'è
-  // sempre, coerente con .rlist.morph qui sopra.
+  // Ticker rosa: la ricerca (scanThenLock) parte su ogni spin, primissima pesca
+  // del turno compresa (draftView.ticker, vedi app.js) - pesca a caso dal pool
+  // e blocca sulla chiave vera, non deve "ricordare" niente di precedente.
+  // Lo scatto d'aggancio finale c'è sempre, coerente con .rlist.morph qui sopra.
   const tikFrame = el.querySelector("[data-tikframe]");
   const tikTxt = el.querySelector("[data-tiktxt]");
   if (tikFrame && tikTxt) {

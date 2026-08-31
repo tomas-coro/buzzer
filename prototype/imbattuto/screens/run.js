@@ -187,6 +187,12 @@ export function render(ctx) {
       `<i class="${i < state.vittorie ? "on" : i === state.vittorie ? "next" : ""}"></i>`).join("");
     const seg = Object.keys(VELOCITA).map((k) =>
       `<button type="button" data-vel="${k}" aria-pressed="${velocita === k}">${VELOCITA_NOME[k]}</button>`).join("");
+    // Pausa vive accanto alla velocità (non più in fondo allo screen come CTA):
+    // sono gli stessi comandi della simulazione, devono stare nella stessa fascia.
+    // Compare solo a simulazione avviata e non ancora finita.
+    const pausaBtn = azioneIdx >= 0 && !finita()
+      ? `<button class="sh-pause" id="pausa" type="button">${inPausa ? "Riprendi" : "Pausa"}</button>`
+      : "";
     return `
       <div class="sh-streak">
         <span class="lab">Fila</span>
@@ -196,6 +202,7 @@ export function render(ctx) {
       <div class="sh-speed">
         <span>Velocità</span>
         <div class="sh-seg" role="group" aria-label="Velocità della simulazione">${seg}</div>
+        ${pausaBtn}
       </div>`;
   }
 
@@ -422,7 +429,10 @@ export function render(ctx) {
   function ctaHTML() {
     if (azioneIdx < 0) return `<button class="sh-cta" id="via">${PLAY}<span>Gioca la partita</span></button>`;
     if (!finita()) {
-      return `<button class="sh-cta ghost" id="pausa" type="button">${inPausa ? "Riprendi" : "Pausa"}</button>`;
+      // Non interattivo: Pausa ora sta in testata (vedi testataHTML). Questa riga
+      // resta solo per tenere l'altezza della fascia CTA, senza saltare quando
+      // parte la simulazione.
+      return `<button class="sh-cta ghost" disabled>${inPausa ? "In pausa" : `Simulazione in corso · ${VELOCITA_NOME[velocita]}`}</button>`;
     }
     return `<button class="sh-cta" id="avanti">${vinto ? "Prossimo turno" : "Vedi come è andata"}</button>`;
   }
