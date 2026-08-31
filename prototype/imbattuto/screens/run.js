@@ -173,6 +173,7 @@ export function render(ctx) {
   let inCorso = false;
   let inPausa = false;
   let timer = null;
+  let pausaDaSheet = false; // pausa messa da openStatSheet: solo lei la deve togliere alla chiusura
   const senzaMovimento = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
   const finita = () => quarto >= nQuarti;
@@ -397,7 +398,7 @@ export function render(ctx) {
   // Auto-pausa quando apre: senza, la tabella dietro continua a muoversi e lo
   // snapshot nello sheet diventa stale mentre lo stai leggendo.
   function openStatSheet(riga, carta, ruolo) {
-    if (inCorso && !inPausa) pausaToggle();
+    if (inCorso && !inPausa) { pausaToggle(); pausaDaSheet = true; }
     let dlg = document.getElementById("stat-sheet");
     if (!dlg) {
       dlg = document.createElement("dialog");
@@ -410,6 +411,11 @@ export function render(ctx) {
       ${statSheetHTML(riga, carta, ruolo)}`;
     dlg.querySelector("#stat-x").onclick = () => dlg.close();
     dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+    // "close" nativo copre X, click sul backdrop ED Esc (che bypassa gli
+    // onclick sopra): un solo punto per riprendere la simulazione.
+    dlg.onclose = () => {
+      if (pausaDaSheet) { pausaDaSheet = false; if (inCorso && inPausa) pausaToggle(); }
+    };
     dlg.showModal();
   }
 
@@ -492,12 +498,13 @@ export function render(ctx) {
     // sostituisce l'intero screen, ma il setTimeout in corso resterebbe attivo
     // nella vecchia closure e continuerebbe a schedulare passi a vuoto.
     wireAppHeader(el, ctx, {
-      onExit: () => { fermaTimer(); document.getElementById("stat-sheet")?.close(); },
+      onExit: () => { fermaTimer(); pausaDaSheet = false; document.getElementById("stat-sheet")?.close(); },
     });
     el.querySelector("#via")?.addEventListener("click", via);
     el.querySelector("#pausa")?.addEventListener("click", pausaToggle);
     el.querySelector("#avanti")?.addEventListener("click", () => {
       fermaTimer();
+      pausaDaSheet = false;
       document.getElementById("stat-sheet")?.close();
       ctx.dispatch({ type: "resolveRound" });
     });
