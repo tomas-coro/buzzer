@@ -1,5 +1,6 @@
 import { ROLES } from "../../../game/roster.js";
-import { partitaRound, boxScoreRound, playByPlayRound, titolari } from "../../../game/run.js";
+import { partitaRound, boxScoreRound, playByPlayRound, titolari, ROTAZIONE_AVVERSARIO } from "../../../game/run.js";
+import { minutiRosa } from "../../../game/rosa.js";
 import { log } from "../../../game/playbyplay.js";
 import { attacco, difesa } from "../../../game/partita.js";
 import { votoCarta } from "../../../game/rating.js";
@@ -30,7 +31,7 @@ const PLAY = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z
 // Millisecondi per quarto. Sono i tempi del mockup, dove si sono sentiti: a
 // Lenta una corsa da 16 partite sarebbe ~4,5 minuti di sola simulazione, per
 // questo la velocità si cambia in corsa e resta scelta per tutta la corsa.
-const VELOCITA = { lenta: 4000, normale: 2000, rapida: 800, salta: 0 };
+const VELOCITA = { lenta: 4000, normale: 2000, rapida: 800, salta: 150 };
 const VELOCITA_NOME = { lenta: "Lenta", normale: "Normale", rapida: "Rapida", salta: "Salta" };
 const CHIAVE_VELOCITA = "buzzer.velocita";
 
@@ -90,9 +91,16 @@ function parziale(riga, n) {
   return t;
 }
 
+// Foto vera del giocatore (tools/build-volti.py), stesso pattern di draft.js:
+// c'è sempre, se il file manca l'<img> si toglie da sola e restano le
+// iniziali sul gradiente colore squadra (deciso il 18/08, portato dal mockup 80).
+const VOLTI_PATH = "../../assets/volti";
 function facciaHTML(card) {
   const { c1, c2 } = teamColors(card.team_abbr);
-  return `<span class="sh-face" style="--tc1:${c1};--tc2:${c2}"><span class="ini">${esc(initials(card.name))}</span></span>`;
+  const foto = `<img class="ph" src="${VOLTI_PATH}/${encodeURIComponent(card.player_id)}.webp"
+      alt="" loading="lazy" decoding="async"
+      onload="this.parentNode.classList.add('hasph')" onerror="this.remove()">`;
+  return `<span class="sh-face" style="--tc1:${c1};--tc2:${c2}"><span class="ini">${esc(initials(card.name))}</span>${foto}</span>`;
 }
 
 // OVR · ATT · DIF. Il numero grande si chiama OVR, non "voto" (deciso col grill).
@@ -118,12 +126,21 @@ export function render(ctx) {
 
   const avv = state.avversario;
   const avvSigla = avv.quintet[0]?.team_abbr ?? avv.team;
-  // Gli stessi due array che `boxScoreRound` passa al motore, nello stesso
-  // ordine: le righe del box score sono allineate per indice, non per nome. Il
-  // quintetto avversario arriva già ordinato per ruolo da opponents.js.
+  // Il quintetto (5 carte): basta per le tessere pre-via e per i reparti.
   const mieCarte = titolari(state);
   const loroCarte = avv.quintet;
   const loroRuoli = loroCarte.map((c) => c.pos?.primary ?? "");
+  // Le dieci righe (titolari + panchina), nello STESSO ordine con cui
+  // `boxScoreRound` chiama `giocatoriConMinuti` (che internamente usa proprio
+  // `minutiRosa`): `box.*.righe[i]` e `*Box[i]` sono lo stesso giocatore.
+  // Servono per foto, ruolo e sheet stats nel box score, che ha 10 righe - il
+  // quintetto sopra ne ha solo 5 e lascerebbe le riserve senza carta/ruolo.
+  const mieMinuti = minutiRosa(state.rosaAllenata ?? state.rosa, state.rotazione);
+  const loroMinuti = minutiRosa(avv.rosa, ROTAZIONE_AVVERSARIO);
+  const mieCarteBox = mieMinuti.map((r) => r.carta);
+  const loroCarteBox = loroMinuti.map((r) => r.carta);
+  const mieRuoliBox = mieMinuti.map((r) => r.ruolo ?? "");
+  const loroRuoliBox = loroMinuti.map((r) => r.ruolo ?? "");
   const mieiReparti = repartiSquadra(mieCarte);
   const loroReparti = repartiSquadra(loroCarte);
   const ovrTuo = toDisplayOvr(state.voto.ovr);
@@ -154,6 +171,7 @@ export function render(ctx) {
   let idxCanestro = 0;       // quanti ne ho già mostrati
   let velocita = leggiVelocita();
   let inCorso = false;
+  let inPausa = false;
   let timer = null;
   const senzaMovimento = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
@@ -305,12 +323,12 @@ export function render(ctx) {
     }).join("")}</ul>`;
   }
 
-  function tabellaHTML(righe, carte, ruoli) {
+  function tabellaHTML(righe, carte, ruoli, side) {
     const totali = righe.map((r) => parziale(r, quarto));
     const maxPt = Math.max(...totali.map((v) => v.pts));
     const corpo = righe.map((r, i) => {
       const v = totali[i];
-      const c = carte[i] ?? {};
+      const c = carte[i];
       const ruolo = ruoli[i] ?? "";
       const celle = [["pts", "pt"], ["reb"], ["ast"], ["stl"], ["tov"], ["blk"]].map(([k, cls]) => {
         const classi = [cls || (v[k] === 0 ? "zero" : "")];
@@ -320,8 +338,8 @@ export function render(ctx) {
         return `<td class="${classi.filter(Boolean).join(" ")}">${v[k]}</td>`;
       }).join("");
       const titolo = `${r.nome}${c.season ? ` · ${c.team_abbr} ${c.season}` : ""}`;
-      return `<tr class="${v.pts === maxPt && quarto > 0 ? "top" : ""}">
-        <td title="${esc(titolo)}"><span class="ruolo">${esc(ruolo)}</span>${esc(cognome(r.nome))}</td>
+      return `<tr class="stat-row ${v.pts === maxPt && quarto > 0 ? "top" : ""}" data-side="${side}" data-idx="${i}">
+        <td title="${esc(titolo)}">${facciaHTML(c)}<span class="ruolo">${esc(ruolo)}</span>${esc(cognome(r.nome))}</td>
         ${celle}
       </tr>`;
     }).join("");
@@ -340,10 +358,58 @@ export function render(ctx) {
       </table>`;
   }
 
+  // Sheet stats live (click su una riga del box score dopo il via): totali +
+  // dettaglio quarto per quarto, dati VERI della partita in corso - non lo
+  // sheet statico di draft.js. Riusa .c1/.c1-head/.c1-tot (già nel Profilo).
+  const STAT_COLS = [["pts", "PT"], ["reb", "RIMB"], ["ast", "AST"], ["stl", "RUB"], ["tov", "PP"], ["blk", "STP"]];
+  function statSheetHTML(riga, carta, ruolo) {
+    const tot = parziale(riga, quarto);
+    const head = `<div class="c1-head">
+      ${facciaHTML(carta)}
+      <span class="c1-id"><span class="nm">${esc(riga.nome)}</span>
+        <span class="sub">${esc(ruolo)} · ${esc(carta.team_abbr ?? "")} ${esc(carta.season ?? "")}</span></span>
+    </div>`;
+    const strip = `<div class="c1-tot">
+      <span class="lbl">Totale partita</span>
+      <div class="grid">${STAT_COLS.map(([k, lab]) => `<span class="cell"><b>${tot[k]}</b><small>${lab}</small></span>`).join("")}</div>
+    </div>`;
+    const righeQ = riga.per.slice(0, quarto).map((q, i) => {
+      const lab = partita.quarti[i].overtime ? "OT" : `${i + 1}°`;
+      return `<tr><td>${lab}</td>${STAT_COLS.map(([k]) => `<td>${q[k]}</td>`).join("")}</tr>`;
+    }).join("");
+    const perq = `<div class="c1-perq">
+      <span class="lbl">Quarto per quarto</span>
+      <table>
+        <thead><tr><th></th>${STAT_COLS.map(([, lab]) => `<th>${lab}</th>`).join("")}</tr></thead>
+        <tbody>${righeQ}</tbody>
+      </table>
+    </div>`;
+    return `<div class="c1">${head}${strip}${perq}</div>`;
+  }
+
+  // Auto-pausa quando apre: senza, la tabella dietro continua a muoversi e lo
+  // snapshot nello sheet diventa stale mentre lo stai leggendo.
+  function openStatSheet(riga, carta, ruolo) {
+    if (inCorso && !inPausa) pausaToggle();
+    let dlg = document.getElementById("stat-sheet");
+    if (!dlg) {
+      dlg = document.createElement("dialog");
+      dlg.id = "stat-sheet";
+      dlg.className = "sheet";
+      document.body.appendChild(dlg);
+    }
+    dlg.innerHTML = `
+      <button class="sheet-x" id="stat-x" type="button" aria-label="Chiudi">×</button>
+      ${statSheetHTML(riga, carta, ruolo)}`;
+    dlg.querySelector("#stat-x").onclick = () => dlg.close();
+    dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+    dlg.showModal();
+  }
+
   // Prima del via la formazione È il contenuto: tessere grandi. Dopo il via
   // diventa il box score, che è quello che si guarda mentre la partita gira.
-  function formazioneHTML(carte, righe, ruoli) {
-    if (quarto > 0) return tabellaHTML(righe, carte, ruoli);
+  function formazioneHTML(carte, carteBox, righe, ruoli, ruoliBox, side) {
+    if (quarto > 0) return tabellaHTML(righe, carteBox, ruoliBox, side);
     return `<div class="a-lineup">${carte.map((c, i) => `
       <div class="a-card">
         ${facciaHTML(c)}
@@ -356,7 +422,7 @@ export function render(ctx) {
   function ctaHTML() {
     if (azioneIdx < 0) return `<button class="sh-cta" id="via">${PLAY}<span>Gioca la partita</span></button>`;
     if (!finita()) {
-      return `<button class="sh-cta ghost" disabled>Simulazione in corso · ${VELOCITA_NOME[velocita]}</button>`;
+      return `<button class="sh-cta ghost" id="pausa" type="button">${inPausa ? "Riprendi" : "Pausa"}</button>`;
     }
     return `<button class="sh-cta" id="avanti">${vinto ? "Prossimo turno" : "Vedi come è andata"}</button>`;
   }
@@ -395,11 +461,11 @@ export function render(ctx) {
         <div class="a-bot">
           <div class="a-panel">
             <div class="sh-cap"><span>Il tuo quintetto</span><b>${quarto === 0 ? "Formazione" : "Box score"}</b></div>
-            ${formazioneHTML(mieCarte, box.casa.righe, ROLES)}
+            ${formazioneHTML(mieCarte, mieCarteBox, box.casa.righe, ROLES, mieRuoliBox, "mia")}
           </div>
           <div class="a-panel">
             <div class="sh-cap"><span>Chi hai di fronte</span><b>${quarto === 0 ? "Formazione" : "Box score"}</b></div>
-            ${formazioneHTML(loroCarte, box.ospite.righe, loroRuoli)}
+            ${formazioneHTML(loroCarte, loroCarteBox, box.ospite.righe, loroRuoli, loroRuoliBox, "loro")}
           </div>
         </div>
         ${ctaHTML()}
@@ -415,14 +481,26 @@ export function render(ctx) {
     // onExit ferma il timer di animazione prima del dispatch: il dispatch
     // sostituisce l'intero screen, ma il setTimeout in corso resterebbe attivo
     // nella vecchia closure e continuerebbe a schedulare passi a vuoto.
-    wireAppHeader(el, ctx, { onExit: fermaTimer });
+    wireAppHeader(el, ctx, {
+      onExit: () => { fermaTimer(); document.getElementById("stat-sheet")?.close(); },
+    });
     el.querySelector("#via")?.addEventListener("click", via);
+    el.querySelector("#pausa")?.addEventListener("click", pausaToggle);
     el.querySelector("#avanti")?.addEventListener("click", () => {
       fermaTimer();
+      document.getElementById("stat-sheet")?.close();
       ctx.dispatch({ type: "resolveRound" });
     });
     el.querySelectorAll(".sh-seg button").forEach((b) => {
       b.addEventListener("click", () => cambiaVelocita(b.dataset.vel));
+    });
+    el.querySelectorAll(".sh-box tr.stat-row").forEach((tr) => {
+      const mia = tr.dataset.side === "mia";
+      const i = Number(tr.dataset.idx);
+      const righe = mia ? box.casa.righe : box.ospite.righe;
+      const carte = mia ? mieCarteBox : loroCarteBox;
+      const ruoli = mia ? mieRuoliBox : loroRuoliBox;
+      tr.addEventListener("click", () => openStatSheet(righe[i], carte[i], ruoli[i] ?? ""));
     });
   }
 
@@ -437,10 +515,11 @@ export function render(ctx) {
     velocita = v;
     scriviVelocita(v);
     // Il cambio vale SUBITO, non dal prossimo canestro: a Lenta, premere Rapida
-    // e non vedere succedere niente per un pezzo sembra un bottone rotto.
-    if (inCorso) {
+    // e non vedere succedere niente per un pezzo sembra un bottone rotto. In
+    // pausa invece il valore resta solo memorizzato: non deve far ripartire il
+    // timer da sola (altrimenti "Pausa" + cambio velocità riavvia la partita).
+    if (inCorso && !inPausa) {
       fermaTimer();
-      if (v === "salta") { salta(); riprendiFocus(v, daTastiera); return; }
       timer = setTimeout(passo, tickMs());
     }
     disegna();
@@ -451,11 +530,27 @@ export function render(ctx) {
     if (attivo) el.querySelector(`.sh-seg button[data-vel="${v}"]`)?.focus();
   }
 
-  function salta() {
+  function pausaToggle() {
+    if (!inCorso || finita()) return;
+    inPausa = !inPausa;
+    if (inPausa) {
+      fermaTimer();
+    } else {
+      timer = setTimeout(passo, tickMs());
+    }
+    disegna();
+  }
+
+  // Salto istantaneo alla fine: SOLO per prefers-reduced-motion, che bypassa
+  // sempre ogni animazione senza eccezioni. "Salta" come velocità scelta
+  // dall'utente ora anima canestro per canestro come le altre (vedi VELOCITA
+  // e passo()), non salta più di scatto.
+  function finisciSubito() {
     fermaTimer();
     quarto = nQuarti;
     azioneIdx = azioni.length - 1;
     inCorso = false;
+    inPausa = false;
     disegna();
   }
 
@@ -485,16 +580,17 @@ export function render(ctx) {
     }
     disegna();
     if (finita()) { inCorso = false; return; }
-    if (velocita === "salta") { salta(); return; }
     if (quartoFinito) iniziaQuarto(quarto);
     timer = setTimeout(passo, tickMs());
   }
 
   function via() {
     if (inCorso || finita()) return;
-    // Chi ha chiesto meno movimento vede il finale subito: niente attesa.
-    if (velocita === "salta" || senzaMovimento) { salta(); return; }
+    // Chi ha chiesto meno movimento vede il finale subito: niente attesa, mai
+    // un'eccezione (nemmeno se ha scelto "Salta" come velocità).
+    if (senzaMovimento) { finisciSubito(); return; }
     inCorso = true;
+    inPausa = false;
     iniziaQuarto(quarto);
     passo();
   }
