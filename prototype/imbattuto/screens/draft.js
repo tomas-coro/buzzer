@@ -47,9 +47,27 @@ const reduceMotion = () => window.matchMedia && window.matchMedia("(prefers-redu
 // lock · doppio aggancio"): il reticolo sfarfalla su squadre-stagione VERE del
 // dataset (stesso principio "zero dati finti" del mockup) prima di fermarsi su
 // quella vera, che è già nota in partenza - non è un vero sorteggio, è la stessa
-// cadenza del mockup (7 tick, 55ms+8ms/tick) applicata al valore già deciso dal
-// motore. Il doppio scatto finale (invece di uno) è tutto in CSS, vedi .tik-locked.
-function scanThenLock(frame, txt, targetKey, keys) {
+// cadenza del mockup (7 tick, 55ms+8ms/tick, ~610ms totale). Era stata allungata
+// a 9 tick/70+12ms per "leggersi come ricerca", ma sommata al volo della carta
+// (620ms) e alla rise dell'intera schermata (tolta qui sotto, vedi styles.css
+// `.draft.draft-free > *`) il pick sembrava bloccato per quasi 2s - tornata
+// corta perché il vero problema era la rise, non la durata dello scan
+// (bug_draft-non-rolla-squadra, 07/09/2026). Il doppio scatto finale (invece
+// di uno) è tutto in CSS, vedi .tik-locked.
+//
+// Il primo giro (newRun) monta un'intera schermata pesante - header, budget,
+// corte, dieci candidati con foto - tutta sincrona PRIMA che il browser faccia
+// il primo paint. Se i tick partono subito, quel lavoro sincrono può superare
+// da solo la durata dell'animazione: i timer arrivano al lock prima che il
+// browser abbia mai disegnato un frame "in scansione", e l'utente vede lo
+// scatto finale come se l'animazione non fosse mai partita (bug riprodotto
+// 07/09/2026, causa dietro bug_draft-non-rolla-squadra). Il doppio
+// requestAnimationFrame aspetta che quel primo paint sia avvenuto davvero
+// prima di far scoccare il primo tick.
+// `onLock` scopre la rosa nello stesso istante in cui il ticker si blocca:
+// prima la rosa vera compariva subito sotto un'etichetta ancora in scansione,
+// tradendo il risultato prima del lock (playtest 07/09/2026).
+function scanThenLock(frame, txt, targetKey, keys, onLock) {
   const fmt = (key) => { const [t, s] = key.split("|"); return { t, s }; };
   const pick = (excl) => { let k; do { k = keys[Math.floor(Math.random() * keys.length)]; } while (k === excl && keys.length > 1); return k; };
   const setTxt = (k) => { const { t, s } = fmt(k); txt.innerHTML = `<b>${esc(t)}</b> · ${esc(s)}`; };
@@ -64,11 +82,12 @@ function scanThenLock(frame, txt, targetKey, keys) {
     if (n < ticks) setTimeout(tick, delayBase + n * delayStep);
     else {
       setTxt(targetKey);
+      onLock?.();
       frame.classList.remove("tik-scanning");
       frame.classList.add("tik-locked");
     }
   };
-  tick();
+  requestAnimationFrame(() => requestAnimationFrame(tick));
 }
 
 // Fascia cromatica dell'overall (stile tabellone): oro / argento / bronzo.
@@ -395,11 +414,17 @@ export function render(ctx) {
   // Le dieci in due colonne: quintetto a sinistra, panchina a destra. Il gruppo
   // dice da quale casella della SUA squadra viene il candidato - non dove
   // andrebbe nella tua, che lo decide il piazzamento.
+  //
+  // Se il ticker sta "cercando" la squadra, la rosa resta nascosta (wait-reveal)
+  // finché non si blocca: prima appariva subito sotto un'etichetta ancora in
+  // scansione, che tradiva il risultato prima del lock e rompeva l'illusione
+  // della ricerca (playtest 07/09/2026). Il reveal vero parte da scanThenLock.
+  const waitTicker = draftView.ticker && !reduceMotion();
   const gruppo = (tipo, lab) => {
     const voci = draftView.cards.map((c, i) => ({ c, i })).filter(({ i }) => draftView.slots[i].tipo === tipo);
     if (voci.length === 0) return "";
     return `<div class="rgrp"><div class="grp-lab">${esc(lab)}</div>
-      <div class="rlist morph">${voci.map(({ c, i }) => riga(c, i)).join("")}</div></div>`;
+      <div class="rlist ${waitTicker ? "wait-reveal" : "morph"}">${voci.map(({ c, i }) => riga(c, i)).join("")}</div></div>`;
   };
   const rows = gruppo(TITOLARE, "Quintetto") + gruppo(PANCA, "Panchina");
 
@@ -437,13 +462,20 @@ export function render(ctx) {
   // del turno compresa (draftView.ticker, vedi app.js) - pesca a caso dal pool
   // e blocca sulla chiave vera, non deve "ricordare" niente di precedente.
   // Lo scatto d'aggancio finale c'è sempre, coerente con .rlist.morph qui sopra.
+  const revealRosa = () => {
+    el.querySelectorAll(".rlist.wait-reveal").forEach((r) => {
+      r.classList.remove("wait-reveal");
+      r.classList.add("morph");
+    });
+  };
   const tikFrame = el.querySelector("[data-tikframe]");
   const tikTxt = el.querySelector("[data-tiktxt]");
   if (tikFrame && tikTxt) {
     if (draftView.ticker && !reduceMotion()) {
-      scanThenLock(tikFrame, tikTxt, draftView.key, Object.keys(ctx.cards));
+      scanThenLock(tikFrame, tikTxt, draftView.key, Object.keys(ctx.cards), revealRosa);
     } else {
       tikFrame.classList.add("tik-locked");
+      revealRosa();
     }
   }
 
@@ -542,8 +574,14 @@ export function render(ctx) {
       if (slot.classList.contains("elig")) placeIn(key);
     };
   });
+  // `busy` = una carta sta ancora volando verso lo slot (flyMirino, ~620ms).
+  // Un aiuto cliccato in quella finestra ridisegna la schermata e stacca dal
+  // DOM la riga/casella che il volo sta animando: l'animazione finisce nel
+  // vuoto, il suo commit() non parte mai e il piazzamento sparisce senza
+  // errori (bug "non fa il roll, vista fissa" - riprodotto il 07/09/2026).
+  // Stessa guardia già presente su #autod-go, mancava solo qui.
   el.querySelectorAll(".aid:not([disabled])").forEach((b) => {
-    b.onclick = () => ctx.dispatch({ type: "aid", aid: b.dataset.aid });
+    b.onclick = () => { if (busy) return; ctx.dispatch({ type: "aid", aid: b.dataset.aid }); };
   });
 
   // ---- Auto-draft ----

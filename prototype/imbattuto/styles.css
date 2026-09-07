@@ -327,6 +327,17 @@ button.bz-mode{cursor:pointer}
    Larghezza "cabina" ~440px, come Home e Difficoltà: coerenza + densità (niente barre
    tirate su desktop). */
 .draft { gap: 16px; width: 100%; max-width: 440px; margin-inline: auto; }
+/* Il draft ridisegna l'INTERA schermata (app.replaceChildren) a ogni spin,
+   piazzamento o aiuto - non solo alla prima apertura. La "rise" generica di
+   `.screen > *` (riga 75) farebbe sparire e riapparire budget/titolari/panchina
+   sfasati a OGNI mossa: ~0.7s di schermo sbiadito che si somma al volo della
+   carta (620ms) e al ticker (vedi scanThenLock) dando quasi 2s di "schermo
+   vuoto" a ogni pick - letto da Tomas come "il roll è rotto" (07/09/2026,
+   bug_draft-non-rolla-squadra: il pick casuale è corretto, era solo questo).
+   cand-block ha già la sua coreografia d'ingresso (ticker + morph): l'unica
+   fase "vuota" voluta è quella, il resto va tenuto fermo. Stesso principio
+   di `.esito > .e-ladder, .esito > .e-score` più sotto nel file. */
+.draft.draft-free > * { animation: none; }
 
 /* ---- Header-cabina: uscita + marchio + modalità (condiviso draft/coach/run/esito) ---- */
 .apphd { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
@@ -700,6 +711,11 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   box-shadow: 0 18px 40px -12px rgba(0, 0, 0, .9), 0 0 0 1px rgba(255, 255, 255, .14);
 }
 .flyer .ini { font-family: var(--arcade); font-size: .86rem; color: #fff; }
+
+/* Rosa nascosta finché il ticker "cerca" la squadra (draft.js: waitTicker) -
+   la rosa vera non deve mai vedersi prima dello scatto di lock, altrimenti
+   la ricerca sopra è un teatrino che tradisce subito il risultato. */
+.rlist.wait-reveal { opacity: 0; pointer-events: none; }
 
 /* glitch-in della rosa a ogni spin/aiuto (direzione morph "glitch CRT") */
 .rlist.morph { animation: rmorph .42s steps(1, end) both; }
