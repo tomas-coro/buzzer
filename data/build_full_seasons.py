@@ -185,7 +185,7 @@ def pos_obj(pos_str: str) -> dict:
 
 
 def main():
-    seasons_needed = list(range(2001, 2015)) + list(range(2021, 2026))
+    seasons_needed = list(range(2001, 2015)) + list(range(2021, 2027))
     all_rows = []
     for y in seasons_needed:
         all_rows.extend(load_rows_for_season(y))
