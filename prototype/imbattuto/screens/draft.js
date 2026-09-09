@@ -395,18 +395,19 @@ export function render(ctx) {
       : !sottoTetto[i] ? `<span class="r-cover sforo">sfora l'apron</span>` : "";
     // Il prezzo resta SEMPRE visibile, a ogni difficoltà (game/difficulty.js:
     // "nome e prezzo restano sempre" - il prezzo non è il voto travestito).
-    // Sta nel r-top insieme a OVR, non in .sub: due chip lì avevano già
-    // strozzato la riga in due colonne (vedi commento cover sopra).
-    const prezzo = `<span class="r-sal">${formattaSalario(costi[i])}</span>`;
+    // È un cartellino autonomo: costo e margine residuo si leggono prima del
+    // voto, senza affollare identità e statistiche.
+    const prezzo = `<span class="r-sal"><small>Contratto annuo</small><b>${formattaSalario(costi[i])}</b><em>restano <strong>${formattaSalario(residuo - costi[i])}</strong></em></span>`;
     return `<div class="crd${off ? " off" : ""}" data-i="${i}" ${off ? 'aria-disabled="true"' : ""} style="--tc1:${teamColors(c.team_abbr).c1};--tc2:${teamColors(c.team_abbr).c2}">
       <div class="r-top">
         <span class="r-port">${faceHTML(c, { hidden: rv.stats === "none" })}</span>
-        <span class="r-ovr ${rv.ovr ? fascia(c.ovr) : ""}">${rv.ovr ? `<b>${c.ovr}</b><small>OVR</small>` : `<b class="q">?</b>`}${prezzo}</span>
+        <span class="r-ovr ${rv.ovr ? fascia(c.ovr) : ""}">${rv.ovr ? `<b>${c.ovr}</b><small>OVR</small>` : `<b class="q">?</b>`}</span>
         <span class="r-id">
           <span class="nm">${esc(lastName(c.name))}</span>
           <span class="sub">${posBadge}${arch}<span class="r-team">${esc(c.team_abbr)} · ${esc(c.season)}</span>${cover}</span>
           ${rowStatsHTML(c, rv)}
         </span>
+        ${prezzo}
         <button class="r-info" data-info="${i}" type="button" aria-label="Scheda ${esc(c.name)}">i</button>
       </div>
     </div>`;

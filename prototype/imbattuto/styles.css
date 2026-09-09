@@ -642,9 +642,9 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
      altre e in due colonne il disallineamento si sommava riga dopo riga. */
   padding: 1px 5px; flex: none;
 }
-/* Quattro colonne, non più cinque: le cifre PT/RB/AS sono scese sotto il nome
-   (.r-mini), perché in due colonne la riga è larga la metà. */
-.r-top { display: grid; grid-template-columns: 30px 42px 1fr auto; align-items: center; gap: 8px; padding: 6px 9px 6px 12px; }
+/* Il contratto occupa una colonna propria: è una leva del draft, non una nota
+   sotto l'OVR. PT/RB/AS restano sotto il nome per non strozzare l'identità. */
+.r-top { display: grid; grid-template-columns: 30px 42px minmax(0, 1fr) 96px; align-items: center; gap: 8px; padding: 6px 0 6px 12px; }
 .r-port { width: 30px; height: 36px; }
 .r-port .face { width: 100%; height: 100%; border-radius: 8px; }
 .r-port .face .mono { font-size: .62rem; }
@@ -655,10 +655,18 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 .r-ovr.arg b { color: #d6dbe6; text-shadow: 0 0 10px rgba(214, 219, 230, .3); }
 .r-ovr.brz b { color: #c78a5b; text-shadow: 0 0 10px rgba(199, 138, 91, .3); }
 .r-ovr small { font-family: var(--body); font-weight: 800; font-size: .36rem; letter-spacing: .12em; text-transform: uppercase; color: var(--bone-dim); }
-/* Il prezzo resta sempre leggibile, a ogni difficoltà - non è il voto travestito
-   (game/difficulty.js). Sta sotto OVR nella stessa colonna, non in .sub dove
-   due chip avevano già rotto l'allineamento su due colonne. */
-.r-sal { display: block; font-family: var(--led); font-weight: 700; font-size: .64rem; color: var(--brass); margin-top: 3px; white-space: nowrap; }
+/* Cartellino contratto scelto nel mockup 89: costo e margine residuo sono un
+   blocco autonomo, leggibile anche quando OVR e scouting sono nascosti. */
+.r-sal {
+  align-self: stretch; display: flex; flex-direction: column; justify-content: center;
+  min-width: 0; padding: 5px 29px 5px 10px; line-height: 1; white-space: nowrap;
+  background: linear-gradient(145deg, #51200f, #281226); border-left: 1px solid #a54320;
+  box-shadow: inset 4px 0 0 var(--brass);
+}
+.r-sal small { font-size: .36rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #f0a17e; }
+.r-sal b { margin: 3px 0; font-family: var(--led); font-weight: 900; font-size: 1.05rem; line-height: .9; color: var(--bone); font-variant-numeric: tabular-nums; }
+.r-sal em { padding-top: 3px; border-top: 1px solid rgba(255,255,255,.12); font-style: normal; font-size: .36rem; font-weight: 700; color: #d6b2a4; }
+.r-sal em strong { float: right; color: var(--bone); font-family: var(--led); font-size: .43rem; }
 .r-id { min-width: 0; }
 .r-id .nm {
   display: block; font-family: var(--display); font-weight: 800; font-size: .92rem; line-height: 1;
@@ -699,8 +707,9 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 .bx.sig i { color: var(--bone); }
 .r-blind { display: inline-block; margin-top: 4px; font-family: var(--body); font-style: italic; font-size: .62rem; color: var(--bone-dim); }
 .r-info {
-  width: 22px; height: 22px; border-radius: 6px; font-family: var(--display); font-weight: 800; font-style: italic;
-  font-size: .72rem; color: var(--bone-dim); background: var(--ink-2); border: 1px solid var(--line); flex: none;
+  position: absolute; z-index: 2; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 5px;
+  font-family: var(--display); font-weight: 800; font-style: italic; font-size: .68rem;
+  color: var(--bone-dim); background: var(--ink-2); border: 1px solid rgba(255,255,255,.14);
 }
 .r-info:hover { color: var(--bone); border-color: var(--brass-deep); }
 
