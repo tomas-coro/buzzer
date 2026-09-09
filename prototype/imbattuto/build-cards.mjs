@@ -16,6 +16,12 @@ const root = resolve(here, "..", "..");
 const buzSrc = readFileSync(resolve(root, "data/nba-data.js"), "utf8");
 const buz = JSON.parse(buzSrc.slice(buzSrc.indexOf("{"), buzSrc.lastIndexOf("}") + 1));
 
+// --- leggende NBA pre-2014 (squadre pilota con OVR curato da 2kratings.com, vedi
+// data/build_legends.mjs): stesso formato carta di NBA_DATA, concatenate qui prima
+// del calcolo dei reparti così i filler allargano il pool percentile insieme al resto.
+const { LEGEND_CARDS } = await import(resolve(root, "data/legends.js"));
+buz.cards.push(...LEGEND_CARDS);
+
 // --- nba-sim: PLAYERS (solo posizione primaria, per nome; fallback se manca in posMap) ---
 const simSrc = readFileSync(resolve(root, "mockups/59-players-data.js"), "utf8");
 const simArr = JSON.parse(simSrc.match(/const PLAYERS=(\[[\s\S]*?\]);/)[1]);
@@ -85,17 +91,37 @@ for (const [k, v] of Object.entries(volMapRaw)) {
 const STAT_KEYS = ["pts", "reb", "ast", "stl", "blk", "tov", "fg_pct", "tp_pct", "ft_pct", "min", "gp", "plus_minus"];
 
 function toCard(c) {
+  // Carte "filler": solo per allargare il pool su cui si calcola il percentile di
+  // stagione (vedi assegnaReparti), non hanno un overall 2K e non escono mai in
+  // cards.js. Servono alle stagioni-leggenda, dove le squadre curate da 2K sono
+  // troppo poche per una scala percentile sensata (vedi game/reparti.js).
+  if (c._filler) {
+    if (!c.stats_real || STAT_KEYS.some((k) => c.stats_real[k] == null)) {
+      throw new Error(`Carta filler '${c.name}' (${c.season}) con box score incompleto`);
+    }
+    return {
+      player_id: c.player_id, name: c.name, season: c.season,
+      team: c.team, team_abbr: c.team_abbr, ovr: 0,
+      pos: { primary: "SF", secondary: null }, stats_real: c.stats_real,
+      estimated: true, _filler: true,
+    };
+  }
   if (typeof c.ovr !== "number" || !Number.isFinite(c.ovr)) {
     throw new Error(`Carta '${c.name}' (${c.season}) senza overall valido`);
   }
   if (!c.stats_real || STAT_KEYS.some((k) => c.stats_real[k] == null)) {
     throw new Error(`Carta '${c.name}' (${c.season}) con box score incompleto`);
   }
-  // Posizione: priorità alle % minuti/ruolo reali (posMap), poi match nba-sim, poi inferenza.
-  // estimated = true solo quando la posizione è dedotta dal box score (nessuna fonte reale).
+  // Posizione: priorità alle % minuti/ruolo reali (posMap), poi alla posizione già
+  // fornita dalla carta sorgente (es. leggende: primario/secondario letti da
+  // 2kratings, non dedotti), poi match nba-sim, poi inferenza. estimated = true
+  // solo quando la posizione è dedotta dal box score (nessuna fonte reale).
   const match = sim.get(c.name);
   let pos, estimated;
-  if (match) {
+  if (c.pos) {
+    pos = c.pos;
+    estimated = false;
+  } else if (match) {
     pos = { primary: match.p, secondary: null };
     estimated = false;
   } else {
@@ -107,14 +133,22 @@ function toCard(c) {
     pos = { primary: real.primary, secondary: real.secondary };
     estimated = false;
   }
-  // Volumi veri, se il giocatore-stagione è nella mappa BR. `min` e `gp` qui sono
-  // quelli della fonte dei volumi (minuti totali, non media): servono a portare i
-  // totali sui 36 minuti senza mescolare due fonti diverse.
+  // Volumi veri: dalla mappa BR (giocatori moderni) o, se la carta sorgente li
+  // porta già con sé (es. leggende, prese a mano dalla tabella Totals di
+  // Basketball-Reference), da lì. `min` e `gp` qui sono quelli della fonte dei
+  // volumi (minuti totali, non media): servono a portare i totali sui 36 minuti
+  // senza mescolare due fonti diverse.
   const vol = volMap[`${chiaveVolumi(c.name)}|${c.season}`];
   const stats_vol = vol
     ? { fg3a: vol.fg3a, fg3: vol.fg3, fg2a: vol.fg2a, fg2: vol.fg2,
         fta: vol.fta, ft: vol.ft, orb: vol.orb, drb: vol.drb,
         min: vol.mp, gp: vol.games }
+    : c.stats_vol_raw
+    ? { fg3a: c.stats_vol_raw.fg3a, fg3: c.stats_vol_raw.fg3,
+        fg2a: c.stats_vol_raw.fg2a, fg2: c.stats_vol_raw.fg2,
+        fta: c.stats_vol_raw.fta, ft: c.stats_vol_raw.ft,
+        orb: c.stats_vol_raw.orb, drb: c.stats_vol_raw.drb,
+        min: c.stats_vol_raw.mp, gp: c.stats_vol_raw.games }
     : null;
 
   const card = {
@@ -127,8 +161,11 @@ function toCard(c) {
 }
 
 // I cinque reparti sono percentili DENTRO la stagione, quindi si calcolano su tutte
-// le carte insieme (non squadra per squadra) e prima del raggruppamento.
-const all = assegnaReparti(buz.cards.map(toCard));
+// le carte insieme (non squadra per squadra) e prima del raggruppamento. Le carte
+// filler partecipano al calcolo (allargano il pool) ma vengono scartate subito
+// dopo: non hanno un overall 2K e non sono giocabili.
+const allConFiller = assegnaReparti(buz.cards.map(toCard));
+const all = allConFiller.filter((c) => !c._filler);
 
 const byKey = {};
 for (const card of all) {

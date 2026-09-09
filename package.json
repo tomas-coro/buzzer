@@ -2,6 +2,7 @@
   "name": "buzzer",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "test": "node --test game/*.test.js prototype/imbattuto/*.test.js"
   }
