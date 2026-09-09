@@ -164,9 +164,10 @@ function denseSheetHTML(card, rv) {
   const two = card.pos.secondary;
   const posTxt = `${esc(card.pos.primary)}${two ? " · " + esc(two) : ""}`;
   const arch = rv.stats === "none" ? "" : ` · ${esc(archetype(card.stats_real).label)}`;
+  const ovrLabel = card.ovr_stimato ? "OVR stimato" : "Overall 2K";
   const ovrHTML = rv.ovr
-    ? `<b>${card.ovr}</b><small>Overall 2K</small>`
-    : `<b class="q">?</b><small>Overall 2K</small>`;
+    ? `<b>${card.ovr}</b><small>${ovrLabel}</small>`
+    : `<b class="q">?</b><small>${ovrLabel}</small>`;
   const head = `<div class="c1-head">
       ${faceHTML(card, { hidden: rv.stats === "none" })}
       <span class="c1-id"><span class="nm">${esc(card.name)}</span><span class="sub">${posTxt}${arch} · ${esc(card.team)} · ${esc(card.season)}</span></span>

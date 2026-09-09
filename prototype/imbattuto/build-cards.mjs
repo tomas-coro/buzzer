@@ -22,6 +22,11 @@ const buz = JSON.parse(buzSrc.slice(buzSrc.indexOf("{"), buzSrc.lastIndexOf("}")
 const { LEGEND_CARDS } = await import(resolve(root, "data/legends.js"));
 buz.cards.push(...LEGEND_CARDS);
 
+// --- stagioni storiche complete (30 squadre, OVR stimato dai box stats - vedi
+// data/build_full_seasons.py), 2000-01..2013-14 + 2020-21..2024-25.
+const { ESTIMATED_SEASON_CARDS } = await import(resolve(root, "data/estimated-seasons.js"));
+buz.cards.push(...ESTIMATED_SEASON_CARDS);
+
 // --- nba-sim: PLAYERS (solo posizione primaria, per nome; fallback se manca in posMap) ---
 const simSrc = readFileSync(resolve(root, "mockups/59-players-data.js"), "utf8");
 const simArr = JSON.parse(simSrc.match(/const PLAYERS=(\[[\s\S]*?\]);/)[1]);
@@ -157,6 +162,9 @@ function toCard(c) {
     pos, stats_real: c.stats_real, estimated,
   };
   if (stats_vol) card.stats_vol = stats_vol;
+  // OVR stimato dai box stats (stagioni storiche complete), non un rating 2K
+  // vero: la UI lo etichetta "OVR stimato" invece di "Overall 2K" (draft.js).
+  if (c.ovr_stimato) card.ovr_stimato = true;
   return card;
 }
 
