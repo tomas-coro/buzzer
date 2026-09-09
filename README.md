@@ -1,27 +1,28 @@
 # buzzer — NBA Draft Game
 
-Gioco di **draft NBA multi-stagione**, ispirato al gioco "38-0-0": si costruisce un quintetto
-scegliendo tra carte giocatore-stagione tratte da più annate (edizioni 2K dal 2K16 al 2K21).
+Gioco di **draft NBA multi-stagione**: costruisci una rosa da dieci giocatori,
+scegli il coach e prova a vincere 16 partite senza sconfitte.
 
-> **Stato attuale — Fase 1 (Dati): completata.**
-> Il repo contiene la *pipeline che genera il dataset* e i *mockup di design* dell'interfaccia.
-> Il gioco vero e proprio (**Fase 2**) non è ancora implementato.
+> **Stato attuale:** prototipo completo e giocabile, collegato al motore di partita.
+> Include 10.564 carte, 40 stagioni dal 1984-85 al 2025-26 e quattro difficoltà.
 
 ---
 
 ## Struttura del progetto
 
 ```
-data/            Pipeline Python che costruisce il dataset dei giocatori
-  teams.py         sigla squadra -> nome completo (es. "GSW" -> "Golden State Warriors")
-  normalize.py     normalizzazioni pure (id giocatore, stagione -> edizione 2K)
-  build.py         una riga CSV -> "carta" giocatore-stagione; assembla cards + indici
-  sanity.py        controlli di coerenza sul dataset (conteggi, OVR, collisioni)
-  build_step1.py   entry point: scarica il CSV, costruisce, verifica, scrive nba-data.js
-  nba-data.js      DATASET GENERATO (non modificare a mano) — lo userà il gioco
-tests/           Suite pytest (usa fixture in tests/fixtures/, non i dati grezzi)
-mockups/         Esplorazioni di design in HTML (direzioni estetiche, flussi, animazioni)
-docs/            Specifiche e piani di lavoro
+data/                  Pipeline e dataset dei giocatori
+game/                  Motore puro di draft, coach e partite
+prototype/imbattuto/    App web giocabile
+assets/volti/           Foto giocatori, con fallback alle iniziali
+mockups/                Esplorazioni di design
+```
+
+## Avvio dell'app
+
+```bash
+python3 -m http.server 8000
+# http://localhost:8000/prototype/imbattuto/
 ```
 
 ## Come partire
@@ -35,11 +36,18 @@ cd buzzer
 python -m venv .venv
 source .venv/bin/activate          # su Windows: .venv\Scripts\activate
 
-# installa le dipendenze (solo pytest, per i test)
+# installa le dipendenze di test
 pip install -r requirements.txt
+playwright install chromium
 
-# lancia i test — devono dare "20 passed"
+# test del motore e del prototipo
+npm test
+
+# test della pipeline dati
 python -m pytest -q
+
+# percorso browser completo, desktop e mobile
+python tools/smoke_imbattuto.py
 
 # rigenera il dataset da zero (riscarica il CSV se manca)
 python -m data.build_step1
@@ -60,5 +68,12 @@ Il dataset generato (`nba-data.js`) è invece committato ed è riproducibile byt
 
 ## Dati
 
-- **Fonte:** [`willyiamyu/nba2k_analysis`](https://github.com/willyiamyu/nba2k_analysis) — file `nba_rankings_2014-2020`.
-- **Stagioni:** dal 2014-15 al 2019-20, mappate alle edizioni **2K16 → 2K21**.
+L'app usa 10.564 carte distribuite in 804 squadre-stagione, dal 1984-85 al
+2025-26. `prototype/imbattuto/cards.js` è generato: per aggiornarlo esegui
+`node prototype/imbattuto/build-cards.mjs`.
+
+## Pubblicazione
+
+Il workflow GitHub Pages pubblica `main` su
+<https://tomas-coro.github.io/buzzer/>. Il repository deve consentire GitHub
+Pages tramite Actions.

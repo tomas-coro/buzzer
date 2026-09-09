@@ -1,0 +1,14 @@
+{
+  "name": "L'IMBATTUTO — Buzzer",
+  "short_name": "L'Imbattuto",
+  "description": "Draft NBA multi-stagione: 16 vittorie, nessuna sconfitta.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#161538",
+  "theme_color": "#161538",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -1,4 +1,5 @@
 # Dipendenze del progetto.
 # La pipeline dati (data/) usa solo la libreria standard di Python: nessuna dipendenza a runtime.
-# pytest serve solo per lanciare i test.
+# pytest testa i dati; Playwright esegue lo smoke test browser.
 pytest>=8.0
+playwright>=1.49
