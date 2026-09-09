@@ -658,7 +658,7 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 /* Il prezzo resta sempre leggibile, a ogni difficoltà - non è il voto travestito
    (game/difficulty.js). Sta sotto OVR nella stessa colonna, non in .sub dove
    due chip avevano già rotto l'allineamento su due colonne. */
-.r-sal { display: block; font-family: var(--led); font-weight: 700; font-size: .48rem; color: var(--brass); margin-top: 3px; white-space: nowrap; }
+.r-sal { display: block; font-family: var(--led); font-weight: 700; font-size: .64rem; color: var(--brass); margin-top: 3px; white-space: nowrap; }
 .r-id { min-width: 0; }
 .r-id .nm {
   display: block; font-family: var(--display); font-weight: 800; font-size: .92rem; line-height: 1;
