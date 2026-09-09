@@ -74,6 +74,7 @@ L'app usa 10.564 carte distribuite in 804 squadre-stagione, dal 1984-85 al
 
 ## Pubblicazione
 
-Il workflow GitHub Pages pubblica `main` su
-<https://tomas-coro.github.io/buzzer/>. Il repository deve consentire GitHub
-Pages tramite Actions.
+Il workflow GitHub Pages è pronto per pubblicare su
+<https://tomas-coro.github.io/buzzer/>. Il repository è privato e il piano
+attuale non supporta Pages: rendilo pubblico o abilita un piano compatibile,
+poi avvia manualmente **Deploy GitHub Pages**.
