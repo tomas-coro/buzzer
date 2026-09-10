@@ -55,8 +55,23 @@ ALTO = 0.12       # quanto spazio lasciare sopra il capo, in frazioni di lato
 # Le due fonti chiamano diversamente un pugno di giocatori. Stessa logica degli
 # alias in build-cards.mjs: nome della carta -> nome nella lista NBA.
 ALIAS = {
+    "Charles Davis": "Charlie Davis",
+    "Clarence Weatherspoon": "Clar Weatherspoon",
     "Enes Kanter": "Enes Freedom",
+    "Eugene Jeter": "Pooh Jeter",
+    "Isaac Austin": "Ike Austin",
+    "Jeff Pendergraph": "Jeff Ayres",
+    "Mike Holton": "Michael Holton",
+    "Mike Sweetney": "Michael Sweetney",
+    "Nathan Mensah": "Nate Mensah",
     "Nicolas Claxton": "Nic Claxton",
+    "Ömer Aşık": "Omer Asik",
+    "Penny Hardaway": "Anfernee Hardaway",
+    "Ron Holland": "Ronald Holland",
+    "Ronald Murray": "Flip Murray",
+    "Stanislav Medvedenko": "Slava Medvedenko",
+    "Steve Smith": "Steven Smith",
+    "Vítor Luiz Faverani": "Vitor Faverani",
 }
 
 
