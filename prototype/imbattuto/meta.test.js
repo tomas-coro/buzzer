@@ -1,12 +1,34 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { recordRun, leaderboard, lifetimeStats, profiloGiocatori } from "./meta.js";
+import {
+  clearCurrentRun, loadCurrentRun, recordRun, saveCurrentRun,
+  leaderboard, lifetimeStats, profiloGiocatori,
+} from "./meta.js";
 
 // finto localStorage: solo getItem/setItem su una Map
 function fakeStore() {
   const m = new Map();
-  return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, v) };
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => m.set(k, v),
+    removeItem: (k) => m.delete(k),
+  };
 }
+
+test("la run corrente sopravvive al reload e può essere cancellata", () => {
+  const s = fakeStore();
+  const current = { state: { stato: "draft", vittorie: 0 }, ui: null, draftView: { key: "BOS|2024-25" } };
+  saveCurrentRun(s, current);
+  assert.deepEqual(loadCurrentRun(s), current);
+  clearCurrentRun(s);
+  assert.equal(loadCurrentRun(s), null);
+});
+
+test("una run salvata corrotta viene ignorata", () => {
+  const s = fakeStore();
+  s.setItem("imbattuto:current", "non-json");
+  assert.equal(loadCurrentRun(s), null);
+});
 
 test("recordRun + leaderboard: ordina per vittorie desc nel bucket", () => {
   const s = fakeStore();

@@ -40,6 +40,16 @@ def play(browser, viewport):
     page.locator("label.splash").click()
     page.locator("#gioca").click()
     page.locator('[data-diff="facile"]').click()
+    assert page.locator(".crd:not(.off)").first.get_attribute("tabindex") == "0"
+    draft_key = page.locator("[data-tiktxt]").inner_text()
+    page.reload()
+    assert page.evaluate("!!navigator.serviceWorker.controller"), "service worker non attivo"
+    assert page.locator(".draft").count() == 1, "il refresh ha perso la run in corso"
+    assert page.locator("[data-tiktxt]").inner_text() == draft_key
+    # Riparti col seme dall'inizio: il reload sopra riavvia il generatore casuale.
+    page.locator("#app-exit").click()
+    page.locator("#ec-go").click()
+    page.locator('[data-diff="facile"]').click()
     page.locator("#autod-go").click()
     page.locator(".ct-row").first.wait_for()
     assert_no_overflow(page, "coach")
@@ -56,9 +66,15 @@ def play(browser, viewport):
 
     assert rounds == 16, f"corsa terminata dopo {rounds} partite"
     assert "IMBATTUTO" in page.locator("body").inner_text()
+    assert page.locator(".r-row").first.evaluate("el => el.tagName") == "BUTTON"
+    assert page.locator("#share").count() == 1
     page.locator("#profilo").click()
     assert page.locator(".profilo").count() == 1
     assert_no_overflow(page, "profilo")
+    page.context.set_offline(True)
+    page.reload()
+    assert page.title() == "L'IMBATTUTO — Buzzer"
+    page.context.set_offline(False)
     assert not errors, "\n".join(errors)
     page.close()
 

@@ -1,6 +1,22 @@
 import { chiavePersona, medieCarriera } from "../../game/boxscore.js";
 
 const KEY = "imbattuto:runs";
+const CURRENT_KEY = "imbattuto:current";
+
+export function saveCurrentRun(store, current) {
+  try { store.setItem(CURRENT_KEY, JSON.stringify(current)); } catch { /* storage non disponibile */ }
+}
+
+export function loadCurrentRun(store) {
+  try {
+    const raw = store.getItem(CURRENT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+export function clearCurrentRun(store) {
+  try { store.removeItem(CURRENT_KEY); } catch { /* storage non disponibile */ }
+}
 
 function readAll(store) {
   const raw = store.getItem(KEY);

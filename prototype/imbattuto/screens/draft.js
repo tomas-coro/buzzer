@@ -398,7 +398,7 @@ export function render(ctx) {
     // È un cartellino autonomo: costo e margine residuo si leggono prima del
     // voto, senza affollare identità e statistiche.
     const prezzo = `<span class="r-sal"><small>Contratto annuo</small><b>${formattaSalario(costi[i])}</b><em>restano <strong>${formattaSalario(residuo - costi[i])}</strong></em></span>`;
-    return `<div class="crd${off ? " off" : ""}" data-i="${i}" ${off ? 'aria-disabled="true"' : ""} style="--tc1:${teamColors(c.team_abbr).c1};--tc2:${teamColors(c.team_abbr).c2}">
+    return `<div class="crd${off ? " off" : ""}" data-i="${i}" ${off ? 'aria-disabled="true"' : `role="button" tabindex="0" aria-label="Seleziona ${esc(c.name)}"`} style="--tc1:${teamColors(c.team_abbr).c1};--tc2:${teamColors(c.team_abbr).c2}">
       <div class="r-top">
         <span class="r-port">${faceHTML(c, { hidden: rv.stats === "none" })}</span>
         <span class="r-ovr ${rv.ovr ? fascia(c.ovr) : ""}">${rv.ovr ? `<b>${c.ovr}</b><small>OVR</small>` : `<b class="q">?</b>`}</span>
@@ -565,6 +565,9 @@ export function render(ctx) {
   // ---- Listener ----
   el.querySelectorAll(".crd:not(.off)").forEach((row) => {
     row.onclick = () => selectCand(+row.dataset.i);
+    row.onkeydown = (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectCand(+row.dataset.i); }
+    };
   });
   el.querySelectorAll(".r-info").forEach((b) => {
     b.onclick = (e) => { e.stopPropagation(); openSheet(draftView.cards[+b.dataset.info]); };

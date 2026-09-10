@@ -3,8 +3,9 @@
 Gioco di **draft NBA multi-stagione**: costruisci una rosa da dieci giocatori,
 scegli il coach e prova a vincere 16 partite senza sconfitte.
 
-> **Stato attuale:** prototipo completo e giocabile, collegato al motore di partita.
-> Include 10.564 carte, 40 stagioni dal 1984-85 al 2025-26 e quattro difficoltà.
+> **Stato attuale:** app completa e giocabile, collegata al motore di partita.
+> Include 10.564 carte, 40 stagioni dal 1984-85 al 2025-26, quattro difficoltà,
+> salvataggio automatico della corsa, condivisione del risultato e uso offline.
 
 ---
 
@@ -74,7 +75,5 @@ L'app usa 10.564 carte distribuite in 804 squadre-stagione, dal 1984-85 al
 
 ## Pubblicazione
 
-Il workflow GitHub Pages è pronto per pubblicare su
-<https://tomas-coro.github.io/buzzer/>. Il repository è privato e il piano
-attuale non supporta Pages: rendilo pubblico o abilita un piano compatibile,
-poi avvia manualmente **Deploy GitHub Pages**.
+L'app è pubblicata su <https://tomas-coro.github.io/buzzer/>.
+Ogni push a `main` esegue i test e, solo se passano, aggiorna GitHub Pages.

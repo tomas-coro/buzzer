@@ -1,5 +1,12 @@
 import { appHeader, esc } from "./_chrome.js";
 import { teamName } from "../../../game/team-names.js";
+import { listaRosa } from "../../../game/rosa.js";
+
+export function testoCondivisione(state) {
+  const record = `${state.vittorie}-${state.esito === "imbattuto" ? 0 : 1}`;
+  const difficolta = state.difficolta[0].toUpperCase() + state.difficolta.slice(1);
+  return `L'IMBATTUTO — ${record} · ${difficolta}\nRosa: ${listaRosa(state.rosa).map((c) => c.name).join(", ")}`;
+}
 
 // Fascia colore del round, stesso linguaggio visivo del draft: oro/argento/
 // bronzo per un margine largo/medio/stretto, rosso per l'unico round che può
@@ -21,7 +28,7 @@ function rigaRound(h, i) {
   const quarti = h.quarti.map((q, qi) =>
     `<span>${q.overtime ? "OT" : `${qi + 1}°`} ${q.cumCasa}-${q.cumOspite}</span>`).join("");
   return `<li style="--i:${i}">
-    <div class="r-row" data-idx="${i}">
+    <button class="r-row" data-idx="${i}" type="button" aria-expanded="false">
       <span class="r-round">R${h.round}</span>
       <span class="r-fascia ${f.cls}">${f.label}</span>
       <span class="r-mid">
@@ -29,7 +36,7 @@ function rigaRound(h, i) {
         <span class="r-clou">${esc(clou)}</span>
       </span>
       <span class="r-pt">${h.punti.casa}-${h.punti.ospite}</span>
-    </div>
+    </button>
     <div class="r-detail"><div class="r-detail-in">
       <div class="r-quarti">${quarti}</div>
       <p class="r-clou-full"><b>${persa ? "Ultimo quarto" : "Quarto decisivo"}:</b> ${esc(clou)}</p>
@@ -59,6 +66,7 @@ export function render(ctx) {
     <ul class="storia" style="animation: simpleIn .3s var(--ease) ${afterLadder + 650}ms both">${state.storia.map(rigaRound).join("")}</ul>
     <div class="azioni" style="animation: simpleIn .3s var(--ease) ${afterLadder + 800}ms both">
       <button class="cta" id="leaderboard">Leaderboard</button>
+      <button class="chip" id="share">${navigator.share ? "Condividi" : "Copia risultato"}</button>
       <button class="chip" id="profilo">Profilo</button>
       <button class="chip" id="ancora">Nuovo run</button>
     </div>
@@ -78,9 +86,22 @@ export function render(ctx) {
   if (target === 0) { clearInterval(timer); score.innerHTML = `<b>0</b>-${vinto ? 0 : 1}`; }
 
   el.querySelectorAll(".r-row").forEach((row) => {
-    row.addEventListener("click", () => row.closest("li").classList.toggle("open"));
+    row.addEventListener("click", () => {
+      const open = row.closest("li").classList.toggle("open");
+      row.setAttribute("aria-expanded", String(open));
+    });
   });
   el.querySelector("#ancora").onclick = () => ctx.dispatch({ type: "reset" });
+  el.querySelector("#share").onclick = async (e) => {
+    const text = testoCondivisione(state);
+    try {
+      if (navigator.share) await navigator.share({ title: "L'IMBATTUTO — Buzzer", text, url: location.href });
+      else await navigator.clipboard.writeText(`${text}\n${location.href}`);
+      e.currentTarget.textContent = navigator.share ? "Condiviso" : "Copiato";
+    } catch (error) {
+      if (error.name !== "AbortError") e.currentTarget.textContent = "Riprova";
+    }
+  };
   el.querySelector("#leaderboard").onclick = () => ctx.go("leaderboard");
   el.querySelector("#profilo").onclick = () => ctx.go("profilo");
   return el;

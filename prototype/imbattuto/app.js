@@ -5,7 +5,7 @@ import { caselleLibere, listaRosa, minutiRosa } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
 import { opponentPool, spinRoster, chiaveCarta } from "./pool.js";
-import { recordRun } from "./meta.js";
+import { clearCurrentRun, loadCurrentRun, recordRun, saveCurrentRun } from "./meta.js";
 import { render as home } from "./screens/home.js";
 import { render as difficolta } from "./screens/difficolta.js";
 import { render as draft } from "./screens/draft.js";
@@ -19,9 +19,10 @@ import { render as profilo } from "./screens/profilo.js";
 const app = document.getElementById("app");
 
 // Stato del prototipo: lo State del motore (o null) + la fase UI corrente.
-let state = null;          // State del motore
-let ui = "home";           // "home" | "leaderboard" | (altrimenti deriva da state.stato)
-let draftView = null;      // { key, cards, slots } della rosa da dieci pescata, da cui piazzi liberamente
+const saved = loadCurrentRun(window.localStorage);
+let state = saved?.state ?? null;          // State del motore
+let ui = saved ? saved.ui : "home";        // null = deriva da state.stato
+let draftView = saved?.draftView ?? null;  // { key, cards, slots } della rosa da dieci pescata, da cui piazzi liberamente
 const cards = CARDS_BY_TEAM_SEASON;
 const pool = opponentPool(cards); // pool avversari, calcolato una volta
 
@@ -159,6 +160,8 @@ function dispatch(action) {
     default:
       throw new Error(`azione sconosciuta: ${action.type}`);
   }
+  if (state && state.stato !== "finito") saveCurrentRun(window.localStorage, { state, ui, draftView });
+  else clearCurrentRun(window.localStorage);
   render();
 }
 
@@ -179,3 +182,5 @@ function render() {
 }
 
 render();
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");

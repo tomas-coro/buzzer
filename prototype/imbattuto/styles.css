@@ -1365,7 +1365,7 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 
 .storia { position: relative; z-index: 1; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; width: 100%; opacity: 0; }
 .storia li { display: flex; flex-direction: column; padding: 0; background: var(--ink-2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.r-row { display: flex; align-items: center; gap: 9px; padding: 10px 11px; cursor: pointer; }
+.r-row { display: flex; align-items: center; gap: 9px; width: 100%; padding: 10px 11px; cursor: pointer; color: inherit; background: none; border: 0; text-align: left; }
 .r-fascia { flex: none; width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: var(--led); font-weight: 900; font-size: .76rem; }
 .r-fascia.oro { background: rgba(255,207,51,.14); color: var(--yellow); border: 1px solid rgba(255,207,51,.4); }
 .r-fascia.argento { background: rgba(180,186,224,.12); color: #c7cbe8; border: 1px solid rgba(180,186,224,.3); }
