@@ -664,8 +664,8 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
   box-shadow: inset 4px 0 0 var(--brass);
 }
 .r-sal small { font-size: .36rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #f0a17e; }
-.r-sal b { margin: 3px 0; font-family: var(--led); font-weight: 900; font-size: 1.05rem; line-height: .9; color: var(--bone); font-variant-numeric: tabular-nums; }
-.r-sal em { padding-top: 3px; border-top: 1px solid rgba(255,255,255,.12); font-style: normal; font-size: .36rem; font-weight: 700; color: #d6b2a4; }
+.r-sal b { margin: 6px 0; font-family: var(--led); font-weight: 900; font-size: 1.05rem; line-height: .9; color: var(--bone); font-variant-numeric: tabular-nums; }
+.r-sal em { margin-top: 2px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.12); font-style: normal; font-size: .36rem; font-weight: 700; color: #d6b2a4; }
 .r-sal em strong { float: right; color: var(--bone); font-family: var(--led); font-size: .43rem; }
 .r-id { min-width: 0; }
 .r-id .nm {
