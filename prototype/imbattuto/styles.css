@@ -78,6 +78,10 @@ button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 .screen > *:nth-child(4) { animation-delay: .15s; }
 .screen > *:nth-child(5) { animation-delay: .20s; }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+/* .screen.run ridisegna il suo contenuto a ogni tick della simulazione (vedi
+   run.js:disegna): senza questo, le facce dei giocatori rifarebbero il "rise"
+   a ogni canestro invece che una sola volta all'ingresso in schermata. */
+.screen.run.ticked > * { animation: none; }
 
 /* Eyebrow: etichetta strutturale brass usata come firma tipografica. */
 .eyebrow {
@@ -320,6 +324,24 @@ button.bz-mode{cursor:pointer}
   .diff-head, .diff-nome, .diff-list, .diff-foot {
     max-width: 460px; margin-inline: auto; width: 100%;
   }
+}
+
+/* Sotto i 900px: edge-to-edge come un'app installata. #app smette di fare da
+   cornice con margini scuri (playtest mobile reale 10/09/2026, problema 2) - il
+   gutter si sposta su `.screen`, così draft/coach/run/esito restano pixel-
+   identiche. `.cabhome` (home + difficoltà) NON è una `.screen`: bleeda gratis
+   fino al vetro, ed è lì che stava il difetto ("schermata dentro schermata"). */
+@media (max-width: 899px) {
+  #app { padding: 0; }
+  .screen { padding: clamp(20px, 5vw, 40px) 20px 64px; }
+  .cabhome { max-width: none; }
+  .scr, .diff-scr { border-radius: 0; }
+  /* env(safe-area-inset-*) su iPhone reale (viewport-fit=cover in index.html):
+     senza, il CTA giallo finisce sotto la home indicator bar. In emulazione
+     Chrome questi inset risolvono a 0 - da riverificare su telefono vero. */
+  .bz-top { padding-top: calc(28px + env(safe-area-inset-top)); }
+  .bz-foot { padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+  .diff-scr { padding-top: calc(20px + env(safe-area-inset-top)); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 }
 
 /* =================== DRAFT (port mockup 40, direzione C) =================== */

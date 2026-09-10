@@ -491,6 +491,10 @@ export function render(ctx) {
     // ancorata in cima e l'ultima riga arrivata finirebbe fuori vista.
     const lista = el.querySelector(".sh-log");
     if (lista) lista.scrollTop = lista.scrollHeight;
+    // Da qui in poi (vedi styles.css .screen.run.ticked) i ridisegni per ogni
+    // tick della simulazione non rifanno il "rise" di entrata: `el` è lo
+    // stesso nodo per tutta la partita, solo `innerHTML` viene ricreato.
+    el.classList.add("ticked");
   }
 
   function aggancia() {
