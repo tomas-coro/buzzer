@@ -517,6 +517,10 @@ export function render(ctx) {
   // il glitch-in riparte da solo a ogni spin/aiuto (animazione CSS one-shot), e i
   // ritardi a scaletta (nth-child fino a 5) coprono esatti i cinque di una colonna.
 
+  let sel = null;   // indice candidato selezionato
+  let busy = false; // animazione in corso
+  let stoppedAuto = false; // l'utente ha premuto "Ferma" durante l'autoplay
+
   // Ticker rosa: la ricerca (scanThenLock) parte su ogni spin, primissima pesca
   // del turno compresa (draftView.ticker, vedi app.js) - pesca a caso dal pool
   // e blocca sulla chiave vera, non deve "ricordare" niente di precedente.
@@ -552,10 +556,6 @@ export function render(ctx) {
       afterReveal();
     }
   }
-
-  let sel = null;   // indice candidato selezionato
-  let busy = false; // animazione in corso
-  let stoppedAuto = false; // l'utente ha premuto "Ferma" durante l'autoplay
 
   const setPrompt = (h) => { const p = el.querySelector("#prompt"); if (p) p.innerHTML = h; };
 
