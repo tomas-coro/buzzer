@@ -4,7 +4,7 @@ import { card } from "./fixtures.js";
 import { ROLES } from "./roster.js";
 import {
   SLOTS, MINUTI, POSTI_PANCA, emptyRosa, assegnaRosa, cartaIn, titolareLibero,
-  postiPancaLiberi, caselleLibere, caselleDove, etichettaSlot, ruoloDi, rosaCompleta,
+  postiPancaLiberi, caselleLibere, caselleDove, etichettaSlot, chiaveSlot, ruoloDi, rosaCompleta,
   listaRosa, minutiRosa, repartiRosa, costruisciRosa, TITOLARE, PANCA,
 } from "./rosa.js";
 
@@ -110,6 +110,13 @@ test("etichettaSlot scrive la casella come la legge chi gioca", () => {
   assert.equal(etichettaSlot(tit("PG")), "PG titolare");
   assert.equal(etichettaSlot(panca(6)), "6° uomo");
   assert.equal(etichettaSlot(panca(10)), "10° uomo");
+});
+
+test("chiaveSlot identifica la casella in modo univoco e stabile", () => {
+  assert.equal(chiaveSlot(tit("PG")), "T-PG");
+  assert.equal(chiaveSlot(panca(6)), "P-6");
+  assert.equal(chiaveSlot(panca(10)), "P-10");
+  assert.notEqual(chiaveSlot(tit("C")), chiaveSlot(panca(6)));
 });
 
 // Il motore ha bisogno di un ruolo anche per i panchinari (rimbalzi dei lunghi,
