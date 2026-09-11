@@ -1,7 +1,7 @@
 import {
   newRun, draftPick, useAid, chooseCoach, startRun, resolveRound, sceltaAutoDraft,
 } from "../../game/run.js";
-import { caselleLibere, listaRosa, minutiRosa } from "../../game/rosa.js";
+import { caselleLibere, chiaveSlot, listaRosa, minutiRosa } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
 import { opponentPool, spinRoster, chiaveCarta } from "./pool.js";
@@ -9,7 +9,6 @@ import { clearCurrentRun, loadCurrentRun, recordRun, saveCurrentRun } from "./me
 import { render as home } from "./screens/home.js";
 import { render as difficolta } from "./screens/difficolta.js";
 import { render as draft } from "./screens/draft.js";
-import { render as draftReveal } from "./screens/draftReveal.js";
 import { render as coach } from "./screens/coach.js";
 import { render as run } from "./screens/run.js";
 import { render as esito } from "./screens/esito.js";
@@ -27,7 +26,7 @@ const cards = CARDS_BY_TEAM_SEASON;
 const pool = opponentPool(cards); // pool avversari, calcolato una volta
 
 // Registry di render: chiave = fase UI o state.stato.
-const screens = { home, difficolta, draft, draftReveal, coach, run, finito: esito, leaderboard, profilo };
+const screens = { home, difficolta, draft, coach, run, finito: esito, leaderboard, profilo };
 
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;
@@ -55,6 +54,30 @@ function spinRosterView(filtro = {}) {
   return { key, cards: shown, slots };
 }
 
+// Un passo di autobuild: pesca rose finché sceltaAutoDraft (game/run.js, stesso
+// criterio del draft manuale) non trova un pick valido, poi lo restituisce già
+// deciso - draft.js non deve conoscere le regole di gioco, esegue solo il pick
+// che gli viene passato. Lo spin che l'utente VEDE ha sempre un esito garantito:
+// niente ticker "a vuoto" sui tentativi scartati qui dentro (stesso limite di
+// guardia di 500 giri che aveva il vecchio while sincrono).
+function spinAutoStep(malusMax) {
+  let giri = 0;
+  while (true) {
+    if (++giri > 500) {
+      throw new Error("autoDraft: non trovo una rosa completabile dopo 500 spin");
+    }
+    const view = spinRosterView();
+    const scelta = sceltaAutoDraft(state, view.cards, malusMax);
+    if (!scelta) continue;
+    const cardIndex = view.cards.indexOf(scelta.carta);
+    return {
+      ...view,
+      ticker: true,
+      auto: { cardIndex, slotKey: chiaveSlot(scelta.slot), costo: scelta.costo, malusMax },
+    };
+  }
+}
+
 function dispatch(action) {
   switch (action.type) {
     case "newRun":
@@ -77,42 +100,43 @@ function dispatch(action) {
       break;
     case "assign": {
       // Piazzamento libero: la carta va nella casella scelta dall'utente
-      // ({ tipo: "titolare", ruolo } oppure { tipo: "panca", posto }).
+      // ({ tipo: "titolare", ruolo } oppure { tipo: "panca", posto }) - o,
+      // quando action.auto è valorizzato, dall'autoplay (draft.js ha già scelto
+      // carta e slot secondo il pick deciso da spinAutoStep, qui si applica e basta).
       state = draftPick(state, action.slot, action.card);
-      // se restano slot, pesca una nuova rosa; altrimenti lo stato passa a "coach".
-      // `ticker: true` dice al draft di far "cercare" il ticker rosa (mockup 86,
-      // radar lock) invece di saltare di scatto: qui c'era già un valore prima,
-      // sulla primissima pesca del turno (newRun) non c'è niente da cercare.
-      draftView = state.stato === "draft" ? { ...spinRosterView(), ticker: true } : null;
-      break;
-    }
-    case "autoDraft": {
-      // Riempie da sola le caselle rimaste, una scelta per spin, con lo stesso
-      // criterio (firmabile / firmaDiRipiego) che userebbe un piazzamento
-      // manuale: vedi sceltaAutoDraft in game/run.js. `malusMax` è quanti punti
-      // di reparto Tomas accetta di pagare pur di prendere carte più forti
-      // (scelto nella UI del draft, 0 = resta sotto il tetto pulito).
-      let giri = 0;
-      while (state.stato === "draft") {
-        if (++giri > 500) {
-          throw new Error("autoDraft: non trovo una rosa completabile dopo 500 spin");
-        }
-        const scelta = sceltaAutoDraft(state, draftView.cards, action.malusMax ?? 0);
-        if (!scelta) { draftView = spinRosterView(); continue; }
-        state = draftPick(state, scelta.slot, scelta.carta, scelta.costo);
-        draftView = state.stato === "draft" ? spinRosterView() : null;
+      if (state.stato === "draft") {
+        // Se restano slot: pesca una nuova rosa. In autoplay il prossimo passo è
+        // già deciso (spinAutoStep); a mano è solo un nuovo spin con ticker
+        // (mockup 86, radar lock - qui c'era già un valore prima, sulla
+        // primissima pesca del turno (newRun) non c'è niente da cercare).
+        draftView = action.auto ? spinAutoStep(action.auto.malusMax) : { ...spinRosterView(), ticker: true };
+      } else {
+        // Rosa piena. A mano si passa subito a "coach" (comportamento invariato).
+        // In autoplay invece si resta sulla board piena finché l'utente non preme
+        // "Vai al coach" (autoDraftAdvance sotto) - draft.js sa disegnare questo
+        // stato perché nFilled arriva a 10 con draftView null.
+        draftView = null;
+        if (action.auto) ui = "draft";
       }
-      // La rosa è già piena (state.stato è già "coach"): invece di saltare
-      // dritti lì, ci si ferma un istante sul reveal a scaletta della squadra
-      // appena presa (draftReveal.js), che poi si fa avanzare da solo.
-      draftView = null;
-      ui = "draftReveal";
       break;
     }
+    case "autoDraft":
+      // Un solo passo, non tutta la rosa: draft.js gira i pick successivi da
+      // solo dispatchando "assign" con auto valorizzato (vedi quel case sotto).
+      // `malusMax` è quanti punti di reparto Tomas accetta di pagare pur di
+      // prendere carte più forti (scelto nella UI del draft, 0 = tetto pulito).
+      draftView = spinAutoStep(action.malusMax ?? 0);
+      break;
     case "autoDraftAdvance":
       // Il reveal si è chiuso da solo (setTimeout in draftReveal.js): da qui
       // in poi la schermata torna a derivare da state.stato, cioè "coach".
       ui = null;
+      break;
+    case "stopAutoDraft":
+      // L'utente ha premuto "Ferma" a metà autobuild: i pick già piazzati
+      // restano, si torna al draft manuale con un nuovo spin normale (niente
+      // auto, quindi niente pick automatico sul prossimo giro).
+      draftView = { ...spinRosterView(), ticker: true };
       break;
     case "aid": {
       // Portata dell'aiuto rispetto alla rosa corrente (chiave "TEAM|SEASON"):
