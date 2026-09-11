@@ -1,5 +1,5 @@
 import {
-  SLOTS, TITOLARE, PANCA, cartaIn, caselleDove, etichettaSlot, minutiSlot, ruoloDi, listaRosa,
+  SLOTS, TITOLARE, PANCA, cartaIn, caselleDove, etichettaSlot, chiaveSlot, minutiSlot, ruoloDi, listaRosa,
 } from "../../../game/rosa.js";
 import { teamColors, initials } from "../team-colors.js";
 import { salarioCarta, limiteDuro, malusApron, firmabile, formattaSalario } from "../../../game/salary.js";
@@ -222,8 +222,7 @@ export function render(ctx) {
   // accanto ai listener perché ora servono già al DISEGNO: una carta senza
   // caselle libere nasce spenta.
   const eligibleSlots = (card) => caselleDove(state.rosa, card);
-  const keySlot = (s) => (s.tipo === TITOLARE ? `T-${s.ruolo}` : `P-${s.posto}`);
-  const slotByKey = new Map(SLOTS.map((s) => [keySlot(s), s]));
+  const slotByKey = new Map(SLOTS.map((s) => [chiaveSlot(s), s]));
 
   // ---- Header ----
   const header = appHeader(state);
@@ -316,7 +315,7 @@ export function render(ctx) {
     const isT = slot.tipo === TITOLARE;
     const cls = isT ? "titolare" : "riserva";
     const label = isT ? slot.ruolo : `${slot.posto}°`;
-    const key = keySlot(slot);
+    const key = chiaveSlot(slot);
     if (c) {
       return `<button class="dslot full ${cls}" data-slot="${key}" data-filled="1" type="button" aria-label="Scheda ${esc(c.name)}">
         <span class="ds-face">${faceHTML(c, { ovr: rv.ovr ? c.ovr : null, role: isT ? slot.ruolo : ruoloDi(c, slot) })}</span></button>`;
@@ -494,7 +493,7 @@ export function render(ctx) {
     sel = i;
     const card = draftView.cards[i];
     const elig = eligibleSlots(card);
-    const eligKeys = new Set(elig.map(keySlot));
+    const eligKeys = new Set(elig.map(chiaveSlot));
     el.querySelectorAll(".crd").forEach((row) => row.classList.toggle("sel", +row.dataset.i === i));
     el.querySelectorAll(".dslot").forEach((slot) => {
       const isFilled = slot.dataset.filled === "1";
@@ -527,7 +526,7 @@ export function render(ctx) {
     if (busy || sel == null) return;
     const slotObj = slotByKey.get(key);
     const card = draftView.cards[sel];
-    if (!slotObj || !eligibleSlots(card).some((s) => keySlot(s) === key)) return;
+    if (!slotObj || !eligibleSlots(card).some((s) => chiaveSlot(s) === key)) return;
     busy = true;
     const row = el.querySelector(`.crd[data-i="${sel}"]`);
     const slotEl = el.querySelector(`.dslot[data-slot="${key}"]`);
