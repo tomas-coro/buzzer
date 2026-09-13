@@ -56,6 +56,10 @@ export function lifetimeStats(store) {
   return {
     runs: runs.length,
     imbattuti: runs.filter((r) => r.esito === "imbattuto").length,
+    // "campione" è l'esito vittorioso del formato playoff (vedi resolveSeriesGame
+    // in game/run.js): conteggio separato da "imbattuti" perché sono corse di
+    // formato diverso, non la stessa cosa con un nome diverso.
+    campioni: runs.filter((r) => r.esito === "campione").length,
     migliorStreak: runs.reduce((m, r) => Math.max(m, r.vittorie), 0),
   };
 }

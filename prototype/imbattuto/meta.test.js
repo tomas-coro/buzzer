@@ -60,6 +60,15 @@ test("lifetimeStats aggrega run/imbattuti/miglior streak", () => {
   assert.equal(st.migliorStreak, 6);
 });
 
+test("lifetimeStats conta i campioni playoff separati dagli imbattuti", () => {
+  const s = fakeStore();
+  recordRun(s, { formato: "playoff", difficolta: "normale", vittorie: 17, esito: "campione" });
+  recordRun(s, { formato: "imbattuto", difficolta: "normale", vittorie: 16, esito: "imbattuto" });
+  const st = lifetimeStats(s);
+  assert.equal(st.campioni, 1);
+  assert.equal(st.imbattuti, 1);
+});
+
 test("leaderboard di un bucket vuoto è []", () => {
   assert.deepEqual(leaderboard(fakeStore(), "sfida", "incubo"), []);
 });

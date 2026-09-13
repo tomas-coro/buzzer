@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUZZER — Serie Playoff / NBA Broadcast ’96</title>
+<style>
+:root{
+  --ink:#15163a;--ink-2:#1d1e4a;--ink-3:#2a2a63;--night:#090a24;--line:#373875;
+  --brass:#ff5b1e;--brass-deep:#c2480c;--yellow:#ffcf33;
+  --green:#5ccf8e;--red:#ff5038;--bone:#f4eee0;--dim:#8a8bc0;
+  --arcade:"Bungee",Impact,sans-serif;--led:"Doto","Courier New",monospace;
+  --body:"Hanken Grotesk",system-ui,sans-serif;--ease:cubic-bezier(.2,.8,.2,1)
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--ink);color:var(--bone);font-family:var(--body)}
+body{padding:28px 16px 80px;background:radial-gradient(90% 52% at 50% -8%,rgba(255,91,30,.14),transparent 64%),linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px) 0 0/100% 8px,var(--ink)}
+button{font:inherit;color:inherit}.page{width:min(1040px,100%);margin:auto}.mast{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:50px;padding-bottom:17px;border-bottom:1px solid var(--line)}
+.mast h1{margin:0;font-family:var(--arcade);font-size:clamp(1.8rem,4.8vw,3.9rem);line-height:.88;color:var(--yellow);text-shadow:5px 5px 0 var(--night)}.mast h1 i{font-style:normal;color:var(--brass)}
+.mast p{max-width:410px;margin:0;color:var(--dim);text-align:right;font-size:.8rem;line-height:1.45;font-weight:700}.mast b{color:var(--bone)}
+.scene{margin-top:42px}.scene-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;font-family:var(--arcade);font-size:.58rem;color:var(--brass);letter-spacing:.08em;text-transform:uppercase}.scene-head::after{content:"";height:1px;flex:1;background:var(--line)}
+
+/* Scocca: lamiera indaco, cornice CRT, viti e targhe serigrafate. */
+.cabinet{position:relative;padding:12px;border:2px solid #080919;background:var(--ink-3);box-shadow:9px 9px 0 rgba(5,6,22,.55),inset 0 0 0 2px #414386}
+.cabinet::before,.cabinet::after{content:"×";position:absolute;z-index:4;top:2px;color:#7779ad;font:700 12px/1 var(--body)}.cabinet::before{left:4px}.cabinet::after{right:4px}
+.cab-strip{display:flex;align-items:center;justify-content:space-between;gap:12px;height:27px;padding:0 10px;border-bottom:2px solid #080919;background:var(--brass);color:#15101c;font-family:var(--arcade);font-size:.48rem;letter-spacing:.06em}.cab-strip .credit{font-family:var(--led);font-size:.7rem;font-weight:900;background:var(--night);color:var(--green);padding:3px 7px;border:1px solid #080919}
+.screen{position:relative;isolation:isolate;overflow:hidden;border:7px solid var(--night);background:var(--ink-2);box-shadow:inset 0 0 34px rgba(0,0,0,.35)}.screen::before{content:"";position:absolute;z-index:5;inset:0;pointer-events:none;background:repeating-linear-gradient(transparent 0 3px,rgba(5,6,22,.12) 3px 4px)}.screen::after{content:"";position:absolute;z-index:-1;inset:0;background:radial-gradient(circle at 1px 1px,rgba(255,255,255,.045) 1px,transparent 1.5px) 0 0/14px 14px}
+.controls{display:flex;align-items:center;justify-content:space-between;height:25px;padding:0 9px;border-top:2px solid #080919;background:#17183d;color:var(--dim);font-size:.48rem;font-weight:800}.vents{letter-spacing:3px;color:#080919}.coin{display:flex;align-items:center;gap:5px}.coin i{display:block;width:7px;height:7px;border-radius:50%;background:var(--green);border:1px solid #080919}
+.brand{font-family:var(--arcade);color:var(--yellow);text-shadow:2px 2px var(--night)}.brand i{font-style:normal;color:var(--brass)}
+.round{display:inline-block;max-width:100%;border:1px solid var(--brass);border-radius:999px;padding:5px 10px;font-family:var(--arcade);font-size:.48rem;line-height:1.2;color:var(--yellow);text-align:center;text-transform:uppercase}.num{font-family:var(--led);font-weight:900}
+
+/* 1 — Home: la modalità attiva sembra una cartuccia inserita. */
+.home-screen{padding:20px}.home-top{position:relative;display:flex;align-items:center;justify-content:space-between}.home-top .brand{font-size:1rem}.home-top span{font-family:var(--led);font-size:.64rem;color:var(--green);font-weight:900}
+.mode-deck{position:relative;display:grid;grid-template-columns:1.35fr repeat(3,1fr);gap:7px;margin-top:18px}.mode{min-width:0;min-height:118px;padding:12px 10px;border:1px solid rgba(244,238,224,.16);background:rgba(8,9,31,.48);display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:left}.mode strong{font-family:var(--arcade);font-size:.66rem;line-height:1.15}.mode small{margin-top:5px;color:var(--dim);font-size:.56rem;font-weight:800}.mode em{margin-top:10px;font-style:normal;font-family:var(--arcade);font-size:.43rem;color:var(--brass)}
+button.mode{appearance:none;cursor:pointer}.mode--playoff{position:relative;isolation:isolate;border:3px solid var(--yellow);background:var(--brass);color:#120c19;box-shadow:5px 5px 0 var(--night);transition:transform .12s var(--ease),box-shadow .12s var(--ease)}.mode--playoff:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--night)}.mode--playoff:focus-visible{outline:2px solid var(--green);outline-offset:3px}.mode--playoff::before{content:"04";position:absolute;z-index:-1;right:6px;top:-4px;font-family:var(--led);font-size:4rem;line-height:1;color:rgba(21,22,58,.2);font-weight:900}.mode--playoff strong{font-size:.88rem}.mode--playoff small{color:#2f1930}.mode--playoff em{padding:4px 7px;border:2px solid var(--night);background:var(--yellow);color:var(--night);box-shadow:2px 2px 0 var(--night)}.mode--off{opacity:.58}
+
+/* 2 — Run: scorebug NBA anni 90 dentro il monitor. */
+.run-screen{background:var(--night)}.broadcast-top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--ink-3)}.live{font-family:var(--led);font-size:.65rem;font-weight:900;color:var(--bone)}.live b{color:var(--red)}
+.scoreboard{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);align-items:center;gap:15px;padding:24px 18px 16px}.team{min-width:0;text-align:center}.team-name{display:block;font-family:var(--arcade);font-size:clamp(.6rem,1.4vw,.82rem);line-height:1.2;overflow-wrap:anywhere}.team-season{display:block;margin-top:4px;color:var(--dim);font-size:.58rem;font-weight:800}.team-score{display:block;margin-top:5px;font-family:var(--led);font-size:clamp(3rem,8vw,5rem);font-weight:900;line-height:.82}.team--us .team-name,.team--us .team-score{color:var(--green)}.team--them .team-score{color:var(--red)}
+.series-badge{display:grid;place-items:center;width:56px;height:56px;border:2px solid var(--line);background:#0d0e2d;transform:rotate(45deg)}.series-badge span{transform:rotate(-45deg);font-family:var(--arcade);font-size:.42rem;color:var(--yellow)}
+.games{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:5px;width:min(650px,100%);margin:auto;padding:8px 20px 22px}.games::before{content:"";position:absolute;left:8%;right:8%;top:20px;height:3px;background:var(--line);box-shadow:0 2px 0 #030410}.game{position:relative;z-index:1;display:grid;place-items:center;gap:6px;min-width:0}.dot{display:block;width:20px;height:20px;border:3px solid #4c4e84;border-radius:50%;background:#17183d}.game small{font-family:var(--led);font-size:.53rem;color:var(--dim);font-weight:900}.game.win .dot{background:var(--green);border-color:var(--night);box-shadow:0 0 0 2px var(--green)}.game.lose .dot{background:var(--red);border-color:var(--night);box-shadow:0 0 0 2px var(--red)}.game.now .dot{width:29px;height:29px;margin-top:-5px;border:5px solid var(--yellow);background:var(--brass);box-shadow:0 0 0 3px var(--night),0 0 0 5px rgba(255,207,51,.38)}.game.now small{font-family:var(--arcade);font-size:.43rem;color:var(--yellow)}
+.lower-third{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;min-height:34px;padding:6px 12px;border-top:3px solid var(--night);background:var(--yellow);color:#15101c;font-size:.64rem;font-weight:900}.lower-third b{font-family:var(--arcade);font-size:.48rem}.lower-third strong{text-align:center}.legend{white-space:nowrap}
+
+/* 3 — Campione: marquee acceso, percorso piatto da broadcast. */
+.champ-screen{isolation:isolate;padding:29px 25px 25px;text-align:center;background:#101132;animation:champ-in .55s var(--ease) both}.champ-screen::after{z-index:-2;background:repeating-conic-gradient(from -8deg,rgba(255,207,51,.085) 0 5deg,transparent 5deg 14deg);inset:-55%}.marquee{position:relative;display:inline-block;padding:8px 18px;border:3px solid var(--brass);background:var(--ink);box-shadow:5px 5px 0 var(--night)}.marquee::before,.marquee::after{content:"• • • • •";position:absolute;left:0;right:0;color:var(--yellow);font:900 8px/1 var(--body);letter-spacing:12px;overflow:hidden}.marquee::before{top:1px}.marquee::after{bottom:1px}.marquee h2{margin:8px 0 6px;font-family:var(--arcade);font-size:clamp(2rem,7vw,4.7rem);line-height:.9;color:var(--yellow);-webkit-text-stroke:2px var(--night);paint-order:stroke fill;text-shadow:5px 5px 0 var(--brass-deep)}.champ-sub{margin:15px 0 23px;font-size:.77rem;font-weight:800}.champ-sub b{color:var(--green)}
+.road{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;text-align:left}.road::before{content:"";position:absolute;left:5%;right:5%;top:12px;height:4px;background:var(--brass);box-shadow:0 3px 0 var(--night)}.stop{position:relative;min-width:0;padding-top:32px}.stop::before{content:"";position:absolute;z-index:1;top:4px;left:9px;width:17px;height:17px;border:3px solid var(--night);border-radius:50%;background:var(--green);box-shadow:0 0 0 2px var(--yellow)}.stop:last-child::before{width:23px;height:23px;top:1px;left:6px;background:var(--yellow);box-shadow:0 0 0 3px var(--brass)}.stop-card{height:100%;padding:10px 8px;border-top:3px solid var(--green);background:rgba(7,8,28,.82)}.stop:last-child .stop-card{border-color:var(--yellow);background:rgba(255,207,51,.1)}.stop .rn{display:block;min-height:2.6em;font-family:var(--arcade);font-size:.42rem;line-height:1.25;color:var(--dim);text-transform:uppercase}.stop .record{display:block;margin:5px 0 3px;font-family:var(--led);font-size:1.35rem;line-height:1;color:var(--green)}.stop:last-child .record{color:var(--yellow)}.stop .opp{display:block;font-size:.48rem;line-height:1.3;font-weight:700}.stamp{display:inline-block;margin-top:20px;padding:6px 10px;border:2px solid var(--brass);font-family:var(--arcade);font-size:.5rem;color:var(--brass);transform:rotate(-2deg)}
+@keyframes champ-in{from{opacity:0;transform:translateY(10px) scale(.99)}}
+@media(prefers-reduced-motion:reduce){.champ-screen{animation:none}}
+@media(max-width:600px){
+ body{padding:18px 10px 60px}.mast{display:block;margin-bottom:38px}.mast p{margin-top:14px;text-align:left}.scene{margin-top:34px}.cabinet{padding:8px}.cab-strip{padding-inline:7px}
+ .home-screen{padding:15px}.mode-deck{grid-template-columns:1fr 1fr}.mode{min-height:96px}.mode--playoff{grid-row:span 2;min-height:199px}
+ .broadcast-top{align-items:flex-start}.round{font-size:.42rem}.live{text-align:right}.scoreboard{grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);gap:5px;padding-inline:8px}.series-badge{width:40px;height:40px}.team-score{font-size:3rem}.team-name{font-size:.56rem}.games{padding-inline:10px;gap:2px}.games::before{left:7%;right:7%}.dot{width:15px;height:15px}.game.now .dot{width:23px;height:23px}.lower-third{grid-template-columns:auto 1fr}.legend{display:none}
+ .champ-screen{padding:25px 13px 22px}.marquee h2{text-shadow:4px 4px var(--brass-deep)}.road{grid-template-columns:1fr 1fr;gap:9px 11px}.road::before{display:none}.stop{padding-top:0}.stop::before{top:9px;left:auto;right:8px}.stop:last-child::before{top:6px;left:auto;right:5px}.stop-card{min-height:104px}.stop .rn{padding-right:24px;min-height:2.5em}
+}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="mast"><h1>BU<i>ZZ</i>ER<br>PLAYOFF ’96</h1><p>Direzione scelta: <b>NBA Broadcast</b>, riportata dentro una vera cabina arcade anni Novanta.</p></header>
+
+<section class="scene">
+ <div class="scene-head">01 · Home / modalità inserita</div>
+ <div class="cabinet"><div class="cab-strip"><span>BUZZER SYSTEM · MODE SELECT</span><span class="credit">CREDIT 01</span></div><div class="screen home-screen">
+  <div class="home-top"><div class="brand">BU<i>ZZ</i>ER</div><span>SELECT MODE</span></div>
+  <div class="mode-deck"><button class="mode mode--playoff" type="button"><strong>SERIE<br>PLAYOFF</strong><small>4 round · best of 7</small><em>GIOCA</em></button><button class="mode" type="button"><strong>16–0</strong><small>Corsa perfetta</small><em>GIOCA</em></button><div class="mode mode--off"><strong>82–0</strong><small>Stagione</small><em>PRESTO</em></div><div class="mode mode--off"><strong>★ SFIDA</strong><small>Duello diretto</small><em>PRESTO</em></div></div>
+ </div><div class="controls"><span class="vents">||||||||||||</span><span class="coin"><i></i> INSERT COIN / START</span></div></div>
+</section>
+
+<section class="scene">
+ <div class="scene-head">02 · Run / NBA scorebug</div>
+ <div class="cabinet"><div class="cab-strip"><span>PLAYOFF SERIES · EAST</span><span class="credit">P1 READY</span></div><div class="screen run-screen">
+  <div class="broadcast-top"><span class="round">Semifinale di Conference</span><span class="live"><b>● LIVE</b> · GARA 4 / 7</span></div>
+  <div class="scoreboard"><div class="team team--us"><span class="team-name">Dinamo Sofà</span><span class="team-season">TU</span><span class="team-score">2</span></div><div class="series-badge"><span>SERIE</span></div><div class="team team--them"><span class="team-name">Los Angeles Lakers</span><span class="team-season">1986–87</span><span class="team-score">1</span></div></div>
+  <div class="games" aria-label="Serie: vinta, persa, vinta, gara odierna, tre gare non giocate"><div class="game win"><i class="dot"></i><small>W</small></div><div class="game lose"><i class="dot"></i><small>L</small></div><div class="game win"><i class="dot"></i><small>W</small></div><div class="game now"><i class="dot"></i><small>OGGI</small></div><div class="game"><i class="dot"></i><small>5</small></div><div class="game"><i class="dot"></i><small>6</small></div><div class="game"><i class="dot"></i><small>7</small></div></div>
+  <div class="lower-third"><b>PRIMO A 4</b><strong>Dinamo Sofà conduce 2–1</strong><span class="legend">● Vinta &nbsp; ● Persa &nbsp; ○ Da giocare</span></div>
+ </div><div class="controls"><span class="vents">||||||||||||</span><span class="coin"><i></i> GAME IN PROGRESS</span></div></div>
+</section>
+
+<section class="scene">
+ <div class="scene-head">03 · Esito / marquee Campione</div>
+ <div class="cabinet"><div class="cab-strip"><span>BUZZER CHAMPIONSHIP · FINAL</span><span class="credit">HIGH SCORE</span></div><div class="screen champ-screen">
+  <div class="marquee"><h2>🏆 Campione</h2></div><p class="champ-sub">4 serie vinte · <b>16–3</b> nelle gare playoff</p>
+  <div class="road"><div class="stop"><div class="stop-card"><span class="rn">Round 1</span><b class="record">4–1</b><span class="opp">Celtics · 1985–86</span></div></div><div class="stop"><div class="stop-card"><span class="rn">Semifinale di Conference</span><b class="record">4–2</b><span class="opp">Bulls · 1985–86</span></div></div><div class="stop"><div class="stop-card"><span class="rn">Finale di Conference</span><b class="record">4–3</b><span class="opp">Hawks · 1985–86</span></div></div><div class="stop"><div class="stop-card"><span class="rn">Finale NBA</span><b class="record">4–1</b><span class="opp">Lakers · 1986–87</span></div></div></div>
+  <div class="stamp">Titolo conquistato</div>
+ </div><div class="controls"><span class="vents">||||||||||||</span><span class="coin"><i></i> NEW RECORD SAVED</span></div></div>
+</section>
+</main>
+</body>
+</html>

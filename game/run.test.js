@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import * as runModule from "./run.js";
 import {
   newRun, draftPick, useAid, chooseCoach, startRun, resolveRound,
   esitoRound, partitaRound, boxScoreRound, playByPlayRound, titolari, sceltaAutoDraft,
@@ -80,10 +81,16 @@ function pronta(mio, loro, coach = COACH) {
 }
 
 test("newRun parte in fase draft con aiuti della difficoltà", () => {
-  const s = newRun({ formato: "playoff", difficolta: "normale" });
+  const s = newRun({ formato: "imbattuto", difficolta: "normale" });
   assert.equal(s.stato, "draft");
   assert.equal(s.vittorie, 0);
   assert.equal(s.aids.respin, 1);
+});
+
+test("newRun playoff prepara il contatore della serie", () => {
+  const s = newRun({ formato: "playoff", difficolta: "normale", seme: SEME });
+  assert.equal(s.gara, 0);
+  assert.deepEqual(s.serieRecord, { noi: 0, loro: 0 });
 });
 
 test("draftPick mette la carta nella casella scelta, quintetto o panchina", () => {
@@ -240,6 +247,12 @@ test("startRun calcola il voto squadra, i reparti e il primo avversario", () => 
   assert.equal(s.avversario.team, "OPP");
 });
 
+test("startRun playoff apre gara 1 sullo 0-0", () => {
+  const s = pronta(70, 70);
+  assert.equal(s.gara, 1);
+  assert.deepEqual(s.serieRecord, { noi: 0, loro: 0 });
+});
+
 test("startRun allena la rosa: la rosa draftata resta intatta accanto a quella allenata", () => {
   const coach = {
     plus: [{ reparto: "dif", ruoli: ["PF", "C"] }, { reparto: "reb" }],
@@ -268,6 +281,56 @@ test("resolveRound: vinco contro una squadra molto più debole, la streak sale",
   const s = resolveRound(pronta(95, 10));
   assert.equal(s.vittorie, 1);
   assert.equal(s.stato, "run");
+});
+
+test("il motore espone la risoluzione di una gara playoff", () => {
+  assert.equal(typeof runModule.resolveSeriesGame, "function");
+});
+
+test("una gara playoff vinta aggiorna la serie senza cambiare avversario", () => {
+  const prima = pronta(99, 1);
+  const dopo = runModule.resolveSeriesGame(prima);
+  assert.deepEqual(dopo.serieRecord, { noi: 1, loro: 0 });
+  assert.equal(dopo.gara, 2);
+  assert.equal(dopo.avversario, prima.avversario);
+  assert.equal(dopo.storia[0].gara, 1);
+});
+
+test("la quarta vittoria chiude la serie e apre il round successivo", () => {
+  let prima = fullDraft(nuovaRun(), 99);
+  prima = startRun(chooseCoach(prima, COACH), poolLargo(1));
+  const avversarioRound1 = prima.avversario;
+  prima = { ...prima, gara: 4, serieRecord: { noi: 3, loro: 0 } };
+  const dopo = runModule.resolveSeriesGame(prima);
+  assert.equal(dopo.round, 2);
+  assert.equal(dopo.gara, 1);
+  assert.deepEqual(dopo.serieRecord, { noi: 0, loro: 0 });
+  assert.equal(dopo.vittorie, 1);
+  assert.notEqual(dopo.avversario, avversarioRound1);
+});
+
+test("la quarta sconfitta chiude la corsa, non la prima", () => {
+  const prima = pronta(1, 99);
+  const unaPersa = runModule.resolveSeriesGame(prima);
+  assert.equal(unaPersa.stato, "run");
+  assert.deepEqual(unaPersa.serieRecord, { noi: 0, loro: 1 });
+  const eliminata = runModule.resolveSeriesGame({
+    ...prima, gara: 4, serieRecord: { noi: 0, loro: 3 },
+  });
+  assert.equal(eliminata.stato, "finito");
+  assert.equal(eliminata.esito, "sconfitta");
+});
+
+test("la quarta serie vinta assegna il titolo", () => {
+  const prima = {
+    ...pronta(99, 1), round: 4, gara: 5, vittorie: 3,
+    serieRecord: { noi: 3, loro: 1 },
+  };
+  const dopo = runModule.resolveSeriesGame(prima);
+  assert.equal(dopo.stato, "finito");
+  assert.equal(dopo.esito, "campione");
+  assert.equal(dopo.vittorie, 4);
+  assert.deepEqual(dopo.serieRecord, { noi: 4, loro: 1 });
 });
 
 test("resolveRound: perdo contro una squadra molto più forte → sconfitta", () => {
@@ -301,6 +364,13 @@ test("round diversi giocano partite diverse", () => {
   const primo = partitaRound(s);
   s = resolveRound(s);
   assert.notDeepEqual(partitaRound(s).punti, primo.punti);
+});
+
+test("gare diverse della stessa serie giocano partite diverse", () => {
+  const s = pronta(70, 65);
+  const gara1 = partitaRound(s);
+  const gara2 = partitaRound({ ...s, gara: 2 });
+  assert.notDeepEqual(gara2.punti, gara1.punti);
 });
 
 test("stesso seme, stessa corsa: due partite identiche dall'inizio", () => {

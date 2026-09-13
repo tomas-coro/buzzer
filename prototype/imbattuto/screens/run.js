@@ -37,6 +37,19 @@ const CHIAVE_VELOCITA = "buzzer.velocita";
 
 const REPARTI = [["t3", "Tiro 3"], ["fin", "Finaliz."], ["dif", "Difesa"], ["reb", "Rimbalzi"], ["reg", "Regia"]];
 
+const PLAYOFF_ROUNDS = [
+  "Round 1", "Semifinale di Conference", "Finale di Conference", "Finale NBA",
+];
+
+export function playoffHeaderData(state) {
+  const giocate = state.storia.filter((h) => h.round === state.round);
+  return {
+    round: PLAYOFF_ROUNDS[state.round - 1],
+    gare: Array.from({ length: 7 }, (_, i) =>
+      i < giocate.length ? (giocate[i].vinto ? "win" : "lose") : i === state.gara - 1 ? "now" : ""),
+  };
+}
+
 // Cosa ti costa, in campo, il reparto in cui sei sotto. Serve al briefing: il
 // numero da solo non dice al giocatore cosa gli succederà.
 const CONSEGUENZA = {
@@ -184,27 +197,41 @@ export function render(ctx) {
   // ---- pezzi della schermata ----------------------------------------------
 
   function testataHTML() {
-    const tacche = Array.from({ length: N }, (_, i) =>
-      `<i class="${i < state.vittorie ? "on" : i === state.vittorie ? "next" : ""}"></i>`).join("");
     const seg = Object.keys(VELOCITA).map((k) =>
       `<button type="button" data-vel="${k}" aria-pressed="${velocita === k}">${VELOCITA_NOME[k]}</button>`).join("");
     // Pausa vive accanto alla velocità (non più in fondo allo screen come CTA):
     // sono gli stessi comandi della simulazione, devono stare nella stessa fascia.
-    // Compare solo a simulazione avviata e non ancora finita.
     const pausaBtn = azioneIdx >= 0 && !finita()
       ? `<button class="sh-pause" id="pausa" type="button">${inPausa ? "Riprendi" : "Pausa"}</button>`
       : "";
-    return `
-      <div class="sh-streak">
-        <span class="lab">Fila</span>
-        <span class="sh-ticks">${tacche}</span>
-        <span class="num">${state.vittorie}<i>/${N}</i></span>
-      </div>
-      <div class="sh-speed">
-        <span>Velocità</span>
-        <div class="sh-seg" role="group" aria-label="Velocità della simulazione">${seg}</div>
-        ${pausaBtn}
-      </div>`;
+    const speed = `<div class="sh-speed">
+      <span>Velocità</span>
+      <div class="sh-seg" role="group" aria-label="Velocità della simulazione">${seg}</div>
+      ${pausaBtn}
+    </div>`;
+
+    if (state.formato === "playoff") {
+      const data = playoffHeaderData(state);
+      const dots = data.gare.map((classe, i) =>
+        `<i class="${classe}" title="Gara ${i + 1}${classe === "now" ? " · oggi" : ""}"></i>`).join("");
+      return `<div class="po-broadcast">
+        <span class="po-round">${data.round}</span>
+        <div class="po-score">
+          <span><b>${esc(state.squadra)}</b><strong>${state.serieRecord.noi}</strong></span>
+          <em>Serie</em>
+          <span><b>${esc(teamName(avv.team))}</b><strong>${state.serieRecord.loro}</strong></span>
+        </div>
+        <div class="po-dots" aria-label="Gara ${state.gara} della serie">${dots}</div>
+      </div>${speed}`;
+    }
+
+    const tacche = Array.from({ length: N }, (_, i) =>
+      `<i class="${i < state.vittorie ? "on" : i === state.vittorie ? "next" : ""}"></i>`).join("");
+    return `<div class="sh-streak">
+      <span class="lab">Fila</span>
+      <span class="sh-ticks">${tacche}</span>
+      <span class="num">${state.vittorie}<i>/${N}</i></span>
+    </div>${speed}`;
   }
 
   // Punteggio, margine e "quarto in corso" live: leggono l'ultima azione
@@ -440,14 +467,17 @@ export function render(ctx) {
       // parte la simulazione.
       return `<button class="sh-cta ghost" disabled>${inPausa ? "In pausa" : `Simulazione in corso · ${VELOCITA_NOME[velocita]}`}</button>`;
     }
-    return `<button class="sh-cta" id="avanti">${vinto ? "Prossimo turno" : "Vedi come è andata"}</button>`;
+    return `<button class="sh-cta" id="avanti">${state.formato === "playoff" ? "Continua i playoff" : vinto ? "Prossimo turno" : "Vedi come è andata"}</button>`;
   }
 
   function verdettoHTML() {
     if (!finita()) return "";
     const p = cumulato(partita.quarti, nQuarti);
+    const testo = state.formato === "playoff"
+      ? `${vinto ? "Vinta" : "Persa"} gara ${state.gara}`
+      : vinto ? "Passi il turno" : "Corsa finita";
     return `<div class="sh-verdict ${vinto ? "win" : "lose"}" role="status">
-      ${vinto ? "Passi il turno" : "Corsa finita"} · <em>${p.casa}-${p.ospite}</em>
+      ${testo} · <em>${p.casa}-${p.ospite}</em>
     </div>`;
   }
 

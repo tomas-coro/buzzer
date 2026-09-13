@@ -24,6 +24,7 @@ const NOME_DEFAULT = "Dinamo Sofà";
 export function render(ctx) {
   const root = document.createElement("div");
   root.className = "cabhome ph--cab diffscreen";
+  const playoff = ctx.formato === "playoff";
 
   const chips = Object.entries(DIFFICULTIES).map(([key, d]) => {
     const m = META[key];
@@ -48,8 +49,10 @@ export function render(ctx) {
     <div class="scr diff-scr">
       <button class="diff-back" id="back" type="button">‹ Home</button>
       <div class="diff-head">
-        <div class="bz-wm diff-wm">L'IM<b>BATT</b>UTO</div>
-        <p class="diff-sub"><b>16 vittorie di fila</b> in ogni livello. Nessuna sconfitta ammessa.</p>
+        <div class="bz-wm diff-wm">${playoff ? "SERIE <b>PLAYOFF</b>" : "L'IM<b>BATT</b>UTO"}</div>
+        <p class="diff-sub">${playoff
+          ? "<b>4 serie al meglio delle 7.</b> Una gara persa non ti elimina."
+          : "<b>16 vittorie di fila</b> in ogni livello. Nessuna sconfitta ammessa."}</p>
       </div>
       <label class="diff-nome" for="nomesq">
         <span class="dn-lab">Come si chiama la tua squadra</span>
@@ -59,7 +62,7 @@ export function render(ctx) {
       </label>
       <div class="diff-list">${chips}</div>
       <p class="diff-foot">Il livello resta lo stesso per tutta la corsa: si sceglie
-        adesso, non si cambia in mezzo. <b>Sedici vittorie</b> in tutti e quattro.</p>
+        adesso, non si cambia in mezzo. <b>${playoff ? "Quattro serie" : "Sedici vittorie"}</b> in tutti e quattro.</p>
     </div>
   `;
 
@@ -70,7 +73,7 @@ export function render(ctx) {
   root.querySelector("#nomesq").onkeydown = (e) => { if (e.key === "Enter") e.preventDefault(); };
   root.querySelectorAll(".diff-chip").forEach((b) => {
     b.onclick = () => ctx.dispatch({
-      type: "newRun", formato: "imbattuto", difficolta: b.dataset.diff, squadra: nome(),
+      type: "newRun", formato: ctx.formato, difficolta: b.dataset.diff, squadra: nome(),
     });
   });
 
