@@ -1,0 +1,9 @@
+{
+  "appId": "com.tomascoro.buzzer",
+  "appName": "Buzzer",
+  "webDir": "dist",
+  "backgroundColor": "#15163a",
+  "ios": {
+    "contentInset": "never"
+  }
+}

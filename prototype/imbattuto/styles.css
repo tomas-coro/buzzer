@@ -37,6 +37,7 @@ html, body {
 /* Atmosfera: alone caldo dall'alto + fondo indaco che si scurisce, grana leggera. */
 body {
   min-height: 100dvh;
+  overscroll-behavior-y: none;
   background:
     radial-gradient(120% 80% at 50% -10%, rgba(255, 91, 30, .12), transparent 55%),
     radial-gradient(90% 70% at 50% 120%, rgba(13, 14, 41, .8), transparent 60%),
@@ -64,7 +65,7 @@ h1, h2, .display {
   line-height: 1.05;
 }
 
-button { font: inherit; cursor: pointer; color: inherit; }
+button { font: inherit; cursor: pointer; color: inherit; touch-action: manipulation; }
 button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
 /* ---- Ingresso staggered di ogni schermata ---- */
@@ -178,6 +179,8 @@ button.bz-mode{cursor:pointer}
 .replay:hover{color:var(--txt);border-color:var(--pop)}
 .replay svg{width:12px;height:12px}
 .bz-foot .replay{display:flex}
+.home-tools{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.home-tools [hidden]{display:none}
 
 /* SPLASH */
 .sp-ball{width:108px;height:108px;animation:spinBall 3.6s linear infinite}
@@ -333,15 +336,15 @@ button.bz-mode{cursor:pointer}
    fino al vetro, ed è lì che stava il difetto ("schermata dentro schermata"). */
 @media (max-width: 899px) {
   #app { padding: 0; }
-  .screen { padding: clamp(20px, 5vw, 40px) 20px 64px; }
+  .screen { padding: calc(clamp(20px, 5vw, 40px) + env(safe-area-inset-top)) calc(20px + env(safe-area-inset-right)) calc(64px + env(safe-area-inset-bottom)) calc(20px + env(safe-area-inset-left)); }
   .cabhome { max-width: none; }
   .scr, .diff-scr { border-radius: 0; }
   /* env(safe-area-inset-*) su iPhone reale (viewport-fit=cover in index.html):
      senza, il CTA giallo finisce sotto la home indicator bar. In emulazione
      Chrome questi inset risolvono a 0 - da riverificare su telefono vero. */
-  .bz-top { padding-top: calc(28px + env(safe-area-inset-top)); }
-  .bz-foot { padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
-  .diff-scr { padding-top: calc(20px + env(safe-area-inset-top)); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  .bz-top { padding: calc(28px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left)); }
+  .bz-foot { padding: 0 calc(16px + env(safe-area-inset-right)) calc(18px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
+  .diff-scr { padding: calc(20px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left)); }
   /* "Gioca la partita" finiva sotto 4 pannelli + due box score, servivano due
      schermate di scroll per raggiungerlo su telefono (playtest 10-11/09/2026,
      problema 4/6). Ancorato in fondo al viewport invece che al contenuto: si
@@ -407,6 +410,21 @@ button.bz-mode{cursor:pointer}
 .exit-confirm .ec-stay:hover, .exit-confirm .ec-stay:focus-visible { border-color: var(--brass-deep); }
 .exit-confirm .ec-go { background: transparent; color: var(--red); border-color: rgba(255, 80, 56, .4); }
 .exit-confirm .ec-go:hover, .exit-confirm .ec-go:focus-visible { background: rgba(255, 80, 56, .12); border-color: var(--red); }
+.install-guide {
+  width: min(380px, calc(100vw - 32px)); margin: auto; padding: 24px;
+  border: 1px solid var(--line); border-radius: 18px; color: var(--bone);
+  background: linear-gradient(180deg, #241a3e, #15163a);
+}
+.install-guide::backdrop { background: rgba(6, 6, 20, .78); }
+.install-guide h2 { color: var(--yellow); font-family: var(--arcade); font-size: 1rem; }
+.install-guide ol { margin: 18px 0 0; padding-left: 22px; line-height: 1.6; font-size: .86rem; }
+.install-guide .ig-close { position: absolute; top: 8px; right: 10px; border: 0; background: none; font-size: 1.6rem; color: var(--bone-dim); }
+.app-update {
+  position: fixed; z-index: 100; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom));
+  transform: translateX(-50%); width: min(360px, calc(100vw - 32px)); padding: 12px 16px;
+  border: 2px solid #0a0a18; border-radius: 12px; background: var(--yellow); color: #0a0a18;
+  box-shadow: 4px 4px 0 #0a0a18; font-family: var(--arcade); font-size: .62rem;
+}
 .mode-pill {
   display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px;
   background: rgba(255, 91, 30, .1); border: 1px solid var(--line); border-radius: 999px;

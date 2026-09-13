@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Buzzer</string>
+    <string name="title_activity_main">Buzzer</string>
+    <string name="package_name">com.tomascoro.buzzer</string>
+    <string name="custom_url_scheme">com.tomascoro.buzzer</string>
+</resources>

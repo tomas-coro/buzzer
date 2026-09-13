@@ -1,7 +1,9 @@
 import { chiavePersona, medieCarriera } from "../../game/boxscore.js";
 
 const KEY = "imbattuto:runs";
+const BACKUP_KEY = "imbattuto:runs:backup";
 const CURRENT_KEY = "imbattuto:current";
+const MAX_RUNS = 100;
 
 export function saveCurrentRun(store, current) {
   try { store.setItem(CURRENT_KEY, JSON.stringify(current)); } catch { /* storage non disponibile */ }
@@ -9,8 +11,11 @@ export function saveCurrentRun(store, current) {
 
 export function loadCurrentRun(store) {
   try {
-    const raw = store.getItem(CURRENT_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const current = JSON.parse(store.getItem(CURRENT_KEY));
+    const stato = current?.state?.stato;
+    const valid = ["draft", "coach", "run"].includes(stato)
+      && (stato !== "draft" || Array.isArray(current.draftView?.cards));
+    return valid ? current : null;
   } catch { return null; }
 }
 
@@ -19,18 +24,25 @@ export function clearCurrentRun(store) {
 }
 
 function readAll(store) {
-  const raw = store.getItem(KEY);
-  if (!raw) return [];
-  return JSON.parse(raw);
+  for (const key of [KEY, BACKUP_KEY]) {
+    try {
+      const runs = JSON.parse(store.getItem(key));
+      if (Array.isArray(runs)) return runs;
+    } catch { /* prova la copia di sicurezza */ }
+  }
+  return [];
 }
 function writeAll(store, runs) {
-  store.setItem(KEY, JSON.stringify(runs));
+  try {
+    const old = store.getItem(KEY);
+    if (old) try { store.setItem(BACKUP_KEY, old); } catch { /* backup best effort */ }
+    store.setItem(KEY, JSON.stringify(runs.slice(-MAX_RUNS)));
+    return true;
+  } catch { return false; }
 }
 
 export function recordRun(store, run) {
-  const runs = readAll(store);
-  runs.push({ ...run, ts: Date.now() });
-  writeAll(store, runs);
+  return writeAll(store, [...readAll(store), { ...run, ts: Date.now() }]);
 }
 
 export function leaderboard(store, formato, difficolta) {

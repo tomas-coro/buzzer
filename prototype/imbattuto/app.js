@@ -16,6 +16,40 @@ import { render as leaderboard } from "./screens/leaderboard.js";
 import { render as profilo } from "./screens/profilo.js";
 
 const app = document.getElementById("app");
+let installPrompt = null;
+
+const installed = () => matchMedia("(display-mode: standalone)").matches
+  || navigator.standalone === true || globalThis.Capacitor?.isNativePlatform?.() === true;
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  installPrompt = event;
+});
+
+async function installApp() {
+  if (installPrompt) {
+    await installPrompt.prompt();
+    await installPrompt.userChoice;
+    installPrompt = null;
+    return;
+  }
+  let dlg = document.getElementById("install-guide");
+  if (!dlg) {
+    dlg = document.createElement("dialog");
+    dlg.id = "install-guide";
+    dlg.className = "install-guide";
+    document.body.appendChild(dlg);
+  }
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  dlg.innerHTML = `<button class="ig-close" type="button" aria-label="Chiudi">×</button>
+    <h2>Installa Buzzer</h2>
+    <ol>${ios
+      ? "<li>Apri questa pagina in Safari.</li><li>Tocca <b>Condividi</b> □↑.</li><li>Scegli <b>Aggiungi alla schermata Home</b>, poi Aggiungi.</li>"
+      : "<li>Apri il menu del browser ⋮.</li><li>Scegli <b>Installa app</b> o <b>Aggiungi a schermata Home</b>.</li><li>Conferma: Buzzer si aprirà senza barra del browser.</li>"}</ol>`;
+  dlg.querySelector("button").onclick = () => dlg.close();
+  dlg.onclick = (event) => { if (event.target === dlg) dlg.close(); };
+  dlg.showModal();
+}
 
 // Stato del prototipo: lo State del motore (o null) + la fase UI corrente.
 const saved = loadCurrentRun(window.localStorage);
@@ -30,10 +64,14 @@ const screens = { home, difficolta, draft, coach, run, finito: esito, leaderboar
 
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;
-  return { state, cards, pool, draftView, N, dispatch, go };
+  return { state, cards, pool, draftView, N, dispatch, go, installApp, installed: installed() };
 }
 
-function go(nextUi) { ui = nextUi; render(); }
+function go(nextUi, fromHistory = false) {
+  ui = nextUi;
+  if (!fromHistory) history.pushState({ ui }, "");
+  render();
+}
 
 // Le caselle ancora vuote della rosa (5 titolari per ruolo + 5 posti di
 // panchina numerati): servono a `spinRoster` per scartare le rose che non
@@ -79,8 +117,10 @@ function spinAutoStep(malusMax) {
 }
 
 function dispatch(action) {
+  const wasActive = Boolean(state);
   switch (action.type) {
     case "newRun":
+      navigator.storage?.persist?.().catch(() => {});
       state = newRun({
         formato: action.formato,
         difficolta: action.difficolta,
@@ -205,6 +245,9 @@ function dispatch(action) {
   }
   if (state && state.stato !== "finito") saveCurrentRun(window.localStorage, { state, ui, draftView });
   else clearCurrentRun(window.localStorage);
+  if (!wasActive && state) history.pushState({ ui: "active" }, "");
+  else if (action.type === "reset" || action.type === "exitToDifficolta") history.replaceState({ ui }, "");
+  else if (state) history.replaceState({ ui: "active" }, "");
   render();
 }
 
@@ -224,6 +267,42 @@ function render() {
   app.replaceChildren(screen(ctx()));
 }
 
+history.replaceState({ ui: state ? "guard" : ui }, "");
+if (state) history.pushState({ ui: "active" }, "");
+
+window.addEventListener("popstate", (event) => {
+  if (state) {
+    history.pushState({ ui: "active" }, "");
+    if (state.stato === "finito") dispatch({ type: "reset" });
+    else if (document.querySelector("#app-exit")) document.querySelector("#app-exit").click();
+    else if (confirm("Vuoi uscire? La partita in corso andrà persa.")) dispatch({ type: "exitToDifficolta" });
+    return;
+  }
+  if (screens[event.state?.ui]) go(event.state.ui, true);
+});
+
 render();
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+function offerUpdate(worker) {
+  if (document.getElementById("app-update")) return;
+  const button = document.createElement("button");
+  button.id = "app-update";
+  button.className = "app-update";
+  button.textContent = "Nuova versione pronta · Aggiorna";
+  button.onclick = () => worker.postMessage("SKIP_WAITING");
+  document.body.appendChild(button);
+}
+
+if ("serviceWorker" in navigator) {
+  const controlledAtLoad = Boolean(navigator.serviceWorker.controller);
+  navigator.serviceWorker.register("./sw.js").then((registration) => {
+    if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+    registration.addEventListener("updatefound", () => registration.installing.addEventListener("statechange", () => {
+      if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+    }));
+  });
+  let reloading = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (controlledAtLoad && !reloading) { reloading = true; location.reload(); }
+  });
+}

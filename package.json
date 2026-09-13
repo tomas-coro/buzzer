@@ -4,6 +4,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test game/*.test.js prototype/imbattuto/*.test.js"
+    "test": "node --test game/*.test.js prototype/imbattuto/*.test.js",
+    "web:prepare": "node tools/build-offline.mjs",
+    "native:prepare": "npm run web:prepare && node tools/build-native.mjs && cap sync",
+    "native:ios": "npm run native:prepare && cap open ios",
+    "native:android": "npm run native:prepare && cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.2"
   }
 }

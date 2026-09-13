@@ -3,9 +3,10 @@
 Gioco di **draft NBA multi-stagione**: costruisci una rosa da dieci giocatori,
 scegli il coach e prova a vincere 16 partite senza sconfitte.
 
-> **Stato attuale:** app completa e giocabile, collegata al motore di partita.
-> Include 10.564 carte, 40 stagioni dal 1984-85 al 2025-26, quattro difficoltà,
-> salvataggio automatico della corsa, condivisione del risultato e uso offline.
+> **Stato attuale:** app completa e giocabile per web, iOS e Android, collegata
+> al motore di partita. Include 10.564 carte, 40 stagioni dal 1984-85 al
+> 2025-26, quattro difficoltà, salvataggio automatico della corsa,
+> condivisione del risultato e uso offline.
 
 ---
 
@@ -25,6 +26,25 @@ mockups/                Esplorazioni di design
 python3 -m http.server 8000
 # http://localhost:8000/prototype/imbattuto/
 ```
+
+## Installazione su telefono
+
+Dal sito premi **Installa app**: su Android si apre il prompt nativo; su iPhone
+l'app mostra i passaggi Safari → Condividi → Aggiungi alla schermata Home.
+L'app installata è standalone e, terminato il primo download, funziona tutta
+offline. Durante una sessione gli aggiornamenti vengono applicati solo premendo
+il relativo avviso, senza interrompere una partita.
+
+## Shell iOS e Android (Capacitor)
+
+```bash
+npm install
+npm run native:ios      # prepara gli asset e apre Xcode
+npm run native:android  # prepara gli asset e apre Android Studio
+```
+
+Per iOS serve Xcode; per Android serve Android Studio con il suo JDK. Capacitor
+resta una shell sottile: nessun plugin, firma o flusso store finché non servirà.
 
 ## Come partire
 

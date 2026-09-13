@@ -37,6 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/configure-pages@v5
+      - run: node tools/build-offline.mjs
       - run: mkdir _site && cp index.html _site/ && cp -R prototype game assets _site/
       - uses: actions/upload-pages-artifact@v3
         with:

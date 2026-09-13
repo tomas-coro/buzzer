@@ -17,17 +17,28 @@ function fakeStore() {
 
 test("la run corrente sopravvive al reload e può essere cancellata", () => {
   const s = fakeStore();
-  const current = { state: { stato: "draft", vittorie: 0 }, ui: null, draftView: { key: "BOS|2024-25" } };
+  const current = { state: { stato: "draft", vittorie: 0 }, ui: null, draftView: { key: "BOS|2024-25", cards: [] } };
   saveCurrentRun(s, current);
   assert.deepEqual(loadCurrentRun(s), current);
   clearCurrentRun(s);
   assert.equal(loadCurrentRun(s), null);
 });
 
-test("una run salvata corrotta viene ignorata", () => {
+test("una run salvata corrotta o incompleta viene ignorata", () => {
   const s = fakeStore();
   s.setItem("imbattuto:current", "non-json");
   assert.equal(loadCurrentRun(s), null);
+  s.setItem("imbattuto:current", JSON.stringify({ ui: "draft" }));
+  assert.equal(loadCurrentRun(s), null);
+});
+
+test("lo storico corrotto o uno storage negato non bloccano l'app", () => {
+  const s = fakeStore();
+  s.setItem("imbattuto:runs", "non-json");
+  assert.deepEqual(leaderboard(s, "imbattuto", "normale"), []);
+  const denied = { getItem() { throw new Error("denied"); }, setItem() { throw new Error("denied"); } };
+  assert.equal(recordRun(denied, { vittorie: 1 }), false);
+  assert.deepEqual(lifetimeStats(denied), { runs: 0, imbattuti: 0, migliorStreak: 0 });
 });
 
 test("recordRun + leaderboard: ordina per vittorie desc nel bucket", () => {
