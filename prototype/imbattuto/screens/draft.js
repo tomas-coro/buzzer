@@ -43,6 +43,13 @@ const LADDER = [
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const reduceMotion = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Velocità ×2 dell'autoplay (grill-me 11/09/2026): variabile di modulo, non di
+// render, perché `render()` ricrea l'intero albero a ogni pick (vedi nota su
+// `.draft.draft-free > *` più sotto) - una variabile locale si perderebbe a
+// ogni giro. Letta "live" da scanThenLock/afterReveal/flyMirino ad ogni pick,
+// quindi il toggle ha effetto anche a metà autoplay, non solo al prossimo spin.
+let speedX2 = false;
+
 // Ticker "ricerca" squadra-stagione del cand-block (mockup 86, direzione "Radar
 // lock · doppio aggancio"): il reticolo sfarfalla su squadre-stagione VERE del
 // dataset (stesso principio "zero dati finti" del mockup) prima di fermarsi su
@@ -73,7 +80,8 @@ function scanThenLock(frame, txt, targetKey, keys, onLock) {
   const setTxt = (k) => { const { t, s } = fmt(k); txt.innerHTML = `<b>${esc(t)}</b> · ${esc(s)}`; };
   frame.classList.remove("tik-locked");
   frame.classList.add("tik-scanning");
-  const ticks = 7, delayBase = 55, delayStep = 8;
+  const mul = speedX2 ? 0.5 : 1;
+  const ticks = 7, delayBase = 55 * mul, delayStep = 8 * mul;
   let n = 0, last = targetKey;
   const tick = () => {
     last = pick(last);
@@ -329,7 +337,11 @@ export function render(ctx) {
         ).join("")}
       </div>
       ${inAuto
-        ? `<button class="autod-go autod-stop" id="autod-stop" type="button">Ferma</button>`
+        ? `<div class="autod-group">
+             <button class="autod-speed" id="autod-speed" type="button" aria-pressed="${speedX2}">×2</button>
+             <button class="autod-go autod-skip" id="autod-skip" type="button">Salta</button>
+             <button class="autod-go autod-stop" id="autod-stop" type="button">Ferma</button>
+           </div>`
         : `<button class="autod-go" id="autod-go" type="button">Completa rosa</button>`}
     </div>`;
 
@@ -540,7 +552,7 @@ export function render(ctx) {
   const afterReveal = () => {
     revealRosa();
     if (draftView.auto && !stoppedAuto) {
-      const wait = reduceMotion() ? 0 : 250;
+      const wait = reduceMotion() ? 0 : (speedX2 ? 125 : 250);
       setTimeout(() => {
         if (stoppedAuto) return;
         selectCand(draftView.auto.cardIndex);
@@ -615,6 +627,7 @@ export function render(ctx) {
 
   // Volo "mirino + snap": passi netti verso lo slot, poi flash e piazzamento.
   function flyMirino(card, row, slot, done) {
+    const mul = speedX2 ? 0.5 : 1;
     const { c1, c2 } = teamColors(card.team_abbr);
     const from = row.getBoundingClientRect();
     const to = slot.getBoundingClientRect();
@@ -627,11 +640,11 @@ export function render(ctx) {
       { left: from.left + "px", top: from.top + "px", width: from.width + "px", height: "44px", offset: 0 },
       { left: (to.left - 6) + "px", top: (to.top - 6) + "px", width: (to.width + 12) + "px", height: (to.height + 12) + "px", offset: .55, easing: "steps(4,end)" },
       { left: to.left + "px", top: to.top + "px", width: to.width + "px", height: to.height + "px", offset: 1, easing: "cubic-bezier(.2,1.5,.4,1)" },
-    ], { duration: 360, fill: "forwards" }).onfinish = () => {
+    ], { duration: 360 * mul, fill: "forwards" }).onfinish = () => {
       slot.animate([
         { boxShadow: "0 0 0 3px #fff, 0 0 40px 4px var(--yellow)" },
         { boxShadow: "0 0 0 0 transparent" },
-      ], { duration: 260 }).onfinish = () => { fly.remove(); done(); };
+      ], { duration: 260 * mul }).onfinish = () => { fly.remove(); done(); };
     };
   }
 
@@ -681,6 +694,25 @@ export function render(ctx) {
   if (autodStop) autodStop.onclick = () => {
     stoppedAuto = true;
     ctx.dispatch({ type: "stopAutoDraft" });
+  };
+  const autodSpeed = el.querySelector("#autod-speed");
+  if (autodSpeed) autodSpeed.onclick = () => {
+    // Tocca solo la variabile di modulo: niente dispatch, niente re-render -
+    // i timer già schedulati (scanThenLock/afterReveal/flyMirino) la leggono
+    // al momento in cui scattano, quindi il cambio vale da subito anche a
+    // metà pick, non solo al prossimo spin.
+    speedX2 = !speedX2;
+    autodSpeed.setAttribute("aria-pressed", String(speedX2));
+  };
+  const autodSkip = el.querySelector("#autod-skip");
+  if (autodSkip) autodSkip.onclick = () => {
+    // Stessa guardia di #autod-go/.aid: se una carta sta volando (flyMirino,
+    // ~620ms/mul) il suo `commit()` pendente farebbe un dispatch "assign" su
+    // uno stato che il salto ha già superato. Bloccato qui, non lì, perché
+    // il bottone stesso deve restare cliccabile appena la carta si posa.
+    if (busy) return;
+    stoppedAuto = true; // blocca l'eventuale setTimeout di afterReveal ancora in attesa
+    ctx.dispatch({ type: "autoDraftSkip", malusMax: draftView.auto.malusMax });
   };
 
   // ---- Glossario: si apre col "?" del tabellone ----

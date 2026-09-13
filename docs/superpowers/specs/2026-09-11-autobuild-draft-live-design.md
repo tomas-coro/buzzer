@@ -18,12 +18,43 @@ pagina a parte.
    ticker "radar lock" (~610ms) + volo mirino (~620ms) per ogni slot, come oggi.
    Non un ritmo fisso più corto pensato apposta per l'auto: il peso di ogni
    pick è quello che regge l'illusione "stile FIFA".
+   **Superata il 12/09/2026** (vedi sotto): richiesta esplicita di velocizzare,
+   aggiunto toggle ×2.
 2. **Interazione durante l'autoplay**: UI bloccata. Un solo bottone "Ferma"
    interrompe l'automatismo e torna al draft manuale con la rosa fatta fino a
    quel punto (i pick già piazzati restano, non si annullano).
 3. **Fine sequenza**: quando l'ultima casella si riempie, la board resta
    visibile a piena rosa un istante, poi compare un bottone "Vai al coach".
    Niente timer automatico, niente `draftReveal.js`.
+
+## Decisioni successive (grill-me, 12/09/2026)
+
+Playtest mobile ha chiesto tre cose: velocità doppia, uno skip diretto, e un
+fix al bottone "Gioca la partita" (schermata `run.js` prima del via) che su
+mobile finiva in fondo a due schermate di scroll.
+
+4. **Velocità ×2**: toggle indipendente dai gradini di malus, accanto a
+   "Ferma". Dimezza i tre punti di ritardo dell'autoplay (`draft.js`):
+   `scanThenLock` (ticker), il wait di 250ms in `afterReveal`, `flyMirino`
+   (volo carta + flash slot). Variabile di modulo (`speedX2`), non di render:
+   letta "live" dai timer già schedulati, quindi ha effetto anche a metà pick.
+5. **Skip ("Salta")**: nuovo case `autoDraftSkip` in `app.js`, stesso criterio
+   di scelta di `sceltaAutoDraft`/`spinAutoStep` ma in un `while` sincrono che
+   completa tutte le caselle rimaste senza passare dal reveal pick-by-pick.
+   A differenza del punto 3 sopra, non si ferma sulla board piena in attesa
+   di "Vai al coach": `ui` resta `null`, quindi la schermata deriva subito a
+   `state.stato` ("coach") - un salto, zero click aggiuntivi. Guardia contro
+   `busy` (carta in volo) uguale a quella già su `#autod-go`/`.aid`.
+6. **CTA "Gioca la partita" sticky su mobile**: `.run .sh-cta` diventa
+   `position: fixed; bottom: 0` sotto i 899px (stesso breakpoint edge-to-edge
+   del fix del 10/09), con `padding-bottom` compensativo su `.run .sh-body`
+   perché non copra l'ultimo pannello. Vale per tutti gli stati del bottone
+   (via/ghost "simulazione in corso"/avanti), non solo il primo.
+
+Verificato dal vivo il 12/09/2026 con Playwright a viewport mobile reale
+(390×844, vedi nota tecnica in memoria `playtest-mobile-reale-6-problemi`):
+bottoni ×2/Salta/Ferma presenti e funzionanti, skip porta dritto a coach senza
+errori console, CTA fisso a `bottom:0` senza coprire il contenuto sopra.
 
 ## Architettura
 

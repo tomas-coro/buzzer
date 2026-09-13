@@ -138,6 +138,25 @@ function dispatch(action) {
       // auto, quindi niente pick automatico sul prossimo giro).
       draftView = { ...spinRosterView(), ticker: true };
       break;
+    case "autoDraftSkip": {
+      // L'utente ha premuto "Salta": stesso criterio di scelta di autoDraft/
+      // spinAutoStep (sceltaAutoDraft), ma applicato in un colpo solo alle
+      // caselle rimaste, senza passare dal reveal pick-by-pick (grill-me
+      // 11/09/2026, richiesta di velocizzare il draft assistito).
+      let giri = 0;
+      while (state.stato === "draft") {
+        const view = spinRosterView();
+        const scelta = sceltaAutoDraft(state, view.cards, action.malusMax ?? 0);
+        if (!scelta) {
+          if (++giri > 500) throw new Error("autoDraftSkip: non trovo una rosa completabile dopo 500 spin");
+          continue;
+        }
+        giri = 0;
+        state = draftPick(state, scelta.slot, scelta.carta);
+      }
+      draftView = null;
+      break;
+    }
     case "aid": {
       // Portata dell'aiuto rispetto alla rosa corrente (chiave "TEAM|SEASON"):
       // respin = tutto nuovo · squadra = stesso anno altra squadra · stagione = stessa squadra altro anno.
