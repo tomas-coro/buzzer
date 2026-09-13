@@ -342,6 +342,18 @@ button.bz-mode{cursor:pointer}
   .bz-top { padding-top: calc(28px + env(safe-area-inset-top)); }
   .bz-foot { padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
   .diff-scr { padding-top: calc(20px + env(safe-area-inset-top)); padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+  /* "Gioca la partita" finiva sotto 4 pannelli + due box score, servivano due
+     schermate di scroll per raggiungerlo su telefono (playtest 10-11/09/2026,
+     problema 4/6). Ancorato in fondo al viewport invece che al contenuto: si
+     tocca sempre senza scroll, come .bz-foot sopra. Vale per tutti gli stati
+     di .sh-cta (via/ghost/avanti), non solo il primo: stessa CTA, stesso posto. */
+  .run .sh-cta {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    border-radius: 0; border-width: 2.5px 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -8px 24px rgba(10, 10, 26, .45);
+  }
+  .run .sh-body { padding-bottom: calc(66px + env(safe-area-inset-bottom)); }
 }
 
 /* =================== DRAFT (port mockup 40, direzione C) =================== */
@@ -486,6 +498,21 @@ button.bz-mode{cursor:pointer}
   padding: 7px 12px; min-height: 30px; font-weight: 800; transition: filter .14s;
 }
 .autod-go:hover { filter: brightness(1.08); }
+/* Gruppo ×2/Salta/Ferma durante l'autoplay: il margin-left:auto si sposta qui
+   (era su .autod-go, pensato per un bottone solo) così il terzetto resta unito
+   a destra invece di spargersi lungo la barra. */
+.autod-group { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.autod-group .autod-go { margin-left: 0; }
+.autod-speed {
+  font-family: var(--arcade); font-size: .48rem; letter-spacing: .04em;
+  color: var(--bone-dim); background: transparent; border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 10px; min-height: 30px; font-weight: 800; cursor: pointer;
+  transition: filter .14s, background .14s, color .14s, border-color .14s;
+}
+.autod-speed:hover { color: var(--bone); background: #181a45; }
+.autod-speed[aria-pressed="true"] { background: var(--yellow); color: #201400; border-color: var(--yellow); }
+.autod-skip { background: transparent; color: var(--bone-dim); border-color: var(--line); }
+.autod-skip:hover { color: var(--bone); background: #181a45; filter: none; }
 
 /* ---- CTA (eredita .cta globale) ---- */
 .cta svg { width: 16px; height: 16px; fill: currentColor; }

@@ -120,6 +120,14 @@ export function etichettaSlot(slot) {
   return slot.posto === 6 ? "6° uomo" : `${slot.posto}° uomo`;
 }
 
+// Identità stabile di una casella per il DOM/dispatch (draft.js, app.js):
+// "T-PG" per il titolare PG, "P-6" per il 6° uomo. Non è testo per l'utente
+// (quello è etichettaSlot) - è una chiave per ritrovare lo slot giusto.
+export function chiaveSlot(slot) {
+  checkSlot(slot);
+  return slot.tipo === TITOLARE ? `T-${slot.ruolo}` : `P-${slot.posto}`;
+}
+
 // Il titolare di questo ruolo è ancora da riempire?
 export function titolareLibero(rosa, ruolo) {
   checkSlot({ tipo: TITOLARE, ruolo });

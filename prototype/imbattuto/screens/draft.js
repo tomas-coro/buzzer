@@ -1,5 +1,5 @@
 import {
-  SLOTS, TITOLARE, PANCA, cartaIn, caselleDove, etichettaSlot, minutiSlot, ruoloDi, listaRosa,
+  SLOTS, TITOLARE, PANCA, cartaIn, caselleDove, etichettaSlot, chiaveSlot, minutiSlot, ruoloDi, listaRosa,
 } from "../../../game/rosa.js";
 import { teamColors, initials } from "../team-colors.js";
 import { salarioCarta, limiteDuro, malusApron, firmabile, formattaSalario } from "../../../game/salary.js";
@@ -43,6 +43,13 @@ const LADDER = [
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const reduceMotion = () => window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// Velocità ×2 dell'autoplay (grill-me 11/09/2026): variabile di modulo, non di
+// render, perché `render()` ricrea l'intero albero a ogni pick (vedi nota su
+// `.draft.draft-free > *` più sotto) - una variabile locale si perderebbe a
+// ogni giro. Letta "live" da scanThenLock/afterReveal/flyMirino ad ogni pick,
+// quindi il toggle ha effetto anche a metà autoplay, non solo al prossimo spin.
+let speedX2 = false;
+
 // Ticker "ricerca" squadra-stagione del cand-block (mockup 86, direzione "Radar
 // lock · doppio aggancio"): il reticolo sfarfalla su squadre-stagione VERE del
 // dataset (stesso principio "zero dati finti" del mockup) prima di fermarsi su
@@ -73,7 +80,8 @@ function scanThenLock(frame, txt, targetKey, keys, onLock) {
   const setTxt = (k) => { const { t, s } = fmt(k); txt.innerHTML = `<b>${esc(t)}</b> · ${esc(s)}`; };
   frame.classList.remove("tik-locked");
   frame.classList.add("tik-scanning");
-  const ticks = 7, delayBase = 55, delayStep = 8;
+  const mul = speedX2 ? 0.5 : 1;
+  const ticks = 7, delayBase = 55 * mul, delayStep = 8 * mul;
   let n = 0, last = targetKey;
   const tick = () => {
     last = pick(last);
@@ -213,6 +221,61 @@ export function render(ctx) {
   const el = document.createElement("section");
   el.className = "screen draft draft-free";
 
+  if (!draftView) {
+    // Rosa completa via autobuild (app.js, case "assign" con auto): niente
+    // candidati da mostrare, si vede la board piena un istante e si aspetta
+    // il click su "Vai al coach" - niente timer automatico (decisione grill-me
+    // 11/09/2026, vedi docs/superpowers/specs/2026-09-11-autobuild-draft-live-design.md).
+    const titolariSlots = SLOTS.filter((s) => s.tipo === TITOLARE);
+    const pancaSlots = SLOTS.filter((s) => s.tipo === PANCA);
+    const cellHTML = (slot) => {
+      const c = cartaIn(state.rosa, slot);
+      const isT = slot.tipo === TITOLARE;
+      const label = isT ? slot.ruolo : `${slot.posto}°`;
+      return `<button class="dslot full ${isT ? "titolare" : "riserva"}" data-slot="${chiaveSlot(slot)}" data-filled="1" type="button" aria-label="Scheda ${esc(c.name)}">
+        <span class="ds-face">${faceHTML(c, { ovr: rv.ovr ? c.ovr : null, role: isT ? slot.ruolo : ruoloDi(c, slot) })}</span></button>`;
+    };
+    el.innerHTML = `
+      ${appHeader(state)}
+      <div class="court-block">
+        <div class="seclab"><span>La tua rosa · 10/10</span></div>
+        <div class="dcourt">
+          <div class="dcrow-lab">Titolari</div>
+          ${titolariSlots.map(cellHTML).join("")}
+          <div class="dcrow-lab">Panchina</div>
+          ${pancaSlots.map(cellHTML).join("")}
+        </div>
+      </div>
+      <div class="autod-done">
+        <p>Rosa completa.</p>
+        <button class="cta" id="autod-vai-coach" type="button">Vai al coach</button>
+      </div>`;
+    wireAppHeader(el, ctx);
+    // Tocco su una casella piena: apre la stessa scheda dettaglio del draft
+    // normale (denseSheetHTML, dialog nativo #player-sheet) - non è la funzione
+    // `openSheet` definita più in basso nel ramo normale (chiude su `dlg` locale
+    // a QUEL ramo), è una copia minima perché qui non passiamo mai da lì.
+    el.querySelectorAll(".dslot").forEach((slot) => {
+      slot.onclick = () => {
+        const c = cartaIn(state.rosa, [...titolariSlots, ...pancaSlots].find((s) => chiaveSlot(s) === slot.dataset.slot));
+        if (!c) return;
+        let dlg = document.getElementById("player-sheet");
+        if (!dlg) {
+          dlg = document.createElement("dialog");
+          dlg.id = "player-sheet";
+          dlg.className = "sheet";
+          document.body.appendChild(dlg);
+        }
+        dlg.innerHTML = `<button class="sheet-x" id="sheet-x" type="button" aria-label="Chiudi">×</button>${denseSheetHTML(c, rv)}`;
+        dlg.querySelector("#sheet-x").onclick = () => dlg.close();
+        dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+        dlg.showModal();
+      };
+    });
+    el.querySelector("#autod-vai-coach").onclick = () => ctx.dispatch({ type: "autoDraftAdvance" });
+    return el;
+  }
+
   const inRosa = listaRosa(state.rosa);
   const nFilled = inRosa.length;
   const rotazione = state.rotazione ?? "normale";
@@ -222,8 +285,7 @@ export function render(ctx) {
   // accanto ai listener perché ora servono già al DISEGNO: una carta senza
   // caselle libere nasce spenta.
   const eligibleSlots = (card) => caselleDove(state.rosa, card);
-  const keySlot = (s) => (s.tipo === TITOLARE ? `T-${s.ruolo}` : `P-${s.posto}`);
-  const slotByKey = new Map(SLOTS.map((s) => [keySlot(s), s]));
+  const slotByKey = new Map(SLOTS.map((s) => [chiaveSlot(s), s]));
 
   // ---- Header ----
   const header = appHeader(state);
@@ -265,15 +327,22 @@ export function render(ctx) {
   // ridisegna la schermata (vedi selectCand più sotto per lo stesso motivo).
   const MALUS_GRADINI = [0, 1, 2, 3];
   let malusAuto = 0;
+  const inAuto = !!draftView.auto;
   const autoDraftBar = `
     <div class="autod-bar">
       <span class="autod-lab">Auto-draft</span>
       <div class="sh-seg" id="autod-malus" role="group" aria-label="Malus reparti accettato">
         ${MALUS_GRADINI.map((m) =>
-          `<button type="button" data-malus="${m}" aria-pressed="${m === 0}">${m === 0 ? "Pulito" : `-${m}`}</button>`
+          `<button type="button" data-malus="${m}" aria-pressed="${m === 0}" ${inAuto ? "disabled" : ""}>${m === 0 ? "Pulito" : `-${m}`}</button>`
         ).join("")}
       </div>
-      <button class="autod-go" id="autod-go" type="button">Completa rosa</button>
+      ${inAuto
+        ? `<div class="autod-group">
+             <button class="autod-speed" id="autod-speed" type="button" aria-pressed="${speedX2}">×2</button>
+             <button class="autod-go autod-skip" id="autod-skip" type="button">Salta</button>
+             <button class="autod-go autod-stop" id="autod-stop" type="button">Ferma</button>
+           </div>`
+        : `<button class="autod-go" id="autod-go" type="button">Completa rosa</button>`}
     </div>`;
 
   // ---- Glossario: sei parole che tornano in tutto il draft ----
@@ -316,7 +385,7 @@ export function render(ctx) {
     const isT = slot.tipo === TITOLARE;
     const cls = isT ? "titolare" : "riserva";
     const label = isT ? slot.ruolo : `${slot.posto}°`;
-    const key = keySlot(slot);
+    const key = chiaveSlot(slot);
     if (c) {
       return `<button class="dslot full ${cls}" data-slot="${key}" data-filled="1" type="button" aria-label="Scheda ${esc(c.name)}">
         <span class="ds-face">${faceHTML(c, { ovr: rv.ovr ? c.ovr : null, role: isT ? slot.ruolo : ruoloDi(c, slot) })}</span></button>`;
@@ -460,6 +529,10 @@ export function render(ctx) {
   // il glitch-in riparte da solo a ogni spin/aiuto (animazione CSS one-shot), e i
   // ritardi a scaletta (nth-child fino a 5) coprono esatti i cinque di una colonna.
 
+  let sel = null;   // indice candidato selezionato
+  let busy = false; // animazione in corso
+  let stoppedAuto = false; // l'utente ha premuto "Ferma" durante l'autoplay
+
   // Ticker rosa: la ricerca (scanThenLock) parte su ogni spin, primissima pesca
   // del turno compresa (draftView.ticker, vedi app.js) - pesca a caso dal pool
   // e blocca sulla chiave vera, non deve "ricordare" niente di precedente.
@@ -472,17 +545,29 @@ export function render(ctx) {
   };
   const tikFrame = el.querySelector("[data-tikframe]");
   const tikTxt = el.querySelector("[data-tiktxt]");
+  // Dopo la rivelazione della rosa: se questo spin è autoplay (draftView.auto,
+  // vedi app.js spinAutoStep), il pick è già deciso - lo esegue da sola invece
+  // di aspettare un click. `busyAuto` fa da guardia: se l'utente ha premuto
+  // "Ferma" nel frattempo, `stoppedAuto` è già true e qui non si fa nulla.
+  const afterReveal = () => {
+    revealRosa();
+    if (draftView.auto && !stoppedAuto) {
+      const wait = reduceMotion() ? 0 : (speedX2 ? 125 : 250);
+      setTimeout(() => {
+        if (stoppedAuto) return;
+        selectCand(draftView.auto.cardIndex);
+        placeIn(draftView.auto.slotKey);
+      }, wait);
+    }
+  };
   if (tikFrame && tikTxt) {
     if (draftView.ticker && !reduceMotion()) {
-      scanThenLock(tikFrame, tikTxt, draftView.key, Object.keys(ctx.cards), revealRosa);
+      scanThenLock(tikFrame, tikTxt, draftView.key, Object.keys(ctx.cards), afterReveal);
     } else {
       tikFrame.classList.add("tik-locked");
-      revealRosa();
+      afterReveal();
     }
   }
-
-  let sel = null;   // indice candidato selezionato
-  let busy = false; // animazione in corso
 
   const setPrompt = (h) => { const p = el.querySelector("#prompt"); if (p) p.innerHTML = h; };
 
@@ -494,7 +579,7 @@ export function render(ctx) {
     sel = i;
     const card = draftView.cards[i];
     const elig = eligibleSlots(card);
-    const eligKeys = new Set(elig.map(keySlot));
+    const eligKeys = new Set(elig.map(chiaveSlot));
     el.querySelectorAll(".crd").forEach((row) => row.classList.toggle("sel", +row.dataset.i === i));
     el.querySelectorAll(".dslot").forEach((slot) => {
       const isFilled = slot.dataset.filled === "1";
@@ -527,14 +612,14 @@ export function render(ctx) {
     if (busy || sel == null) return;
     const slotObj = slotByKey.get(key);
     const card = draftView.cards[sel];
-    if (!slotObj || !eligibleSlots(card).some((s) => keySlot(s) === key)) return;
+    if (!slotObj || !eligibleSlots(card).some((s) => chiaveSlot(s) === key)) return;
     busy = true;
     const row = el.querySelector(`.crd[data-i="${sel}"]`);
     const slotEl = el.querySelector(`.dslot[data-slot="${key}"]`);
     el.querySelectorAll(".dslot").forEach((s) => s.classList.remove("elig", "dim"));
     el.querySelectorAll(".crd").forEach((r) => r.classList.remove("sel"));
 
-    const commit = () => ctx.dispatch({ type: "assign", slot: slotObj, card });
+    const commit = () => ctx.dispatch({ type: "assign", slot: slotObj, card, ...(draftView.auto ? { auto: { malusMax: draftView.auto.malusMax } } : {}) });
 
     if (reduceMotion() || !row || !slotEl) { commit(); return; }
     flyMirino(card, row, slotEl, commit);
@@ -542,6 +627,7 @@ export function render(ctx) {
 
   // Volo "mirino + snap": passi netti verso lo slot, poi flash e piazzamento.
   function flyMirino(card, row, slot, done) {
+    const mul = speedX2 ? 0.5 : 1;
     const { c1, c2 } = teamColors(card.team_abbr);
     const from = row.getBoundingClientRect();
     const to = slot.getBoundingClientRect();
@@ -554,40 +640,42 @@ export function render(ctx) {
       { left: from.left + "px", top: from.top + "px", width: from.width + "px", height: "44px", offset: 0 },
       { left: (to.left - 6) + "px", top: (to.top - 6) + "px", width: (to.width + 12) + "px", height: (to.height + 12) + "px", offset: .55, easing: "steps(4,end)" },
       { left: to.left + "px", top: to.top + "px", width: to.width + "px", height: to.height + "px", offset: 1, easing: "cubic-bezier(.2,1.5,.4,1)" },
-    ], { duration: 360, fill: "forwards" }).onfinish = () => {
+    ], { duration: 360 * mul, fill: "forwards" }).onfinish = () => {
       slot.animate([
         { boxShadow: "0 0 0 3px #fff, 0 0 40px 4px var(--yellow)" },
         { boxShadow: "0 0 0 0 transparent" },
-      ], { duration: 260 }).onfinish = () => { fly.remove(); done(); };
+      ], { duration: 260 * mul }).onfinish = () => { fly.remove(); done(); };
     };
   }
 
   // ---- Listener ----
-  el.querySelectorAll(".crd:not(.off)").forEach((row) => {
-    row.onclick = () => selectCand(+row.dataset.i);
-    row.onkeydown = (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectCand(+row.dataset.i); }
-    };
-  });
-  el.querySelectorAll(".r-info").forEach((b) => {
-    b.onclick = (e) => { e.stopPropagation(); openSheet(draftView.cards[+b.dataset.info]); };
-  });
-  el.querySelectorAll(".dslot").forEach((slot) => {
-    slot.onclick = () => {
-      const key = slot.dataset.slot;
-      if (slot.dataset.filled === "1") { openSheet(cartaIn(state.rosa, slotByKey.get(key))); return; }
-      if (slot.classList.contains("elig")) placeIn(key);
-    };
-  });
-  // `busy` = una carta sta ancora volando verso lo slot (flyMirino, ~620ms).
-  // Un aiuto cliccato in quella finestra ridisegna la schermata e stacca dal
-  // DOM la riga/casella che il volo sta animando: l'animazione finisce nel
-  // vuoto, il suo commit() non parte mai e il piazzamento sparisce senza
-  // errori (bug "non fa il roll, vista fissa" - riprodotto il 07/09/2026).
-  // Stessa guardia già presente su #autod-go, mancava solo qui.
-  el.querySelectorAll(".aid:not([disabled])").forEach((b) => {
-    b.onclick = () => { if (busy) return; ctx.dispatch({ type: "aid", aid: b.dataset.aid }); };
-  });
+  if (!inAuto) {
+    el.querySelectorAll(".crd:not(.off)").forEach((row) => {
+      row.onclick = () => selectCand(+row.dataset.i);
+      row.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); selectCand(+row.dataset.i); }
+      };
+    });
+    el.querySelectorAll(".r-info").forEach((b) => {
+      b.onclick = (e) => { e.stopPropagation(); openSheet(draftView.cards[+b.dataset.info]); };
+    });
+    el.querySelectorAll(".dslot").forEach((slot) => {
+      slot.onclick = () => {
+        const key = slot.dataset.slot;
+        if (slot.dataset.filled === "1") { openSheet(cartaIn(state.rosa, slotByKey.get(key))); return; }
+        if (slot.classList.contains("elig")) placeIn(key);
+      };
+    });
+    // `busy` = una carta sta ancora volando verso lo slot (flyMirino, ~620ms).
+    // Un aiuto cliccato in quella finestra ridisegna la schermata e stacca dal
+    // DOM la riga/casella che il volo sta animando: l'animazione finisce nel
+    // vuoto, il suo commit() non parte mai e il piazzamento sparisce senza
+    // errori (bug "non fa il roll, vista fissa" - riprodotto il 07/09/2026).
+    // Stessa guardia già presente su #autod-go, mancava solo qui.
+    el.querySelectorAll(".aid:not([disabled])").forEach((b) => {
+      b.onclick = () => { if (busy) return; ctx.dispatch({ type: "aid", aid: b.dataset.aid }); };
+    });
+  }
 
   // ---- Auto-draft ----
   el.querySelectorAll("#autod-malus button").forEach((b) => {
@@ -597,9 +685,34 @@ export function render(ctx) {
         x.setAttribute("aria-pressed", String(x === b)));
     };
   });
-  el.querySelector("#autod-go").onclick = () => {
+  const autodGo = el.querySelector("#autod-go");
+  if (autodGo) autodGo.onclick = () => {
     if (busy) return;
     ctx.dispatch({ type: "autoDraft", malusMax: malusAuto });
+  };
+  const autodStop = el.querySelector("#autod-stop");
+  if (autodStop) autodStop.onclick = () => {
+    stoppedAuto = true;
+    ctx.dispatch({ type: "stopAutoDraft" });
+  };
+  const autodSpeed = el.querySelector("#autod-speed");
+  if (autodSpeed) autodSpeed.onclick = () => {
+    // Tocca solo la variabile di modulo: niente dispatch, niente re-render -
+    // i timer già schedulati (scanThenLock/afterReveal/flyMirino) la leggono
+    // al momento in cui scattano, quindi il cambio vale da subito anche a
+    // metà pick, non solo al prossimo spin.
+    speedX2 = !speedX2;
+    autodSpeed.setAttribute("aria-pressed", String(speedX2));
+  };
+  const autodSkip = el.querySelector("#autod-skip");
+  if (autodSkip) autodSkip.onclick = () => {
+    // Stessa guardia di #autod-go/.aid: se una carta sta volando (flyMirino,
+    // ~620ms/mul) il suo `commit()` pendente farebbe un dispatch "assign" su
+    // uno stato che il salto ha già superato. Bloccato qui, non lì, perché
+    // il bottone stesso deve restare cliccabile appena la carta si posa.
+    if (busy) return;
+    stoppedAuto = true; // blocca l'eventuale setTimeout di afterReveal ancora in attesa
+    ctx.dispatch({ type: "autoDraftSkip", malusMax: draftView.auto.malusMax });
   };
 
   // ---- Glossario: si apre col "?" del tabellone ----
