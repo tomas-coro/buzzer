@@ -1,5 +1,5 @@
 import {
-  newRun, draftPick, useAid, chooseCoach, startRun, resolveRound, sceltaAutoDraft,
+  newRun, draftPick, useAid, chooseCoach, startRun, resolveRound, resolveSeriesGame, sceltaAutoDraft,
 } from "../../game/run.js";
 import { caselleLibere, chiaveSlot, listaRosa, minutiRosa } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
@@ -60,11 +60,15 @@ const cards = CARDS_BY_TEAM_SEASON;
 const pool = opponentPool(cards); // pool avversari, calcolato una volta
 
 // Registry di render: chiave = fase UI o state.stato.
-const screens = { home, difficolta, draft, coach, run, finito: esito, leaderboard, profilo };
+const screens = {
+  home, difficolta, "difficolta-playoff": difficolta,
+  draft, coach, run, finito: esito, leaderboard, profilo,
+};
 
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;
-  return { state, cards, pool, draftView, N, dispatch, go, installApp, installed: installed() };
+  const formato = state?.formato ?? (ui === "difficolta-playoff" ? "playoff" : "imbattuto");
+  return { state, cards, pool, draftView, N, formato, dispatch, go, installApp, installed: installed() };
 }
 
 function go(nextUi, fromHistory = false) {
@@ -213,7 +217,7 @@ function dispatch(action) {
       state = startRun(state, pool);   // entra nel run: calcola voto + primo avversario
       break;
     case "resolveRound":
-      state = resolveRound(state);
+      state = state.formato === "playoff" ? resolveSeriesGame(state) : resolveRound(state);
       if (state.stato === "finito") {
         // roster = nome -> identità (per l'avatar del Profilo), perRound = una
         // riga box per round (solo il tuo lato, solo nome+tot): la storia
@@ -234,12 +238,13 @@ function dispatch(action) {
     case "reset":
       state = null; ui = "home"; draftView = null;
       break;
-    case "exitToDifficolta":
-      // Uscita volontaria da draft/coach/run (bottone nell'appHeader, vedi
-      // _chrome.js): stessa pulizia di "reset" ma si torna alla scelta
-      // difficoltà invece che alla home, la run in corso va persa.
-      state = null; ui = "difficolta"; draftView = null;
+    case "exitToDifficolta": {
+      // Uscita volontaria da draft/coach/run: torna alla difficoltà dello
+      // stesso formato, senza trasformare un playoff in una corsa 16-0.
+      const formato = state.formato;
+      state = null; ui = formato === "playoff" ? "difficolta-playoff" : "difficolta"; draftView = null;
       break;
+    }
     default:
       throw new Error(`azione sconosciuta: ${action.type}`);
   }

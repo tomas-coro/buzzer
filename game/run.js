@@ -35,6 +35,8 @@ import { teamName } from "./team-names.js";
 // stesso motivo: non sappiamo chi allenava quella squadra in quella stagione,
 // e inventarglielo sposterebbe la taratura senza aggiungere verità.
 export const ROTAZIONE_AVVERSARIO = "normale";
+export const PLAYOFF_ROUNDS = 4;
+export const PLAYOFF_SERIE_A = 4;
 
 export function newRun({
   formato, difficolta, k = null, seme = semeCasuale(),
@@ -74,6 +76,7 @@ export function newRun({
     stato: "draft",
     esito: null,
     storia: [],
+    ...(formato === "playoff" ? { gara: 0, serieRecord: { noi: 0, loro: 0 } } : {}),
   };
 }
 
@@ -199,6 +202,7 @@ export function startRun(state, pool) {
   return {
     ...state, rosaAllenata: rosa, voto, ritmo, rotazione, effetti,
     round, avversario, pool, stato: "run",
+    ...(state.formato === "playoff" ? { gara: 1, serieRecord: { noi: 0, loro: 0 } } : {}),
   };
 }
 
@@ -220,6 +224,9 @@ const semeAvversario = (seme, round) => rngSeed(seme + round * 31 + 5171);
 function semeCasuale() {
   return Math.floor(Math.random() * 2 ** 31);
 }
+
+const semeGara = (state) => state.seme
+  + (state.formato === "playoff" ? state.round * 7 + state.gara : state.round);
 
 // La partita del round: funzione PURA dello stato, non tocca niente.
 //
@@ -244,7 +251,7 @@ export function partitaRound(state) {
       reparti: state.avversario.voto.reparti,
       ritmo: 0,
     },
-    rng: rngSeed(state.seme + state.round),
+    rng: rngSeed(semeGara(state)),
   });
 }
 
@@ -279,7 +286,7 @@ export function boxScoreRound(state, partita = partitaRound(state)) {
       giocatori: giocatoriConMinuti(state.avversario.rosa, ROTAZIONE_AVVERSARIO),
       reparti: state.avversario.voto.reparti,
     },
-    rng: rngSeed(state.seme + state.round + 7919),
+    rng: rngSeed(semeGara(state) + 7919),
   });
 }
 
@@ -310,7 +317,7 @@ export function playByPlayRound(
       giocatori: giocatoriConMinuti(state.avversario.rosa, ROTAZIONE_AVVERSARIO),
       reparti: state.avversario.voto.reparti,
     },
-    rng: rngSeed(state.seme + state.round + 3121),
+    rng: rngSeed(semeGara(state) + 3121),
   });
 }
 
@@ -321,6 +328,47 @@ export function playByPlayRound(
 export function esitoRound(state) {
   if (state.stato !== "run") throw new Error("esitoRound: run non attivo");
   return partitaRound(state).vincitore === "casa";
+}
+
+export function resolveSeriesGame(state) {
+  if (state.stato !== "run") throw new Error("resolveSeriesGame: run non attivo");
+  const partita = partitaRound(state);
+  const vinto = partita.vincitore === "casa";
+  const vittorie = state.vittorie + (vinto ? 1 : 0);
+  const serieRecord = {
+    noi: state.serieRecord.noi + (vinto ? 1 : 0),
+    loro: state.serieRecord.loro + (vinto ? 0 : 1),
+  };
+  const storia = [...state.storia, {
+    round: state.round, gara: state.gara,
+    avversario: state.avversario.team, stagione: state.avversario.season, vinto,
+    tuo: state.voto.ovr, loro: state.avversario.voto.ovr,
+    punti: partita.punti, quarti: partita.quarti, cronaca: partita.cronaca,
+    box: boxScoreRound(state, partita),
+  }];
+
+  if (serieRecord.loro >= PLAYOFF_SERIE_A) {
+    const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
+    return { ...state, storia, vittorie, serieRecord, affrontati, stato: "finito", esito: "sconfitta" };
+  }
+
+  if (serieRecord.noi >= PLAYOFF_SERIE_A && state.round >= PLAYOFF_ROUNDS) {
+    const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
+    return { ...state, storia, vittorie, serieRecord, affrontati, stato: "finito", esito: "campione" };
+  }
+
+  if (serieRecord.noi >= PLAYOFF_SERIE_A) {
+    const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
+    const round = state.round + 1;
+    const d = { ...DIFFICULTIES[state.difficolta], N: PLAYOFF_ROUNDS };
+    const avversario = pickOpponent(
+      state.pool, round, d, semeAvversario(state.seme, round), new Set(affrontati));
+    return {
+      ...state, storia, affrontati, vittorie, round, avversario,
+      gara: 1, serieRecord: { noi: 0, loro: 0 },
+    };
+  }
+  return { ...state, storia, vittorie, serieRecord, gara: state.gara + 1 };
 }
 
 export function resolveRound(state) {

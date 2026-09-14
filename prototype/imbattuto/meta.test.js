@@ -38,7 +38,7 @@ test("lo storico corrotto o uno storage negato non bloccano l'app", () => {
   assert.deepEqual(leaderboard(s, "imbattuto", "normale"), []);
   const denied = { getItem() { throw new Error("denied"); }, setItem() { throw new Error("denied"); } };
   assert.equal(recordRun(denied, { vittorie: 1 }), false);
-  assert.deepEqual(lifetimeStats(denied), { runs: 0, imbattuti: 0, migliorStreak: 0 });
+  assert.deepEqual(lifetimeStats(denied), { runs: 0, imbattuti: 0, campioni: 0, migliorStreak: 0 });
 });
 
 test("recordRun + leaderboard: ordina per vittorie desc nel bucket", () => {
@@ -58,6 +58,15 @@ test("lifetimeStats aggrega run/imbattuti/miglior streak", () => {
   assert.equal(st.runs, 2);
   assert.equal(st.imbattuti, 1);
   assert.equal(st.migliorStreak, 6);
+});
+
+test("lifetimeStats conta i campioni playoff separati dagli imbattuti", () => {
+  const s = fakeStore();
+  recordRun(s, { formato: "playoff", difficolta: "normale", vittorie: 17, esito: "campione" });
+  recordRun(s, { formato: "imbattuto", difficolta: "normale", vittorie: 16, esito: "imbattuto" });
+  const st = lifetimeStats(s);
+  assert.equal(st.campioni, 1);
+  assert.equal(st.imbattuti, 1);
 });
 
 test("leaderboard di un bucket vuoto è []", () => {

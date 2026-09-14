@@ -1108,6 +1108,28 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 .sh-streak .num { font-family: var(--led); font-weight: 900; font-size: .82rem; color: var(--yellow); white-space: nowrap; }
 .sh-streak .num i { font-style: normal; color: var(--bone-dim); }
 
+/* Playoff: scorebug NBA dentro la fascia comandi Cabina 90s. */
+.run .sh-hd:has(.po-broadcast) { padding: 0; gap: 0; overflow: hidden; background: #0b0c2b; }
+.po-broadcast { flex: 1 1 100%; width: 100%; min-width: 0; min-height: 66px; display: grid; grid-template-columns: 190px minmax(260px, 1fr) 165px; align-items: center; gap: 16px; padding: 9px 14px; border-bottom: 3px solid var(--brass); }
+.po-round {
+  max-width: 190px; padding: 6px 10px; border: 1px solid var(--brass); border-radius: 999px;
+  font-family: var(--arcade); font-size: .46rem; line-height: 1.25; text-align: center; text-transform: uppercase; color: var(--yellow);
+}
+.po-score { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; }
+.po-score span { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
+.po-score span:last-child { flex-direction: row-reverse; }
+.po-score b { min-width: 0; font-family: var(--arcade); font-size: .58rem; line-height: 1.2; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-score span:last-child b { text-align: left; }
+.po-score strong { font-family: var(--led); font-size: 2rem; line-height: .8; color: var(--green); }
+.po-score span:last-child strong { color: var(--red); }
+.po-score em { font-family: var(--arcade); font-size: .4rem; font-style: normal; color: var(--yellow); text-transform: uppercase; }
+.po-dots { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-height: 28px; }
+.po-dots i { display: block; width: 11px; height: 11px; border: 2px solid #47497e; border-radius: 50%; background: #20214b; }
+.po-dots i.win { border-color: var(--green); background: var(--green); }
+.po-dots i.lose { border-color: var(--red); background: var(--red); }
+.po-dots i.now { width: 18px; height: 18px; border: 4px solid var(--yellow); background: var(--brass); box-shadow: 0 0 0 2px #101132, 0 0 0 4px rgba(255,207,51,.28); }
+.run .sh-hd:has(.po-broadcast) .sh-speed { width: 100%; margin: 0; padding: 7px 12px; justify-content: flex-end; background: var(--ink-3); }
+
 /* Selettore velocità: segmentato alto 26px, sempre a schermo e cambiabile in
    corsa. Una corsa è di 16 partite: a Lenta sarebbero minuti di sola attesa. */
 .sh-speed { margin-left: auto; display: flex; align-items: center; gap: 8px; }
@@ -1381,6 +1403,14 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 }
 @media (max-width: 720px) {
   .a-bot { grid-template-columns: 1fr; }
+  .po-broadcast { grid-template-columns: minmax(0, 1fr) auto; min-height: 0; gap: 10px; padding: 10px; }
+  .po-round { max-width: none; }
+  .po-score { grid-column: 1 / -1; grid-row: 2; }
+  .po-score b { font-size: .48rem; }
+  .po-score strong { font-size: 1.65rem; }
+  .po-dots { grid-column: 2; grid-row: 1; }
+  .run .sh-hd:has(.po-broadcast) .sh-speed { justify-content: space-between; gap: 5px; }
+  .sh-seg button { padding-inline: 7px; }
   .a-score b { font-size: 2.5rem; }
   .a-scoreline { grid-template-columns: 1fr; text-align: center; }
   .a-team.right { align-items: center; text-align: center; }
@@ -1453,6 +1483,42 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 
 .azioni { position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; opacity: 0; }
 
+/* Titolo playoff: il tabellone a tacche lascia posto alle quattro serie. */
+.esito.champion { max-width: 760px; }
+.esito.champion .azioni { opacity: 1; }
+.champ-cab { width: 100%; padding: 9px; border: 2px solid #090a24; background: var(--ink-3); box-shadow: 7px 7px 0 rgba(5,6,22,.5), inset 0 0 0 2px #414386; }
+.champ-strip { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 27px; padding: 5px 9px; border-bottom: 2px solid #090a24; background: var(--brass); color: #15101c; font-family: var(--arcade); font-size: .43rem; }
+.champ-strip b { padding: 3px 7px; border: 1px solid #090a24; background: #090a24; color: var(--green); font-family: var(--led); font-size: .62rem; }
+.champ-screen { position: relative; isolation: isolate; overflow: hidden; padding: 28px 20px 24px; border: 6px solid #090a24; text-align: center; background: #101132; animation: simpleIn .55s var(--ease) both; }
+.champ-screen::before { content: ""; position: absolute; z-index: -1; inset: -55%; background: repeating-conic-gradient(from -8deg, rgba(255,207,51,.08) 0 5deg, transparent 5deg 14deg); }
+.champ-marquee { display: inline-block; padding: 8px 17px; border: 3px solid var(--brass); background: var(--ink); box-shadow: 5px 5px 0 #090a24; }
+.esito.champion .champ-marquee h1 { width: auto; margin: 0; color: var(--yellow); opacity: 1; font-size: clamp(1.75rem, 8vw, 3.7rem); text-shadow: 4px 4px 0 var(--brass-deep); }
+.esito.champion .champ-marquee h1::after { display: none; }
+.champ-summary { margin: 16px 0 23px; color: var(--bone); font-size: .8rem; font-weight: 800; }
+.champ-summary b { color: var(--green); }
+.champ-road { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: left; }
+.champ-road::before { content: ""; position: absolute; left: 5%; right: 5%; top: 11px; height: 4px; background: var(--brass); box-shadow: 0 3px 0 #090a24; }
+.champ-stop { position: relative; min-width: 0; padding: 35px 8px 10px; border-top: 3px solid var(--green); background: rgba(7,8,28,.82); }
+.champ-stop::before { content: ""; position: absolute; z-index: 1; top: 3px; left: 9px; width: 17px; height: 17px; border: 3px solid #090a24; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 2px var(--yellow); }
+.champ-stop:last-child { border-color: var(--yellow); background: rgba(255,207,51,.1); }
+.champ-stop:last-child::before { width: 23px; height: 23px; top: 0; left: 6px; background: var(--yellow); box-shadow: 0 0 0 3px var(--brass); }
+.champ-stop span { display: block; min-height: 2.6em; color: var(--bone-dim); font-family: var(--arcade); font-size: .4rem; line-height: 1.25; text-transform: uppercase; }
+.champ-stop b { display: block; margin: 5px 0 3px; color: var(--green); font-family: var(--led); font-size: 1.25rem; line-height: 1; }
+.champ-stop:last-child b { color: var(--yellow); }
+.champ-stop small { display: block; color: var(--bone); font-size: .47rem; line-height: 1.3; overflow-wrap: anywhere; }
+.champ-stamp { display: inline-block; margin-top: 20px; padding: 6px 10px; border: 2px solid var(--brass); color: var(--brass); font-family: var(--arcade); font-size: .48rem; transform: rotate(-2deg); }
+
+@media (max-width: 560px) {
+  .champ-strip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .champ-screen { padding-inline: 11px; }
+  .champ-road { grid-template-columns: 1fr 1fr; gap: 9px 11px; }
+  .champ-road::before { display: none; }
+  .champ-stop { min-height: 110px; padding-top: 10px; }
+  .champ-stop::before { top: 8px; left: auto; right: 8px; }
+  .champ-stop:last-child::before { top: 5px; left: auto; right: 5px; }
+  .champ-stop span { min-height: 2.5em; padding-right: 24px; }
+}
+
 @keyframes flashBurst { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.55); } 45% { opacity: .95; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.3); } }
 @keyframes stampIn { 0% { transform: scale(1.5); opacity: 0; } 70% { transform: scale(.96); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes tPop { from { transform: scaleY(.3); opacity: .4; } to { transform: scaleY(1); opacity: 1; } }
@@ -1480,6 +1546,17 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 /* =================== LEADERBOARD (direzione A "Ruolino ledger", mockup 84) =================== */
 .leaderboard h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
 .bucket { font-size: .72rem; letter-spacing: .24em; text-transform: uppercase; color: var(--bone-dim); font-weight: 700; margin: -10px 0 0; }
+
+/* Tab formato (Corsa/Playoff): stesso linguaggio dei tab difficoltà sotto,
+   ma più larghi (solo 2 voci) e una tacca sopra - sceglie il bucket, poi
+   difftabs sceglie il livello dentro quel bucket. */
+#formatotabs { display: flex; gap: 6px; margin-bottom: 6px; }
+#formatotabs button {
+  flex: 1; font-family: var(--arcade); font-size: .56rem; letter-spacing: .04em; text-transform: uppercase;
+  padding: 10px 4px; min-height: 40px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--ink-2); color: var(--bone-dim);
+}
+#formatotabs button.on { border-color: var(--yellow); color: var(--yellow); background: rgba(255, 207, 51, .12); }
 
 #difftabs { display: flex; gap: 6px; }
 #difftabs button {
@@ -1513,8 +1590,8 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 }
 .lifetime span {
   flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;
-  padding: 10px 6px; border-radius: 10px; background: var(--ink-2); border: 1px solid var(--line);
-  font-size: .56rem; letter-spacing: .06em; text-transform: uppercase; color: var(--bone-dim);
+  padding: 10px 4px; border-radius: 10px; background: var(--ink-2); border: 1px solid var(--line);
+  font-size: .5rem; letter-spacing: .04em; text-transform: uppercase; color: var(--bone-dim);
 }
 .lifetime span b { font-family: var(--led); font-weight: 900; font-size: 1rem; color: var(--yellow); text-transform: none; letter-spacing: 0; }
 

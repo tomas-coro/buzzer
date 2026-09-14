@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import * as runModule from "./run.js";
 import {
   newRun, draftPick, useAid, chooseCoach, startRun, resolveRound,
   esitoRound, partitaRound, boxScoreRound, playByPlayRound, titolari, sceltaAutoDraft,
@@ -70,7 +71,8 @@ function poolLargo(liv) {
 }
 
 const SEME = 12345;
-const nuovaRun = (difficolta = "normale") => newRun({ formato: "playoff", difficolta, seme: SEME });
+const nuovaRun = (difficolta = "normale") => newRun({ formato: "imbattuto", difficolta, seme: SEME });
+const nuovaRunPlayoff = (difficolta = "normale") => newRun({ formato: "playoff", difficolta, seme: SEME });
 
 // Una corsa pronta a giocare: draft, coach, primo avversario.
 function pronta(mio, loro, coach = COACH) {
@@ -78,16 +80,27 @@ function pronta(mio, loro, coach = COACH) {
   s = chooseCoach(s, coach);
   return startRun(s, poolAt(loro));
 }
+function prontaPlayoff(mio, loro, coach = COACH) {
+  let s = fullDraft(nuovaRunPlayoff(), mio);
+  s = chooseCoach(s, coach);
+  return startRun(s, poolAt(loro));
+}
 
 test("newRun parte in fase draft con aiuti della difficoltà", () => {
-  const s = newRun({ formato: "playoff", difficolta: "normale" });
+  const s = newRun({ formato: "imbattuto", difficolta: "normale" });
   assert.equal(s.stato, "draft");
   assert.equal(s.vittorie, 0);
   assert.equal(s.aids.respin, 1);
 });
 
+test("newRun playoff prepara il contatore della serie", () => {
+  const s = newRun({ formato: "playoff", difficolta: "normale", seme: SEME });
+  assert.equal(s.gara, 0);
+  assert.deepEqual(s.serieRecord, { noi: 0, loro: 0 });
+});
+
 test("draftPick mette la carta nella casella scelta, quintetto o panchina", () => {
-  let s = newRun({ formato: "playoff", difficolta: "normale" });
+  let s = newRun({ formato: "imbattuto", difficolta: "normale" });
   const carte = dieciCarte(60, "MIO");
   s = draftPick(s, tit("PG"), carte[0]);
   assert.equal(cartaIn(s.rosa, tit("PG")), carte[0], "il titolare va nella casella del ruolo");
@@ -99,12 +112,12 @@ test("draftPick mette la carta nella casella scelta, quintetto o panchina", () =
 });
 
 test("draftPick: a dieci carte si passa in fase coach", () => {
-  let s = fullDraft(newRun({ formato: "playoff", difficolta: "normale" }));
+  let s = fullDraft(newRun({ formato: "imbattuto", difficolta: "normale" }));
   assert.equal(s.stato, "coach");
 });
 
 test("draftPick su una casella già occupata lancia", () => {
-  let t = newRun({ formato: "playoff", difficolta: "normale" });
+  let t = newRun({ formato: "imbattuto", difficolta: "normale" });
   const carte = dieciCarte(60, "MIO");
   t = draftPick(t, tit("PG"), carte[0]);
   assert.throws(() => draftPick(t, tit("PG"), carte[5]), /già occupata/);
@@ -113,7 +126,7 @@ test("draftPick su una casella già occupata lancia", () => {
 });
 
 test("draftPick rifiuta un titolare fuori ruolo, la panchina no", () => {
-  let t = newRun({ formato: "playoff", difficolta: "normale" });
+  let t = newRun({ formato: "imbattuto", difficolta: "normale" });
   const centro = card({ player_id: "big", pos: { primary: "C", secondary: null } });
   assert.throws(() => draftPick(t, tit("PG"), centro), /incompatibile/);
   t = draftPick(t, panca(10), centro);
@@ -125,14 +138,14 @@ test("draftPick rifiuta un titolare fuori ruolo, la panchina no", () => {
 // solo il 10° uomo: serve ai test di sceltaAutoDraft che vogliono un budget
 // residuo piccolo e controllato, senza farlo dipendere da nove costi veri.
 function statoUltimaCasella(tetto, speso) {
-  let s = { ...newRun({ formato: "playoff", difficolta: "normale" }), tetto: TETTO_LARGO };
+  let s = { ...newRun({ formato: "imbattuto", difficolta: "normale" }), tetto: TETTO_LARGO };
   const filler = dieciCarte(20, "FILL");
   SLOTS.slice(0, 9).forEach((slot, i) => { s = draftPick(s, slot, filler[i]); });
   return { ...s, tetto, speso };
 }
 
 test("sceltaAutoDraft: fra le carte piazzabili sceglie l'OVR più alto", () => {
-  const s = newRun({ formato: "playoff", difficolta: "normale" }); // rosa vuota, budget largo
+  const s = newRun({ formato: "imbattuto", difficolta: "normale" }); // rosa vuota, budget largo
   const debole = card({ player_id: "debole", ovr: 60, pos: { primary: "PG", secondary: null }, reparti: repartiA(40) });
   const forte = card({ player_id: "forte", ovr: 88, pos: { primary: "SG", secondary: null }, reparti: repartiA(70) });
   const scelta = sceltaAutoDraft(s, [debole, forte], 0);
@@ -185,7 +198,7 @@ test("sceltaAutoDraft: il budget non supera mai l'apron, qualunque malusPunti", 
 });
 
 test("sceltaAutoDraft: budget a zero forza la firma di ripiego sulla più economica", () => {
-  const s = { ...newRun({ formato: "playoff", difficolta: "normale" }), tetto: 0 };
+  const s = { ...newRun({ formato: "imbattuto", difficolta: "normale" }), tetto: 0 };
   const carte = dieciCarte(50, "SPIN").slice(0, 3);
   const scelta = sceltaAutoDraft(s, carte, 0);
   const laPiuEconomica = carte.reduce((m, c) => (salarioCarta(c) < salarioCarta(m) ? c : m));
@@ -194,20 +207,20 @@ test("sceltaAutoDraft: budget a zero forza la firma di ripiego sulla più econom
 });
 
 test("sceltaAutoDraft: nessuna carta ha una casella libera → null, serve un altro spin", () => {
-  const s = fullDraft(newRun({ formato: "playoff", difficolta: "normale" }));
+  const s = fullDraft(newRun({ formato: "imbattuto", difficolta: "normale" }));
   const carta = card({ player_id: "senza-posto" });
   assert.equal(sceltaAutoDraft(s, [carta], 0), null);
 });
 
 test("useAid consuma un aiuto; se esaurito lancia", () => {
-  let s = newRun({ formato: "playoff", difficolta: "difficile" }); // respin 0, squadra 1
+  let s = newRun({ formato: "imbattuto", difficolta: "difficile" }); // respin 0, squadra 1
   s = useAid(s, "squadra");
   assert.equal(s.aids.squadra, 0);
   assert.throws(() => useAid(s, "squadra"), /esaurit/);
 });
 
 test("useAid con tipo inesistente lancia (niente aiuto fantasma)", () => {
-  const s = newRun({ formato: "playoff", difficolta: "normale" });
+  const s = newRun({ formato: "imbattuto", difficolta: "normale" });
   assert.throws(() => useAid(s, "bogus"), /inesistente/);
 });
 
@@ -220,14 +233,14 @@ test("chooseCoach/startRun fuori dalla fase coach lanciano", () => {
 
 // Da G6 nemmeno Facile ha aiuti infiniti: il quarto "↺ squadra" deve fallire.
 test("Facile: anche gli switch si esauriscono", () => {
-  let s = newRun({ formato: "playoff", difficolta: "facile" }); // squadra 2
+  let s = newRun({ formato: "imbattuto", difficolta: "facile" }); // squadra 2
   for (let i = 0; i < 2; i++) s = useAid(s, "squadra");
   assert.equal(s.aids.squadra, 0);
   assert.throws(() => useAid(s, "squadra"), /esaurit/);
 });
 
 test("chooseCoach prima della rosa completa lancia", () => {
-  const s = newRun({ formato: "playoff", difficolta: "normale" });
+  const s = newRun({ formato: "imbattuto", difficolta: "normale" });
   assert.throws(() => chooseCoach(s, COACH), /rosa incompleta/);
 });
 
@@ -238,6 +251,12 @@ test("startRun calcola il voto squadra, i reparti e il primo avversario", () => 
   assert.equal(s.voto.ovr, 70);
   assert.equal(s.voto.reparti.dif, 70, "i reparti devono arrivare fino alla partita");
   assert.equal(s.avversario.team, "OPP");
+});
+
+test("startRun playoff apre gara 1 sullo 0-0", () => {
+  const s = prontaPlayoff(70, 70);
+  assert.equal(s.gara, 1);
+  assert.deepEqual(s.serieRecord, { noi: 0, loro: 0 });
 });
 
 test("startRun allena la rosa: la rosa draftata resta intatta accanto a quella allenata", () => {
@@ -268,6 +287,57 @@ test("resolveRound: vinco contro una squadra molto più debole, la streak sale",
   const s = resolveRound(pronta(95, 10));
   assert.equal(s.vittorie, 1);
   assert.equal(s.stato, "run");
+});
+
+test("il motore espone la risoluzione di una gara playoff", () => {
+  assert.equal(typeof runModule.resolveSeriesGame, "function");
+});
+
+test("una gara playoff vinta aggiorna la serie senza cambiare avversario", () => {
+  const prima = prontaPlayoff(99, 1);
+  const dopo = runModule.resolveSeriesGame(prima);
+  assert.deepEqual(dopo.serieRecord, { noi: 1, loro: 0 });
+  assert.equal(dopo.vittorie, 1);
+  assert.equal(dopo.gara, 2);
+  assert.equal(dopo.avversario, prima.avversario);
+  assert.equal(dopo.storia[0].gara, 1);
+});
+
+test("la quarta vittoria chiude la serie e apre il round successivo", () => {
+  let prima = fullDraft(nuovaRunPlayoff(), 99);
+  prima = startRun(chooseCoach(prima, COACH), poolLargo(1));
+  const avversarioRound1 = prima.avversario;
+  prima = { ...prima, gara: 4, vittorie: 3, serieRecord: { noi: 3, loro: 0 } };
+  const dopo = runModule.resolveSeriesGame(prima);
+  assert.equal(dopo.round, 2);
+  assert.equal(dopo.gara, 1);
+  assert.deepEqual(dopo.serieRecord, { noi: 0, loro: 0 });
+  assert.equal(dopo.vittorie, 4);
+  assert.notEqual(dopo.avversario, avversarioRound1);
+});
+
+test("la quarta sconfitta chiude la corsa, non la prima", () => {
+  const prima = prontaPlayoff(1, 99);
+  const unaPersa = runModule.resolveSeriesGame(prima);
+  assert.equal(unaPersa.stato, "run");
+  assert.deepEqual(unaPersa.serieRecord, { noi: 0, loro: 1 });
+  const eliminata = runModule.resolveSeriesGame({
+    ...prima, gara: 4, serieRecord: { noi: 0, loro: 3 },
+  });
+  assert.equal(eliminata.stato, "finito");
+  assert.equal(eliminata.esito, "sconfitta");
+});
+
+test("la quarta serie vinta assegna il titolo", () => {
+  const prima = {
+    ...prontaPlayoff(99, 1), round: 4, gara: 5, vittorie: 15,
+    serieRecord: { noi: 3, loro: 1 },
+  };
+  const dopo = runModule.resolveSeriesGame(prima);
+  assert.equal(dopo.stato, "finito");
+  assert.equal(dopo.esito, "campione");
+  assert.equal(dopo.vittorie, 16);
+  assert.deepEqual(dopo.serieRecord, { noi: 4, loro: 1 });
 });
 
 test("resolveRound: perdo contro una squadra molto più forte → sconfitta", () => {
@@ -303,6 +373,13 @@ test("round diversi giocano partite diverse", () => {
   assert.notDeepEqual(partitaRound(s).punti, primo.punti);
 });
 
+test("gare diverse della stessa serie giocano partite diverse", () => {
+  const s = prontaPlayoff(70, 65);
+  const gara1 = partitaRound(s);
+  const gara2 = partitaRound({ ...s, gara: 2 });
+  assert.notDeepEqual(gara2.punti, gara1.punti);
+});
+
 test("stesso seme, stessa corsa: due partite identiche dall'inizio", () => {
   const gioca = () => resolveRound(pronta(80, 60)).storia[0];
   assert.deepEqual(gioca(), gioca());
@@ -310,7 +387,7 @@ test("stesso seme, stessa corsa: due partite identiche dall'inizio", () => {
 
 test("semi diversi danno corse diverse", () => {
   const gioca = (seme) => {
-    let s = fullDraft(newRun({ formato: "playoff", difficolta: "normale", seme }), 60);
+    let s = fullDraft(newRun({ formato: "imbattuto", difficolta: "normale", seme }), 60);
     s = chooseCoach(s, COACH);
     return resolveRound(startRun(s, poolAt(58))).storia[0].punti;
   };
@@ -318,7 +395,7 @@ test("semi diversi danno corse diverse", () => {
 });
 
 test("newRun rifiuta un seme che non è un intero", () => {
-  assert.throws(() => newRun({ formato: "playoff", difficolta: "normale", seme: "x" }), /seme/);
+  assert.throws(() => newRun({ formato: "imbattuto", difficolta: "normale", seme: "x" }), /seme/);
 });
 
 test("raggiungere N vittorie chiude come imbattuto", () => {
@@ -344,7 +421,7 @@ test("una corsa non incontra due volte la stessa squadra", () => {
 
 test("semi diversi, tabelloni diversi: gli avversari non sono sempre gli stessi", () => {
   const tabellone = (seme) => {
-    let s = fullDraft(newRun({ formato: "playoff", difficolta: "normale", seme }), 99);
+    let s = fullDraft(newRun({ formato: "imbattuto", difficolta: "normale", seme }), 99);
     s = startRun(chooseCoach(s, COACH), poolLargo(20));
     const out = [];
     for (let i = 0; i < 5 && s.stato === "run"; i++) { out.push(s.avversario.team); s = resolveRound(s); }
@@ -354,7 +431,7 @@ test("semi diversi, tabelloni diversi: gli avversari non sono sempre gli stessi"
 });
 
 test("newRun accetta il nome della squadra e lo porta nella cronaca", () => {
-  let s = newRun({ formato: "playoff", difficolta: "normale", seme: SEME, squadra: "Dinamo Sofà" });
+  let s = newRun({ formato: "imbattuto", difficolta: "normale", seme: SEME, squadra: "Dinamo Sofà" });
   s = fullDraft(s, 80);
   s = chooseCoach(s, COACH);
   s = startRun(s, poolAt(30));
@@ -364,7 +441,7 @@ test("newRun accetta il nome della squadra e lo porta nella cronaca", () => {
 
 test("newRun rifiuta un nome squadra vuoto", () => {
   assert.throws(
-    () => newRun({ formato: "playoff", difficolta: "normale", seme: SEME, squadra: "   " }),
+    () => newRun({ formato: "imbattuto", difficolta: "normale", seme: SEME, squadra: "   " }),
     /nome squadra/);
 });
 
@@ -438,7 +515,7 @@ test("playByPlayRound fuori dal run è un errore, non un log vuoto", () => {
 
 test("una corsa nuova parte col tetto della sua difficoltà e la cassa intatta", () => {
   for (const liv of ["facile", "normale", "difficile", "incubo"]) {
-    const s = newRun({ formato: "playoff", difficolta: liv, seme: SEME });
+    const s = newRun({ formato: "imbattuto", difficolta: liv, seme: SEME });
     assert.equal(s.tetto, TETTI[liv]);
     assert.equal(s.speso, 0);
   }

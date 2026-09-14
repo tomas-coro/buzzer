@@ -46,7 +46,7 @@ export function render(ctx) {
           <button class="bz-cta rise" id="gioca" style="--d:.7s" type="button"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</button>
           <div class="bz-modes rise" style="--d:.76s">
             <button class="bz-mode bz-mode--on" id="mode-corsa" type="button"><span class="n">16-0</span><b>Corsa</b><span class="play">gioca</span></button>
-            <div class="bz-mode"><span class="n">serie</span><b>Playoff</b><span class="soon">presto</span></div>
+            <button class="bz-mode bz-mode--on" id="mode-playoff" type="button"><span class="n">serie</span><b>Playoff</b><span class="play">gioca</span></button>
             <div class="bz-mode"><span class="n">82-0</span><b>Stagione</b><span class="soon">presto</span></div>
             <div class="bz-mode"><span class="n">★</span><b>Sfida</b><span class="soon">presto</span></div>
           </div>
@@ -73,6 +73,7 @@ export function render(ctx) {
   const vai = () => ctx.go("difficolta");
   root.querySelector("#gioca").onclick = vai;
   root.querySelector("#mode-corsa").onclick = vai;
+  root.querySelector("#mode-playoff").onclick = () => ctx.go("difficolta-playoff");
   root.querySelector("#installa")?.addEventListener("click", ctx.installApp);
 
   return root;
