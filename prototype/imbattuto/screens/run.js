@@ -1,6 +1,7 @@
 import { ROLES } from "../../../game/roster.js";
 import { partitaRound, boxScoreRound, playByPlayRound, titolari, ROTAZIONE_AVVERSARIO } from "../../../game/run.js";
 import { minutiRosa } from "../../../game/rosa.js";
+import { teamName } from "../../../game/team-names.js";
 import { log } from "../../../game/playbyplay.js";
 import { attacco, difesa } from "../../../game/partita.js";
 import { votoCarta } from "../../../game/rating.js";
