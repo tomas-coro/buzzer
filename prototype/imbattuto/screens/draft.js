@@ -2,7 +2,7 @@ import {
   SLOTS, TITOLARE, PANCA, cartaIn, caselleDove, etichettaSlot, chiaveSlot, minutiSlot, ruoloDi, listaRosa,
 } from "../../../game/rosa.js";
 import { teamColors, initials } from "../team-colors.js";
-import { salarioCarta, limiteDuro, malusApron, firmabile, formattaSalario } from "../../../game/salary.js";
+import { salarioCarta, etichettaSalarioCarta, limiteDuro, malusApron, firmabile, formattaSalario } from "../../../game/salary.js";
 import { appHeader, wireAppHeader } from "./_chrome.js";
 
 // ctx: { state, draftView, dispatch, go }
@@ -466,7 +466,7 @@ export function render(ctx) {
     // "nome e prezzo restano sempre" - il prezzo non è il voto travestito).
     // È un cartellino autonomo: costo e margine residuo si leggono prima del
     // voto, senza affollare identità e statistiche.
-    const prezzo = `<span class="r-sal"><small>Contratto annuo</small><b>${formattaSalario(costi[i])}</b><em>restano <strong>${formattaSalario(residuo - costi[i])}</strong></em></span>`;
+    const prezzo = `<span class="r-sal"><small>${etichettaSalarioCarta(c)}</small><b>${formattaSalario(costi[i])}</b><em>restano <strong>${formattaSalario(residuo - costi[i])}</strong></em></span>`;
     return `<div class="crd${off ? " off" : ""}" data-i="${i}" ${off ? 'aria-disabled="true"' : `role="button" tabindex="0" aria-label="Seleziona ${esc(c.name)}"`} style="--tc1:${teamColors(c.team_abbr).c1};--tc2:${teamColors(c.team_abbr).c2}">
       <div class="r-top">
         <span class="r-port">${faceHTML(c, { hidden: rv.stats === "none" })}</span>

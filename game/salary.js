@@ -1,36 +1,9 @@
-// Il salario di una carta e il tetto di spesa del draft.
-//
-// PERCHÉ ESISTE. Incubo si era incagliato al 3,1% di 16-0 e non per una taratura
-// sbagliata: è il pavimento del pool. Col tetto degli avversari già sulla squadra
-// più forte di sempre, alzare `oppMin` non sposta più niente (vedi il commento in
-// difficulty.js). L'unica leva rimasta è dall'ALTRA parte del tavolo, cioè quanto
-// forte è la squadra che riesci a costruire tu.
-//
-// LA LEVA È PRESA DA ERABALL. Non ha livelli di difficoltà: ha la modalità Salary
-// Cap, nove caselle sotto un tetto fisso, e il costo di ogni giocatore è il suo
-// rating. 7-0 fa la stessa cosa in un altro modo (Blind, Daily senza re-roll):
-// nessuno dei due rende il gioco più duro alzando la forza dell'avversario.
-//
-// LA CURVA È CONVESSA, E NON È UN VEZZO. Nella NBA vera un fuoriclasse non costa
-// il doppio di un titolare qualsiasi, costa cinque volte tanto: il max contract
-// vale il 35% del tetto da solo. Se il costo fosse lineare col voto, il cap
-// diventerebbe solo "voto medio massimo" e non ci sarebbe niente da decidere. Con
-// la curva convessa nasce la scelta vera: un fuoriclasse e nove minimi, oppure
-// cinque buoni? È la domanda che si fa un GM ogni estate.
-//
-// GLI ANCORAGGI SONO MISURATI, NON SCELTI A OCCHIO. Sul dataset di oggi (2412
-// carte, 2014-15 → 2019-20) i voti stanno fra 10 e 91, mediana 48, p95 75. La
-// curva è tarata perché la carta MEDIANA costi come il salario mediano NBA vero,
-// circa 6 milioni: da lì l'esponente 2.8, non da un numero tondo qualsiasi.
-//
-// IL RUMORE SERVE AL BUIO DI INCUBO. Il contratto è stato firmato in passato,
-// quindi non fotografa il valore di oggi: esistono rookie sottopagati e veterani
-// strapagati, ed è la cosa più NBA che ci sia. Senza rumore il salario sarebbe il
-// voto riscalato, e in Incubo - dove il voto è nascosto - il prezzo lo rimetterebbe
-// in chiaro, cancellando il draft al buio. Col rumore il prezzo è un indizio
-// sporco: ti dice quanto spendi, non quanto vale.
+// Salario stagionale nominale Basketball-Reference, indicizzato per
+// giocatore+stagione. Dove il dato manca resta esplicitamente null; il gioco usa
+// allora il vecchio costo sintetico, ma la UI lo chiama "Costo draft".
 
 import { votoCarta } from "./rating.js";
+import { SALARI_STORICI } from "./salary-data.js";
 
 // Contratto minimo e max contract, in dollari veri. La NBA 2025-26 sta sui 2,1
 // milioni di minimo e sui 55 di supermax: numeri tondi che chiunque riconosce.
@@ -90,9 +63,18 @@ export function fattoreContratto(carta) {
   return 1 - RUMORE + 2 * RUMORE * u;
 }
 
-/** Il cartellino vero di una carta: curva sul suo voto, più il suo contratto. */
+/** Il dato storico grezzo; null significa davvero mancante. */
+export function salarioStorico(carta) {
+  return SALARI_STORICI[`${carta?.player_id}|${carta?.season}`] ?? null;
+}
+
+/** Salario storico quando disponibile, altrimenti costo sintetico del draft. */
 export function salarioCarta(carta) {
-  return salarioDaVoto(votoCarta(carta), fattoreContratto(carta));
+  return salarioStorico(carta) ?? salarioDaVoto(votoCarta(carta), fattoreContratto(carta));
+}
+
+export function etichettaSalarioCarta(carta) {
+  return salarioStorico(carta) === null ? "Costo draft" : "Salario stagionale";
 }
 
 /**

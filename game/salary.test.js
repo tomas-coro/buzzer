@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { card } from "./fixtures.js";
 import {
   SALARIO_MIN, SALARIO_MAX, RUMORE,
-  salarioDaVoto, fattoreContratto, salarioCarta, firmabile, prenotato,
+  salarioDaVoto, fattoreContratto, salarioStorico, salarioCarta, etichettaSalarioCarta, firmabile, prenotato,
   firmaDiRipiego, formattaSalario,
   APRON, TASSA_PER_MILIONE, limiteDuro, sforo, malusApron, monteIngaggi,
 } from "./salary.js";
@@ -72,11 +72,18 @@ test("il rumore crea affari e zavorre: il prezzo non rivela il voto", () => {
   assert.ok(salarioCarta(forte) > 0 && salarioCarta(debole) > 0);
 });
 
-test("il salario è arrotondato ai centomila: niente cifre da bilancio", () => {
-  for (const id of ["x", "y", "z"]) {
-    const s = salarioCarta(card({ player_id: id }));
-    assert.equal(s % 100_000, 0, `${s} non è tondo`);
-  }
+test("usa il salario storico nominale quando esiste", () => {
+  const lebron = card({ player_id: "lebron-james", season: "2014-15" });
+  assert.equal(salarioStorico(lebron), 20_644_400);
+  assert.equal(salarioCarta(lebron), 20_644_400);
+  assert.equal(etichettaSalarioCarta(lebron), "Salario stagionale");
+});
+
+test("un salario mancante resta null e usa il costo draft dichiarato", () => {
+  const mancante = card({ player_id: "nessuno", season: "1900-01" });
+  assert.equal(salarioStorico(mancante), null);
+  assert.equal(etichettaSalarioCarta(mancante), "Costo draft");
+  assert.equal(salarioCarta(mancante) % 100_000, 0);
 });
 
 test("prenotato: ogni casella ancora vuota tiene da parte un contratto minimo", () => {

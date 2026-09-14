@@ -40,7 +40,7 @@
 //
 // INCUBO NON ARRIVA ALLO 0,5% E NON È UN ERRORE DI TARATURA: è il pavimento del
 // pool. RISOLTO IN G10 COL TETTO DI SPESA (vedi sotto): oggi Incubo sta allo
-// 0,46% misurato su 5000 corse. Il paragrafo resta perché spiega perché le
+// 0,52% misurato su 5000 corse. Il paragrafo resta perché spiega perché le
 // soglie da sole non ci arrivavano: col tetto degli avversari già sulla squadra
 // più forte di sempre, alzare ancora oppMin non spostava più niente (misurato
 // prima di G7: 63-67 → 1,05%, 65-67 → 1,15%, 67-67 → 1,07%; dopo G7 il pavimento
@@ -49,7 +49,7 @@
 // PER QUESTO DIFFICILE E INCUBO AVEVANO LA STESSA BANDA (63-69). Era uno stato
 // di passaggio ed è finito: la leva diversa è arrivata e non è il pool più
 // debole ipotizzato qui, è il tetto di spesa. Oggi i due livelli si distinguono
-// su entrambe le leve (260M/46-67 contro 240M/53-69).
+// su entrambe le leve (200M/45-65 contro 190M/50-69).
 //
 // Il salto vero tra un livello e l'altro non viene da qui ma dagli AIUTI, che
 // cambiano quanto forte è la squadra che riesci a draftare: voto medio 79 in
@@ -68,7 +68,7 @@
 // più generoso di entrambi.
 //
 // INCUBO HA GLI STESSI AIUTI DI DIFFICILE, e non è una svista: si distingue per
-// la banda avversari (53-69 contro 46-67), per il tetto di spesa più stretto e
+// la banda avversari (50-69 contro 45-65), per il tetto di spesa più stretto e
 // perché il draft è al buio, senza voti né box score. Prima aveva zero aiuti, ed era l'unica differenza che non si
 // vedeva mai - a quel punto non giocavi diversamente, avevi solo meno strumenti.
 //
@@ -98,59 +98,26 @@
 // travestito da regola del gioco, e la barra del budget non si sarebbe mai
 // riempita nei primi tre livelli.
 //
-// I NUMERI DI OGGI ESCONO DA `node tools/taratura-congiunta.mjs`, che tara le due
-// leve INSIEME perché tirano la stessa corda. La separazione non è "prima una poi
-// l'altra", è per ruolo:
+// Ritaratura dopo l'import dei salari nominali (2026-09-13). Banco con semi
+// fissi, strategia "stelle"; conferme riportate sotto:
 //
-//   il TETTO decide COME si sente la difficoltà - quanto spesso, draftando
-//   d'istinto, finisci a pagare la tassa dell'apron. È una cosa che il giocatore
-//   VEDE mentre gioca, quindi si sceglie a tavolino e si misura per conferma.
-//   le SOGLIE decidono QUANTE corse finiscono 16-0. È un numero che il giocatore
-//   non vede mai, quindi non si sceglie: si insegue col banco.
-//
-// IL MORSO VOLUTO è la decisione di Tomas del 2026-08-18: "a Facile va bene
-// potersi fare lo squadrone, ma già a Normale non dev'essere così scontato".
-// Tradotto: quante corse su cento finiscono sopra il tetto, cioè a pagare.
-//
-//   livello    tetto   soglie   16-0 misurato   bersaglio   sforano   corse
-//   facile      320M    41-61       30.5%          30%        33%       800
-//   normale     280M    43-63       14.6%          15%        57%      2000
-//   difficile   260M    46-67        3.2%         3.25%       71%      3000
-//   incubo      240M    53-69        0.5%          0.5%       86%      5000
-//
-// INCUBO NON È PIÙ INCAGLIATO. Stava al 3,1% da due sessioni e non per una
-// taratura sbagliata: col tetto degli avversari già sulla squadra più forte di
-// sempre, alzare `oppMin` non spostava più niente. Il tetto di spesa scioglie il
-// nodo dall'altra parte del tavolo, e il livello arriva allo 0,46% misurato su
-// 5000 corse.
-//
-// DIFFICILE E INCUBO SONO FINALMENTE DUE LIVELLI DIVERSI. Prima avevano soglie
-// identiche (63-69) e si distinguevano solo per il draft al buio - uno stato di
-// passaggio, scritto qui come tale. Adesso differiscono su entrambe le leve:
-// 260M contro 240M, 46-67 contro 53-69.
-//
-// LA BANDA È LARGA UNA VENTINA DI PUNTI A OGNI LIVELLO, e non è un dettaglio:
-// 63-69 erano sei punti, cioè sedici partite quasi identiche contro il meglio
-// del pool. Una banda stretta non è più difficile, è più PIATTA - sparisce la
-// sensazione di scalare i playoff. Le vittorie medie dicono la scala meglio
-// della percentuale: 9,5 a Normale, 6,9 a Difficile, 3,5 a Incubo.
-//
-// PERCHÉ NORMALE È SALITO DA 12% A 15%. Non è un ammorbidimento: la difficoltà
-// che prima stava tutta negli avversari adesso è divisa in due, e la metà nuova
-// - il tetto - si paga durante il draft, dove si vede. Il 16-0 sale, ma sfori il
-// tetto in sei corse su dieci contro le tre di Facile.
+//   livello     tetto   soglie   16-0   bersaglio   sforano   corse
+//   facile       260M    40-60   28.3%      30%       24.0%     800
+//   normale      220M    41-61   13.8%      15%       55.3%    1200
+//   difficile    200M    45-65    3.2%    3.25%       75.0%    2400
+//   incubo       190M    50-69    0.5%     0.5%       83.4%    5000
 export const TETTI = {
-  facile: 320_000_000,
-  normale: 280_000_000,
-  difficile: 260_000_000,
-  incubo: 240_000_000,
+  facile: 260_000_000,
+  normale: 220_000_000,
+  difficile: 200_000_000,
+  incubo: 190_000_000,
 };
 
 export const DIFFICULTIES = {
-  facile:    { aids: { squadra: 2, stagione: 2, respin: 1 }, N: 16, oppMin: 41, oppMax: 61 },
-  normale:   { aids: { squadra: 1, stagione: 1, respin: 1 }, N: 16, oppMin: 43, oppMax: 63 },
-  difficile: { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 46, oppMax: 67 },
-  incubo:    { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 53, oppMax: 69 },
+  facile:    { aids: { squadra: 2, stagione: 2, respin: 1 }, N: 16, oppMin: 40, oppMax: 60 },
+  normale:   { aids: { squadra: 1, stagione: 1, respin: 1 }, N: 16, oppMin: 41, oppMax: 61 },
+  difficile: { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 45, oppMax: 65 },
+  incubo:    { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 50, oppMax: 69 },
 };
 
 // ---------------------------------------------------------------------------
@@ -168,8 +135,8 @@ export const DIFFICULTIES = {
 //   difficile         via il voto e via l'annata. Leggi "Curry, 30.1 punti" e
 //                     l'anno lo deduci dalle stat e dai nove compagni dello spin,
 //                     che è poi il modo in cui lo saprebbe un tifoso vero.
-//   incubo            resta il nome e il cartellino. Il prezzo non è il voto
-//                     travestito: il rumore sul contratto lo sporca (salary.js).
+//   incubo            resta il nome e il cartellino: salario storico quando
+//                     disponibile, altrimenti "Costo draft" dichiarato.
 //
 // IL BANCO NON PUÒ MISURARE QUESTA SCALA, e va detto perché è una trappola: il
 // giocatore simulato legge il voto dai dati, quindi nascondergli il voto non
