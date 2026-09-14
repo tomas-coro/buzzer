@@ -18,7 +18,7 @@ test("il risultato condiviso include record, difficoltà e rosa", () => {
 
 test("il titolo playoff condivide le quattro serie vinte", () => {
   const state = {
-    formato: "playoff", esito: "campione", vittorie: 4, difficolta: "normale",
+    formato: "playoff", esito: "campione", vittorie: 16, difficolta: "normale",
     rosa: { titolari: { PG: { name: "Stephen Curry" } }, panca: {} },
   };
   assert.match(testoCondivisione(state), /^CAMPIONE - 4 serie vinte · Normale/);
@@ -26,7 +26,7 @@ test("il titolo playoff condivide le quattro serie vinte", () => {
 
 test("una serie playoff persa a metà corsa conta le sconfitte dalla storia, non 0/1", () => {
   const state = {
-    formato: "playoff", esito: "sconfitta", vittorie: 1, difficolta: "normale",
+    formato: "playoff", esito: "sconfitta", vittorie: 3, difficolta: "normale",
     storia: [
       { vinto: true }, { vinto: true }, { vinto: true },
       { vinto: false }, { vinto: false }, { vinto: false }, { vinto: false },
@@ -35,6 +35,6 @@ test("una serie playoff persa a metà corsa conta le sconfitte dalla storia, non
   };
   assert.equal(
     testoCondivisione(state),
-    "SERIE PLAYOFF - 1-4 · Normale\nRosa: Stephen Curry",
+    "SERIE PLAYOFF - 3-4 · Normale\nRosa: Stephen Curry",
   );
 });

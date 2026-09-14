@@ -30,7 +30,7 @@ function fasciaRank(i) {
   return "bronzo";
 }
 
-function renderRows(runs, formato) {
+function renderRows(runs) {
   if (!runs.length) return `<li class="lb-vuoto">Ancora nessun run in questo bucket.</li>`;
   return runs.map((r, i) => `
     <li style="--i:${i}">
@@ -40,7 +40,7 @@ function renderRows(runs, formato) {
           <span class="a-esito ${vinta(r) ? "win" : "lose"}">${etichettaEsito(r)}</span>
           <span class="a-data">${dataRelativa(r.ts)}</span>
         </span>
-        <span class="a-vitt">${r.vittorie}<small>${formato === "playoff" ? "serie" : "vittorie"}</small></span>
+        <span class="a-vitt">${r.vittorie}<small>vittorie</small></span>
       </div>
     </li>`).join("");
 }
@@ -81,7 +81,7 @@ export function render(ctx) {
     el.querySelectorAll("#formatotabs button").forEach((b) => b.classList.toggle("on", b.dataset.formato === formato));
     el.querySelectorAll("#difftabs button").forEach((b) => b.classList.toggle("on", b.dataset.diff === difficolta));
     el.querySelector("#bucket-sub").textContent = `${FORMATO_LABEL[formato]} · ${DIFF_LABEL[difficolta]}`;
-    el.querySelector("#rows").innerHTML = renderRows(leaderboard(store, formato, difficolta), formato);
+    el.querySelector("#rows").innerHTML = renderRows(leaderboard(store, formato, difficolta));
   }
 
   el.querySelectorAll("#formatotabs button").forEach((b) => {

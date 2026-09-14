@@ -1109,23 +1109,26 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 .sh-streak .num i { font-style: normal; color: var(--bone-dim); }
 
 /* Playoff: scorebug NBA dentro la fascia comandi Cabina 90s. */
-.po-broadcast { flex: 1 1 380px; min-width: 0; display: flex; align-items: center; gap: 14px; }
+.run .sh-hd:has(.po-broadcast) { padding: 0; gap: 0; overflow: hidden; background: #0b0c2b; }
+.po-broadcast { flex: 1 1 100%; width: 100%; min-width: 0; min-height: 66px; display: grid; grid-template-columns: 190px minmax(260px, 1fr) 165px; align-items: center; gap: 16px; padding: 9px 14px; border-bottom: 3px solid var(--brass); }
 .po-round {
-  flex: none; max-width: 180px; padding: 5px 10px; border: 1px solid var(--brass); border-radius: 999px;
-  font-family: var(--arcade); font-size: .43rem; line-height: 1.25; text-align: center; text-transform: uppercase; color: var(--yellow);
+  max-width: 190px; padding: 6px 10px; border: 1px solid var(--brass); border-radius: 999px;
+  font-family: var(--arcade); font-size: .46rem; line-height: 1.25; text-align: center; text-transform: uppercase; color: var(--yellow);
 }
-.po-score { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; }
-.po-score span { min-width: 0; display: flex; align-items: center; gap: 7px; }
-.po-score span:last-child { flex-direction: row-reverse; text-align: right; }
-.po-score b { min-width: 0; font-family: var(--arcade); font-size: .5rem; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.po-score strong { font-family: var(--led); font-size: 1.45rem; line-height: 1; color: var(--green); }
+.po-score { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 12px; }
+.po-score span { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 9px; }
+.po-score span:last-child { flex-direction: row-reverse; }
+.po-score b { min-width: 0; font-family: var(--arcade); font-size: .58rem; line-height: 1.2; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.po-score span:last-child b { text-align: left; }
+.po-score strong { font-family: var(--led); font-size: 2rem; line-height: .8; color: var(--green); }
 .po-score span:last-child strong { color: var(--red); }
-.po-score em { font-family: var(--arcade); font-size: .38rem; font-style: normal; color: var(--bone-dim); text-transform: uppercase; }
-.po-dots { flex: none; display: flex; align-items: center; gap: 5px; min-height: 24px; }
-.po-dots i { display: block; width: 10px; height: 10px; border: 2px solid #47497e; border-radius: 50%; background: #20214b; }
+.po-score em { font-family: var(--arcade); font-size: .4rem; font-style: normal; color: var(--yellow); text-transform: uppercase; }
+.po-dots { display: flex; align-items: center; justify-content: flex-end; gap: 6px; min-height: 28px; }
+.po-dots i { display: block; width: 11px; height: 11px; border: 2px solid #47497e; border-radius: 50%; background: #20214b; }
 .po-dots i.win { border-color: var(--green); background: var(--green); }
 .po-dots i.lose { border-color: var(--red); background: var(--red); }
-.po-dots i.now { width: 16px; height: 16px; border: 4px solid var(--yellow); background: var(--brass); box-shadow: 0 0 0 2px #101132, 0 0 0 4px rgba(255,207,51,.28); }
+.po-dots i.now { width: 18px; height: 18px; border: 4px solid var(--yellow); background: var(--brass); box-shadow: 0 0 0 2px #101132, 0 0 0 4px rgba(255,207,51,.28); }
+.run .sh-hd:has(.po-broadcast) .sh-speed { width: 100%; margin: 0; padding: 7px 12px; justify-content: flex-end; background: var(--ink-3); }
 
 /* Selettore velocità: segmentato alto 26px, sempre a schermo e cambiabile in
    corsa. Una corsa è di 16 partite: a Lenta sarebbero minuti di sola attesa. */
@@ -1400,12 +1403,13 @@ html:has(dialog[open]), body:has(dialog[open]) { overflow: hidden; }
 }
 @media (max-width: 720px) {
   .a-bot { grid-template-columns: 1fr; }
-  .po-broadcast { flex-basis: 100%; display: grid; grid-template-columns: 1fr auto; gap: 9px; }
+  .po-broadcast { grid-template-columns: minmax(0, 1fr) auto; min-height: 0; gap: 10px; padding: 10px; }
   .po-round { max-width: none; }
   .po-score { grid-column: 1 / -1; grid-row: 2; }
+  .po-score b { font-size: .48rem; }
+  .po-score strong { font-size: 1.65rem; }
   .po-dots { grid-column: 2; grid-row: 1; }
-  .run .sh-hd { padding: 10px; }
-  .run .sh-speed { width: 100%; justify-content: space-between; gap: 5px; }
+  .run .sh-hd:has(.po-broadcast) .sh-speed { justify-content: space-between; gap: 5px; }
   .sh-seg button { padding-inline: 7px; }
   .a-score b { font-size: 2.5rem; }
   .a-scoreline { grid-template-columns: 1fr; text-align: center; }

@@ -123,7 +123,7 @@ export function render(ctx) {
       <h1 style="animation: stampIn .5s cubic-bezier(.2,1.6,.4,1) ${afterLadder + 150}ms both">${vinto ? "IMBATTUTO" : "SCONFITTA"}</h1>
       <p class="riepilogo" style="animation: simpleIn .4s var(--ease) ${afterLadder + 500}ms both">${vinto
         ? `${state.vittorie} vittorie di fila`
-        : state.formato === "playoff" ? `${state.vittorie} serie vinte prima dello stop` : `${state.vittorie} vittorie prima dello stop`}</p>
+        : state.formato === "playoff" ? `${state.round - 1} serie vinte prima dello stop` : `${state.vittorie} vittorie prima dello stop`}</p>
       <ul class="storia" style="animation: simpleIn .3s var(--ease) ${afterLadder + 650}ms both">${state.storia.map(rigaRound).join("")}</ul>
       ${azioni}`;
 

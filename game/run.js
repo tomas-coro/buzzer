@@ -35,6 +35,8 @@ import { teamName } from "./team-names.js";
 // stesso motivo: non sappiamo chi allenava quella squadra in quella stagione,
 // e inventarglielo sposterebbe la taratura senza aggiungere verità.
 export const ROTAZIONE_AVVERSARIO = "normale";
+export const PLAYOFF_ROUNDS = 4;
+export const PLAYOFF_SERIE_A = 4;
 
 export function newRun({
   formato, difficolta, k = null, seme = semeCasuale(),
@@ -332,6 +334,7 @@ export function resolveSeriesGame(state) {
   if (state.stato !== "run") throw new Error("resolveSeriesGame: run non attivo");
   const partita = partitaRound(state);
   const vinto = partita.vincitore === "casa";
+  const vittorie = state.vittorie + (vinto ? 1 : 0);
   const serieRecord = {
     noi: state.serieRecord.noi + (vinto ? 1 : 0),
     loro: state.serieRecord.loro + (vinto ? 0 : 1),
@@ -344,31 +347,28 @@ export function resolveSeriesGame(state) {
     box: boxScoreRound(state, partita),
   }];
 
-  if (serieRecord.loro === 4) {
+  if (serieRecord.loro >= PLAYOFF_SERIE_A) {
     const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
-    return { ...state, storia, serieRecord, affrontati, stato: "finito", esito: "sconfitta" };
+    return { ...state, storia, vittorie, serieRecord, affrontati, stato: "finito", esito: "sconfitta" };
   }
 
-  if (serieRecord.noi === 4 && state.round === 4) {
+  if (serieRecord.noi >= PLAYOFF_SERIE_A && state.round >= PLAYOFF_ROUNDS) {
     const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
-    return {
-      ...state, storia, serieRecord, affrontati, vittorie: state.vittorie + 1,
-      stato: "finito", esito: "campione",
-    };
+    return { ...state, storia, vittorie, serieRecord, affrontati, stato: "finito", esito: "campione" };
   }
 
-  if (serieRecord.noi === 4) {
+  if (serieRecord.noi >= PLAYOFF_SERIE_A) {
     const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
     const round = state.round + 1;
-    const d = DIFFICULTIES[state.difficolta];
+    const d = { ...DIFFICULTIES[state.difficolta], N: PLAYOFF_ROUNDS };
     const avversario = pickOpponent(
       state.pool, round, d, semeAvversario(state.seme, round), new Set(affrontati));
     return {
-      ...state, storia, affrontati, vittorie: state.vittorie + 1, round, avversario,
+      ...state, storia, affrontati, vittorie, round, avversario,
       gara: 1, serieRecord: { noi: 0, loro: 0 },
     };
   }
-  return { ...state, storia, serieRecord, gara: state.gara + 1 };
+  return { ...state, storia, vittorie, serieRecord, gara: state.gara + 1 };
 }
 
 export function resolveRound(state) {
