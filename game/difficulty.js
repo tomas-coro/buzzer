@@ -98,26 +98,42 @@
 // travestito da regola del gioco, e la barra del budget non si sarebbe mai
 // riempita nei primi tre livelli.
 //
-// Ritaratura dopo l'import dei salari nominali (2026-09-13). Banco con semi
-// fissi, strategia "stelle"; conferme riportate sotto:
+// Ritaratura dopo l'import dei salari nominali (2026-09-13, STORIA):
 //
 //   livello     tetto   soglie   16-0   bersaglio   sforano   corse
 //   facile       260M    40-60   28.3%      30%       24.0%     800
 //   normale      220M    41-61   13.8%      15%       55.3%    1200
 //   difficile    200M    45-65    3.2%    3.25%       75.0%    2400
 //   incubo       190M    50-69    0.5%     0.5%       83.4%    5000
+//
+// RITARATURA DOPO LA NORMALIZZAZIONE DEI SALARI AL TETTO DI OGGI (2026-09-15).
+// I salari nominali storici (tabella sopra) sottostimavano i fuoriclasse di
+// epoche vecchie: Garnett 2003-04 costava 28M nominali contro i 49M di Embiid
+// a parità di voto, e un rookie da fenomeno (Jokic 2017-18) costava 1,5M. Con
+// quei numeri il draft "stelle" spendeva solo 136M e nessun tetto provato
+// (200-380M) mordeva più. data/build_salaries.py ora normalizza ogni salario
+// alla QUOTA del tetto salariale che aveva nel suo anno, riespressa sul tetto
+// 2025-26: la stessa forza relativa vale lo stesso oggi, in ogni epoca. La
+// taratura è ripartita da zero con questi numeri (banco, semi fissi,
+// strategia "stelle", conferma 800 corse per livello):
+//
+//   livello     tetto   soglie   16-0   bersaglio   sforano
+//   facile       280M    39-59   28.5%      30%       36.6%
+//   normale      240M    41-61   12.8%      15%       57.6%
+//   difficile    220M    45-65    3.5%    3.25%       69.3%
+//   incubo       200M    53-69    0.5%     0.5%       81.1%
 export const TETTI = {
-  facile: 260_000_000,
-  normale: 220_000_000,
-  difficile: 200_000_000,
-  incubo: 190_000_000,
+  facile: 280_000_000,
+  normale: 240_000_000,
+  difficile: 220_000_000,
+  incubo: 200_000_000,
 };
 
 export const DIFFICULTIES = {
-  facile:    { aids: { squadra: 2, stagione: 2, respin: 1 }, N: 16, oppMin: 40, oppMax: 60 },
+  facile:    { aids: { squadra: 2, stagione: 2, respin: 1 }, N: 16, oppMin: 39, oppMax: 59 },
   normale:   { aids: { squadra: 1, stagione: 1, respin: 1 }, N: 16, oppMin: 41, oppMax: 61 },
   difficile: { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 45, oppMax: 65 },
-  incubo:    { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 50, oppMax: 69 },
+  incubo:    { aids: { squadra: 1, stagione: 1, respin: 0 }, N: 16, oppMin: 53, oppMax: 69 },
 };
 
 // ---------------------------------------------------------------------------

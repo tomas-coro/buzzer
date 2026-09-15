@@ -44,10 +44,11 @@ const PAVIMENTO_POOL = voti[0];
 // volte su dieci; Incubo quasi mai gratis.
 const MORSO = { facile: 30, normale: 55, difficile: 70, incubo: 85 };
 
-// La scala di tetti provata. Sotto i 200 milioni il draft vive di minimi e il
-// gioco smette di avere scelte; sopra i 380 il tetto non tocca più niente,
-// perché il draft a stelle costa circa 300.
-const SCALA_TETTI = [380, 360, 340, 320, 300, 280, 260, 240, 220, 200];
+// La scala di tetti provata. Ricalcolata il 2026-09-15 dopo la normalizzazione
+// dei salari al tetto di oggi (vedi data/build_salaries.py): il draft a stelle
+// senza vincoli costa ~256M (misurato), non più ~300M della scala nominale.
+// Sopra i 320 il tetto non tocca più niente; sotto i 100 il draft vive di minimi.
+const SCALA_TETTI = [320, 300, 280, 260, 240, 220, 200, 180, 160, 140, 120, 100];
 
 // La larghezza della banda avversari, cioè di quanto sale il voto dell'avversario
 // fra il round 1 e il round 16. Venti punti sono la rampa che Facile aveva già

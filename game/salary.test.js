@@ -44,10 +44,12 @@ test("gli ancoraggi cadono dove li abbiamo messi", () => {
   assert.equal(salarioDaVoto(90), SALARIO_MAX);
 });
 
-test("usa il salario storico nominale quando esiste", () => {
+test("usa il salario storico normalizzato al tetto di oggi quando esiste", () => {
+  // LeBron 2014-15 prendeva 20.6M nominali, cioè il 32.7% del tetto 2014-15
+  // (63M): la stessa quota vale 50.6M sul tetto 2025-26 (154.6M).
   const lebron = card({ player_id: "lebron-james", season: "2014-15" });
-  assert.equal(salarioStorico(lebron), 20_644_400);
-  assert.equal(salarioCarta(lebron), 20_644_400);
+  assert.equal(salarioStorico(lebron), 50_623_873);
+  assert.equal(salarioCarta(lebron), 50_623_873);
   assert.equal(etichettaSalarioCarta(lebron), "Salario stagionale");
 });
 

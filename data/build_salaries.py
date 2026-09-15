@@ -41,6 +41,44 @@ CURRENT_SOURCE = (
     f"resolve/{CURRENT_COMMIT}/player_salaries.csv"
 )
 
+# Tetto salariale NBA per stagione (Basketball-Reference, salary-cap-history.html,
+# scaricato il 2026-09-15). Serve per NORMALIZZARE i contratti: un salario nominale
+# del 2003 non è confrontabile con uno del 2025 perché il tetto è cresciuto molto
+# più dell'inflazione (nuovi accordi TV, nuovi CBA). Deciso con Tomas il 2026-09-15:
+# ogni contratto si esprime "come se fosse firmato oggi", cioè alla stessa QUOTA del
+# tetto che aveva nel suo anno. Garnett 2003-04 prendeva il 63,6% del tetto 2003-04;
+# oggi quella stessa quota vale ~98M. Le anomalie vere restano: un rookie sottopagato
+# (quota bassa nel suo anno) resta un affare anche dopo la normalizzazione.
+CAP_STORICO = {
+    "1984-85": 3_600_000, "1985-86": 4_233_000, "1986-87": 4_945_000,
+    "1987-88": 6_164_000, "1988-89": 7_232_000, "1989-90": 9_802_000,
+    "1990-91": 11_871_000, "1991-92": 12_500_000, "1992-93": 14_000_000,
+    "1993-94": 15_175_000, "1994-95": 15_964_000, "1995-96": 23_000_000,
+    "1996-97": 24_363_000, "1997-98": 26_900_000, "1998-99": 30_000_000,
+    "1999-00": 34_000_000, "2000-01": 35_500_000, "2001-02": 42_500_000,
+    "2002-03": 40_271_000, "2003-04": 43_840_000, "2004-05": 43_870_000,
+    "2005-06": 49_500_000, "2006-07": 53_135_000, "2007-08": 55_630_000,
+    "2008-09": 58_680_000, "2009-10": 57_700_000, "2010-11": 58_044_000,
+    "2011-12": 58_044_000, "2012-13": 58_044_000, "2013-14": 58_679_000,
+    "2014-15": 63_065_000, "2015-16": 70_000_000, "2016-17": 94_143_000,
+    "2017-18": 99_093_000, "2018-19": 101_869_000, "2019-20": 109_140_000,
+    "2020-21": 109_140_000, "2021-22": 112_414_000, "2022-23": 123_655_000,
+    "2023-24": 136_021_000, "2024-25": 140_588_000, "2025-26": 154_647_000,
+}
+CAP_OGGI = CAP_STORICO["2025-26"]
+
+
+def normalizza(salario: int, season: str) -> int:
+    """Il salario come se fosse firmato oggi: stessa quota del tetto, scala di oggi.
+
+    Non arrotonda: il 2025-26 (ratio 1) deve restare il dollaro esatto della fonte,
+    come lo era prima della normalizzazione.
+    """
+    cap = CAP_STORICO.get(season)
+    if cap is None:
+        raise ValueError(f"CAP_STORICO non copre la stagione {season}: aggiungila prima di generare i salari")
+    return round(salario * CAP_OGGI / cap)
+
 
 def canonical_name(name: str) -> str:
     parts = slugify_player_id(name).split("-")
@@ -127,10 +165,10 @@ def main() -> None:
     for card in cards:
         salary = source.get(f"{canonical_name(card['name'])}|{card['season']}")
         if salary is not None:
-            salaries[f"{card['player_id']}|{card['season']}"] = salary
+            salaries[f"{card['player_id']}|{card['season']}"] = normalizza(salary, card["season"])
 
     OUTPUT.write_text(
-        "// GENERATO da data/build_salaries.py — salario stagionale nominale reale\n"
+        "// GENERATO da data/build_salaries.py - salario stagionale nominale reale\n"
         f"export const SALARI_STORICI = {json.dumps(salaries, separators=(',', ':'), sort_keys=True)};\n",
         encoding="utf-8",
     )
@@ -140,7 +178,9 @@ def main() -> None:
         "# Copertura salari reali", "",
         f"Fonti: [Basketball-Reference](https://www.basketball-reference.com/about/salary.html) "
         f"(2000-20) e [HoopsHype](https://hoopshype.com/salaries/players/) (1999-2000, 2020-26).",
-        "I valori sono nominali per la stagione indicata. Dove manca il dato il gioco usa il **Costo draft** calcolato dall'OVR visibile, senza rumore.",
+        "I valori sono normalizzati alla quota del tetto salariale che il contratto valeva nel suo anno, "
+        "espressa in dollari 2025-26 (fonte tetti: [Basketball-Reference](https://www.basketball-reference.com/contracts/salary-cap-history.html)). "
+        "Dove manca il dato il gioco usa il **Costo draft** calcolato dall'OVR visibile, senza rumore.",
         "", "| Stagione | Carte | Con salario | Copertura |", "|---|---:|---:|---:|",
     ]
     missing = []
@@ -153,7 +193,7 @@ def main() -> None:
     lines += ["", f"**Totale:** {found_total}/{len(cards)} ({found_total / len(cards):.1%}); mancanti: {len(missing)}."]
     REPORT.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    assert salaries["lebron-james|2014-15"] == 20_644_400
+    assert salaries["lebron-james|2014-15"] == 50_623_873  # 20.6M nominali -> quota 2025-26
     assert salaries["desmond-bane|2025-26"] == 36_725_670
     assert salaries["jalen-suggs|2025-26"] == 35_000_000
     assert not set(salaries).difference(f"{c['player_id']}|{c['season']}" for c in cards)

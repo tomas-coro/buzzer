@@ -1,7 +1,7 @@
 # Copertura salari reali
 
 Fonti: [Basketball-Reference](https://www.basketball-reference.com/about/salary.html) (2000-20) e [HoopsHype](https://hoopshype.com/salaries/players/) (1999-2000, 2020-26).
-I valori sono nominali per la stagione indicata. Dove manca il dato il gioco usa il **Costo draft** calcolato dall'OVR visibile, senza rumore.
+I valori sono normalizzati alla quota del tetto salariale che il contratto valeva nel suo anno, espressa in dollari 2025-26 (fonte tetti: [Basketball-Reference](https://www.basketball-reference.com/contracts/salary-cap-history.html)). Dove manca il dato il gioco usa il **Costo draft** calcolato dall'OVR visibile, senza rumore.
 
 | Stagione | Carte | Con salario | Copertura |
 |---|---:|---:|---:|
