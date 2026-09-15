@@ -173,14 +173,6 @@ button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 .bz-mode--on b{color:var(--txt)}
 button.bz-mode{cursor:pointer}
 
-.replay{display:inline-flex;align-items:center;justify-content:center;gap:6px;align-self:center;margin:10px auto 0;min-height:28px;padding:0 13px;border-radius:99px;cursor:pointer;
-  font-family:"Bungee";font-size:.48rem;letter-spacing:.08em;text-transform:uppercase;
-  background:transparent;border:2px solid var(--surf-bd);color:var(--txt-dim);transition:color .15s,border-color .15s}
-.replay:hover{color:var(--txt);border-color:var(--pop)}
-.replay svg{width:12px;height:12px}
-.bz-foot .replay{display:flex}
-.home-tools{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
-.home-tools [hidden]{display:none}
 
 /* SPLASH */
 .sp-ball{width:108px;height:108px;animation:spinBall 3.6s linear infinite}
@@ -271,10 +263,12 @@ button.bz-mode{cursor:pointer}
 .dn-in:hover{border-color:var(--pop)}
 .dn-in:focus{outline:none;border-color:var(--pop2);background:var(--surf-on)}
 .dn-help{font-size:.7rem;color:var(--txt-dim)}
-/* La lista prende lo spazio che avanza e lo distribuisce fra i quattro chip,
-   invece di lasciarne un blocco morto in fondo. Su schermi corti torna a 10px
-   di gap e la pagina scorre. */
-.diff-list{display:flex;flex-direction:column;gap:10px;flex:1;justify-content:space-evenly;min-height:0}
+/* La lista prende lo spazio che avanza ma il gap fra i chip resta capato
+   (clamp): su schermi alti lo spazio esubero va sopra/sotto il blocco
+   (centrato), non spalmato in gap enormi fra le card (bug playtest 15/09,
+   gap fino a ~90px su iPhone). Su schermi corti torna al minimo 10px e la
+   pagina scorre. */
+.diff-list{display:flex;flex-direction:column;gap:clamp(10px,2.4vh,18px);flex:1;justify-content:center;min-height:0}
 /* Chiude la schermata invece di lasciare il fondo vuoto, e dice l'unica cosa
    che non si capisce dai chip: il livello non si cambia a corsa iniziata. */
 .diff-foot{margin-top:0;padding-top:20px;font-size:.74rem;line-height:1.5;color:var(--txt-dim);text-wrap:pretty}

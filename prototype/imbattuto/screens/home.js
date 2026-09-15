@@ -1,4 +1,4 @@
-// HOME — port fedele del mockup 19-sirena-clutch (splash BUZZER + tiro all'ultimo
+// HOME - port fedele del mockup 19-sirena-clutch (splash BUZZER + tiro all'ultimo
 // secondo + home Cabina 90s). Tolta la cornice-telefono del mockup: qui lo schermo
 // E' l'app. Animazioni splash->home e sirena sono CSS puro (checkbox #opn + :has).
 // L'unico aggancio JS: "Gioca" / modalita "Corsa" -> passo alla scelta difficolta.
@@ -50,10 +50,6 @@ export function render(ctx) {
             <div class="bz-mode"><span class="n">82-0</span><b>Stagione</b><span class="soon">presto</span></div>
             <div class="bz-mode"><span class="n">★</span><b>Sfida</b><span class="soon">presto</span></div>
           </div>
-          <div class="home-tools rise" style="--d:.8s">
-            <label class="replay" for="opn-rewind" title="Rivedi il tiro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9a8 8 0 0 1 13-3l3 3M20 5v4h-4"/></svg>Rivedi il tiro</label>
-            <button class="replay" id="installa" type="button" ${ctx.installed ? "hidden" : ""}>＋ Installa app</button>
-          </div>
         </div>
       </div>
       <input class="opn" type="checkbox" id="opn-rewind">
@@ -74,7 +70,6 @@ export function render(ctx) {
   root.querySelector("#gioca").onclick = vai;
   root.querySelector("#mode-corsa").onclick = vai;
   root.querySelector("#mode-playoff").onclick = () => ctx.go("difficolta-playoff");
-  root.querySelector("#installa")?.addEventListener("click", ctx.installApp);
 
   return root;
 }
