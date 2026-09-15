@@ -1,6 +1,5 @@
-// Salario stagionale nominale Basketball-Reference, indicizzato per
-// giocatore+stagione. Dove il dato manca resta esplicitamente null; il gioco usa
-// allora il vecchio costo sintetico, ma la UI lo chiama "Costo draft".
+// Salario stagionale nominale reale, indicizzato per giocatore+stagione.
+// Dove manca il dato resta esplicitamente null; il gioco usa allora l'OVR.
 
 import { votoCarta } from "./rating.js";
 import { SALARI_STORICI } from "./salary-data.js";
@@ -20,9 +19,6 @@ const VOTO_MAX = 90;
 // costare 6 milioni; con 1 la curva sarebbe una retta e il cap non morderebbe.
 const GAMMA = 2.8;
 
-// Quanto il contratto può scostarsi dal valore vero, in più o in meno.
-export const RUMORE = 0.25;
-
 // I salari si arrotondano ai centomila: un cartellino da "$12.4M" si legge, uno
 // da "$12.437.219" no.
 const PASSO = 100_000;
@@ -38,39 +34,14 @@ export function salarioDaVoto(voto, fattore = 1) {
   return Math.min(SALARIO_MAX, Math.max(SALARIO_MIN, tondo));
 }
 
-// Hash FNV-1a: serve un numero stabile per carta, non un numero casuale. Lo
-// stesso giocatore-stagione deve avere lo stesso contratto in ogni partita, a
-// ogni apertura, su ogni dispositivo - altrimenti l'affare di ieri non è più
-// l'affare di oggi e il giocatore non può impararlo.
-function hash(s) {
-  let h = 0x811c9dc5;
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i);
-    h = Math.imul(h, 0x01000193) >>> 0;
-  }
-  return h;
-}
-
-/**
- * Il moltiplicatore del contratto di una carta: 1 - RUMORE (affare) → 1 + RUMORE
- * (zavorra). Deterministico su giocatore + stagione, come `chiaveCarta` nel pool:
- * LeBron 2016 e LeBron 2018 sono due contratti diversi.
- */
-export function fattoreContratto(carta) {
-  const chiave = `${carta?.player_id ?? "?"}|${carta?.season ?? "?"}`;
-  // hash / 2^32 dà un numero in [0,1), che stiro sulla banda del rumore.
-  const u = hash(chiave) / 0x100000000;
-  return 1 - RUMORE + 2 * RUMORE * u;
-}
-
 /** Il dato storico grezzo; null significa davvero mancante. */
 export function salarioStorico(carta) {
   return SALARI_STORICI[`${carta?.player_id}|${carta?.season}`] ?? null;
 }
 
-/** Salario storico quando disponibile, altrimenti costo sintetico del draft. */
+/** Salario reale quando disponibile, altrimenti costo deterministico dall'OVR. */
 export function salarioCarta(carta) {
-  return salarioStorico(carta) ?? salarioDaVoto(votoCarta(carta), fattoreContratto(carta));
+  return salarioStorico(carta) ?? salarioDaVoto(votoCarta(carta));
 }
 
 export function etichettaSalarioCarta(carta) {

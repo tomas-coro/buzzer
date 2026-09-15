@@ -1,110 +1,49 @@
-# Copertura salari Basketball-Reference
+# Copertura salari reali
 
-Fonte: snapshot di `basketball-reference.com/contracts/players.html` archiviati nel dataset [`awx1/stat410-final`](https://github.com/awx1/stat410-final/tree/f09b34004b3dbd885c4252775d739527a5baec7b/salary) (commit `f09b34004b3dbd885c4252775d739527a5baec7b`).
-
-I valori sono nominali, senza rivalutazione; bonus, dead money, cap hold e luxury-tax charge non vengono aggiunti.
-Le carte fuori dal dataset base 2014-20 e i valori mancanti usano nel gioco un fallback esplicitamente mostrato come **Costo draft**.
+Fonti: [Basketball-Reference](https://www.basketball-reference.com/about/salary.html) (2000-20) e [HoopsHype](https://hoopshype.com/salaries/players/) (1999-2000, 2020-26).
+I valori sono nominali per la stagione indicata. Dove manca il dato il gioco usa il **Costo draft** calcolato dall'OVR visibile, senza rumore.
 
 | Stagione | Carte | Con salario | Copertura |
 |---|---:|---:|---:|
+| 1984-85 | 13 | 0 | 0.0% |
+| 1985-86 | 33 | 0 | 0.0% |
+| 1986-87 | 11 | 0 | 0.0% |
+| 1988-89 | 23 | 0 | 0.0% |
+| 1989-90 | 10 | 0 | 0.0% |
+| 1990-91 | 48 | 0 | 0.0% |
+| 1992-93 | 25 | 0 | 0.0% |
+| 1993-94 | 23 | 0 | 0.0% |
+| 1994-95 | 26 | 0 | 0.0% |
+| 1995-96 | 26 | 0 | 0.0% |
+| 1996-97 | 12 | 0 | 0.0% |
+| 1997-98 | 51 | 0 | 0.0% |
+| 1998-99 | 12 | 0 | 0.0% |
+| 1999-00 | 26 | 8 | 30.8% |
+| 2000-01 | 366 | 366 | 100.0% |
+| 2001-02 | 366 | 357 | 97.5% |
+| 2002-03 | 364 | 358 | 98.4% |
+| 2003-04 | 388 | 382 | 98.5% |
+| 2004-05 | 389 | 380 | 97.7% |
+| 2005-06 | 380 | 378 | 99.5% |
+| 2006-07 | 383 | 383 | 100.0% |
+| 2007-08 | 393 | 393 | 100.0% |
+| 2008-09 | 358 | 357 | 99.7% |
+| 2009-10 | 365 | 364 | 99.7% |
+| 2010-11 | 390 | 390 | 100.0% |
+| 2011-12 | 402 | 402 | 100.0% |
+| 2012-13 | 403 | 403 | 100.0% |
+| 2013-14 | 408 | 403 | 98.8% |
 | 2014-15 | 366 | 366 | 100.0% |
 | 2015-16 | 364 | 364 | 100.0% |
 | 2016-17 | 393 | 393 | 100.0% |
-| 2017-18 | 418 | 394 | 94.3% |
-| 2018-19 | 364 | 355 | 97.5% |
-| 2019-20 | 507 | 450 | 88.8% |
+| 2017-18 | 418 | 396 | 94.7% |
+| 2018-19 | 364 | 359 | 98.6% |
+| 2019-20 | 507 | 454 | 89.5% |
+| 2020-21 | 401 | 390 | 97.3% |
+| 2021-22 | 419 | 406 | 96.9% |
+| 2022-23 | 404 | 395 | 97.8% |
+| 2023-24 | 408 | 397 | 97.3% |
+| 2024-25 | 415 | 399 | 96.1% |
+| 2025-26 | 411 | 389 | 94.6% |
 
-**Totale:** 2322/2412 (96.3%); mancanti: 90.
-
-## Mancanti
-
-- `aaron-jackson|2017-18` — Aaron Jackson (HOU)
-- `alex-caruso|2017-18` — Alex Caruso (LAL)
-- `antonio-blakeney|2017-18` — Antonio Blakeney (CHI)
-- `chris-boucher|2017-18` — Chris Boucher (GSW)
-- `daniel-hamilton|2017-18` — Daniel Hamilton (OKC)
-- `danuel-house-jr|2017-18` — Danuel House Jr. (PHX)
-- `devin-robinson|2017-18` — Devin Robinson (WAS)
-- `edmond-sumner|2017-18` — Edmond Sumner (IND)
-- `isaiah-hicks|2017-18` — Isaiah Hicks (NYK)
-- `jakarr-sampson|2017-18` — JaKarr Sampson (SAC)
-- `jabari-bird|2017-18` — Jabari Bird (BOS)
-- `jalen-jones|2017-18` — Jalen Jones (DAL)
-- `james-young|2017-18` — James Young (PHI)
-- `john-holland|2017-18` — John Holland (CLE)
-- `johnathan-motley|2017-18` — Johnathan Motley (DAL)
-- `jonathan-gibson|2017-18` — Jonathan Gibson (BOS)
-- `lorenzo-brown|2017-18` — Lorenzo Brown (TOR)
-- `luke-kornet|2017-18` — Luke Kornet (NYK)
-- `monte-morris|2017-18` — Monte Morris (DEN)
-- `omari-johnson|2017-18` — Omari Johnson (MEM)
-- `pj-dozier|2017-18` — PJ Dozier (OKC)
-- `rj-hunter|2017-18` — RJ Hunter (HOU)
-- `reggie-hearn|2017-18` — Reggie Hearn (DET)
-- `torrey-craig|2017-18` — Torrey Craig (DEN)
-- `alex-caruso|2018-19` — Alex Caruso (LAL)
-- `amile-jefferson|2018-19` — Amile Jefferson (ORL)
-- `brandon-goodwin|2018-19` — Brandon Goodwin (DEN)
-- `danuel-house-jr|2018-19` — Danuel House Jr. (HOU)
-- `johnathan-motley|2018-19` — Johnathan Motley (LAC)
-- `kostas-antetokounmpo|2018-19` — Kostas Antetokounmpo (DAL)
-- `mo-bamba|2018-19` — Mo Bamba (ORL)
-- `shake-milton|2018-19` — Shake Milton (PHI)
-- `theo-pinson|2018-19` — Theo Pinson (BKN)
-- `adam-mokoka|2019-20` — Adam Mokoka (CHI)
-- `amir-coffey|2019-20` — Amir Coffey (LAC)
-- `antonius-cleveland|2019-20` — Antonius Cleveland (DAL)
-- `bj-johnson|2019-20` — BJ Johnson (ORL)
-- `brian-bowen-ii|2019-20` — Brian Bowen II (IND)
-- `chris-chiozza|2019-20` — Chris Chiozza (BKN)
-- `corey-brewer|2019-20` — Corey Brewer (SAC)
-- `daquan-jeffries|2019-20` — DaQuan Jeffries (SAC)
-- `daryl-macon|2019-20` — Daryl Macon (MIA)
-- `dean-wade|2019-20` — Dean Wade (CLE)
-- `devon-hall|2019-20` — Devon Hall (OKC)
-- `devontae-cacok|2019-20` — Devontae Cacok (LAL)
-- `drew-eubanks|2019-20` — Drew Eubanks (SAS)
-- `frank-mason|2019-20` — Frank Mason (MIL)
-- `gabe-vincent|2019-20` — Gabe Vincent (MIA)
-- `garrison-mathews|2019-20` — Garrison Mathews (WAS)
-- `henry-ellenson|2019-20` — Henry Ellenson (BKN)
-- `jamal-crawford|2019-20` — Jamal Crawford (BKN)
-- `jared-harper|2019-20` — Jared Harper (NYK)
-- `jarrell-brantley|2019-20` — Jarrell Brantley (UTA)
-- `jaylen-hoard|2019-20` — Jaylen Hoard (POR)
-- `jeremiah-martin|2019-20` — Jeremiah Martin (BKN)
-- `jerian-grant|2019-20` — Jerian Grant (WAS)
-- `john-konchar|2019-20` — John Konchar (MEM)
-- `johnathan-motley|2019-20` — Johnathan Motley (LAC)
-- `jordan-bone|2019-20` — Jordan Bone (DET)
-- `jordan-mclaughlin|2019-20` — Jordan McLaughlin (MIN)
-- `josh-gray|2019-20` — Josh Gray (NOP)
-- `josh-reaves|2019-20` — Josh Reaves (DAL)
-- `justin-wright-foreman|2019-20` — Justin Wright-Foreman (UTA)
-- `kadeem-allen|2019-20` — Kadeem Allen (NYK)
-- `kelan-martin|2019-20` — Kelan Martin (MIN)
-- `kevin-hervey|2019-20` — Kevin Hervey (OKC)
-- `kostas-antetokounmpo|2019-20` — Kostas Antetokounmpo (LAL)
-- `kyle-alexander|2019-20` — Kyle Alexander (MIA)
-- `kyle-guy|2019-20` — Kyle Guy (SAC)
-- `louis-king|2019-20` — Louis King (DET)
-- `luc-mbah-a-moute|2019-20` — Luc Mbah a Moute (HOU)
-- `luguentz-dort|2019-20` — Luguentz Dort (OKC)
-- `marial-shayok|2019-20` — Marial Shayok (PHI)
-- `matt-mooney|2019-20` — Matt Mooney (CLE)
-- `michael-frazier|2019-20` — Michael Frazier (HOU)
-- `moses-brown|2019-20` — Moses Brown (POR)
-- `naz-mitrou-long|2019-20` — Naz Mitrou-Long (IND)
-- `oshae-brissett|2019-20` — Oshae Brissett (TOR)
-- `pj-dozier|2019-20` — PJ Dozier (DEN)
-- `quinndary-weatherspoon|2019-20` — Quinndary Weatherspoon (SAS)
-- `shamorie-ponds|2019-20` — Shamorie Ponds (TOR)
-- `sindarius-thornwell|2019-20` — Sindarius Thornwell (NOP)
-- `tacko-fall|2019-20` — Tacko Fall (BOS)
-- `tariq-owens|2019-20` — Tariq Owens (PHX)
-- `tremont-waters|2019-20` — Tremont Waters (BOS)
-- `tyler-zeller|2019-20` — Tyler Zeller (SAS)
-- `tyrone-wallace|2019-20` — Tyrone Wallace (ATL)
-- `vic-law|2019-20` — Vic Law (ORL)
-- `yuta-watanabe|2019-20` — Yuta Watanabe (MEM)
-- `zylan-cheatham|2019-20` — Zylan Cheatham (NOP)
+**Totale:** 10032/10564 (95.0%); mancanti: 532.

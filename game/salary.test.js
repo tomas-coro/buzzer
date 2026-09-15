@@ -2,8 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { card } from "./fixtures.js";
 import {
-  SALARIO_MIN, SALARIO_MAX, RUMORE,
-  salarioDaVoto, fattoreContratto, salarioStorico, salarioCarta, etichettaSalarioCarta, firmabile, prenotato,
+  SALARIO_MIN, SALARIO_MAX,
+  salarioDaVoto, salarioStorico, salarioCarta, etichettaSalarioCarta, firmabile, prenotato,
   firmaDiRipiego, formattaSalario,
   APRON, TASSA_PER_MILIONE, limiteDuro, sforo, malusApron, monteIngaggi,
 } from "./salary.js";
@@ -44,34 +44,6 @@ test("gli ancoraggi cadono dove li abbiamo messi", () => {
   assert.equal(salarioDaVoto(90), SALARIO_MAX);
 });
 
-test("il rumore del contratto è deterministico e dentro la banda", () => {
-  const c = card({ player_id: "p-1", season: "2016-17" });
-  assert.equal(fattoreContratto(c), fattoreContratto(c));
-  for (const id of ["a", "b", "c", "d", "e", "f", "g", "h"]) {
-    const f = fattoreContratto(card({ player_id: id }));
-    assert.ok(f >= 1 - RUMORE && f <= 1 + RUMORE, `fattore fuori banda: ${f}`);
-  }
-});
-
-test("stesso giocatore, stagioni diverse: contratti diversi", () => {
-  // Il contratto è firmato in un anno preciso. LeBron 2016 e LeBron 2018 sono
-  // due carte, e devono poter essere una l'affare e l'altra la zavorra.
-  const a = fattoreContratto(card({ player_id: "lebron", season: "2015-16" }));
-  const b = fattoreContratto(card({ player_id: "lebron", season: "2017-18" }));
-  assert.notEqual(a, b);
-});
-
-test("il rumore crea affari e zavorre: il prezzo non rivela il voto", () => {
-  // In Incubo il salario è l'unico numero a vista. Se fosse una funzione esatta
-  // del voto, il draft al buio non esisterebbe più.
-  const forte = card({ player_id: "affare", reparti: { t3: 74, fin: 74, dif: 74, reb: 74, reg: 74 } });
-  const debole = card({ player_id: "zavorra", reparti: { t3: 70, fin: 70, dif: 70, reb: 70, reg: 70 } });
-  const scarto = salarioDaVoto(74) - salarioDaVoto(70);
-  // Con ±25% due carte a quattro punti di distanza possono invertirsi di prezzo.
-  assert.ok(scarto < salarioDaVoto(74) * RUMORE * 2, "banda di rumore troppo stretta per invertire");
-  assert.ok(salarioCarta(forte) > 0 && salarioCarta(debole) > 0);
-});
-
 test("usa il salario storico nominale quando esiste", () => {
   const lebron = card({ player_id: "lebron-james", season: "2014-15" });
   assert.equal(salarioStorico(lebron), 20_644_400);
@@ -79,11 +51,18 @@ test("usa il salario storico nominale quando esiste", () => {
   assert.equal(etichettaSalarioCarta(lebron), "Salario stagionale");
 });
 
-test("un salario mancante resta null e usa il costo draft dichiarato", () => {
+test("un salario mancante resta null e usa l'OVR senza rumore", () => {
   const mancante = card({ player_id: "nessuno", season: "1900-01" });
+  const gemello = card({ player_id: "altro", season: "1900-01", ovr: mancante.ovr });
   assert.equal(salarioStorico(mancante), null);
   assert.equal(etichettaSalarioCarta(mancante), "Costo draft");
+  assert.equal(salarioCarta(mancante), salarioCarta(gemello));
   assert.equal(salarioCarta(mancante) % 100_000, 0);
+});
+
+test("usa i salari reali 2025-26", () => {
+  assert.equal(salarioCarta(card({ player_id: "desmond-bane", season: "2025-26" })), 36_725_670);
+  assert.equal(salarioCarta(card({ player_id: "jalen-suggs", season: "2025-26" })), 35_000_000);
 });
 
 test("prenotato: ogni casella ancora vuota tiene da parte un contratto minimo", () => {
