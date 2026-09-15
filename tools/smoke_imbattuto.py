@@ -38,8 +38,9 @@ def play(browser, viewport):
     assert page.locator('link[rel="manifest"]').count() == 1
     assert page.locator('link[rel="icon"]').count() == 1
     page.locator("label.splash").click()
-    page.locator("#gioca").click()
+    page.locator("#mode-corsa").click()
     page.locator('[data-diff="facile"]').click()
+    page.locator("#start").click()
     assert page.locator(".crd:not(.off)").first.get_attribute("tabindex") == "0"
     draft_key = page.locator("[data-tiktxt]").inner_text()
     page.evaluate("navigator.serviceWorker.ready")
@@ -51,6 +52,7 @@ def play(browser, viewport):
     page.locator("#app-exit").click()
     page.locator("#ec-go").click()
     page.locator('[data-diff="facile"]').click()
+    page.locator("#start").click()
     page.locator("#autod-go").click()
     page.locator("#autod-vai-coach").click()
     page.locator(".ct-row").first.wait_for()
