@@ -352,15 +352,46 @@ function waitForWorker(worker) {
   });
 }
 
+
+async function activeOfflineVersion() {
+  const controller = navigator.serviceWorker?.controller;
+  if (!controller) return null;
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timer = setTimeout(() => resolve(null), 1200);
+    channel.port1.onmessage = (event) => {
+      clearTimeout(timer);
+      resolve(event.data?.version ?? null);
+    };
+    try { controller.postMessage({ type: "GET_VERSION" }, [channel.port2]); }
+    catch { clearTimeout(timer); resolve(null); }
+  });
+}
+
+async function publishedOfflineVersion() {
+  const url = new URL("./offline-assets.js", location.href);
+  url.searchParams.set("update-check", String(Date.now()));
+  const response = await fetch(url, { cache: "no-store", headers: { "Cache-Control": "no-cache" } });
+  if (!response.ok) throw new Error(`offline-assets ${response.status}`);
+  const text = await response.text();
+  return text.match(/OFFLINE_VERSION\s*=\s*["']([^"']+)/)?.[1] ?? null;
+}
+
 async function checkForUpdates({ silent = false } = {}) {
   if (!("serviceWorker" in navigator)) {
     if (!silent) toastUpdate("Aggiornamenti non disponibili in questo browser", "error");
     return false;
   }
+
   if (!swRegistration) {
-    if (!silent) toastUpdate("Controllo aggiornamenti non ancora pronto", "error");
+    try { swRegistration = await navigator.serviceWorker.ready; }
+    catch { /* handled below */ }
+  }
+  if (!swRegistration) {
+    if (!silent) toastUpdate("Servizio aggiornamenti non ancora pronto", "error");
     return false;
   }
+
   if (swRegistration.waiting || updateWorker) {
     offerUpdate(swRegistration.waiting || updateWorker);
     if (!silent) toastUpdate("Nuova versione pronta da installare", "update");
@@ -369,17 +400,36 @@ async function checkForUpdates({ silent = false } = {}) {
 
   updateChecking = true;
   syncUpdateControls();
-  if (!silent) toastUpdate("Controllo aggiornamenti…");
+  if (!silent) toastUpdate("Controllo versione online…");
+
   try {
+    const [activeVersion, publishedVersion] = await Promise.all([
+      activeOfflineVersion(),
+      publishedOfflineVersion(),
+    ]);
+
+    // Forza Safari/iOS a ricontrollare sia sw.js sia importScripts senza HTTP cache.
     await swRegistration.update();
     await waitForWorker(swRegistration.installing);
+
     const waiting = swRegistration.waiting;
-    if (waiting && navigator.serviceWorker.controller) {
+    if (waiting) {
       offerUpdate(waiting);
       if (!silent) toastUpdate("Nuova versione trovata", "update");
       return true;
     }
-    if (!silent) toastUpdate("Buzzer è già aggiornato");
+
+    if (publishedVersion && activeVersion && publishedVersion !== activeVersion) {
+      // Alcune versioni di Safari non espongono subito il worker in waiting.
+      // L'utente riceve comunque un esito corretto anziché un falso "aggiornato".
+      if (!silent) toastUpdate("Nuova versione online. Chiudi e riapri Buzzer.", "update");
+      return true;
+    }
+
+    if (!silent) {
+      const suffix = publishedVersion ? ` · ${publishedVersion}` : "";
+      toastUpdate(`Buzzer è aggiornato${suffix}`);
+    }
     return false;
   } catch (error) {
     console.warn("Controllo aggiornamenti fallito", error);
@@ -393,7 +443,7 @@ async function checkForUpdates({ silent = false } = {}) {
 
 if ("serviceWorker" in navigator) {
   const controlledAtLoad = Boolean(navigator.serviceWorker.controller);
-  navigator.serviceWorker.register("./sw.js").then((registration) => {
+  navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).then((registration) => {
     swRegistration = registration;
     if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
     registration.addEventListener("updatefound", () => {

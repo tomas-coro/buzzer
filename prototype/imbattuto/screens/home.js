@@ -1,11 +1,9 @@
-// HOME - port fedele del mockup 19-sirena-clutch (splash BUZZER + tiro all'ultimo
-// secondo + home Cabina 90s). Tolta la cornice-telefono del mockup: qui lo schermo
-// E' l'app. Animazioni splash->home e sirena sono CSS puro (checkbox #opn + :has).
-// L'unico aggancio JS: "Gioca" / modalita "Corsa" -> passo alla scelta difficolta.
+// Home PWA: stessa identità Cabina 90s, ma layout più "app": hero compatto,
+// modalità principali grandi e azioni di sistema sempre raggiungibili.
 
 export function render(ctx) {
   const root = document.createElement("div");
-  root.className = "cabhome ph--cab a-buzz";
+  root.className = "cabhome ph--cab a-buzz home-v2";
   root.innerHTML = `
     <div class="scr">
       <div class="home">
@@ -19,8 +17,9 @@ export function render(ctx) {
             <span class="bz-best">best <b>9-0</b></span>
           </span>
         </div>
-        <div class="bz-stage">
-          <div class="emblem">
+
+        <section class="bz-stage bz-stage--compact" aria-label="Buzzer">
+          <div class="emblem emblem--compact">
             <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
               <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
               <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
@@ -45,19 +44,35 @@ export function render(ctx) {
             </svg>
             <span class="flash" aria-hidden="true"></span>
           </div>
-          <div class="bz-wm">BU<b>ZZ</b>ER</div>
-          <div class="bz-sub rise" style="--d:.66s">l'ultimo tiro decide</div>
-        </div>
-        <div class="bz-foot">
-          <button class="bz-cta rise" id="gioca" style="--d:.7s" type="button"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5l12 7-12 7z"/></svg> Gioca</button>
-          <div class="bz-modes rise" style="--d:.76s">
-            <button class="bz-mode bz-mode--on" id="mode-corsa" type="button"><span class="n">16-0</span><b>Corsa</b><span class="play">gioca</span></button>
-            <button class="bz-mode bz-mode--on" id="mode-playoff" type="button"><span class="n">serie</span><b>Playoff</b><span class="play">gioca</span></button>
-            <div class="bz-mode"><span class="n">82-0</span><b>Stagione</b><span class="soon">presto</span></div>
-            <div class="bz-mode"><span class="n">★</span><b>Sfida</b><span class="soon">presto</span></div>
+          <div class="bz-brandline">
+            <div class="bz-wm">BU<b>ZZ</b>ER</div>
+            <div class="bz-sub rise" style="--d:.66s">l'ultimo tiro decide</div>
+          </div>
+        </section>
+
+        <div class="bz-foot bz-foot--dashboard">
+          <div class="bz-section-label rise" style="--d:.7s">Scegli modalità</div>
+          <div class="bz-primary-modes rise" style="--d:.72s">
+            <button class="bz-game-card bz-game-card--corsa" id="mode-corsa" type="button">
+              <span class="bgc-kicker">L'Imbattuto</span>
+              <span class="bgc-title">16-0</span>
+              <span class="bgc-copy">Costruisci la squadra. Una sconfitta e finisce.</span>
+              <span class="bgc-action">Gioca <b>›</b></span>
+            </button>
+            <button class="bz-game-card bz-game-card--playoff" id="mode-playoff" type="button">
+              <span class="bgc-kicker">Playoff</span>
+              <span class="bgc-title">4 serie</span>
+              <span class="bgc-copy">Best of 7. Puoi perdere una gara, non la serie.</span>
+              <span class="bgc-action">Gioca <b>›</b></span>
+            </button>
+          </div>
+          <div class="bz-coming rise" style="--d:.78s" aria-label="Modalità in arrivo">
+            <div class="bz-coming-card"><span>82-0</span><b>Stagione</b><small>presto</small></div>
+            <div class="bz-coming-card"><span>★</span><b>Sfida</b><small>presto</small></div>
           </div>
         </div>
       </div>
+
       <input class="opn" type="checkbox" id="opn-rewind">
       <label class="splash" for="opn-rewind">
         <svg class="sp-ball" viewBox="0 0 64 64" aria-hidden="true">
@@ -71,10 +86,7 @@ export function render(ctx) {
     </div>
   `;
 
-  // Corsa = L'IMBATTUTO: "Gioca" o la modalita Corsa portano alla scelta difficolta.
-  const vai = () => ctx.go("difficolta");
-  root.querySelector("#gioca").onclick = vai;
-  root.querySelector("#mode-corsa").onclick = vai;
+  root.querySelector("#mode-corsa").onclick = () => ctx.go("difficolta");
   root.querySelector("#mode-playoff").onclick = () => ctx.go("difficolta-playoff");
 
   const updateButton = root.querySelector("#check-update");

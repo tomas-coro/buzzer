@@ -19,6 +19,9 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "GET_VERSION") {
+    event.ports?.[0]?.postMessage({ version: self.OFFLINE_VERSION });
+  }
 });
 
 self.addEventListener("fetch", (event) => {

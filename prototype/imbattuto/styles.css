@@ -1785,3 +1785,146 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
   .bz-update.checking svg { animation-duration: 1.6s !important; }
   .update-toast { transition: none; }
 }
+
+/* ========================================================================== 
+   HOME V2 + DIFFICOLTA V2 — shell più "app", mobile-first
+   ========================================================================== */
+.home-v2, .diff-v2 { height: 100%; min-height: 0; }
+.home-v2 > .scr, .diff-v2 > .scr { min-height: 0; height: 100%; }
+.home-v2 .home { min-height: 0; }
+
+/* Home: il brand resta protagonista, ma non divora la viewport. */
+.home-v2 .bz-top { padding-top: clamp(16px, 2.8dvh, 24px); }
+.home-v2 .bz-stage--compact {
+  flex: 0 0 auto;
+  min-height: 0;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: clamp(12px, 2.5dvh, 22px) 16px clamp(10px, 2dvh, 18px);
+}
+.home-v2 .emblem--compact { width: 112px; height: 112px; flex: 0 0 112px; }
+.home-v2 .emblem--compact .hoop { width: 78px; height: 63px; top: 0; }
+.home-v2 .emblem--compact .bz-ball { width: 70px; height: 70px; margin-bottom: 3px; }
+.home-v2 .emblem--compact .flash { width: 110px; height: 110px; top: 34px; }
+.home-v2 .bz-brandline { min-width: 0; }
+.home-v2 .bz-brandline .bz-wm { font-size: clamp(1.72rem, 8.3vw, 2.25rem); text-align: left; }
+.home-v2 .bz-brandline .bz-sub { font-size: .52rem; margin-top: 7px; }
+.home-v2 .bz-foot--dashboard { display: flex; flex-direction: column; min-height: 0; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.bz-section-label {
+  font-family: "Bungee"; font-size: .56rem; letter-spacing: .11em;
+  text-transform: uppercase; color: var(--txt-dim); margin-bottom: 8px;
+}
+.bz-primary-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.bz-game-card {
+  position: relative; overflow: hidden; min-height: clamp(132px, 20dvh, 170px);
+  display: flex; flex-direction: column; align-items: flex-start; text-align: left;
+  padding: 14px 13px 12px; border: 2px solid var(--surf-bd); border-radius: 17px;
+  color: var(--txt); background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(0,0,0,.2));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05); transition: transform .12s, border-color .15s, background .15s;
+}
+.bz-game-card::after {
+  content: ""; position: absolute; width: 92px; height: 92px; border-radius: 50%;
+  right: -34px; top: -34px; background: rgba(255,255,255,.04); pointer-events: none;
+}
+.bz-game-card--corsa { border-color: rgba(255,91,30,.72); background: linear-gradient(155deg, rgba(255,91,30,.22), rgba(0,0,0,.18) 72%); }
+.bz-game-card--playoff { border-color: rgba(255,207,51,.55); background: linear-gradient(155deg, rgba(255,207,51,.14), rgba(0,0,0,.18) 72%); }
+.bz-game-card:active { transform: scale(.98); }
+.bgc-kicker { font-family: "Bungee"; font-size: .51rem; letter-spacing: .07em; text-transform: uppercase; color: var(--txt-dim); }
+.bgc-title { font-family: "Bungee"; font-size: clamp(1.35rem, 6.5vw, 1.8rem); line-height: 1; color: var(--pop2); margin-top: 8px; }
+.bz-game-card--corsa .bgc-title { color: var(--pop); }
+.bgc-copy { font-size: .69rem; line-height: 1.26; color: var(--txt-dim); margin-top: 7px; text-wrap: pretty; }
+.bgc-action { margin-top: auto; padding-top: 10px; font-family: "Bungee"; font-size: .62rem; color: var(--txt); text-transform: uppercase; }
+.bgc-action b { color: var(--pop2); font-size: 1rem; line-height: .6; vertical-align: -1px; }
+.bz-coming { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 9px; }
+.bz-coming-card {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 7px;
+  min-height: 48px; padding: 8px 10px; border: 1px solid var(--surf-bd); border-radius: 13px;
+  background: rgba(0,0,0,.16); color: var(--txt-dim);
+}
+.bz-coming-card > span { font-family: "Bungee"; font-size: .68rem; color: var(--txt-dim); }
+.bz-coming-card b { font-family: "Bungee"; font-size: .5rem; text-transform: uppercase; color: var(--txt-dim); }
+.bz-coming-card small { font-family: "Bungee"; font-size: .4rem; color: var(--pop); text-transform: uppercase; }
+
+/* Setup modalità: struttura da schermata di configurazione, non da pagina web. */
+.diff-scr-v2 { display: flex; flex-direction: column; gap: 0; padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom)); overflow: hidden; }
+.diff-nav { display: flex; align-items: center; justify-content: space-between; flex: none; }
+.diff-step { font-family: "Bungee"; font-size: .48rem; letter-spacing: .11em; color: var(--txt-dim); }
+.diff-head-v2 { flex: none; margin: clamp(9px, 1.5dvh, 14px) 0 clamp(10px, 1.8dvh, 16px); }
+.diff-head-v2 .diff-sub { margin-top: 7px; line-height: 1.32; }
+
+.team-panel {
+  flex: none; padding: 12px; border: 2px solid var(--surf-bd); border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(0,0,0,.15));
+}
+.team-panel-copy { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 2px 12px; }
+.team-eyebrow { grid-column: 1 / -1; font-family: "Bungee"; font-size: .45rem; letter-spacing: .12em; color: var(--pop); text-transform: uppercase; }
+.team-panel-copy label { font-family: "Bungee"; font-size: .72rem; color: var(--txt); }
+.team-panel-copy > span:last-child { font-size: .62rem; color: var(--txt-dim); text-align: right; }
+.team-input-wrap { position: relative; margin-top: 8px; }
+.team-input { padding-right: 38px; font-size: .9rem; background: rgba(0,0,0,.22); }
+.team-edit { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); color: var(--pop2); font-size: .9rem; pointer-events: none; }
+
+.difficulty-panel { min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; margin-top: clamp(10px, 1.8dvh, 16px); }
+.difficulty-title-row { display: flex; align-items: end; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex: none; }
+.difficulty-title-row h2 { font-family: "Bungee"; font-size: .78rem; line-height: 1.1; color: var(--txt); margin: 3px 0 0; }
+.difficulty-hint { font-size: .58rem; color: var(--txt-dim); white-space: nowrap; }
+.diff-grid { min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1 1 auto; }
+.diff-card {
+  min-width: 0; min-height: 0; display: flex; flex-direction: column; text-align: left;
+  padding: clamp(9px, 1.4dvh, 12px); border: 2px solid var(--surf-bd); border-radius: 14px;
+  color: var(--txt); background: rgba(0,0,0,.17); transition: border-color .14s, background .14s, transform .1s;
+}
+.diff-card:active { transform: scale(.985); }
+.diff-card.is-selected { border-color: var(--pop2); background: linear-gradient(160deg, rgba(255,207,51,.13), rgba(255,91,30,.055)); box-shadow: inset 0 0 0 1px rgba(255,207,51,.08); }
+.diff-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; }
+.diff-card .dc-name { display: block; font-size: clamp(.72rem, 3.4vw, .87rem); }
+.diff-card .dc-tag { display: block; margin-top: 3px; font-size: .48rem; letter-spacing: .08em; }
+.diff-check { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; flex: none; border: 1px solid var(--surf-bd); color: transparent; font-size: .67rem; font-weight: 900; }
+.diff-card.is-selected .diff-check { color: var(--ink); background: var(--pop2); border-color: var(--pop2); }
+.diff-card-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: auto; padding-top: 9px; }
+.diff-card-stats span { min-width: 0; }
+.diff-card-stats small { display: block; font-size: .46rem; letter-spacing: .04em; text-transform: uppercase; color: var(--txt-dim); }
+.diff-card-stats b { display: block; margin-top: 2px; font-family: "Bungee"; font-size: .56rem; line-height: 1.15; color: var(--pop2); white-space: normal; }
+.diff-card .dc-aid { margin-top: 7px; font-size: .52rem; line-height: 1.2; white-space: normal; }
+
+.diff-bottom { flex: none; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px; padding-top: 10px; }
+.diff-selection { display: flex; flex-direction: column; min-width: 76px; }
+.diff-selection span { font-size: .48rem; color: var(--txt-dim); text-transform: uppercase; letter-spacing: .06em; }
+.diff-selection b { font-family: "Bungee"; font-size: .66rem; color: var(--pop2); margin-top: 2px; }
+.diff-start {
+  min-height: 50px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 0 16px; border: 2.5px solid var(--ink); border-radius: 14px; background: var(--pop2); color: var(--ink);
+  box-shadow: 4px 4px 0 var(--ink); font-family: "Bungee"; font-size: .78rem; text-transform: uppercase;
+}
+.diff-start span { font-size: 1.25rem; line-height: 1; }
+.diff-start:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
+
+/* Schermi bassi: conserviamo tutto nella viewport riducendo solo elementi decorativi. */
+@media (max-height: 700px) {
+  .home-v2 .bz-stage--compact { padding-top: 8px; padding-bottom: 8px; }
+  .home-v2 .emblem--compact { width: 92px; height: 92px; flex-basis: 92px; }
+  .home-v2 .emblem--compact .hoop { width: 64px; height: 52px; }
+  .home-v2 .emblem--compact .bz-ball { width: 58px; height: 58px; }
+  .bz-game-card { min-height: 118px; padding: 11px; }
+  .bgc-copy { font-size: .62rem; }
+  .bz-coming-card { min-height: 42px; }
+  .diff-scr-v2 { padding-top: max(9px, env(safe-area-inset-top)); padding-bottom: max(9px, env(safe-area-inset-bottom)); }
+  .diff-head-v2 { margin: 6px 0 8px; }
+  .diff-head-v2 .diff-sub { font-size: .7rem; }
+  .team-panel { padding: 9px 10px; }
+  .team-panel-copy > span:last-child { display: none; }
+  .difficulty-panel { margin-top: 8px; }
+  .diff-card { padding: 8px; }
+  .diff-card .dc-aid { font-size: .47rem; margin-top: 5px; }
+  .diff-bottom { padding-top: 8px; }
+}
+
+@media (min-width: 700px) {
+  .home-v2 .bz-stage--compact, .home-v2 .bz-foot--dashboard { width: min(100%, 620px); margin-left: auto; margin-right: auto; }
+  .diff-scr-v2 > * { width: min(100%, 620px); margin-left: auto; margin-right: auto; }
+  .bz-game-card { min-height: 158px; }
+}
+/* Touch target aggiornamenti: minimo pratico più vicino a un controllo nativo. */
+.home-v2 .bz-update { width: 38px; height: 38px; border-radius: 12px; }
+.home-v2 .bz-update svg { width: 17px; height: 17px; }
