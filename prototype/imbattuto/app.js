@@ -305,6 +305,13 @@ if ("serviceWorker" in navigator) {
     registration.addEventListener("updatefound", () => registration.installing.addEventListener("statechange", () => {
       if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
     }));
+    // Da PWA installata (specie iOS) il telefono non ricontrolla mai da solo
+    // il service worker: senza questo, il banner "Aggiorna" può non comparire
+    // per giorni anche con un deploy nuovo. Ricontrolla ogni volta che l'app
+    // torna in primo piano, così l'aggiornamento si vede al prossimo riapri.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") registration.update();
+    });
   });
   let reloading = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
