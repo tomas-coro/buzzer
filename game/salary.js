@@ -39,9 +39,33 @@ export function salarioStorico(carta) {
   return SALARI_STORICI[`${carta?.player_id}|${carta?.season}`] ?? null;
 }
 
-/** Salario reale quando disponibile, altrimenti costo deterministico dall'OVR. */
+// Il salario storico resta quello vero, ma non può allontanarsi più di tanto
+// da quello che l'OVR implicherebbe. Senza banda, un rookie sottopagato per
+// davvero (contratto di scala) può costare meno di un veterano mediocre con
+// contratto gonfiato: playtest del 15/09, caso Davis 88 a 11.4M contro
+// Campbell 83 a 29M nello stesso spin - il più forte costava meno, ed era un
+// pasto gratis che toglieva ogni tensione al tetto. La banda tiene vivo il
+// sapore storico (bargain e contratti-capestro restano) ma taglia le
+// inversioni: sopra o sotto un certo punto, il prezzo torna a seguire l'OVR.
+// Il floor è 0.6 e non 0.5: verificato sul caso reale (Davis 88 vs Campbell 83,
+// stesso spin) che con 0.5 il più forte restava comunque più economico - il
+// pavimento doveva salire abbastanza da chiudere anche quel gap, non solo
+// stringerlo.
+export const BANDA_STORICO_MIN = 0.6;
+export const BANDA_STORICO_MAX = 1.5;
+
+/** Il salario storico, tenuto dentro la banda attorno alla formula OVR. */
+export function clampStorico(formula, storico) {
+  const min = Math.round((formula * BANDA_STORICO_MIN) / PASSO) * PASSO;
+  const max = Math.round((formula * BANDA_STORICO_MAX) / PASSO) * PASSO;
+  return Math.min(max, Math.max(min, storico));
+}
+
+/** Salario reale quando disponibile (dentro la banda), altrimenti costo dall'OVR. */
 export function salarioCarta(carta) {
-  return salarioStorico(carta) ?? salarioDaVoto(votoCarta(carta));
+  const formula = salarioDaVoto(votoCarta(carta));
+  const storico = salarioStorico(carta);
+  return storico === null ? formula : clampStorico(formula, storico);
 }
 
 export function etichettaSalarioCarta(carta) {

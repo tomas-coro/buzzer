@@ -6,6 +6,7 @@ import {
   salarioDaVoto, salarioStorico, salarioCarta, etichettaSalarioCarta, firmabile, prenotato,
   firmaDiRipiego, formattaSalario,
   APRON, TASSA_PER_MILIONE, limiteDuro, sforo, malusApron, monteIngaggi,
+  clampStorico, BANDA_STORICO_MIN, BANDA_STORICO_MAX,
 } from "./salary.js";
 
 const M = 1_000_000;
@@ -46,8 +47,11 @@ test("gli ancoraggi cadono dove li abbiamo messi", () => {
 
 test("usa il salario storico normalizzato al tetto di oggi quando esiste", () => {
   // LeBron 2014-15 prendeva 20.6M nominali, cioè il 32.7% del tetto 2014-15
-  // (63M): la stessa quota vale 50.6M sul tetto 2025-26 (154.6M).
-  const lebron = card({ player_id: "lebron-james", season: "2014-15" });
+  // (63M): la stessa quota vale 50.6M sul tetto 2025-26 (154.6M). Reparti da
+  // stella (90): serve una formula OVR alta abbastanza da tenere 50.6M dentro
+  // banda, altrimenti il clamp lo abbasserebbe come un mediano qualsiasi.
+  const eliteReparti = { t3: 90, fin: 90, dif: 90, reb: 90, reg: 90 };
+  const lebron = card({ player_id: "lebron-james", season: "2014-15", reparti: eliteReparti });
   assert.equal(salarioStorico(lebron), 50_623_873);
   assert.equal(salarioCarta(lebron), 50_623_873);
   assert.equal(etichettaSalarioCarta(lebron), "Salario stagionale");
@@ -63,8 +67,46 @@ test("un salario mancante resta null e usa l'OVR senza rumore", () => {
 });
 
 test("usa i salari reali 2025-26", () => {
-  assert.equal(salarioCarta(card({ player_id: "desmond-bane", season: "2025-26" })), 36_725_670);
-  assert.equal(salarioCarta(card({ player_id: "jalen-suggs", season: "2025-26" })), 35_000_000);
+  // Reparti da titolare solido (85): formula abbastanza alta da tenere questi
+  // due contratti dentro banda senza clamparli.
+  const repartiTitolare = { t3: 85, fin: 85, dif: 85, reb: 85, reg: 85 };
+  assert.equal(
+    salarioCarta(card({ player_id: "desmond-bane", season: "2025-26", reparti: repartiTitolare })),
+    36_725_670,
+  );
+  assert.equal(
+    salarioCarta(card({ player_id: "jalen-suggs", season: "2025-26", reparti: repartiTitolare })),
+    35_000_000,
+  );
+});
+
+// ---- il clamp storico/formula ----
+
+test("clampStorico: alza il pavimento quando il rookie è sottopagato rispetto all'OVR", () => {
+  // Il caso trovato in playtest: un fuoriclasse su contratto di scala che
+  // costerebbe meno di un mediocre su contratto gonfiato.
+  const formula = 50_000_000;
+  const min = formula * BANDA_STORICO_MIN;
+  assert.equal(clampStorico(formula, 5_000_000), min);
+});
+
+test("clampStorico: abbassa il tetto quando il veterano è sovrapagato rispetto all'OVR", () => {
+  const formula = 10_000_000;
+  const max = formula * BANDA_STORICO_MAX;
+  assert.equal(clampStorico(formula, 30_000_000), max);
+});
+
+test("clampStorico: non tocca lo storico già dentro banda", () => {
+  const formula = 40_000_000;
+  assert.equal(clampStorico(formula, 29_000_000), 29_000_000);
+});
+
+test("clampStorico: il caso Davis/Campbell torna coerente con l'OVR", () => {
+  // Davis 88: formula ≈50.8M, storico reale 11.4M (pasto gratis prima del clamp).
+  // Campbell 83: formula ≈41.9M, storico reale 29M (già dentro banda).
+  const davis = clampStorico(50_800_000, 11_400_000);
+  const campbell = clampStorico(41_900_000, 29_000_000);
+  assert.ok(davis >= campbell, `Davis (88, ${davis}) dovrebbe costare almeno quanto Campbell (83, ${campbell})`);
 });
 
 test("prenotato: ogni casella ancora vuota tiene da parte un contratto minimo", () => {
