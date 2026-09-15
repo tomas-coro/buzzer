@@ -1,7 +1,6 @@
 // Salario stagionale nominale reale, indicizzato per giocatore+stagione.
 // Dove manca il dato resta esplicitamente null; il gioco usa allora l'OVR.
 
-import { votoCarta } from "./rating.js";
 import { SALARI_STORICI } from "./salary-data.js";
 
 // Contratto minimo e max contract, in dollari veri. La NBA 2025-26 sta sui 2,1
@@ -9,14 +8,14 @@ import { SALARI_STORICI } from "./salary-data.js";
 export const SALARIO_MIN = 2_000_000;
 export const SALARIO_MAX = 55_000_000;
 
-// Sotto VOTO_MIN si firma al minimo, sopra VOTO_MAX si paga il max contract: la
-// curva vive fra questi due estremi. VOTO_MAX è 90 perché la carta più forte del
-// dataset vale 91, cioè il max contract deve esistere ma toccarlo in due o tre.
+// Sotto VOTO_MIN si firma al minimo, a VOTO_MAX si paga il max contract: la
+// curva vive fra questi due estremi. La base è l'OVR 2K mostrato sulla carta,
+// che nel dataset può arrivare a 99.
 const VOTO_MIN = 20;
-const VOTO_MAX = 90;
+const VOTO_MAX = 99;
 
-// L'esponente della convessità. 2.8 è quello che porta la carta mediana (48) a
-// costare 6 milioni; con 1 la curva sarebbe una retta e il cap non morderebbe.
+// L'esponente della convessità. Mantiene molto più costosi gli OVR d'élite
+// rispetto agli OVR bassi; con 1 la curva sarebbe una retta e il cap morderebbe meno.
 const GAMMA = 2.8;
 
 // I salari si arrotondano ai centomila: un cartellino da "$12.4M" si legge, uno
@@ -63,7 +62,7 @@ export function clampStorico(formula, storico) {
 
 /** Salario reale quando disponibile (dentro la banda), altrimenti costo dall'OVR. */
 export function salarioCarta(carta) {
-  const formula = salarioDaVoto(votoCarta(carta));
+  const formula = salarioDaVoto(carta?.ovr);
   const storico = salarioStorico(carta);
   return storico === null ? formula : clampStorico(formula, storico);
 }
@@ -125,8 +124,8 @@ export function firmaDiRipiego(costi, residuo, vuote) {
 // IL SECONDO APRON, cioè la valvola che tiene vivo il sogno dello squadrone.
 // ---------------------------------------------------------------------------
 //
-// PERCHÉ SERVE. Cinque carte da 90+ costano circa 50 milioni l'una: 250 in
-// tutto, che non entrano sotto nessun tetto ragionevole. Se il tetto è un muro,
+// PERCHÉ SERVE. Cinque carte da 90+ stanno nella fascia più costosa della curva:
+// insieme possono superare facilmente qualunque tetto ragionevole. Se il tetto è un muro,
 // "mi sono capitati cinque fuoriclasse" diventa "ne firmo due e guardo gli altri
 // tre passare", che è la sensazione peggiore che un draft possa dare. Deciso con
 // Tomas il 2026-08-18: il tetto non è un muro, è la soglia oltre cui PAGHI.

@@ -155,11 +155,13 @@ test("sceltaAutoDraft: fra le carte piazzabili sceglie l'OVR più alto", () => {
 });
 
 test("sceltaAutoDraft: con malusPunti 0 resta sotto il tetto pulito anche a costo dell'OVR più alto", () => {
-  const s = statoUltimaCasella(20_000_000, 15_000_000); // 5M puliti rimasti, un'unica casella libera
   const economica = card({ player_id: "eco", ovr: 60, reparti: repartiA(25) });
   const cara = card({ player_id: "cara", ovr: 95, reparti: repartiA(88) });
-  assert.ok(salarioCarta(cara) > 5_000_000, "il fixture deve sforare i 5M rimasti, o il test non prova niente");
-  assert.ok(salarioCarta(economica) <= 5_000_000, "l'economica deve starci dentro");
+  const budgetPulito = salarioCarta(economica);
+  const tetto = 20_000_000;
+  const s = statoUltimaCasella(tetto, tetto - budgetPulito); // resta esattamente il costo dell'economica
+  assert.ok(salarioCarta(cara) > budgetPulito, "il fixture caro deve sforare il budget rimasto, o il test non prova niente");
+  assert.ok(salarioCarta(economica) <= budgetPulito, "l'economica deve starci dentro");
   const scelta = sceltaAutoDraft(s, [economica, cara], 0);
   assert.equal(scelta.carta, economica, "la cara sfora il tetto pulito: resta fuori anche col suo OVR più alto");
 });

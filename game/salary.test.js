@@ -37,24 +37,36 @@ test("è convessa come nella NBA: il salto in alto vale più del salto in basso"
   assert.ok(alta > bassa * 5, `salto alto ${alta} contro basso ${bassa}`);
 });
 
-test("gli ancoraggi cadono dove li abbiamo messi", () => {
-  // Misurati sul dataset (2412 carte): mediana 48, p95 75, massimo 91.
-  // La mediana deve costare come il salario mediano NBA vero, ~6 milioni.
-  assert.ok(Math.abs(salarioDaVoto(48) - 6 * M) < 1.5 * M, `mediana a ${salarioDaVoto(48)}`);
+test("gli ancoraggi OVR cadono agli estremi della curva", () => {
+  // La curva salariale usa l'OVR 2K visibile sulla carta: il dataset arriva a 99.
   assert.equal(salarioDaVoto(20), SALARIO_MIN);
-  assert.equal(salarioDaVoto(90), SALARIO_MAX);
+  assert.equal(salarioDaVoto(99), SALARIO_MAX);
+  assert.ok(salarioDaVoto(94) < SALARIO_MAX, "94 OVR non deve già saturare il max contract");
 });
 
 test("usa il salario storico normalizzato al tetto di oggi quando esiste", () => {
   // LeBron 2014-15 prendeva 20.6M nominali, cioè il 32.7% del tetto 2014-15
-  // (63M): la stessa quota vale 50.6M sul tetto 2025-26 (154.6M). Reparti da
-  // stella (90): serve una formula OVR alta abbastanza da tenere 50.6M dentro
-  // banda, altrimenti il clamp lo abbasserebbe come un mediano qualsiasi.
-  const eliteReparti = { t3: 90, fin: 90, dif: 90, reb: 90, reg: 90 };
-  const lebron = card({ player_id: "lebron-james", season: "2014-15", reparti: eliteReparti });
+  // (63M): la stessa quota vale 50.6M sul tetto 2025-26 (154.6M). L'OVR 2K
+  // visibile sulla carta è la base della formula; i reparti non entrano nel salario.
+  const lebron = card({ player_id: "lebron-james", season: "2014-15", ovr: 96 });
   assert.equal(salarioStorico(lebron), 50_623_873);
   assert.equal(salarioCarta(lebron), 50_623_873);
   assert.equal(etichettaSalarioCarta(lebron), "Salario stagionale");
+});
+
+test("salarioCarta usa l'OVR visibile e ignora il voto-motore dei reparti", () => {
+  const scarsoMotore = card({
+    player_id: "nessuno-a", season: "1900-01", ovr: 94,
+    reparti: { t3: 10, fin: 10, dif: 10, reb: 10, reg: 10 },
+  });
+  const forteMotore = card({
+    player_id: "nessuno-b", season: "1900-01", ovr: 94,
+    reparti: { t3: 99, fin: 99, dif: 99, reb: 99, reg: 99 },
+  });
+
+  assert.equal(salarioCarta(scarsoMotore), salarioDaVoto(94));
+  assert.equal(salarioCarta(forteMotore), salarioDaVoto(94));
+  assert.equal(salarioCarta(scarsoMotore), salarioCarta(forteMotore));
 });
 
 test("un salario mancante resta null e usa l'OVR senza rumore", () => {
@@ -67,15 +79,13 @@ test("un salario mancante resta null e usa l'OVR senza rumore", () => {
 });
 
 test("usa i salari reali 2025-26", () => {
-  // Reparti da titolare solido (85): formula abbastanza alta da tenere questi
-  // due contratti dentro banda senza clamparli.
-  const repartiTitolare = { t3: 85, fin: 85, dif: 85, reb: 85, reg: 85 };
+  // OVR 80 tiene questi due contratti dentro la banda senza dipendere dai reparti.
   assert.equal(
-    salarioCarta(card({ player_id: "desmond-bane", season: "2025-26", reparti: repartiTitolare })),
+    salarioCarta(card({ player_id: "desmond-bane", season: "2025-26", ovr: 80 })),
     36_725_670,
   );
   assert.equal(
-    salarioCarta(card({ player_id: "jalen-suggs", season: "2025-26", reparti: repartiTitolare })),
+    salarioCarta(card({ player_id: "jalen-suggs", season: "2025-26", ovr: 80 })),
     35_000_000,
   );
 });
@@ -102,8 +112,8 @@ test("clampStorico: non tocca lo storico già dentro banda", () => {
 });
 
 test("clampStorico: il caso Davis/Campbell torna coerente con l'OVR", () => {
-  // Davis 88: formula ≈50.8M, storico reale 11.4M (pasto gratis prima del clamp).
-  // Campbell 83: formula ≈41.9M, storico reale 29M (già dentro banda).
+  // Test isolato della banda su due formule rappresentative: il clamp deve evitare
+  // che un contratto storico molto basso trasformi il giocatore più caro in un affare anomalo.
   const davis = clampStorico(50_800_000, 11_400_000);
   const campbell = clampStorico(41_900_000, 29_000_000);
   assert.ok(davis >= campbell, `Davis (88, ${davis}) dovrebbe costare almeno quanto Campbell (83, ${campbell})`);
