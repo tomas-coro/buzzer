@@ -11,7 +11,13 @@ export function render(ctx) {
       <div class="home">
         <div class="bz-top">
           <span class="bz-credit rise">★ 1 credito</span>
-          <span class="bz-best rise" style="--d:.04s">best <b>9-0</b></span>
+          <span class="bz-top-actions rise" style="--d:.04s">
+            <button class="bz-update" id="check-update" type="button" aria-label="Controlla aggiornamenti" title="Controlla aggiornamenti">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66L16.24 15.24A6 6 0 1 1 18 11h-3l4 4 4-4h-3z"/></svg>
+              <span class="bz-update-dot" aria-hidden="true"></span>
+            </button>
+            <span class="bz-best">best <b>9-0</b></span>
+          </span>
         </div>
         <div class="bz-stage">
           <div class="emblem">
@@ -70,6 +76,13 @@ export function render(ctx) {
   root.querySelector("#gioca").onclick = vai;
   root.querySelector("#mode-corsa").onclick = vai;
   root.querySelector("#mode-playoff").onclick = () => ctx.go("difficolta-playoff");
+
+  const updateButton = root.querySelector("#check-update");
+  const status = ctx.updateState?.() ?? {};
+  updateButton.classList.toggle("has-update", Boolean(status.available));
+  updateButton.classList.toggle("checking", Boolean(status.checking));
+  updateButton.setAttribute("aria-label", status.available ? "Aggiornamento disponibile" : "Controlla aggiornamenti");
+  updateButton.onclick = () => ctx.checkForUpdates?.();
 
   return root;
 }

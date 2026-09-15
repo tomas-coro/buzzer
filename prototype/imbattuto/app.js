@@ -17,6 +17,25 @@ import { render as profilo } from "./screens/profilo.js";
 
 const app = document.getElementById("app");
 let installPrompt = null;
+let swRegistration = null;
+let updateWorker = null;
+let updateChecking = false;
+
+function updateState() {
+  return {
+    available: Boolean(updateWorker || swRegistration?.waiting),
+    checking: updateChecking,
+  };
+}
+
+function syncUpdateControls() {
+  const button = document.getElementById("check-update");
+  if (!button) return;
+  const status = updateState();
+  button.classList.toggle("has-update", status.available);
+  button.classList.toggle("checking", status.checking);
+  button.setAttribute("aria-label", status.available ? "Aggiornamento disponibile" : "Controlla aggiornamenti");
+}
 
 const installed = () => matchMedia("(display-mode: standalone)").matches
   || navigator.standalone === true || globalThis.Capacitor?.isNativePlatform?.() === true;
@@ -68,7 +87,7 @@ const screens = {
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;
   const formato = state?.formato ?? (ui === "difficolta-playoff" ? "playoff" : "imbattuto");
-  return { state, cards, pool, draftView, N, formato, dispatch, go, installApp, installed: installed() };
+  return { state, cards, pool, draftView, N, formato, dispatch, go, installApp, installed: installed(), checkForUpdates, updateState };
 }
 
 function go(nextUi, fromHistory = false) {
@@ -288,33 +307,111 @@ window.addEventListener("popstate", (event) => {
 
 render();
 
+function toastUpdate(message, kind = "ok") {
+  let toast = document.getElementById("update-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "update-toast";
+    toast.className = "update-toast";
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    document.body.appendChild(toast);
+  }
+  toast.dataset.kind = kind;
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
 function offerUpdate(worker) {
-  if (document.getElementById("app-update")) return;
-  const button = document.createElement("button");
-  button.id = "app-update";
-  button.className = "app-update";
+  updateWorker = worker;
+  let button = document.getElementById("app-update");
+  if (!button) {
+    button = document.createElement("button");
+    button.id = "app-update";
+    button.className = "app-update";
+    document.body.appendChild(button);
+  }
   button.textContent = "Nuova versione pronta · Aggiorna";
-  button.onclick = () => worker.postMessage("SKIP_WAITING");
-  document.body.appendChild(button);
+  button.onclick = () => (updateWorker || swRegistration?.waiting)?.postMessage("SKIP_WAITING");
+  syncUpdateControls();
+}
+
+function waitForWorker(worker) {
+  if (!worker || ["installed", "activated", "redundant"].includes(worker.state)) return Promise.resolve();
+  return new Promise((resolve) => {
+    const done = () => {
+      if (["installed", "activated", "redundant"].includes(worker.state)) {
+        worker.removeEventListener("statechange", done);
+        resolve();
+      }
+    };
+    worker.addEventListener("statechange", done);
+    setTimeout(() => { worker.removeEventListener("statechange", done); resolve(); }, 5000);
+  });
+}
+
+async function checkForUpdates({ silent = false } = {}) {
+  if (!("serviceWorker" in navigator)) {
+    if (!silent) toastUpdate("Aggiornamenti non disponibili in questo browser", "error");
+    return false;
+  }
+  if (!swRegistration) {
+    if (!silent) toastUpdate("Controllo aggiornamenti non ancora pronto", "error");
+    return false;
+  }
+  if (swRegistration.waiting || updateWorker) {
+    offerUpdate(swRegistration.waiting || updateWorker);
+    if (!silent) toastUpdate("Nuova versione pronta da installare", "update");
+    return true;
+  }
+
+  updateChecking = true;
+  syncUpdateControls();
+  if (!silent) toastUpdate("Controllo aggiornamenti…");
+  try {
+    await swRegistration.update();
+    await waitForWorker(swRegistration.installing);
+    const waiting = swRegistration.waiting;
+    if (waiting && navigator.serviceWorker.controller) {
+      offerUpdate(waiting);
+      if (!silent) toastUpdate("Nuova versione trovata", "update");
+      return true;
+    }
+    if (!silent) toastUpdate("Buzzer è già aggiornato");
+    return false;
+  } catch (error) {
+    console.warn("Controllo aggiornamenti fallito", error);
+    if (!silent) toastUpdate(navigator.onLine ? "Controllo non riuscito. Riprova." : "Sei offline: impossibile controllare", "error");
+    return false;
+  } finally {
+    updateChecking = false;
+    syncUpdateControls();
+  }
 }
 
 if ("serviceWorker" in navigator) {
   const controlledAtLoad = Boolean(navigator.serviceWorker.controller);
   navigator.serviceWorker.register("./sw.js").then((registration) => {
+    swRegistration = registration;
     if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
-    registration.addEventListener("updatefound", () => registration.installing.addEventListener("statechange", () => {
-      if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
-    }));
-    // Da PWA installata (specie iOS) il telefono non ricontrolla mai da solo
-    // il service worker: senza questo, il banner "Aggiorna" può non comparire
-    // per giorni anche con un deploy nuovo. Ricontrolla ogni volta che l'app
-    // torna in primo piano, così l'aggiornamento si vede al prossimo riapri.
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") registration.update();
+    registration.addEventListener("updatefound", () => {
+      const worker = registration.installing;
+      worker?.addEventListener("statechange", () => {
+        if (registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+      });
     });
-  });
+    // In una PWA installata il browser può diradare i controlli automatici.
+    // Al ritorno in primo piano forziamo un check silenzioso; il pulsante in
+    // Home permette in più di controllare manualmente e vedere sempre l'esito.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") checkForUpdates({ silent: true });
+    });
+  }).catch((error) => console.warn("Service worker non registrato", error));
   let reloading = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
+    updateWorker = null;
     if (controlledAtLoad && !reloading) { reloading = true; location.reload(); }
   });
 }

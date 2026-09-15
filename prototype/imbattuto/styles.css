@@ -1702,3 +1702,86 @@ h1.pr-title { font-family: var(--arcade); font-size: 1.1rem; color: var(--bone);
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* =================== PWA / NATIVE SHELL ===================
+   Il documento non scorre mai: #app e' l'unica superficie scrollabile. Questo
+   elimina pull-to-refresh, rubber-band della pagina e scrollbar da sito, senza
+   impedire alle schermate lunghe (draft/run/profilo) di scorrere. */
+html {
+  width: 100%; height: 100%; overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--ink);
+}
+body {
+  position: fixed; inset: 0; width: 100%; height: 100%; min-height: 0;
+  overflow: hidden; overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+#app {
+  height: 100dvh; min-height: 0;
+  overflow-x: hidden; overflow-y: auto;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+#app::-webkit-scrollbar { display: none; width: 0; height: 0; }
+button, [role="button"], label { -webkit-user-select: none; user-select: none; }
+img, svg { -webkit-user-drag: none; }
+input, textarea, select { -webkit-user-select: text; user-select: text; }
+
+/* Centro aggiornamenti: comando piccolo nell'header Home, coerente con una app
+   invece di un link/testo da sito. Il punto arancio compare quando un worker e'
+   pronto; durante il check l'icona ruota. */
+.bz-top-actions { display: flex; align-items: center; gap: 9px; }
+.bz-update {
+  position: relative; display: grid; place-items: center; width: 31px; height: 31px;
+  padding: 0; border: 1.5px solid var(--surf-bd); border-radius: 10px;
+  background: var(--surf); color: var(--txt-dim);
+  box-shadow: none;
+}
+.bz-update svg { width: 15px; height: 15px; fill: currentColor; }
+.bz-update:active { transform: scale(.94); }
+.bz-update.has-update { color: var(--pop2); border-color: var(--pop); background: var(--surf-on); }
+.bz-update-dot {
+  position: absolute; top: -3px; right: -3px; width: 8px; height: 8px;
+  border-radius: 50%; background: var(--pop); border: 2px solid var(--bg);
+  opacity: 0; transform: scale(.6); transition: opacity .15s, transform .15s;
+}
+.bz-update.has-update .bz-update-dot { opacity: 1; transform: scale(1); }
+.bz-update.checking svg { animation: updateSpin .8s linear infinite; }
+@keyframes updateSpin { to { transform: rotate(360deg); } }
+
+/* Feedback esplicito del check manuale. Non blocca il gioco e scompare da solo. */
+.update-toast {
+  position: fixed; z-index: 130; left: 50%; top: calc(12px + env(safe-area-inset-top));
+  width: max-content; max-width: calc(100vw - 32px); padding: 10px 13px;
+  border: 1px solid var(--line); border-radius: 11px;
+  background: rgba(21,22,58,.96); color: var(--bone);
+  box-shadow: 0 12px 30px rgba(5,5,18,.34);
+  font-size: .72rem; font-weight: 800; text-align: center;
+  opacity: 0; pointer-events: none;
+  transform: translate(-50%, -12px) scale(.98);
+  transition: opacity .18s, transform .18s var(--ease);
+}
+.update-toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+.update-toast[data-kind="update"] { border-color: var(--brass); color: var(--yellow); }
+.update-toast[data-kind="error"] { border-color: var(--red); color: #ffd2cc; }
+
+/* Il banner di update gia' presente diventa un vero bottom action sheet compatto. */
+.app-update {
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  border-radius: 15px; min-height: 50px;
+  box-shadow: 0 12px 32px rgba(5,5,18,.45), 4px 4px 0 #0a0a18;
+}
+
+@media (display-mode: standalone) {
+  /* In standalone la shell deve arrivare esattamente ai bordi dello schermo. */
+  body { min-height: 100dvh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bz-update.checking svg { animation-duration: 1.6s !important; }
+  .update-toast { transition: none; }
+}
