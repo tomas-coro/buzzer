@@ -21,6 +21,10 @@ let swRegistration = null;
 let updateWorker = null;
 let updateChecking = false;
 
+// Intro Home: deve essere mostrata solo alla prima apertura reale
+// dell'app. La navigazione interna verso Home non deve riattivarla.
+let showHomeIntro = true;
+
 function updateState() {
   return {
     available: Boolean(updateWorker || swRegistration?.waiting),
@@ -87,7 +91,15 @@ const screens = {
 function ctx() {
   const N = state ? DIFFICULTIES[state.difficolta].N : null;
   const formato = state?.formato ?? (ui === "difficolta-playoff" ? "playoff" : "imbattuto");
-  return { state, cards, pool, draftView, N, formato, dispatch, go, installApp, installed: installed(), checkForUpdates, updateState };
+  return {
+    state, cards, pool, draftView, N, formato,
+    dispatch, go,
+    installApp,
+    installed: installed(),
+    checkForUpdates,
+    updateState,
+    showHomeIntro,
+  };
 }
 
 function go(nextUi, fromHistory = false) {
@@ -289,6 +301,10 @@ function render() {
     return;
   }
   app.replaceChildren(screen(ctx()));
+
+  // Consumiamo l'intro dopo il primo render della Home.
+  // Da questo momento ogni ritorno interno mostra subito la Home.
+  if (name === "home") showHomeIntro = false;
 }
 
 history.replaceState({ ui: state ? "guard" : ui }, "");
