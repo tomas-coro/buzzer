@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUZZER · Rosa completa</title>
+
+<style>
+:root{
+  --bg:#090b23;
+  --panel:#121538;
+  --panel2:#181c49;
+  --line:#34396f;
+  --line2:#464d91;
+  --txt:#f3eedf;
+  --dim:#9497bc;
+  --yellow:#ffcf33;
+  --orange:#ff8a24;
+  --blue:#119cff;
+  --green:#56e29a;
+  --red:#ff654d;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(17,156,255,.09),transparent 32%),
+    var(--bg);
+  color:var(--txt);
+  font-family:Arial,sans-serif;
+}
+
+.page{
+  padding:28px 18px 50px;
+}
+
+.title{
+  max-width:1260px;
+  margin:0 auto 18px;
+  color:#8589b1;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+
+.grid{
+  max-width:1260px;
+  margin:auto;
+  display:grid;
+  grid-template-columns:375px minmax(0,1fr);
+  gap:32px;
+  align-items:start;
+}
+
+.device{
+  background:#0d1030;
+  border:1px solid #292e65;
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 24px 70px rgba(0,0,0,.34);
+}
+
+.device.desktop{
+  border-radius:18px;
+}
+
+.topbar{
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 18px;
+  border-bottom:1px solid #262b62;
+  background:#101335;
+}
+
+.logo{
+  font-weight:1000;
+  letter-spacing:-.08em;
+  font-size:21px;
+}
+
+.logo b{color:var(--yellow)}
+
+.state{
+  display:flex;
+  gap:14px;
+  color:#a5a8cb;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+
+.content{
+  padding:14px;
+}
+
+.hero{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.hero-left small{
+  display:block;
+  color:var(--blue);
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+
+.hero-left h2{
+  margin:4px 0 0;
+  font-size:20px;
+  line-height:1;
+  letter-spacing:-.04em;
+}
+
+.count{
+  color:var(--yellow);
+  font-family:monospace;
+  font-size:23px;
+  font-weight:900;
+}
+
+.cap{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+  margin-bottom:11px;
+}
+
+.cap-cell{
+  min-width:0;
+  padding:8px 8px 7px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#14173e;
+}
+
+.cap-cell small{
+  display:block;
+  color:#8589b1;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.cap-cell b{
+  display:block;
+  margin-top:3px;
+  font-family:monospace;
+  font-size:13px;
+}
+
+.cap-cell:last-child b{
+  color:var(--green);
+}
+
+.section{
+  margin-top:10px;
+}
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:6px;
+  color:#aaaed0;
+  font-size:8px;
+  font-weight:1000;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+
+.section-head em{
+  color:#70749e;
+  font-style:normal;
+}
+
+.five{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+}
+
+.player{
+  position:relative;
+  min-width:0;
+  height:112px;
+  overflow:hidden;
+  border:1px solid #3c4385;
+  border-radius:10px;
+  background:
+    radial-gradient(circle at 50% 26%,rgba(17,156,255,.16),transparent 40%),
+    linear-gradient(180deg,#20265d,#101338);
+}
+
+.player::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:3px;
+  background:var(--blue);
+}
+
+.role{
+  position:absolute;
+  z-index:3;
+  top:7px;
+  left:8px;
+  color:#dadbea;
+  font-size:7px;
+  font-weight:1000;
+}
+
+.face{
+  position:absolute;
+  top:19px;
+  right:5px;
+  bottom:35px;
+  left:5px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+}
+
+.face::before{
+  content:"";
+  display:block;
+  width:43px;
+  height:57px;
+  border-radius:50% 50% 38% 38%;
+  background:
+    radial-gradient(circle at 50% 28%,#b8bad0 0 21%,transparent 22%),
+    linear-gradient(90deg,transparent 17%,#8d90ae 18% 82%,transparent 83%);
+  opacity:.42;
+}
+
+.meta{
+  position:absolute;
+  z-index:3;
+  right:6px;
+  bottom:6px;
+  left:8px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:3px;
+}
+
+.name{
+  min-width:0;
+  overflow:hidden;
+  color:#ede9dc;
+  font-size:7px;
+  font-weight:900;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.ovr{
+  color:var(--yellow);
+  font-family:monospace;
+  font-size:16px;
+  font-weight:900;
+  line-height:1;
+}
+
+.bench{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+}
+
+.bench-card{
+  min-width:0;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) auto;
+  align-items:center;
+  gap:5px;
+  padding:6px;
+  border:1px solid #31366f;
+  border-radius:9px;
+  background:#12153b;
+}
+
+.bench-face{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 36%,#9296b8 0 24%,transparent 25%),
+    linear-gradient(180deg,#323866,#171a43);
+}
+
+.bench-copy{
+  min-width:0;
+}
+
+.bench-copy strong{
+  display:block;
+  overflow:hidden;
+  font-size:7px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.bench-copy small{
+  display:block;
+  margin-top:2px;
+  color:#8589b0;
+  font-size:6px;
+}
+
+.bench-ovr{
+  color:#d5d7e4;
+  font-family:monospace;
+  font-size:12px;
+  font-weight:900;
+}
+
+.reorder{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:10px;
+  padding:7px 9px;
+  border:1px solid rgba(17,156,255,.34);
+  border-radius:9px;
+  background:rgba(17,156,255,.055);
+  color:#9ca2ce;
+  font-size:7px;
+  line-height:1.3;
+}
+
+.reorder svg{
+  flex:0 0 auto;
+  width:16px;
+  height:16px;
+  fill:none;
+  stroke:var(--blue);
+  stroke-width:2;
+}
+
+.cta{
+  width:100%;
+  height:56px;
+  margin-top:10px;
+  border:0;
+  border-radius:11px;
+  background:linear-gradient(90deg,var(--orange),var(--yellow));
+  color:#201400;
+  font-size:13px;
+  font-weight:1000;
+  letter-spacing:.04em;
+}
+
+/* desktop */
+
+.desktop .content{
+  max-width:900px;
+  margin:auto;
+  padding:18px 22px 20px;
+}
+
+.desktop .hero-left h2{
+  font-size:24px;
+}
+
+.desktop .count{
+  font-size:27px;
+}
+
+.desktop .cap{
+  gap:8px;
+}
+
+.desktop .cap-cell{
+  padding:9px 11px;
+}
+
+.desktop .cap-cell small{
+  font-size:8px;
+}
+
+.desktop .cap-cell b{
+  font-size:15px;
+}
+
+.desktop .player{
+  height:132px;
+}
+
+.desktop .role{
+  font-size:8px;
+}
+
+.desktop .name{
+  font-size:8px;
+}
+
+.desktop .ovr{
+  font-size:19px;
+}
+
+.desktop .bench-card{
+  grid-template-columns:34px minmax(0,1fr) auto;
+  padding:8px;
+}
+
+.desktop .bench-face{
+  width:34px;
+  height:34px;
+}
+
+.desktop .bench-copy strong{
+  font-size:8px;
+}
+
+.desktop .bench-copy small{
+  font-size:7px;
+}
+
+.desktop .bench-ovr{
+  font-size:14px;
+}
+
+.desktop .reorder{
+  padding:9px 11px;
+  font-size:8px;
+}
+
+.desktop .cta{
+  height:62px;
+  font-size:14px;
+}
+
+@media(max-width:900px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .device{
+    width:min(375px,100%);
+    margin:auto;
+  }
+
+  .device.desktop{
+    width:100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+  <div class="title">BUZZER · Mockup 94 · Fine Draft / Rosa completa</div>
+
+  <div class="grid">
+
+    <!-- MOBILE -->
+    <section class="device">
+      <div class="topbar">
+        <span class="logo">BUZ<b>Z</b>ER</span>
+
+        <div class="state">
+          <span>P1</span>
+          <span>BEST 9-0</span>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <div class="hero">
+          <div class="hero-left">
+            <small>Draft completato</small>
+            <h2>ROSA COMPLETA</h2>
+          </div>
+
+          <div class="count">10/10</div>
+        </div>
+
+        <div class="cap">
+          <div class="cap-cell">
+            <small>Tetto</small>
+            <b>$240M</b>
+          </div>
+
+          <div class="cap-cell">
+            <small>Speso</small>
+            <b>$221M</b>
+          </div>
+
+          <div class="cap-cell">
+            <small>Resta</small>
+            <b>$19M</b>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>Titolari</span>
+            <em>5/5</em>
+          </div>
+
+          <div class="five">
+            <div class="player">
+              <span class="role">PG</span>
+              <span class="face"></span>
+              <span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span>
+            </div>
+
+            <div class="player">
+              <span class="role">SG</span>
+              <span class="face"></span>
+              <span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span>
+            </div>
+
+            <div class="player">
+              <span class="role">SF</span>
+              <span class="face"></span>
+              <span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span>
+            </div>
+
+            <div class="player">
+              <span class="role">PF</span>
+              <span class="face"></span>
+              <span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span>
+            </div>
+
+            <div class="player">
+              <span class="role">C</span>
+              <span class="face"></span>
+              <span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>Panchina</span>
+            <em>5/5</em>
+          </div>
+
+          <div class="bench">
+            <div class="bench-card">
+              <span class="bench-face"></span>
+              <span class="bench-copy"><strong>PLAYER</strong><small>6°</small></span>
+              <span class="bench-ovr">--</span>
+            </div>
+
+            <div class="bench-card">
+              <span class="bench-face"></span>
+              <span class="bench-copy"><strong>PLAYER</strong><small>7°</small></span>
+              <span class="bench-ovr">--</span>
+            </div>
+
+            <div class="bench-card">
+              <span class="bench-face"></span>
+              <span class="bench-copy"><strong>PLAYER</strong><small>8°</small></span>
+              <span class="bench-ovr">--</span>
+            </div>
+
+            <div class="bench-card">
+              <span class="bench-face"></span>
+              <span class="bench-copy"><strong>PLAYER</strong><small>9°</small></span>
+              <span class="bench-ovr">--</span>
+            </div>
+
+            <div class="bench-card">
+              <span class="bench-face"></span>
+              <span class="bench-copy"><strong>PLAYER</strong><small>10°</small></span>
+              <span class="bench-ovr">--</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="reorder">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 7h10m0 0-3-3m3 3-3 3M16 17H6m0 0 3-3m-3 3 3 3"/>
+          </svg>
+
+          <span>I titolari multiruolo compatibili possono essere riordinati un'ultima volta.</span>
+        </div>
+
+        <button class="cta">VAI AL COACH</button>
+
+      </div>
+    </section>
+
+
+    <!-- DESKTOP -->
+    <section class="device desktop">
+      <div class="topbar">
+        <span class="logo">BUZ<b>Z</b>ER</span>
+
+        <div class="state">
+          <span>P1</span>
+          <span>BEST 9-0</span>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <div class="hero">
+          <div class="hero-left">
+            <small>Draft completato</small>
+            <h2>ROSA COMPLETA</h2>
+          </div>
+
+          <div class="count">10/10</div>
+        </div>
+
+        <div class="cap">
+          <div class="cap-cell">
+            <small>Tetto</small>
+            <b>$240M</b>
+          </div>
+
+          <div class="cap-cell">
+            <small>Speso</small>
+            <b>$221M</b>
+          </div>
+
+          <div class="cap-cell">
+            <small>Resta</small>
+            <b>$19M</b>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>Titolari</span>
+            <em>5/5</em>
+          </div>
+
+          <div class="five">
+            <div class="player"><span class="role">PG</span><span class="face"></span><span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span></div>
+            <div class="player"><span class="role">SG</span><span class="face"></span><span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span></div>
+            <div class="player"><span class="role">SF</span><span class="face"></span><span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span></div>
+            <div class="player"><span class="role">PF</span><span class="face"></span><span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span></div>
+            <div class="player"><span class="role">C</span><span class="face"></span><span class="meta"><span class="name">PLAYER</span><b class="ovr">--</b></span></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <span>Panchina</span>
+            <em>5/5</em>
+          </div>
+
+          <div class="bench">
+            <div class="bench-card"><span class="bench-face"></span><span class="bench-copy"><strong>PLAYER</strong><small>6°</small></span><span class="bench-ovr">--</span></div>
+            <div class="bench-card"><span class="bench-face"></span><span class="bench-copy"><strong>PLAYER</strong><small>7°</small></span><span class="bench-ovr">--</span></div>
+            <div class="bench-card"><span class="bench-face"></span><span class="bench-copy"><strong>PLAYER</strong><small>8°</small></span><span class="bench-ovr">--</span></div>
+            <div class="bench-card"><span class="bench-face"></span><span class="bench-copy"><strong>PLAYER</strong><small>9°</small></span><span class="bench-ovr">--</span></div>
+            <div class="bench-card"><span class="bench-face"></span><span class="bench-copy"><strong>PLAYER</strong><small>10°</small></span><span class="bench-ovr">--</span></div>
+          </div>
+        </div>
+
+        <div class="reorder">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 7h10m0 0-3-3m3 3-3 3M16 17H6m0 0 3-3m-3 3 3 3"/>
+          </svg>
+
+          <span>I titolari multiruolo compatibili possono essere riordinati un'ultima volta.</span>
+        </div>
+
+        <button class="cta">VAI AL COACH</button>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+</body>
+</html>

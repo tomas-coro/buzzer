@@ -9361,361 +9361,1192 @@ html body dialog#player-icon-picker .player-pick.active{
   }
 }
 
+
 /* =========================================================
-   COACH REAL V4 FINAL LAYOUT
-   Struttura originale verticale, bilanciata sulla viewport.
+   COACH REAL V6 — FINAL RESPONSIVE
+   Desktop: 5 card orizzontali.
+   Mobile: 3 + 2 per dare dignità a foto, nome e OVR.
    ========================================================= */
 
-/* ---------------------------------------------------------
-   BASE
-   --------------------------------------------------------- */
-
 .screen.coach{
-  display:block !important;
-  width:min(900px, calc(100vw - 32px)) !important;
-  max-width:900px !important;
-  margin-inline:auto !important;
-  padding-bottom:12px !important;
+  width:min(900px,calc(100vw - 28px));
+  max-width:900px;
+  margin-inline:auto;
+  padding-bottom:10px;
 }
 
-.screen.coach > *{
-  grid-column:auto !important;
-  grid-row:auto !important;
+/* =========================================================
+   QUINTETTO — BASE
+   ========================================================= */
+
+.coach .ct-five-wrap{
+  margin:10px 0 12px;
+  padding:12px;
+  border:1px solid rgba(70,76,145,.82);
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(17,156,255,.07),transparent 44%),
+    rgba(15,18,55,.76);
 }
 
-.coach .ct-five-wrap,
-.coach .ct-board,
-.coach .ct-prev,
-.coach .cta{
-  width:100%;
+.coach .ct-five-lab{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
 }
 
-/* ---------------------------------------------------------
-   VOLTI
-   Solo giocatore, niente fondale aggiunto.
-   --------------------------------------------------------- */
+.coach .ct-five-lab .t{
+  color:#a3a6ce;
+  font-size:.58rem;
+  font-weight:900;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+
+.coach .ct-five-lab .v{
+  color:#ff6826;
+  font-family:var(--arcade);
+  font-size:.58rem;
+}
+
+.coach .ct-five{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:7px;
+}
+
+.coach .ct-p{
+  position:relative;
+  min-width:0;
+  height:142px;
+  padding:0;
+  overflow:hidden;
+  border:1px solid #424a91;
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(17,156,255,.12),transparent 45%),
+    linear-gradient(180deg,#20265e 0%,#10143a 100%);
+}
+
+.coach .ct-p::before{
+  content:"";
+  position:absolute;
+  z-index:5;
+  inset:0 auto 0 0;
+  width:3px;
+  background:#119cff;
+  box-shadow:0 0 9px rgba(17,156,255,.24);
+}
+
+.coach .ct-p::after{
+  content:"";
+  position:absolute;
+  z-index:2;
+  right:0;
+  bottom:0;
+  left:0;
+  height:50px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7,9,30,0),
+      rgba(7,9,30,.90) 35%,
+      rgba(7,9,30,.98)
+    );
+}
+
+.coach .ct-p .role{
+  position:absolute;
+  z-index:6;
+  top:8px;
+  left:9px;
+  color:var(--bone);
+  font-family:var(--arcade);
+  font-size:.49rem;
+}
 
 .coach .ct-p .ct-face{
+  position:absolute;
+  inset:20px 5px 40px 6px;
+  width:auto;
+  height:auto;
+  aspect-ratio:auto;
+  border:0;
+  border-radius:0;
   background:transparent !important;
 }
 
 .coach .ct-p .ct-face .ph{
   width:100%;
   height:100%;
-  object-fit:contain !important;
-  object-position:center bottom !important;
-  filter:none !important;
+  object-fit:contain;
+  object-position:center bottom;
+  filter:none;
 }
 
-.coach .ct-p .ct-face .ini{
-  background:transparent !important;
+.coach .ct-p-meta{
+  position:absolute;
+  z-index:5;
+  right:0;
+  bottom:0;
+  left:0;
+  min-height:43px;
+  padding:7px 8px 6px 9px;
 }
 
-/* ---------------------------------------------------------
-   DESKTOP
-   Stessa struttura verticale iniziale, ma abbastanza compatta
-   per stare nella schermata.
-   --------------------------------------------------------- */
+.coach .ct-p-copy{
+  display:block;
+  padding-right:36px;
+}
 
-@media (min-width: 521px){
+.coach .ct-p-name{
+  display:block;
+  overflow:hidden;
+  color:var(--bone);
+  font-size:.60rem;
+  font-weight:900;
+  line-height:1.05;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.coach .ct-p-sub{
+  display:block;
+  margin-top:3px;
+  color:#777ba9;
+  font-size:.34rem;
+  font-weight:800;
+  letter-spacing:.07em;
+}
+
+.coach .ct-p-ovr{
+  position:absolute;
+  right:7px;
+  bottom:6px;
+  text-align:right;
+}
+
+.coach .ct-p-ovr b{
+  display:block;
+  font-family:var(--led);
+  font-size:1.38rem;
+  line-height:.9;
+}
+
+.coach .ct-p-ovr small{
+  display:block;
+  margin-top:3px;
+  color:#777ba9;
+  font-size:.31rem;
+  font-weight:900;
+}
+
+.coach .ct-p-ovr.oro b{color:#ffcf4d}
+.coach .ct-p-ovr.arg b{color:#d6dbe6}
+.coach .ct-p-ovr.brz b{color:#c78a5b}
+
+/* =========================================================
+   BOARD COACH
+   ========================================================= */
+
+.coach .ct-board{
+  margin:0 0 12px;
+  padding:11px 12px;
+}
+
+.coach .ct-board .seclab{
+  margin-bottom:8px;
+}
+
+.coach .ct-scout-wrap{
+  margin-bottom:8px;
+}
+
+.coach .ct-scout{
+  padding:8px;
+}
+
+.coach .ct-scout-title{
+  margin-bottom:6px;
+  font-size:.46rem;
+}
+
+.coach .ct-reps{
+  gap:5px;
+}
+
+.coach .ct-rep{
+  padding:7px 2px;
+}
+
+.coach .ct-rep small{
+  font-size:.43rem;
+}
+
+.coach .ct-rep strong{
+  margin-top:4px;
+  font-size:.88rem;
+}
+
+.coach .ct-list{
+  gap:7px;
+}
+
+.coach .ct-row{
+  min-height:86px;
+  padding:9px 11px;
+}
+
+.coach .ct-n{
+  font-size:.87rem;
+}
+
+.coach .ct-tac{
+  font-size:.54rem;
+  line-height:1.2;
+}
+
+.coach .rchip{
+  padding:4px 5px;
+}
+
+/* =========================================================
+   VOTO + CTA
+   ========================================================= */
+
+.coach .ct-prev{
+  min-height:70px;
+  margin:0 0 11px;
+  padding:9px 14px 10px 16px;
+}
+
+.coach .ct-prev .from{
+  font-size:1.42rem;
+}
+
+.coach .ct-prev .to{
+  font-size:1.82rem;
+}
+
+.coach .cta{
+  min-height:64px;
+  margin:0;
+}
+
+/* =========================================================
+   MOBILE — 3 + 2
+   ========================================================= */
+
+@media(max-width:520px){
 
   .screen.coach{
-    width:min(880px, calc(100vw - 40px)) !important;
+    width:calc(100vw - 14px);
+    max-width:none;
   }
 
   .coach .ct-five-wrap{
-    margin:10px 0 12px !important;
-    padding:10px 12px !important;
+    padding:9px;
+    margin-bottom:10px;
   }
 
   .coach .ct-five-lab{
-    margin-bottom:7px !important;
-  }
-
-  .coach .ct-five{
-    gap:7px !important;
-  }
-
-  .coach .ct-p{
-    height:118px !important;
-  }
-
-  .coach .ct-p .ct-face{
-    inset:18px 3px 37px 5px !important;
-  }
-
-  .coach .ct-p-meta{
-    min-height:39px !important;
-    padding:5px 7px 5px 8px !important;
-  }
-
-  .coach .ct-p-copy{
-    padding-right:34px !important;
-  }
-
-  .coach .ct-p-name{
-    font-size:.58rem !important;
-  }
-
-  .coach .ct-p-sub{
-    font-size:.34rem !important;
-  }
-
-  .coach .ct-p-ovr{
-    right:6px !important;
-    bottom:5px !important;
-  }
-
-  .coach .ct-p-ovr b{
-    font-size:1.28rem !important;
-  }
-
-  .coach .ct-board{
-    margin:0 0 12px !important;
-    padding:10px 12px !important;
-  }
-
-  .coach .ct-board .seclab{
-    margin-bottom:7px !important;
-  }
-
-  .coach .ct-scout-wrap{
-    margin-bottom:7px !important;
-  }
-
-  .coach .ct-scout{
-    padding:8px !important;
-  }
-
-  .coach .ct-scout-title{
-    margin-bottom:6px !important;
-    font-size:.47rem !important;
-  }
-
-  .coach .ct-rep{
-    padding:6px 2px !important;
-  }
-
-  .coach .ct-rep strong{
-    margin-top:4px !important;
-    font-size:.86rem !important;
-  }
-
-  .coach .ct-list{
-    gap:6px !important;
-  }
-
-  .coach .ct-row{
-    min-height:82px !important;
-    padding:8px 10px !important;
-  }
-
-  .coach .ct-arrow{
-    width:28px !important;
-    height:20px !important;
-  }
-
-  .coach .ct-n{
-    font-size:.82rem !important;
-  }
-
-  .coach .ct-tac{
-    font-size:.52rem !important;
-    line-height:1.2 !important;
-  }
-
-  .coach .rchip{
-    padding:4px 5px !important;
-  }
-
-  .coach .rchip .cod{
-    font-size:.69rem !important;
-  }
-
-  .coach .rchip .sub{
-    font-size:.40rem !important;
-  }
-
-  .coach .ct-prev{
-    min-height:66px !important;
-    margin:0 0 12px !important;
-    padding:8px 13px 9px 15px !important;
-  }
-
-  .coach .ct-prev .from{
-    font-size:1.38rem !important;
-  }
-
-  .coach .ct-prev .to{
-    font-size:1.72rem !important;
-  }
-
-  .coach .cta{
-    min-height:60px !important;
-    margin:0 !important;
-  }
-
-  .coach .cta span{
-    font-size:1rem !important;
-  }
-}
-
-/* ---------------------------------------------------------
-   MOBILE 375x812
-   Usa il margine verticale rimasto, senza tornare allo scroll.
-   --------------------------------------------------------- */
-
-@media (max-width: 520px){
-
-  .screen.coach{
-    width:calc(100vw - 18px) !important;
-    max-width:none !important;
-    padding-bottom:8px !important;
-  }
-
-  .coach .ct-five-wrap{
-    margin:9px 0 10px !important;
-    padding:9px !important;
-  }
-
-  .coach .ct-five-lab{
-    margin-bottom:7px !important;
+    margin-bottom:7px;
   }
 
   .coach .ct-five-lab .t,
   .coach .ct-five-lab .v{
-    font-size:.51rem !important;
+    font-size:.49rem;
   }
 
+  /*
+   * Sei colonne virtuali:
+   * primi 3 = 2 colonne ciascuno
+   * ultimi 2 centrati sotto.
+   */
   .coach .ct-five{
-    gap:4px !important;
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:5px;
   }
 
   .coach .ct-p{
-    height:108px !important;
+    grid-column:span 2;
+    height:126px;
+  }
+
+  .coach .ct-p:nth-child(4){
+    grid-column:2 / span 2;
+  }
+
+  .coach .ct-p:nth-child(5){
+    grid-column:4 / span 2;
+  }
+
+  .coach .ct-p .role{
+    top:7px;
+    left:8px;
+    font-size:.46rem;
   }
 
   .coach .ct-p .ct-face{
-    inset:17px 2px 34px 4px !important;
+    inset:18px 5px 39px 6px;
   }
 
   .coach .ct-p-meta{
-    min-height:35px !important;
-    padding:5px 5px 5px 7px !important;
+    min-height:42px;
+    padding:6px 7px 6px 8px;
   }
 
   .coach .ct-p-copy{
-    padding-right:27px !important;
+    padding-right:38px;
   }
 
   .coach .ct-p-name{
-    font-size:.47rem !important;
+    font-size:.59rem;
+    line-height:1.05;
   }
 
   .coach .ct-p-sub{
-    font-size:.30rem !important;
+    font-size:.31rem;
   }
 
   .coach .ct-p-ovr{
-    right:4px !important;
-    bottom:5px !important;
+    right:7px;
+    bottom:6px;
   }
 
   .coach .ct-p-ovr b{
-    font-size:1.02rem !important;
+    font-size:1.30rem;
   }
 
   .coach .ct-board{
-    margin:0 0 10px !important;
-    padding:9px !important;
-  }
-
-  .coach .ct-board .seclab{
-    margin-bottom:8px !important;
-  }
-
-  .coach .ct-scout-wrap{
-    margin-bottom:7px !important;
+    padding:9px;
+    margin-bottom:10px;
   }
 
   .coach .ct-scout{
-    padding:7px 6px !important;
-  }
-
-  .coach .ct-scout-title{
-    margin-bottom:6px !important;
-    font-size:.41rem !important;
-  }
-
-  .coach .ct-rep{
-    padding:6px 1px !important;
-  }
-
-  .coach .ct-rep strong{
-    margin-top:4px !important;
-    font-size:.76rem !important;
-  }
-
-  .coach .ct-list{
-    gap:7px !important;
+    padding:7px 6px;
   }
 
   .coach .ct-row{
-    min-height:82px !important;
-    padding:8px 9px !important;
-  }
-
-  .coach .ct-arrow{
-    width:26px !important;
-    height:19px !important;
+    min-height:80px;
+    padding:8px 9px;
   }
 
   .coach .ct-n{
-    font-size:.77rem !important;
+    font-size:.77rem;
   }
 
   .coach .ct-tac{
-    font-size:.49rem !important;
-    line-height:1.2 !important;
-  }
-
-  .coach .rchip{
-    padding:3px 4px !important;
+    font-size:.48rem;
   }
 
   .coach .rchip .cod{
-    font-size:.64rem !important;
+    font-size:.62rem;
   }
 
   .coach .rchip .sub{
-    font-size:.38rem !important;
+    font-size:.36rem;
   }
 
   .coach .ct-prev{
-    min-height:66px !important;
-    margin:0 0 10px !important;
-    padding:8px 11px 9px 13px !important;
+    min-height:64px;
+    margin-bottom:10px;
   }
 
   .coach .ct-prev .lab{
-    max-width:98px !important;
-    font-size:.47rem !important;
+    font-size:.45rem;
   }
 
   .coach .ct-prev .from{
-    font-size:1.28rem !important;
+    font-size:1.25rem;
   }
 
   .coach .ct-prev .to{
-    font-size:1.62rem !important;
+    font-size:1.58rem;
   }
 
   .coach .cta{
-    min-height:62px !important;
-    margin:0 !important;
+    min-height:60px;
+  }
+}
+
+/* Telefoni abbastanza alti: usiamo lo spazio, senza allungare inutilmente. */
+@media(max-width:520px) and (min-height:800px){
+
+  .coach .ct-p{
+    height:132px;
   }
 
-  .coach .cta span{
-    font-size:.98rem !important;
+  .coach .ct-row{
+    min-height:83px;
+  }
+
+  .coach .ct-prev{
+    min-height:67px;
+  }
+
+  .coach .cta{
+    min-height:63px;
+  }
+}
+
+
+/* =========================================================
+   COACH REAL V6 — FINAL RESPONSIVE
+   Desktop: 5 card orizzontali.
+   Mobile: 3 + 2 per dare dignità a foto, nome e OVR.
+   ========================================================= */
+
+.screen.coach{
+  width:min(900px,calc(100vw - 28px));
+  max-width:900px;
+  margin-inline:auto;
+  padding-bottom:10px;
+}
+
+/* =========================================================
+   QUINTETTO — BASE
+   ========================================================= */
+
+.coach .ct-five-wrap{
+  margin:10px 0 12px;
+  padding:12px;
+  border:1px solid rgba(70,76,145,.82);
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(17,156,255,.07),transparent 44%),
+    rgba(15,18,55,.76);
+}
+
+.coach .ct-five-lab{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+}
+
+.coach .ct-five-lab .t{
+  color:#a3a6ce;
+  font-size:.58rem;
+  font-weight:900;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+
+.coach .ct-five-lab .v{
+  color:#ff6826;
+  font-family:var(--arcade);
+  font-size:.58rem;
+}
+
+.coach .ct-five{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:7px;
+}
+
+.coach .ct-p{
+  position:relative;
+  min-width:0;
+  height:142px;
+  padding:0;
+  overflow:hidden;
+  border:1px solid #424a91;
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(17,156,255,.12),transparent 45%),
+    linear-gradient(180deg,#20265e 0%,#10143a 100%);
+}
+
+.coach .ct-p::before{
+  content:"";
+  position:absolute;
+  z-index:5;
+  inset:0 auto 0 0;
+  width:3px;
+  background:#119cff;
+  box-shadow:0 0 9px rgba(17,156,255,.24);
+}
+
+.coach .ct-p::after{
+  content:"";
+  position:absolute;
+  z-index:2;
+  right:0;
+  bottom:0;
+  left:0;
+  height:50px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7,9,30,0),
+      rgba(7,9,30,.90) 35%,
+      rgba(7,9,30,.98)
+    );
+}
+
+.coach .ct-p .role{
+  position:absolute;
+  z-index:6;
+  top:8px;
+  left:9px;
+  color:var(--bone);
+  font-family:var(--arcade);
+  font-size:.49rem;
+}
+
+.coach .ct-p .ct-face{
+  position:absolute;
+  inset:20px 5px 40px 6px;
+  width:auto;
+  height:auto;
+  aspect-ratio:auto;
+  border:0;
+  border-radius:0;
+  background:transparent !important;
+}
+
+.coach .ct-p .ct-face .ph{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center bottom;
+  filter:none;
+}
+
+.coach .ct-p-meta{
+  position:absolute;
+  z-index:5;
+  right:0;
+  bottom:0;
+  left:0;
+  min-height:43px;
+  padding:7px 8px 6px 9px;
+}
+
+.coach .ct-p-copy{
+  display:block;
+  padding-right:36px;
+}
+
+.coach .ct-p-name{
+  display:block;
+  overflow:hidden;
+  color:var(--bone);
+  font-size:.60rem;
+  font-weight:900;
+  line-height:1.05;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.coach .ct-p-sub{
+  display:block;
+  margin-top:3px;
+  color:#777ba9;
+  font-size:.34rem;
+  font-weight:800;
+  letter-spacing:.07em;
+}
+
+.coach .ct-p-ovr{
+  position:absolute;
+  right:7px;
+  bottom:6px;
+  text-align:right;
+}
+
+.coach .ct-p-ovr b{
+  display:block;
+  font-family:var(--led);
+  font-size:1.38rem;
+  line-height:.9;
+}
+
+.coach .ct-p-ovr small{
+  display:block;
+  margin-top:3px;
+  color:#777ba9;
+  font-size:.31rem;
+  font-weight:900;
+}
+
+.coach .ct-p-ovr.oro b{color:#ffcf4d}
+.coach .ct-p-ovr.arg b{color:#d6dbe6}
+.coach .ct-p-ovr.brz b{color:#c78a5b}
+
+/* =========================================================
+   BOARD COACH
+   ========================================================= */
+
+.coach .ct-board{
+  margin:0 0 12px;
+  padding:11px 12px;
+}
+
+.coach .ct-board .seclab{
+  margin-bottom:8px;
+}
+
+.coach .ct-scout-wrap{
+  margin-bottom:8px;
+}
+
+.coach .ct-scout{
+  padding:8px;
+}
+
+.coach .ct-scout-title{
+  margin-bottom:6px;
+  font-size:.46rem;
+}
+
+.coach .ct-reps{
+  gap:5px;
+}
+
+.coach .ct-rep{
+  padding:7px 2px;
+}
+
+.coach .ct-rep small{
+  font-size:.43rem;
+}
+
+.coach .ct-rep strong{
+  margin-top:4px;
+  font-size:.88rem;
+}
+
+.coach .ct-list{
+  gap:7px;
+}
+
+.coach .ct-row{
+  min-height:86px;
+  padding:9px 11px;
+}
+
+.coach .ct-n{
+  font-size:.87rem;
+}
+
+.coach .ct-tac{
+  font-size:.54rem;
+  line-height:1.2;
+}
+
+.coach .rchip{
+  padding:4px 5px;
+}
+
+/* =========================================================
+   VOTO + CTA
+   ========================================================= */
+
+.coach .ct-prev{
+  min-height:70px;
+  margin:0 0 11px;
+  padding:9px 14px 10px 16px;
+}
+
+.coach .ct-prev .from{
+  font-size:1.42rem;
+}
+
+.coach .ct-prev .to{
+  font-size:1.82rem;
+}
+
+.coach .cta{
+  min-height:64px;
+  margin:0;
+}
+
+/* =========================================================
+   MOBILE — 3 + 2
+   ========================================================= */
+
+@media(max-width:520px){
+
+  .screen.coach{
+    width:calc(100vw - 14px);
+    max-width:none;
+  }
+
+  .coach .ct-five-wrap{
+    padding:9px;
+    margin-bottom:10px;
+  }
+
+  .coach .ct-five-lab{
+    margin-bottom:7px;
+  }
+
+  .coach .ct-five-lab .t,
+  .coach .ct-five-lab .v{
+    font-size:.49rem;
+  }
+
+  /*
+   * Sei colonne virtuali:
+   * primi 3 = 2 colonne ciascuno
+   * ultimi 2 centrati sotto.
+   */
+  .coach .ct-five{
+    grid-template-columns:repeat(6,minmax(0,1fr));
+    gap:5px;
+  }
+
+  .coach .ct-p{
+    grid-column:span 2;
+    height:126px;
+  }
+
+  .coach .ct-p:nth-child(4){
+    grid-column:2 / span 2;
+  }
+
+  .coach .ct-p:nth-child(5){
+    grid-column:4 / span 2;
+  }
+
+  .coach .ct-p .role{
+    top:7px;
+    left:8px;
+    font-size:.46rem;
+  }
+
+  .coach .ct-p .ct-face{
+    inset:18px 5px 39px 6px;
+  }
+
+  .coach .ct-p-meta{
+    min-height:42px;
+    padding:6px 7px 6px 8px;
+  }
+
+  .coach .ct-p-copy{
+    padding-right:38px;
+  }
+
+  .coach .ct-p-name{
+    font-size:.59rem;
+    line-height:1.05;
+  }
+
+  .coach .ct-p-sub{
+    font-size:.31rem;
+  }
+
+  .coach .ct-p-ovr{
+    right:7px;
+    bottom:6px;
+  }
+
+  .coach .ct-p-ovr b{
+    font-size:1.30rem;
+  }
+
+  .coach .ct-board{
+    padding:9px;
+    margin-bottom:10px;
+  }
+
+  .coach .ct-scout{
+    padding:7px 6px;
+  }
+
+  .coach .ct-row{
+    min-height:80px;
+    padding:8px 9px;
+  }
+
+  .coach .ct-n{
+    font-size:.77rem;
+  }
+
+  .coach .ct-tac{
+    font-size:.48rem;
+  }
+
+  .coach .rchip .cod{
+    font-size:.62rem;
+  }
+
+  .coach .rchip .sub{
+    font-size:.36rem;
+  }
+
+  .coach .ct-prev{
+    min-height:64px;
+    margin-bottom:10px;
+  }
+
+  .coach .ct-prev .lab{
+    font-size:.45rem;
+  }
+
+  .coach .ct-prev .from{
+    font-size:1.25rem;
+  }
+
+  .coach .ct-prev .to{
+    font-size:1.58rem;
+  }
+
+  .coach .cta{
+    min-height:60px;
+  }
+}
+
+/* Telefoni abbastanza alti: usiamo lo spazio, senza allungare inutilmente. */
+@media(max-width:520px) and (min-height:800px){
+
+  .coach .ct-p{
+    height:132px;
+  }
+
+  .coach .ct-row{
+    min-height:83px;
+  }
+
+  .coach .ct-prev{
+    min-height:67px;
+  }
+
+  .coach .cta{
+    min-height:63px;
+  }
+}
+
+/* =========================================================
+   COACH REAL V11 — FORMATION BOARD POLISH
+   ========================================================= */
+
+.coach .ct-half-court{
+  position:relative;
+  height:276px;
+  overflow:hidden;
+  border:1px solid #41498e;
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(255,207,51,.045),transparent 31%),
+    radial-gradient(circle at 50% 70%,rgba(17,156,255,.045),transparent 46%),
+    #10143a;
+}
+
+.coach .ct-court-lines{
+  position:absolute;
+  inset:0;
+  opacity:.40;
+  pointer-events:none;
+}
+
+.coach .ct-court-lines::before{
+  content:"";
+  position:absolute;
+  top:-82px;
+  left:50%;
+  width:160px;
+  height:160px;
+  transform:translateX(-50%);
+  border:2px solid #565e9a;
+  border-radius:50%;
+}
+
+.coach .ct-court-lines::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:50%;
+  width:124px;
+  height:94px;
+  transform:translateX(-50%);
+  border:2px solid #565e9a;
+  border-top:0;
+}
+
+/* player marker */
+
+.coach .ct-court-player{
+  position:absolute;
+  z-index:2;
+  width:108px;
+  min-height:68px;
+  padding:35px 6px 6px;
+  border:1px solid rgba(62,70,139,.55);
+  border-radius:9px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(18,23,63,.72),
+      rgba(10,13,43,.92)
+    );
+  box-shadow:0 6px 15px rgba(0,0,0,.14);
+  text-align:center;
+}
+
+.coach .ct-court-player::after{
+  content:"";
+  position:absolute;
+  right:24px;
+  bottom:-1px;
+  left:24px;
+  height:2px;
+  border-radius:2px 2px 0 0;
+  background:#119cff;
+  opacity:.78;
+}
+
+.coach .ct-court-face{
+  position:absolute;
+  top:-32px;
+  left:50%;
+  width:66px;
+  height:66px;
+  transform:translateX(-50%);
+  overflow:hidden;
+  border:2px solid #5560b1;
+  border-radius:50%;
+  background:#171c4b;
+  box-shadow:
+    0 0 0 3px #10143a,
+    0 6px 12px rgba(0,0,0,.22);
+}
+
+.coach .ct-court-face .ct-face{
+  width:100%;
+  height:100%;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+}
+
+.coach .ct-court-face .ct-face .ph{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center bottom;
+  filter:none;
+}
+
+.coach .ct-court-role{
+  display:block;
+  margin:0 0 2px;
+  color:#7f84ad;
+  font-family:var(--arcade);
+  font-size:.32rem;
+  letter-spacing:.05em;
+}
+
+.coach .ct-court-name{
+  display:block;
+  overflow:hidden;
+  color:var(--bone);
+  font-size:.56rem;
+  font-weight:1000;
+  line-height:1.05;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.coach .ct-court-ovr{
+  display:block;
+  margin-top:4px;
+  font-family:var(--led);
+  font-size:1.14rem;
+  font-weight:900;
+  line-height:.85;
+}
+
+.coach .ct-court-ovr.oro{color:#ffcf4d}
+.coach .ct-court-ovr.arg{color:#d8dbe8}
+.coach .ct-court-ovr.brz{color:#c9895a}
+
+/* tighter formation */
+
+.coach .ct-court-player.pf{
+  top:43px;
+  left:22%;
+}
+
+.coach .ct-court-player.c{
+  top:43px;
+  right:22%;
+}
+
+.coach .ct-court-player.sf{
+  top:133px;
+  left:50%;
+  transform:translateX(-50%);
+}
+
+.coach .ct-court-player.pg{
+  bottom:12px;
+  left:8%;
+}
+
+.coach .ct-court-player.sg{
+  bottom:12px;
+  right:8%;
+}
+
+/* desktop */
+
+@media(min-width:900px){
+
+  .screen.coach{
+    width:min(940px,calc(100vw - 40px)) !important;
+    max-width:940px !important;
+  }
+
+  .coach .ct-half-court{
+    height:280px;
+  }
+
+  .coach .ct-court-player{
+    width:118px;
+    min-height:72px;
+    padding:38px 7px 7px;
+  }
+
+  .coach .ct-court-face{
+    top:-35px;
+    width:72px;
+    height:72px;
+  }
+
+  .coach .ct-court-name{
+    font-size:.62rem;
+  }
+
+  .coach .ct-court-ovr{
+    font-size:1.28rem;
+  }
+
+  .coach .ct-court-player.pf{
+    top:44px;
+    left:24%;
+  }
+
+  .coach .ct-court-player.c{
+    top:44px;
+    right:24%;
+  }
+
+  .coach .ct-court-player.sf{
+    top:137px;
+  }
+
+  .coach .ct-court-player.pg{
+    bottom:13px;
+    left:10%;
+  }
+
+  .coach .ct-court-player.sg{
+    bottom:13px;
+    right:10%;
+  }
+}
+
+/* mobile */
+
+@media(max-width:520px){
+
+  .coach .ct-five-wrap{
+    padding:8px !important;
+  }
+
+  .coach .ct-half-court{
+    height:238px;
+  }
+
+  .coach .ct-court-lines::before{
+    top:-66px;
+    width:132px;
+    height:132px;
+  }
+
+  .coach .ct-court-lines::after{
+    width:101px;
+    height:77px;
+  }
+
+  .coach .ct-court-player{
+    width:84px;
+    min-height:61px;
+    padding:31px 4px 5px;
+    border-radius:7px;
+  }
+
+  .coach .ct-court-face{
+    top:-28px;
+    width:58px;
+    height:58px;
+    border-width:1px;
+    box-shadow:
+      0 0 0 3px #10143a,
+      0 5px 9px rgba(0,0,0,.20);
+  }
+
+  .coach .ct-court-role{
+    font-size:.28rem;
+  }
+
+  .coach .ct-court-name{
+    font-size:.46rem;
+  }
+
+  .coach .ct-court-ovr{
+    margin-top:3px;
+    font-size:.96rem;
+  }
+
+  .coach .ct-court-player.pf{
+    top:38px;
+    left:9%;
+  }
+
+  .coach .ct-court-player.c{
+    top:38px;
+    right:9%;
+  }
+
+  .coach .ct-court-player.sf{
+    top:119px;
+  }
+
+  .coach .ct-court-player.pg{
+    bottom:10px;
+    left:2%;
+  }
+
+  .coach .ct-court-player.sg{
+    bottom:10px;
+    right:2%;
+  }
+}
+
+@media(max-width:380px){
+
+  .coach .ct-half-court{
+    height:232px;
+  }
+
+  .coach .ct-court-player{
+    width:80px;
+  }
+
+  .coach .ct-court-face{
+    width:55px;
+    height:55px;
+  }
+
+  .coach .ct-court-name{
+    font-size:.44rem;
   }
 }

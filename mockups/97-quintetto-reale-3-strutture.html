@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUZZER · Quintetto · 3 strutture reali</title>
+
+<style>
+:root{
+  --ink:#090b23;
+  --panel:#10143a;
+  --panel2:#171b49;
+  --line:#3e4588;
+  --line2:#565da5;
+  --bone:#f2eddf;
+  --dim:#9599bf;
+  --yellow:#ffcf33;
+  --orange:#ff6826;
+  --blue:#119cff;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(17,156,255,.07),transparent 30%),
+    var(--ink);
+  color:var(--bone);
+  font-family:Arial,sans-serif;
+}
+
+.page{
+  max-width:1450px;
+  margin:auto;
+  padding:28px 18px 60px;
+}
+
+h1{
+  margin:0 0 24px;
+  color:#999dc3;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+
+.option{
+  margin-bottom:34px;
+  padding:16px;
+  border:1px solid #30366f;
+  border-radius:18px;
+  background:#0d1032;
+}
+
+.option-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-end;
+  margin-bottom:14px;
+}
+
+.option-head strong{
+  color:var(--yellow);
+  font-size:14px;
+}
+
+.option-head span{
+  color:#8589b2;
+  font-size:10px;
+}
+
+.compare{
+  display:grid;
+  grid-template-columns:375px minmax(0,1fr);
+  gap:24px;
+}
+
+.frame{
+  padding:13px;
+  border:1px solid #363d7c;
+  border-radius:15px;
+  background:#101338;
+}
+
+.label{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:10px;
+  color:#a6a9cd;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.label b{
+  color:var(--orange);
+}
+
+.face{
+  object-fit:contain;
+  object-position:center bottom;
+}
+
+/* ========================================================
+   A — LINEUP BOARD
+   ======================================================== */
+
+.lineup{
+  display:grid;
+  gap:5px;
+}
+
+.line-row{
+  position:relative;
+  min-height:61px;
+  display:grid;
+  grid-template-columns:36px 58px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:5px 10px 5px 7px;
+  overflow:hidden;
+  border:1px solid #383f80;
+  border-radius:10px;
+  background:
+    linear-gradient(90deg,rgba(17,156,255,.07),transparent 40%),
+    #151943;
+}
+
+.line-row::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:3px;
+  background:var(--blue);
+}
+
+.line-role{
+  color:#d9dae7;
+  font-size:11px;
+  font-weight:1000;
+  text-align:center;
+}
+
+.line-face{
+  position:relative;
+  width:58px;
+  height:54px;
+  overflow:hidden;
+}
+
+.line-face img{
+  width:100%;
+  height:100%;
+}
+
+.line-copy{
+  min-width:0;
+}
+
+.line-first{
+  display:block;
+  color:#8f94bd;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.07em;
+}
+
+.line-last{
+  display:block;
+  margin-top:2px;
+  overflow:hidden;
+  font-size:13px;
+  font-weight:1000;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.line-score{
+  min-width:42px;
+  text-align:right;
+}
+
+.line-score b{
+  display:block;
+  color:var(--yellow);
+  font-family:monospace;
+  font-size:23px;
+  line-height:.9;
+}
+
+.line-score small{
+  color:#757aa6;
+  font-size:6px;
+  font-weight:900;
+}
+
+.desktop .lineup{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:7px;
+}
+
+.desktop .line-row{
+  min-height:128px;
+  grid-template-columns:1fr auto;
+  grid-template-rows:auto 1fr auto;
+  padding:9px;
+}
+
+.desktop .line-role{
+  grid-column:1;
+  grid-row:1;
+  text-align:left;
+}
+
+.desktop .line-face{
+  grid-column:1 / -1;
+  grid-row:2;
+  width:100%;
+  height:70px;
+}
+
+.desktop .line-copy{
+  grid-column:1;
+  grid-row:3;
+}
+
+.desktop .line-score{
+  grid-column:2;
+  grid-row:3;
+}
+
+/* ========================================================
+   B — HALF COURT
+   ======================================================== */
+
+.court{
+  position:relative;
+  height:385px;
+  overflow:hidden;
+  border:1px solid #41488d;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 50% 6%,rgba(255,207,51,.05),transparent 30%),
+    #12163e;
+}
+
+.court-lines{
+  position:absolute;
+  inset:0;
+  opacity:.33;
+}
+
+.court-lines::before{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  left:50%;
+  top:-90px;
+  transform:translateX(-50%);
+  border:2px solid #62699c;
+  border-radius:50%;
+}
+
+.court-lines::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  width:118px;
+  height:110px;
+  transform:translateX(-50%);
+  border:2px solid #62699c;
+  border-top:0;
+}
+
+.court-card{
+  position:absolute;
+  width:94px;
+  text-align:center;
+}
+
+.court-card.pg{left:8%;bottom:15px}
+.court-card.sg{right:8%;bottom:15px}
+.court-card.sf{left:50%;top:150px;transform:translateX(-50%)}
+.court-card.pf{left:16%;top:48px}
+.court-card.c{right:16%;top:48px}
+
+.court-face{
+  width:72px;
+  height:72px;
+  margin:auto;
+  overflow:hidden;
+  border:2px solid #414a98;
+  border-radius:50%;
+  background:#192053;
+}
+
+.court-face img{
+  width:100%;
+  height:100%;
+}
+
+.court-role{
+  display:inline-block;
+  margin-top:5px;
+  color:var(--blue);
+  font-size:7px;
+  font-weight:1000;
+}
+
+.court-name{
+  display:block;
+  margin-top:2px;
+  overflow:hidden;
+  font-size:9px;
+  font-weight:1000;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.court-ovr{
+  display:block;
+  margin-top:1px;
+  color:var(--yellow);
+  font-family:monospace;
+  font-size:18px;
+  font-weight:900;
+}
+
+.desktop .court{
+  height:330px;
+}
+
+.desktop .court-card{
+  width:150px;
+}
+
+.desktop .court-face{
+  width:92px;
+  height:92px;
+}
+
+.desktop .court-card.pg{left:8%;bottom:18px}
+.desktop .court-card.sg{right:8%;bottom:18px}
+.desktop .court-card.sf{top:135px}
+.desktop .court-card.pf{left:22%;top:28px}
+.desktop .court-card.c{right:22%;top:28px}
+
+.desktop .court-name{
+  font-size:12px;
+}
+
+.desktop .court-ovr{
+  font-size:23px;
+}
+
+/* ========================================================
+   C — ROSTER TICKETS
+   ======================================================== */
+
+.tickets{
+  display:grid;
+  gap:6px;
+}
+
+.ticket{
+  position:relative;
+  min-height:70px;
+  display:grid;
+  grid-template-columns:38px 62px minmax(0,1fr) auto;
+  align-items:center;
+  gap:8px;
+  padding:5px 9px 5px 6px;
+  overflow:hidden;
+  border:1px solid #414787;
+  border-radius:8px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      rgba(255,255,255,.015) 0,
+      rgba(255,255,255,.015) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    #151942;
+}
+
+.ticket::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:4px;
+  background:var(--blue);
+}
+
+.ticket-role{
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  margin:auto;
+  border:1px solid #424b96;
+  border-radius:6px;
+  color:var(--bone);
+  font-size:10px;
+  font-weight:1000;
+  background:#111538;
+}
+
+.ticket-face{
+  width:62px;
+  height:60px;
+  overflow:hidden;
+}
+
+.ticket-face img{
+  width:100%;
+  height:100%;
+}
+
+.ticket-copy{
+  min-width:0;
+}
+
+.ticket-name{
+  display:block;
+  overflow:hidden;
+  font-size:12px;
+  font-weight:1000;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.ticket-sub{
+  display:block;
+  margin-top:4px;
+  color:#858ab2;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+
+.ticket-score{
+  min-width:44px;
+  text-align:right;
+}
+
+.ticket-score b{
+  display:block;
+  color:var(--yellow);
+  font-family:monospace;
+  font-size:24px;
+  line-height:.9;
+}
+
+.ticket-score small{
+  color:#777ca6;
+  font-size:6px;
+}
+
+.desktop .tickets{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:7px;
+}
+
+.desktop .ticket{
+  min-height:136px;
+  grid-template-columns:1fr auto;
+  grid-template-rows:auto 1fr auto;
+  padding:8px;
+}
+
+.desktop .ticket-role{
+  grid-row:1;
+  grid-column:1;
+  margin:0;
+}
+
+.desktop .ticket-face{
+  grid-column:1 / -1;
+  grid-row:2;
+  width:100%;
+  height:72px;
+}
+
+.desktop .ticket-copy{
+  grid-column:1;
+  grid-row:3;
+}
+
+.desktop .ticket-score{
+  grid-column:2;
+  grid-row:3;
+}
+
+.desktop .ticket-name{
+  font-size:11px;
+}
+
+@media(max-width:850px){
+  .compare{
+    grid-template-columns:1fr;
+  }
+
+  .frame{
+    width:min(375px,100%);
+    margin:auto;
+  }
+
+  .frame.desktop{
+    width:100%;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<h1>BUZZER · Mockup 97 · Quintetto reale</h1>
+
+<!-- A -->
+<section class="option">
+  <div class="option-head">
+    <strong>A · LINEUP BOARD</strong>
+    <span>leggibilità massima / minimo ingombro</span>
+  </div>
+
+  <div class="compare">
+    <div class="frame">
+      <div class="label"><span>Quintetto titolare</span><b>Rosa completa · 10/10</b></div>
+
+      <div class="lineup">
+        <div class="line-row"><span class="line-role">PG</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/steve-francis.webp"></span><span class="line-copy"><small class="line-first">STEVE</small><strong class="line-last">FRANCIS</strong></span><span class="line-score"><b>87</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">SG</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/brandon-roy.webp"></span><span class="line-copy"><small class="line-first">BRANDON</small><strong class="line-last">ROY</strong></span><span class="line-score"><b>89</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">SF</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/iman-shumpert.webp"></span><span class="line-copy"><small class="line-first">IMAN</small><strong class="line-last">SHUMPERT</strong></span><span class="line-score"><b>76</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">PF</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/hakeem-olajuwon.webp"></span><span class="line-copy"><small class="line-first">HAKEEM</small><strong class="line-last">OLAJUWON</strong></span><span class="line-score"><b>97</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">C</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/deandre-jordan.webp"></span><span class="line-copy"><small class="line-first">DEANDRE</small><strong class="line-last">JORDAN</strong></span><span class="line-score"><b>86</b><small>OVR</small></span></div>
+      </div>
+    </div>
+
+    <div class="frame desktop">
+      <div class="label"><span>Quintetto titolare</span><b>Rosa completa · 10/10</b></div>
+      <div class="lineup">
+        <div class="line-row"><span class="line-role">PG</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/steve-francis.webp"></span><span class="line-copy"><small class="line-first">STEVE</small><strong class="line-last">FRANCIS</strong></span><span class="line-score"><b>87</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">SG</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/brandon-roy.webp"></span><span class="line-copy"><small class="line-first">BRANDON</small><strong class="line-last">ROY</strong></span><span class="line-score"><b>89</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">SF</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/iman-shumpert.webp"></span><span class="line-copy"><small class="line-first">IMAN</small><strong class="line-last">SHUMPERT</strong></span><span class="line-score"><b>76</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">PF</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/hakeem-olajuwon.webp"></span><span class="line-copy"><small class="line-first">HAKEEM</small><strong class="line-last">OLAJUWON</strong></span><span class="line-score"><b>97</b><small>OVR</small></span></div>
+        <div class="line-row"><span class="line-role">C</span><span class="line-face"><img class="face" src="../prototype/imbattuto/assets/volti/deandre-jordan.webp"></span><span class="line-copy"><small class="line-first">DEANDRE</small><strong class="line-last">JORDAN</strong></span><span class="line-score"><b>86</b><small>OVR</small></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- B -->
+<section class="option">
+  <div class="option-head">
+    <strong>B · HALF COURT</strong>
+    <span>la più caratteristica</span>
+  </div>
+
+  <div class="compare">
+    <div class="frame">
+      <div class="label"><span>Quintetto titolare</span><b>Rosa completa · 10/10</b></div>
+      <div class="court">
+        <span class="court-lines"></span>
+
+        <div class="court-card pg"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/steve-francis.webp"></div><small class="court-role">PG</small><strong class="court-name">FRANCIS</strong><b class="court-ovr">87</b></div>
+        <div class="court-card sg"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/brandon-roy.webp"></div><small class="court-role">SG</small><strong class="court-name">ROY</strong><b class="court-ovr">89</b></div>
+        <div class="court-card sf"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/iman-shumpert.webp"></div><small class="court-role">SF</small><strong class="court-name">SHUMPERT</strong><b class="court-ovr">76</b></div>
+        <div class="court-card pf"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/hakeem-olajuwon.webp"></div><small class="court-role">PF</small><strong class="court-name">OLAJUWON</strong><b class="court-ovr">97</b></div>
+        <div class="court-card c"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/deandre-jordan.webp"></div><small class="court-role">C</small><strong class="court-name">JORDAN</strong><b class="court-ovr">86</b></div>
+      </div>
+    </div>
+
+    <div class="frame desktop">
+      <div class="label"><span>Quintetto titolare</span><b>Rosa completa · 10/10</b></div>
+      <div class="court">
+        <span class="court-lines"></span>
+
+        <div class="court-card pg"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/steve-francis.webp"></div><small class="court-role">PG</small><strong class="court-name">FRANCIS</strong><b class="court-ovr">87</b></div>
+        <div class="court-card sg"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/brandon-roy.webp"></div><small class="court-role">SG</small><strong class="court-name">ROY</strong><b class="court-ovr">89</b></div>
+        <div class="court-card sf"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/iman-shumpert.webp"></div><small class="court-role">SF</small><strong class="court-name">SHUMPERT</strong><b class="court-ovr">76</b></div>
+        <div class="court-card pf"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/hakeem-olajuwon.webp"></div><small class="court-role">PF</small><strong class="court-name">OLAJUWON</strong><b class="court-ovr">97</b></div>
+        <div class="court-card c"><div class="court-face"><img class="face" src="../prototype/imbattuto/assets/volti/deandre-jordan.webp"></div><small class="court-role">C</small><strong class="court-name">JORDAN</strong><b class="court-ovr">86</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- C -->
+<section class="option">
+  <div class="option-head">
+    <strong>C · ROSTER TICKETS</strong>
+    <span>Cabina 90 / arcade</span>
+  </div>
+
+  <div class="compare">
+    <div class="frame">
+      <div class="label"><span>Quintetto titolare</span><b>Rosa completa · 10/10</b></div>
+
+      <div class="tickets">
+        <div class="ticket"><span class="ticket-role">PG</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/steve-francis.webp"></span><span class="ticket-copy"><strong class="ticket-name">Steve Francis</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>87</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">SG</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/brandon-roy.webp"></span><span class="ticket-copy"><strong class="ticket-name">Brandon Roy</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>89</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">SF</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/iman-shumpert.webp"></span><span class="ticket-copy"><strong class="ticket-name">Iman Shumpert</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>76</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">PF</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/hakeem-olajuwon.webp"></span><span class="ticket-copy"><strong class="ticket-name">Hakeem Olajuwon</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>97</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">C</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/deandre-jordan.webp"></span><span class="ticket-copy"><strong class="ticket-name">DeAndre Jordan</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>86</b><small>OVR</small></span></div>
+      </div>
+    </div>
+
+    <div class="frame desktop">
+      <div class="label"><span>Quintetto titolare</span><b>Rosa completa · 10/10</b></div>
+
+      <div class="tickets">
+        <div class="ticket"><span class="ticket-role">PG</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/steve-francis.webp"></span><span class="ticket-copy"><strong class="ticket-name">Steve Francis</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>87</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">SG</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/brandon-roy.webp"></span><span class="ticket-copy"><strong class="ticket-name">Brandon Roy</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>89</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">SF</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/iman-shumpert.webp"></span><span class="ticket-copy"><strong class="ticket-name">Iman Shumpert</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>76</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">PF</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/hakeem-olajuwon.webp"></span><span class="ticket-copy"><strong class="ticket-name">Hakeem Olajuwon</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>97</b><small>OVR</small></span></div>
+        <div class="ticket"><span class="ticket-role">C</span><span class="ticket-face"><img class="face" src="../prototype/imbattuto/assets/volti/deandre-jordan.webp"></span><span class="ticket-copy"><strong class="ticket-name">DeAndre Jordan</strong><small class="ticket-sub">STARTING FIVE</small></span><span class="ticket-score"><b>86</b><small>OVR</small></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

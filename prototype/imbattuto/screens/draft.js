@@ -222,57 +222,174 @@ export function render(ctx) {
   el.className = "screen draft draft-free";
 
   if (!draftView) {
-    // Rosa completa via autobuild (app.js, case "assign" con auto): niente
-    // candidati da mostrare, si vede la board piena un istante e si aspetta
-    // il click su "Vai al coach" - niente timer automatico (decisione grill-me
-    // 11/09/2026, vedi docs/superpowers/specs/2026-09-11-autobuild-draft-live-design.md).
+    // Rosa completa: schermata finale condivisa tra draft manuale e automatico.
+    // Nessuna logica di draft cambia qui: la rosa è già completa e lo state del
+    // motore è già passato a "coach". Questa UI serve solo come ultimo riepilogo.
+
     const titolariSlots = SLOTS.filter((s) => s.tipo === TITOLARE);
     const pancaSlots = SLOTS.filter((s) => s.tipo === PANCA);
-    const cellHTML = (slot) => {
+
+    const restoTetto = state.tetto - state.speso;
+
+    const starterHTML = (slot) => {
       const c = cartaIn(state.rosa, slot);
-      const isT = slot.tipo === TITOLARE;
-      const label = isT ? slot.ruolo : `${slot.posto}°`;
-      return `<button class="dslot full ${isT ? "titolare" : "riserva"}" data-slot="${chiaveSlot(slot)}" data-filled="1" type="button" aria-label="Scheda ${esc(c.name)}">
-        <span class="ds-face">${faceHTML(c, { ovr: rv.ovr ? c.ovr : null, role: isT ? slot.ruolo : ruoloDi(c, slot) })}</span></button>`;
+
+      return `
+        <button class="df-starter"
+                type="button"
+                data-slot="${chiaveSlot(slot)}"
+                aria-label="Scheda ${esc(c.name)}">
+
+          <span class="df-role">${esc(slot.ruolo)}</span>
+
+          <span class="df-face">
+            ${faceHTML(c, {
+              ovr: rv.ovr ? c.ovr : null,
+              role: null,
+            })}
+          </span>
+
+          <span class="df-starter-foot">
+            <span class="df-name">${esc(c.name)}</span>
+            ${rv.ovr
+              ? `<strong class="df-ovr ${fascia(c.ovr)}">${c.ovr}</strong>`
+              : `<strong class="df-ovr hidden">?</strong>`}
+          </span>
+        </button>`;
     };
+
+    const benchHTML = (slot) => {
+      const c = cartaIn(state.rosa, slot);
+
+      return `
+        <button class="df-bench"
+                type="button"
+                data-slot="${chiaveSlot(slot)}"
+                aria-label="Scheda ${esc(c.name)}">
+
+          <span class="df-bench-face">
+            ${faceHTML(c, {
+              ovr: null,
+              role: null,
+            })}
+          </span>
+
+          <span class="df-bench-copy">
+            <strong>${esc(c.name)}</strong>
+            <small>${slot.posto}° uomo</small>
+          </span>
+
+          ${rv.ovr
+            ? `<b class="df-bench-ovr ${fascia(c.ovr)}">${c.ovr}</b>`
+            : `<b class="df-bench-ovr hidden">?</b>`}
+        </button>`;
+    };
+
+    el.classList.add("draft-final");
+
     el.innerHTML = `
       ${appHeader(state)}
-      <div class="court-block">
-        <div class="seclab"><span>La tua rosa · 10/10</span></div>
-        <div class="dcourt">
-          <div class="dcrow-lab">Titolari</div>
-          ${titolariSlots.map(cellHTML).join("")}
-          <div class="dcrow-lab">Panchina</div>
-          ${pancaSlots.map(cellHTML).join("")}
+
+      <div class="draft-final-shell">
+
+        <div class="df-head">
+          <span>
+            <small>Draft completato</small>
+            <b>Rosa completa</b>
+          </span>
+
+          <strong>10/10</strong>
         </div>
-      </div>
-      <div class="autod-done">
-        <p>Rosa completa.</p>
-        <button class="cta" id="autod-vai-coach" type="button">Vai al coach</button>
+
+        <div class="df-cap">
+          <span>
+            <small>Tetto</small>
+            <b>${formattaSalario(state.tetto)}</b>
+          </span>
+
+          <span>
+            <small>Speso</small>
+            <b>${formattaSalario(state.speso)}</b>
+          </span>
+
+          <span class="${restoTetto < 0 ? "over" : "resta"}">
+            <small>${restoTetto < 0 ? "Oltre" : "Resta"}</small>
+            <b>${formattaSalario(Math.abs(restoTetto))}</b>
+          </span>
+        </div>
+
+        <section class="df-section">
+          <div class="df-section-head">
+            <span>Titolari</span>
+            <small>5/5</small>
+          </div>
+
+          <div class="df-five">
+            ${titolariSlots.map(starterHTML).join("")}
+          </div>
+        </section>
+
+        <section class="df-section">
+          <div class="df-section-head">
+            <span>Panchina</span>
+            <small>5/5</small>
+          </div>
+
+          <div class="df-bench-grid">
+            ${pancaSlots.map(benchHTML).join("")}
+          </div>
+        </section>
+
+        <button class="cta df-cta" id="autod-vai-coach" type="button">
+          Vai al coach
+        </button>
+
       </div>`;
+
     wireAppHeader(el, ctx);
-    // Tocco su una casella piena: apre la stessa scheda dettaglio del draft
-    // normale (denseSheetHTML, dialog nativo #player-sheet) - non è la funzione
-    // `openSheet` definita più in basso nel ramo normale (chiude su `dlg` locale
-    // a QUEL ramo), è una copia minima perché qui non passiamo mai da lì.
-    el.querySelectorAll(".dslot").forEach((slot) => {
-      slot.onclick = () => {
-        const c = cartaIn(state.rosa, [...titolariSlots, ...pancaSlots].find((s) => chiaveSlot(s) === slot.dataset.slot));
+
+    const allSlots = [...titolariSlots, ...pancaSlots];
+
+    // Le dieci carte continuano ad aprire lo stesso sheet reale del Draft.
+    el.querySelectorAll("[data-slot]").forEach((node) => {
+      node.onclick = () => {
+        const slot = allSlots.find(
+          (s) => chiaveSlot(s) === node.dataset.slot
+        );
+
+        const c = slot ? cartaIn(state.rosa, slot) : null;
         if (!c) return;
+
         let dlg = document.getElementById("player-sheet");
+
         if (!dlg) {
           dlg = document.createElement("dialog");
           dlg.id = "player-sheet";
           dlg.className = "sheet";
           document.body.appendChild(dlg);
         }
-        dlg.innerHTML = `<button class="sheet-x" id="sheet-x" type="button" aria-label="Chiudi">×</button>${denseSheetHTML(c, rv)}`;
+
+        dlg.innerHTML = `
+          <button class="sheet-x"
+                  id="sheet-x"
+                  type="button"
+                  aria-label="Chiudi">×</button>
+          ${denseSheetHTML(c, rv)}`;
+
         dlg.querySelector("#sheet-x").onclick = () => dlg.close();
-        dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
+
+        dlg.onclick = (e) => {
+          if (e.target === dlg) dlg.close();
+        };
+
         dlg.showModal();
       };
     });
-    el.querySelector("#autod-vai-coach").onclick = () => ctx.dispatch({ type: "autoDraftAdvance" });
+
+    el.querySelector("#autod-vai-coach").onclick = () => {
+      ctx.dispatch({ type: "autoDraftAdvance" });
+    };
+
     return el;
   }
 

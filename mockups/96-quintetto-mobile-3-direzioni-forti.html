@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUZZER · Quintetto mobile · 3 direzioni forti</title>
+<style>
+:root{
+  --bg:#080a20;
+  --panel:#0f1237;
+  --card:#1a2052;
+  --card2:#10143a;
+  --line:#444b90;
+  --txt:#f3eedf;
+  --dim:#8d91b8;
+  --yellow:#ffcf33;
+  --blue:#119cff;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--txt);
+  font-family:Arial,sans-serif;
+}
+.page{
+  width:min(430px,100%);
+  margin:auto;
+  padding:18px 12px 40px;
+}
+h1{
+  margin:0 0 16px;
+  color:#8e92ba;
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.demo{
+  margin-bottom:28px;
+  padding:11px;
+  border:1px solid #343a77;
+  border-radius:16px;
+  background:var(--panel);
+}
+.head{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:10px;
+}
+.head strong{
+  color:var(--yellow);
+  font-size:12px;
+}
+.head span{
+  color:#777ca8;
+  font-size:9px;
+}
+.five{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:4px;
+}
+.card{
+  position:relative;
+  min-width:0;
+  height:150px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(17,156,255,.16),transparent 40%),
+    linear-gradient(180deg,#222967,#10143a);
+}
+.card::before{
+  content:"";
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:3px;
+  background:var(--blue);
+}
+.role{
+  position:absolute;
+  z-index:5;
+  top:7px;
+  left:8px;
+  font-size:8px;
+  font-weight:1000;
+}
+.face{
+  position:absolute;
+  left:4px;
+  right:4px;
+  top:20px;
+  bottom:36px;
+  display:grid;
+  place-items:end center;
+}
+.face::before{
+  content:"";
+  width:48px;
+  height:70px;
+  border-radius:50% 50% 40% 40%;
+  background:
+    radial-gradient(circle at 50% 28%,#aeb1c7 0 22%,transparent 23%),
+    linear-gradient(90deg,transparent 17%,#767b9c 18% 82%,transparent 83%);
+  opacity:.72;
+}
+.ovr{
+  font-family:monospace;
+  font-weight:900;
+  color:var(--yellow);
+}
+
+/* A — nome sulla foto */
+.a .name-band{
+  position:absolute;
+  z-index:4;
+  left:5px;
+  right:5px;
+  bottom:28px;
+  padding:5px 4px 4px;
+  background:linear-gradient(180deg,rgba(8,10,32,.30),rgba(8,10,32,.94));
+  border-radius:5px;
+}
+.a .name-band strong{
+  display:block;
+  font-size:8.5px;
+  line-height:1.05;
+  font-weight:1000;
+}
+.a .bottom{
+  position:absolute;
+  left:7px;
+  right:6px;
+  bottom:5px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+}
+.a .bottom small{
+  color:var(--dim);
+  font-size:5.5px;
+  font-weight:900;
+}
+.a .ovr{
+  font-size:16px;
+}
+
+/* B — cognome protagonista */
+.b .face{
+  bottom:49px;
+}
+.b .foot{
+  position:absolute;
+  z-index:4;
+  left:7px;
+  right:6px;
+  bottom:5px;
+}
+.b .first{
+  display:block;
+  color:#8f93b9;
+  font-size:5.5px;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+.b .last{
+  display:block;
+  margin-top:1px;
+  max-width:100%;
+  overflow:hidden;
+  font-size:8.8px;
+  font-weight:1000;
+  line-height:.95;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.b .score{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-top:4px;
+}
+.b .score small{
+  color:var(--dim);
+  font-size:5px;
+  font-weight:900;
+}
+.b .ovr{
+  font-size:16px;
+}
+
+/* C — fascia laterale */
+.c .face{
+  left:17px;
+  right:3px;
+  bottom:30px;
+}
+.c .side{
+  position:absolute;
+  z-index:4;
+  left:3px;
+  top:26px;
+  bottom:31px;
+  width:13px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  padding-bottom:3px;
+  border-right:1px solid rgba(17,156,255,.28);
+}
+.c .side span{
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  color:#d8d9e6;
+  font-size:6.5px;
+  font-weight:900;
+  letter-spacing:.02em;
+  overflow:hidden;
+  white-space:nowrap;
+}
+.c .bottom{
+  position:absolute;
+  left:19px;
+  right:5px;
+  bottom:5px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:3px;
+}
+.c .bottom strong{
+  min-width:0;
+  overflow:hidden;
+  font-size:7px;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.c .ovr{
+  flex:0 0 auto;
+  font-size:16px;
+}
+.note{
+  margin:9px 1px 0;
+  color:#8589b1;
+  font-size:9px;
+  line-height:1.4;
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>BUZZER · Quintetto mobile · 3 direzioni forti</h1>
+
+<section class="demo a">
+  <div class="head">
+    <strong>A · NOME SULLA FOTO</strong>
+    <span>più leggibile senza allargare</span>
+  </div>
+  <div class="five">
+    <div class="card"><span class="role">PG</span><span class="face"></span><span class="name-band"><strong>Steve Francis</strong></span><span class="bottom"><small>TITOLARE</small><b class="ovr">87</b></span></div>
+    <div class="card"><span class="role">SG</span><span class="face"></span><span class="name-band"><strong>Brandon Roy</strong></span><span class="bottom"><small>TITOLARE</small><b class="ovr">89</b></span></div>
+    <div class="card"><span class="role">SF</span><span class="face"></span><span class="name-band"><strong>Iman Shumpert</strong></span><span class="bottom"><small>TITOLARE</small><b class="ovr">76</b></span></div>
+    <div class="card"><span class="role">PF</span><span class="face"></span><span class="name-band"><strong>Hakeem Olajuwon</strong></span><span class="bottom"><small>TITOLARE</small><b class="ovr">97</b></span></div>
+    <div class="card"><span class="role">C</span><span class="face"></span><span class="name-band"><strong>DeAndre Jordan</strong></span><span class="bottom"><small>TITOLARE</small><b class="ovr">86</b></span></div>
+  </div>
+  <p class="note">Il nome occupa quasi tutta la larghezza della carta perché viene sovrapposto alla parte bassa della foto.</p>
+</section>
+
+<section class="demo b">
+  <div class="head">
+    <strong>B · COGNOME FORTE</strong>
+    <span>più sportivo e pulito</span>
+  </div>
+  <div class="five">
+    <div class="card"><span class="role">PG</span><span class="face"></span><span class="foot"><small class="first">STEVE</small><strong class="last">FRANCIS</strong><span class="score"><small>TITOLARE</small><b class="ovr">87</b></span></span></div>
+    <div class="card"><span class="role">SG</span><span class="face"></span><span class="foot"><small class="first">BRANDON</small><strong class="last">ROY</strong><span class="score"><small>TITOLARE</small><b class="ovr">89</b></span></span></div>
+    <div class="card"><span class="role">SF</span><span class="face"></span><span class="foot"><small class="first">IMAN</small><strong class="last">SHUMPERT</strong><span class="score"><small>TITOLARE</small><b class="ovr">76</b></span></span></div>
+    <div class="card"><span class="role">PF</span><span class="face"></span><span class="foot"><small class="first">HAKEEM</small><strong class="last">OLAJUWON</strong><span class="score"><small>TITOLARE</small><b class="ovr">97</b></span></span></div>
+    <div class="card"><span class="role">C</span><span class="face"></span><span class="foot"><small class="first">DEANDRE</small><strong class="last">JORDAN</strong><span class="score"><small>TITOLARE</small><b class="ovr">86</b></span></span></div>
+  </div>
+  <p class="note">Il cognome diventa l’identificatore principale. È la soluzione più pulita se vuoi mantenere 5 card strette.</p>
+</section>
+
+<section class="demo c">
+  <div class="head">
+    <strong>C · NOME LATERALE</strong>
+    <span>più arcade / cabina</span>
+  </div>
+  <div class="five">
+    <div class="card"><span class="role">PG</span><span class="side"><span>STEVE FRANCIS</span></span><span class="face"></span><span class="bottom"><strong>FRANCIS</strong><b class="ovr">87</b></span></div>
+    <div class="card"><span class="role">SG</span><span class="side"><span>BRANDON ROY</span></span><span class="face"></span><span class="bottom"><strong>ROY</strong><b class="ovr">89</b></span></div>
+    <div class="card"><span class="role">SF</span><span class="side"><span>IMAN SHUMPERT</span></span><span class="face"></span><span class="bottom"><strong>SHUMPERT</strong><b class="ovr">76</b></span></div>
+    <div class="card"><span class="role">PF</span><span class="side"><span>HAKEEM OLAJUWON</span></span><span class="face"></span><span class="bottom"><strong>OLAJUWON</strong><b class="ovr">97</b></span></div>
+    <div class="card"><span class="role">C</span><span class="side"><span>DEANDRE JORDAN</span></span><span class="face"></span><span class="bottom"><strong>JORDAN</strong><b class="ovr">86</b></span></div>
+  </div>
+  <p class="note">Usa l’altezza della carta per il nome completo e lascia il footer molto pulito.</p>
+</section>
+
+</div>
+</body>
+</html>

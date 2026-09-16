@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUZZER · Quintetto mobile · 3 opzioni</title>
+
+<style>
+:root{
+  --bg:#090b23;
+  --panel:#10143b;
+  --card:#1b2258;
+  --line:#454d96;
+  --txt:#f5f0df;
+  --dim:#8f93bd;
+  --yellow:#ffcf33;
+  --blue:#119cff;
+  --orange:#ff6826;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#080a20;
+  color:var(--txt);
+  font-family:Arial,sans-serif;
+}
+
+.page{
+  width:min(430px,100%);
+  margin:auto;
+  padding:22px 14px 50px;
+}
+
+h1{
+  margin:0 0 18px;
+  color:#9296bd;
+  font-size:11px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+}
+
+.demo{
+  margin-bottom:28px;
+  padding:12px;
+  border:1px solid #343a77;
+  border-radius:16px;
+  background:#0f1237;
+}
+
+.title{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.title strong{
+  color:var(--yellow);
+  font-size:12px;
+}
+
+.title span{
+  color:#8589b2;
+  font-size:9px;
+}
+
+.five{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+}
+
+.card{
+  position:relative;
+  height:148px;
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:
+    radial-gradient(circle at 50% 28%,rgba(17,156,255,.16),transparent 42%),
+    linear-gradient(180deg,#252d70,#11153f);
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:3px;
+  background:var(--blue);
+}
+
+.role{
+  position:absolute;
+  z-index:3;
+  top:7px;
+  left:8px;
+  font-size:9px;
+  font-weight:1000;
+}
+
+.face{
+  position:absolute;
+  top:23px;
+  left:5px;
+  right:5px;
+  height:70px;
+  display:grid;
+  place-items:end center;
+}
+
+.face::before{
+  content:"";
+  display:block;
+  width:48px;
+  height:66px;
+  border-radius:50% 50% 42% 42%;
+  background:
+    radial-gradient(circle at 50% 30%,#aeb2c8 0 23%,transparent 24%),
+    linear-gradient(90deg,transparent 17%,#777c9d 18% 82%,transparent 83%);
+  opacity:.72;
+}
+
+.ovr{
+  color:var(--yellow);
+  font-family:monospace;
+  font-weight:900;
+}
+
+/* =========================
+   A
+   ========================= */
+
+.a .footer{
+  position:absolute;
+  z-index:3;
+  left:7px;
+  right:6px;
+  bottom:6px;
+  height:45px;
+}
+
+.a .name{
+  display:block;
+  padding-right:25px;
+  font-size:9px;
+  font-weight:900;
+  line-height:1.05;
+  word-break:normal;
+}
+
+.a .sub{
+  position:absolute;
+  left:0;
+  bottom:1px;
+  color:var(--dim);
+  font-size:6px;
+  font-weight:800;
+}
+
+.a .ovr{
+  position:absolute;
+  right:0;
+  bottom:0;
+  font-size:17px;
+}
+
+/* =========================
+   B
+   ========================= */
+
+.b .ovr-top{
+  position:absolute;
+  z-index:4;
+  top:6px;
+  right:6px;
+  padding:3px 4px;
+  border:1px solid rgba(255,207,51,.32);
+  border-radius:5px;
+  background:#111438;
+  color:var(--yellow);
+  font-family:monospace;
+  font-size:13px;
+  font-weight:900;
+}
+
+.b .footer{
+  position:absolute;
+  z-index:3;
+  left:7px;
+  right:7px;
+  bottom:6px;
+  min-height:43px;
+}
+
+.b .name{
+  display:block;
+  font-size:9.5px;
+  font-weight:900;
+  line-height:1.08;
+}
+
+.b .sub{
+  display:block;
+  margin-top:4px;
+  color:var(--dim);
+  font-size:6px;
+  font-weight:800;
+}
+
+/* =========================
+   C
+   ========================= */
+
+.c .footer{
+  position:absolute;
+  z-index:3;
+  left:7px;
+  right:5px;
+  bottom:6px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:4px;
+  align-items:end;
+}
+
+.c .first{
+  display:block;
+  color:#b5b8d0;
+  font-size:6.5px;
+  font-weight:800;
+  line-height:1;
+}
+
+.c .last{
+  display:block;
+  margin-top:2px;
+  font-size:10px;
+  font-weight:1000;
+  line-height:.95;
+}
+
+.c .ovrbox{
+  text-align:right;
+}
+
+.c .ovr{
+  display:block;
+  font-size:17px;
+  line-height:.9;
+}
+
+.c .ovrbox small{
+  display:block;
+  margin-top:3px;
+  color:var(--dim);
+  font-size:5px;
+  font-weight:900;
+}
+
+.note{
+  margin:10px 2px 0;
+  color:#8c90b6;
+  font-size:9px;
+  line-height:1.4;
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<h1>BUZZER · Quintetto mobile · 3 direzioni</h1>
+
+<section class="demo a">
+  <div class="title">
+    <strong>A · FOOTER A DUE LIVELLI</strong>
+    <span>più vicina all'attuale</span>
+  </div>
+
+  <div class="five">
+    <div class="card"><span class="role">PG</span><span class="face"></span><span class="footer"><span class="name">Steve Francis</span><small class="sub">TITOLARE</small><b class="ovr">87</b></span></div>
+    <div class="card"><span class="role">SG</span><span class="face"></span><span class="footer"><span class="name">Brandon Roy</span><small class="sub">TITOLARE</small><b class="ovr">89</b></span></div>
+    <div class="card"><span class="role">SF</span><span class="face"></span><span class="footer"><span class="name">Iman Shumpert</span><small class="sub">TITOLARE</small><b class="ovr">76</b></span></div>
+    <div class="card"><span class="role">PF</span><span class="face"></span><span class="footer"><span class="name">Hakeem Olajuwon</span><small class="sub">TITOLARE</small><b class="ovr">97</b></span></div>
+    <div class="card"><span class="role">C</span><span class="face"></span><span class="footer"><span class="name">DeAndre Jordan</span><small class="sub">TITOLARE</small><b class="ovr">86</b></span></div>
+  </div>
+
+  <p class="note">Nome intero in massimo due righe. OVR resta nel footer ma occupa solo l'angolo.</p>
+</section>
+
+
+<section class="demo b">
+  <div class="title">
+    <strong>B · OVR IN ALTO</strong>
+    <span>massima leggibilità nome</span>
+  </div>
+
+  <div class="five">
+    <div class="card"><span class="role">PG</span><b class="ovr-top">87</b><span class="face"></span><span class="footer"><span class="name">Steve<br>Francis</span><small class="sub">TITOLARE</small></span></div>
+    <div class="card"><span class="role">SG</span><b class="ovr-top">89</b><span class="face"></span><span class="footer"><span class="name">Brandon<br>Roy</span><small class="sub">TITOLARE</small></span></div>
+    <div class="card"><span class="role">SF</span><b class="ovr-top">76</b><span class="face"></span><span class="footer"><span class="name">Iman<br>Shumpert</span><small class="sub">TITOLARE</small></span></div>
+    <div class="card"><span class="role">PF</span><b class="ovr-top">97</b><span class="face"></span><span class="footer"><span class="name">Hakeem<br>Olajuwon</span><small class="sub">TITOLARE</small></span></div>
+    <div class="card"><span class="role">C</span><b class="ovr-top">86</b><span class="face"></span><span class="footer"><span class="name">DeAndre<br>Jordan</span><small class="sub">TITOLARE</small></span></div>
+  </div>
+
+  <p class="note">L'OVR esce completamente dal footer. Il nome ha tutta la larghezza della carta.</p>
+</section>
+
+
+<section class="demo c">
+  <div class="title">
+    <strong>C · FIRST / LAST</strong>
+    <span>più card sportiva</span>
+  </div>
+
+  <div class="five">
+    <div class="card"><span class="role">PG</span><span class="face"></span><span class="footer"><span><small class="first">STEVE</small><strong class="last">FRANCIS</strong></span><span class="ovrbox"><b class="ovr">87</b><small>OVR</small></span></span></div>
+    <div class="card"><span class="role">SG</span><span class="face"></span><span class="footer"><span><small class="first">BRANDON</small><strong class="last">ROY</strong></span><span class="ovrbox"><b class="ovr">89</b><small>OVR</small></span></span></div>
+    <div class="card"><span class="role">SF</span><span class="face"></span><span class="footer"><span><small class="first">IMAN</small><strong class="last">SHUMPERT</strong></span><span class="ovrbox"><b class="ovr">76</b><small>OVR</small></span></span></div>
+    <div class="card"><span class="role">PF</span><span class="face"></span><span class="footer"><span><small class="first">HAKEEM</small><strong class="last">OLAJUWON</strong></span><span class="ovrbox"><b class="ovr">97</b><small>OVR</small></span></span></div>
+    <div class="card"><span class="role">C</span><span class="face"></span><span class="footer"><span><small class="first">DEANDRE</small><strong class="last">JORDAN</strong></span><span class="ovrbox"><b class="ovr">86</b><small>OVR</small></span></span></div>
+  </div>
+
+  <p class="note">Il cognome diventa l'elemento identificativo forte; nome e OVR non si pestano più.</p>
+</section>
+
+</div>
+</body>
+</html>

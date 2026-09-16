@@ -72,6 +72,24 @@ function facciaHTML(card) {
 
 const fascia = (o) => (o >= 88 ? "oro" : o >= 82 ? "arg" : "brz");
 
+function splitPlayerName(name) {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 1) return { first: "", last: parts[0] ?? "" };
+
+  const suffixes = new Set(["I", "II", "III", "IV", "V", "Jr", "Sr", "Jr.", "Sr."]);
+
+  let surnameIndex = parts.length - 1;
+
+  while (surnameIndex > 0 && suffixes.has(parts[surnameIndex])) {
+    surnameIndex--;
+  }
+
+  return {
+    first: parts.slice(0, surnameIndex).join(" "),
+    last: parts.slice(surnameIndex).join(" "),
+  };
+}
+
 const REP_LABEL = {
   t3: "T3",
   fin: "FIN",
@@ -95,7 +113,11 @@ function repartoEsatto(rep, prima, dopo, difficolta, minimo, massimo) {
   }
 
   const cambiato = dopo !== null && dopo !== prima;
-  const valore = cambiato ? `${prima}›${dopo}` : String(prima);
+  const primaDisplay = Math.round(prima);
+  const dopoDisplay = dopo !== null ? Math.round(dopo) : null;
+  const valore = cambiato
+    ? `${primaDisplay}›${dopoDisplay}`
+    : String(primaDisplay);
   const direzione = cambiato
     ? dopo > prima ? "up" : "down"
     : "";
@@ -217,24 +239,30 @@ export function render(ctx) {
       </button>`;
   };
 
-  const quintetto = cards.map((card, i) => `
-    <span class="ct-p">
-      <span class="role">${ROLES[i]}</span>
+  const quintetto = cards.map((card, i) => {
+    const nome = splitPlayerName(card.name);
+    const ruolo = ROLES[i];
+    const roleClass = ruolo.toLowerCase();
 
-      ${facciaHTML(card)}
+    return `
+      <span class="ct-court-player ${roleClass}"
+            title="${esc(card.name)} · ${ruolo} · ${card.ovr} OVR">
 
-      <span class="ct-p-meta">
-        <span class="ct-p-copy">
-          <span class="ct-p-name">${esc(card.name)}</span>
-          <span class="ct-p-sub">TITOLARE</span>
+        <span class="ct-court-face">
+          ${facciaHTML(card)}
         </span>
 
-        <span class="ct-p-ovr ${fascia(card.ovr)}">
-          <b>${card.ovr}</b>
-          <small>OVR</small>
+        <span class="ct-court-role">${ruolo}</span>
+
+        <span class="ct-court-name">
+          ${esc(nome.last || card.name)}
         </span>
-      </span>
-    </span>`).join("");
+
+        <span class="ct-court-ovr ${fascia(card.ovr)}">
+          ${card.ovr}
+        </span>
+      </span>`;
+  }).join("");
 
   el.innerHTML = `
     ${appHeader(state)}
@@ -245,7 +273,10 @@ export function render(ctx) {
         <span class="v">Rosa completa · 10/10</span>
       </div>
 
-      <div class="ct-five">${quintetto}</div>
+      <div class="ct-half-court">
+        <span class="ct-court-lines" aria-hidden="true"></span>
+        ${quintetto}
+      </div>
     </div>
 
     <div class="ct-board">

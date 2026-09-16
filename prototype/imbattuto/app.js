@@ -186,12 +186,11 @@ function dispatch(action) {
         // primissima pesca del turno (newRun) non c'è niente da cercare).
         draftView = action.auto ? spinAutoStep(action.auto.malusMax) : { ...spinRosterView(), ticker: true };
       } else {
-        // Rosa piena. A mano si passa subito a "coach" (comportamento invariato).
-        // In autoplay invece si resta sulla board piena finché l'utente non preme
-        // "Vai al coach" (autoDraftAdvance sotto) - draft.js sa disegnare questo
-        // stato perché nFilled arriva a 10 con draftView null.
+        // Rosa piena: manuale e automatico condividono la stessa schermata
+        // finale "Rosa completa". Il motore è già in stato coach, ma la UI
+        // resta sul draft finché l'utente non preme "Vai al coach".
         draftView = null;
-        if (action.auto) ui = "draft";
+        ui = "draft";
       }
       break;
     }
@@ -214,8 +213,8 @@ function dispatch(action) {
       draftView = spinAutoStep(action.malusMax ?? 0);
       break;
     case "autoDraftAdvance":
-      // Il reveal si è chiuso da solo (setTimeout in draftReveal.js): da qui
-      // in poi la schermata torna a derivare da state.stato, cioè "coach".
+      // Conferma della schermata finale condivisa manuale/automatico:
+      // da qui la UI torna a derivare da state.stato, che è già "coach".
       ui = null;
       break;
     case "stopAutoDraft":
