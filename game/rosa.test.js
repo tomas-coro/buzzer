@@ -6,7 +6,7 @@ import {
   SLOTS, MINUTI, POSTI_PANCA, emptyRosa, assegnaRosa, cartaIn, titolareLibero,
   postiPancaLiberi, caselleLibere, caselleDove, etichettaSlot, chiaveSlot, ruoloDi, rosaCompleta,
   listaRosa, minutiRosa, repartiRosa, costruisciRosa, TITOLARE, PANCA,
-} from "./rosa.js";
+  spostaTitolare,} from "./rosa.js";
 
 const tit = (ruolo) => ({ tipo: TITOLARE, ruolo });
 const panca = (posto) => ({ tipo: PANCA, posto });
@@ -325,4 +325,51 @@ test("costruisciRosa è deterministica: stesso pool, stessa rosa", () => {
   const a = listaRosa(costruisciRosa(pool())).map((c) => c.player_id);
   const b = listaRosa(costruisciRosa(pool())).map((c) => c.player_id);
   assert.deepEqual(a, b);
+});
+
+
+test("spostaTitolare: multiruolo può liberare il suo vecchio slot titolare", () => {
+  const davis = cartaDi("PF", "Davis");
+  davis.pos.secondary = "C";
+
+  let r = assegnaRosa(
+    emptyRosa(),
+    { tipo: TITOLARE, ruolo: "PF" },
+    davis
+  );
+
+  r = spostaTitolare(r, "PF", "C");
+
+  assert.equal(cartaIn(r, { tipo: TITOLARE, ruolo: "PF" }), null);
+  assert.equal(
+    cartaIn(r, { tipo: TITOLARE, ruolo: "C" }).player_id,
+    davis.player_id
+  );
+});
+
+test("spostaTitolare: rifiuta ruolo incompatibile e destinazione occupata", () => {
+  const davis = cartaDi("PF", "Davis");
+  davis.pos.secondary = "C";
+
+  let r = assegnaRosa(
+    emptyRosa(),
+    { tipo: TITOLARE, ruolo: "PF" },
+    davis
+  );
+
+  assert.throws(
+    () => spostaTitolare(r, "PF", "SG"),
+    /incompatibile/i
+  );
+
+  r = assegnaRosa(
+    r,
+    { tipo: TITOLARE, ruolo: "C" },
+    cartaDi("C", "Centro")
+  );
+
+  assert.throws(
+    () => spostaTitolare(r, "PF", "C"),
+    /occupato/i
+  );
 });

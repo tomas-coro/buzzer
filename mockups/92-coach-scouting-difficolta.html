@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUZZER · Coach scouting difficoltà</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --bg:#0d1030;
+  --panel:#15173f;
+  --panel2:#1b1d4d;
+  --line:#34366f;
+  --txt:#f5f0df;
+  --dim:#9191bc;
+  --yellow:#ffcf33;
+  --orange:#ff6433;
+  --green:#52e29a;
+  --red:#ff654d;
+  --blue:#1598ff;
+}
+
+body{
+  margin:0;
+  background:#252525;
+  color:var(--txt);
+  font-family:Arial,sans-serif;
+}
+
+.page{
+  width:min(1180px,100%);
+  margin:auto;
+  padding:28px 18px 60px;
+}
+
+h1{
+  margin:0 0 8px;
+  color:var(--yellow);
+  font-size:24px;
+  letter-spacing:.04em;
+}
+
+.intro{
+  margin:0 0 28px;
+  color:#aaa9c9;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:22px;
+}
+
+.demo{
+  overflow:hidden;
+  border:1px solid #34366f;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 80% 0,rgba(90,50,120,.2),transparent 35%),
+    #101336;
+  box-shadow:0 18px 45px rgba(0,0,0,.22);
+}
+
+.top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 20px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.logo{
+  font-weight:1000;
+  font-size:20px;
+  letter-spacing:.04em;
+  color:var(--yellow);
+}
+
+.logo b{color:var(--orange)}
+
+.level{
+  padding:9px 14px;
+  border:1px solid #3b3e78;
+  border-radius:999px;
+  background:#2b1e3e;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:.08em;
+}
+
+.inner{
+  padding:20px;
+}
+
+.section-title{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:13px;
+  color:#aaa9d0;
+  font-weight:900;
+  font-size:12px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.scout{
+  margin-bottom:16px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  background:rgba(11,12,42,.75);
+}
+
+.scout-title{
+  display:block;
+  margin-bottom:10px;
+  color:var(--dim);
+  font-weight:900;
+  font-size:11px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+
+.reps{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:6px;
+}
+
+.rep{
+  min-width:0;
+  padding:9px 4px;
+  border:1px solid #3a3d77;
+  border-radius:9px;
+  background:#111338;
+  text-align:center;
+}
+
+.rep small{
+  display:block;
+  color:var(--dim);
+  font-weight:900;
+  font-size:10px;
+}
+
+.rep strong{
+  display:block;
+  margin-top:7px;
+  font-family:monospace;
+  font-size:18px;
+  color:var(--txt);
+}
+
+.easy .rep.best{
+  border-color:rgba(82,226,154,.7);
+  box-shadow:inset 0 0 0 1px rgba(82,226,154,.12);
+}
+
+.easy .rep.weak{
+  border-color:rgba(255,101,77,.7);
+  box-shadow:inset 0 0 0 1px rgba(255,101,77,.12);
+}
+
+.segs{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:2px;
+  margin-top:10px;
+}
+
+.segs i{
+  height:6px;
+  border-radius:2px;
+  background:#2a2d63;
+}
+
+.segs i.on{
+  background:var(--yellow);
+}
+
+.coaches{
+  display:grid;
+  gap:8px;
+}
+
+.coach{
+  display:grid;
+  grid-template-columns:36px minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#181a46;
+}
+
+.arrow{
+  color:#aaa9d0;
+  font-size:25px;
+  text-align:center;
+}
+
+.coach b{
+  display:block;
+  color:var(--yellow);
+  font-size:13px;
+  letter-spacing:.04em;
+}
+
+.coach p{
+  margin:4px 0 0;
+  color:#9697bd;
+  font-size:12px;
+}
+
+.chips{
+  display:flex;
+  gap:4px;
+}
+
+.chip{
+  min-width:46px;
+  padding:6px 5px;
+  border:1px solid #3a3d77;
+  border-radius:8px;
+  color:#aaa9d0;
+  font-family:monospace;
+  font-size:11px;
+  text-align:center;
+}
+
+.chip.up{color:var(--green)}
+.chip.down{color:var(--red)}
+
+.no-scout{
+  margin-bottom:16px;
+  padding:14px;
+  border:1px dashed #32356e;
+  border-radius:12px;
+  color:#6e709b;
+  text-align:center;
+  font-size:12px;
+}
+
+.note{
+  margin:14px 0 0;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+  color:#9293b8;
+  font-size:12px;
+  line-height:1.5;
+}
+
+@media(max-width:800px){
+  .grid{grid-template-columns:1fr}
+}
+
+@media(max-width:420px){
+  .page{padding:12px 8px 40px}
+  .inner{padding:14px 10px}
+  .top{padding:14px 12px}
+  .rep{padding-inline:2px}
+  .rep strong{font-size:15px}
+  .coach{
+    grid-template-columns:30px minmax(0,1fr);
+  }
+  .chips{
+    grid-column:2;
+  }
+}
+</style>
+</head>
+
+<body>
+<main class="page">
+
+<h1>BUZZER · SCOUTING COACH</h1>
+<p class="intro">
+Confronto visivo delle informazioni mostrate prima della scelta allenatore.
+I valori "--" indicano dati reali della rosa che verranno calcolati dal gioco.
+</p>
+
+<div class="grid">
+
+  <section class="demo easy">
+    <header class="top">
+      <span class="logo">BUZ<b>Z</b>ER</span>
+      <span class="level">🔥 FACILE</span>
+    </header>
+
+    <div class="inner">
+      <div class="section-title">
+        <span>Panchina</span>
+        <span>Ultimo passo: poi si gioca</span>
+      </div>
+
+      <div class="scout">
+        <span class="scout-title">Reparti squadra</span>
+        <div class="reps">
+          <div class="rep best"><small>T3</small><strong>--</strong></div>
+          <div class="rep"><small>FIN</small><strong>--</strong></div>
+          <div class="rep"><small>DIF</small><strong>--</strong></div>
+          <div class="rep weak"><small>REB</small><strong>--</strong></div>
+          <div class="rep"><small>REG</small><strong>--</strong></div>
+        </div>
+      </div>
+
+      <div class="coaches">
+        <div class="coach">
+          <span class="arrow">↗</span>
+          <span><b>DOUG MOE</b><p>Passing game, zero blocchi</p></span>
+          <div class="chips"><span class="chip up">▲ REG</span><span class="chip up">▲ FIN</span><span class="chip down">▼ DIF</span></div>
+        </div>
+      </div>
+
+      <p class="note">Facile: valori precisi + evidenza del reparto migliore e più debole.</p>
+    </div>
+  </section>
+
+
+  <section class="demo">
+    <header class="top">
+      <span class="logo">BUZ<b>Z</b>ER</span>
+      <span class="level">🔥 NORMALE</span>
+    </header>
+
+    <div class="inner">
+      <div class="section-title">
+        <span>Panchina</span>
+        <span>Ultimo passo: poi si gioca</span>
+      </div>
+
+      <div class="scout">
+        <span class="scout-title">Reparti squadra</span>
+        <div class="reps">
+          <div class="rep"><small>T3</small><strong>--</strong></div>
+          <div class="rep"><small>FIN</small><strong>--</strong></div>
+          <div class="rep"><small>DIF</small><strong>--</strong></div>
+          <div class="rep"><small>REB</small><strong>--</strong></div>
+          <div class="rep"><small>REG</small><strong>--</strong></div>
+        </div>
+      </div>
+
+      <div class="coaches">
+        <div class="coach">
+          <span class="arrow">↔</span>
+          <span><b>LENNY WILKENS</b><p>Squadra prima del talento</p></span>
+          <div class="chips"><span class="chip up">▲ DIF</span><span class="chip up">▲ REG</span><span class="chip down">▼ FIN</span></div>
+        </div>
+      </div>
+
+      <p class="note">Normale: stessi cinque valori reali, ma nessun suggerimento su cosa conviene migliorare.</p>
+    </div>
+  </section>
+
+
+  <section class="demo">
+    <header class="top">
+      <span class="logo">BUZ<b>Z</b>ER</span>
+      <span class="level">🔥 DIFFICILE</span>
+    </header>
+
+    <div class="inner">
+      <div class="section-title">
+        <span>Panchina</span>
+        <span>Ultimo passo: poi si gioca</span>
+      </div>
+
+      <div class="scout">
+        <span class="scout-title">Reparti squadra</span>
+
+        <div class="reps">
+          <div class="rep">
+            <small>T3</small>
+            <span class="segs"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
+          </div>
+
+          <div class="rep">
+            <small>FIN</small>
+            <span class="segs"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span>
+          </div>
+
+          <div class="rep">
+            <small>DIF</small>
+            <span class="segs"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span>
+          </div>
+
+          <div class="rep">
+            <small>REB</small>
+            <span class="segs"><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span>
+          </div>
+
+          <div class="rep">
+            <small>REG</small>
+            <span class="segs"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="coaches">
+        <div class="coach">
+          <span class="arrow">⇤</span>
+          <span><b>ERIK SPOELSTRA</b><p>Heat culture, pressing</p></span>
+          <div class="chips"><span class="chip up">▲ DIF</span><span class="chip up">▲ FIN</span><span class="chip down">▼ REB</span></div>
+        </div>
+      </div>
+
+      <p class="note">Difficile: si percepisce il livello dei reparti, ma il numero esatto resta nascosto.</p>
+    </div>
+  </section>
+
+
+  <section class="demo">
+    <header class="top">
+      <span class="logo">BUZ<b>Z</b>ER</span>
+      <span class="level">🔥 INCUBO</span>
+    </header>
+
+    <div class="inner">
+      <div class="section-title">
+        <span>Panchina</span>
+        <span>Ultimo passo: poi si gioca</span>
+      </div>
+
+      <div class="no-scout">
+        Nessun pannello reparti
+      </div>
+
+      <div class="coaches">
+        <div class="coach">
+          <span class="arrow">⇤</span>
+          <span><b>ERIK SPOELSTRA</b><p>Heat culture, pressing</p></span>
+          <div class="chips"><span class="chip up">▲ DIF</span><span class="chip up">▲ FIN</span><span class="chip down">▼ REB</span></div>
+        </div>
+      </div>
+
+      <p class="note">Incubo: rimane la schermata attuale. Nessuna lettura preventiva dei reparti.</p>
+    </div>
+  </section>
+
+</div>
+</main>
+</body>
+</html>

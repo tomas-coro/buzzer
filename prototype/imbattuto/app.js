@@ -1,7 +1,7 @@
 import {
   newRun, draftPick, useAid, chooseCoach, startRun, resolveRound, resolveSeriesGame, sceltaAutoDraft,
 } from "../../game/run.js";
-import { caselleLibere, chiaveSlot, listaRosa, minutiRosa } from "../../game/rosa.js";
+import { caselleLibere, chiaveSlot, listaRosa, minutiRosa, spostaTitolare } from "../../game/rosa.js";
 import { DIFFICULTIES } from "../../game/difficulty.js";
 import { CARDS_BY_TEAM_SEASON } from "./cards.js";
 import { opponentPool, spinRoster, chiaveCarta } from "./pool.js";
@@ -195,6 +195,17 @@ function dispatch(action) {
       }
       break;
     }
+    case "moveStarter": {
+      if (state.stato !== "draft") {
+        throw new Error("moveStarter: non in fase draft");
+      }
+      state = {
+        ...state,
+        rosa: spostaTitolare(state.rosa, action.fromRole, action.toRole),
+      };
+      break;
+    }
+
     case "autoDraft":
       // Un solo passo, non tutta la rosa: draft.js gira i pick successivi da
       // solo dispatchando "assign" con auto valorizzato (vedi quel case sotto).
@@ -409,9 +420,25 @@ async function checkForUpdates({ silent = false } = {}) {
   }
 
   if (swRegistration.waiting || updateWorker) {
-    offerUpdate(swRegistration.waiting || updateWorker);
-    if (!silent) toastUpdate("Nuova versione pronta da installare", "update");
-    return true;
+    const worker = swRegistration.waiting || updateWorker;
+
+    if (silent) {
+      offerUpdate(worker);
+      return true;
+    }
+
+    updateWorker = worker;
+    syncUpdateControls();
+    toastUpdate("Installazione aggiornamento…", "update");
+
+    try {
+      worker.postMessage("SKIP_WAITING");
+      return true;
+    } catch (error) {
+      console.warn("Installazione aggiornamento fallita", error);
+      toastUpdate("Installazione non riuscita. Riprova.", "error");
+      return false;
+    }
   }
 
   updateChecking = true;

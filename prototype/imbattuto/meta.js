@@ -53,14 +53,42 @@ export function leaderboard(store, formato, difficolta) {
 
 export function lifetimeStats(store) {
   const runs = readAll(store);
+
+  // Le partite possono essere contate solo sulle run che hanno perRound.
+  // Ogni elemento di perRound corrisponde a una partita completata.
+  const runsConPartite = runs.filter((r) => Array.isArray(r.perRound));
+
+  const partite = runsConPartite.reduce(
+    (tot, r) => tot + r.perRound.length,
+    0
+  );
+
+  const vittorie = runsConPartite.reduce(
+    (tot, r) => tot + Math.min(
+      Math.max(Number(r.vittorie) || 0, 0),
+      r.perRound.length
+    ),
+    0
+  );
+
+  const sconfitte = Math.max(0, partite - vittorie);
+
   return {
     runs: runs.length,
+    partite,
+    vittorie,
+    sconfitte,
+    winPct: partite ? (vittorie / partite) * 100 : 0,
+
     imbattuti: runs.filter((r) => r.esito === "imbattuto").length,
-    // "campione" è l'esito vittorioso del formato playoff (vedi resolveSeriesGame
-    // in game/run.js): conteggio separato da "imbattuti" perché sono corse di
-    // formato diverso, non la stessa cosa con un nome diverso.
+
+    // "campione" è l'esito vittorioso del formato playoff.
     campioni: runs.filter((r) => r.esito === "campione").length,
-    migliorStreak: runs.reduce((m, r) => Math.max(m, r.vittorie), 0),
+
+    migliorStreak: runs.reduce(
+      (m, r) => Math.max(m, Number(r.vittorie) || 0),
+      0
+    ),
   };
 }
 

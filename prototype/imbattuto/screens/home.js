@@ -22,7 +22,9 @@ const HOME_COPY = {
     updateInfo: "Controlla se è disponibile una nuova versione.",
     check: "Verifica",
     save: "Salva",
-    playerName: "Nome giocatore"
+    playerName: "Nome giocatore",
+    stats: "Statistiche",
+    leaderboard: "Leaderboard"
   },
   en: {
     settings: "Settings",
@@ -41,7 +43,9 @@ const HOME_COPY = {
     updateInfo: "Check whether a new version is available.",
     check: "Check",
     save: "Save",
-    playerName: "Player name"
+    playerName: "Player name",
+    stats: "Stats",
+    leaderboard: "Leaderboard"
   }
 };
 
@@ -140,6 +144,12 @@ export function render(ctx) {
           <span class="bz-top-actions rise" style="--d:.04s">
             <span class="bz-best">best <b>9-0</b></span>
 
+            <button class="bz-settings-btn bz-stats-btn" id="open-stats" type="button" aria-label="Statistiche Cabina" title="Statistiche Cabina">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20V10h4v10M10 20V4h4v16M16 20v-7h4v7"/>
+              </svg>
+            </button>
+
             <button class="bz-settings-btn" id="open-settings" type="button" aria-label="${copy.settings}" title="${copy.settings}">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="3.2"/>
@@ -148,7 +158,7 @@ export function render(ctx) {
             </button>
           </span>
         </div>
-        <div class="bz-stage">
+<div class="bz-stage">
           <div class="emblem">
             <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
               <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
@@ -243,7 +253,7 @@ export function render(ctx) {
               <span class="soon">${copy.soon}</span>
             </div>
           </div>
-        </div>
+</div>
       </div>
       <dialog class="bz-settings-dialog" id="settings-dialog">
         <div class="bz-settings-panel">
@@ -336,6 +346,7 @@ export function render(ctx) {
   root.querySelector("#mode-corsa").onclick = vai;
   root.querySelector("#mode-playoff").onclick = () => ctx.go("difficolta-playoff");
   root.querySelector("#home-player-name")?.addEventListener("click", () => ctx.go("profilo"));
+  root.querySelector("#open-stats")?.addEventListener("click", () => ctx.go("profilo"));
 
 
   const settingsDialog = root.querySelector("#settings-dialog");

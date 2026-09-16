@@ -530,6 +530,7 @@ export function render(ctx) {
   // ritardi a scaletta (nth-child fino a 5) coprono esatti i cinque di una colonna.
 
   let sel = null;   // indice candidato selezionato
+  let movingStarter = null; // chiave T-* del titolare che si vuole riposizionare
   let busy = false; // animazione in corso
   let stoppedAuto = false; // l'utente ha premuto "Ferma" durante l'autoplay
 
@@ -571,11 +572,111 @@ export function render(ctx) {
 
   const setPrompt = (h) => { const p = el.querySelector("#prompt"); if (p) p.innerHTML = h; };
 
+  function scrollCourtForPick() {
+    if (window.matchMedia("(min-width: 760px)").matches) return;
+    const courtEl = el.querySelector(".dcourt");
+    if (!courtEl) return;
+
+    courtEl.scrollIntoView({
+      behavior: reduceMotion() ? "auto" : "smooth",
+      block: "center",
+    });
+  }
+
+
   // Come si legge la casella che si accenderà: "PG titolare", "6° uomo".
   const dove = (slot) => `<b>${esc(etichettaSlot(slot))}</b>`;
 
+  function clearStarterMove() {
+    movingStarter = null;
+    el.querySelectorAll(".dslot").forEach((slot) => {
+      slot.classList.remove("move-src", "elig", "dim");
+    });
+  }
+
+  function selectStarterMove(key) {
+    if (busy) return;
+
+    const fromSlot = slotByKey.get(key);
+    if (!fromSlot || fromSlot.tipo !== TITOLARE) return;
+
+    const card = cartaIn(state.rosa, fromSlot);
+    if (!card) return;
+
+    const targets = caselleDove(state.rosa, card)
+      .filter((slot) => slot.tipo === TITOLARE);
+
+    if (movingStarter === key) {
+      clearStarterMove();
+      openSheet(card);
+      return;
+    }
+
+    if (targets.length === 0) {
+      clearStarterMove();
+      openSheet(card);
+      return;
+    }
+
+    movingStarter = key;
+    sel = null;
+
+    el.querySelectorAll(".crd").forEach((row) => row.classList.remove("sel"));
+
+    const targetKeys = new Set(targets.map(chiaveSlot));
+
+    el.querySelectorAll(".dslot").forEach((slot) => {
+      const slotKey = slot.dataset.slot;
+      const slotObj = slotByKey.get(slotKey);
+      const isSource = slotKey === key;
+      const isTarget = targetKeys.has(slotKey);
+
+      slot.classList.toggle("move-src", isSource);
+      slot.classList.toggle("elig", isTarget);
+
+      const emptyStarter =
+        slotObj?.tipo === TITOLARE &&
+        slot.dataset.filled !== "1";
+
+      slot.classList.toggle("dim", emptyStarter && !isTarget);
+    });
+
+    const name = lastName(card.name);
+
+    if (targets.length === 1) {
+      setPrompt(`<b>${esc(name)}</b> può spostarsi in ${dove(targets[0])} - tocca la casella`);
+    } else {
+      setPrompt(`<b>${esc(name)}</b> può spostarsi in ${targets.length} ruoli titolari - scegli dove`);
+    }
+  }
+
+  function moveStarterTo(key) {
+    if (!movingStarter || busy) return;
+
+    const from = slotByKey.get(movingStarter);
+    const to = slotByKey.get(key);
+
+    if (!from || !to || from.tipo !== TITOLARE || to.tipo !== TITOLARE) return;
+
+    const card = cartaIn(state.rosa, from);
+    if (!card) return;
+
+    const valid = caselleDove(state.rosa, card)
+      .some((slot) => slot.tipo === TITOLARE && chiaveSlot(slot) === key);
+
+    if (!valid) return;
+
+    ctx.dispatch({
+      type: "moveStarter",
+      fromRole: from.ruolo,
+      toRole: to.ruolo,
+    });
+  }
+
   function selectCand(i) {
     if (busy || !piazzabile[i]) return;
+
+    clearStarterMove();
     sel = i;
     const card = draftView.cards[i];
     const elig = eligibleSlots(card);
@@ -596,6 +697,8 @@ export function render(ctx) {
     // (ruolo pieno / sfora l'apron) non arrivano qui: `piazzabile[i]` le ha già
     // escluse in cima a `selectCand`.
     const tick = el.querySelector("#cap-tick");
+    if (!draftView.auto) scrollCourtForPick();
+
     if (tick) {
       const costo = costi[i];
       const nuovoSpeso = state.speso + costo;
@@ -662,7 +765,22 @@ export function render(ctx) {
     el.querySelectorAll(".dslot").forEach((slot) => {
       slot.onclick = () => {
         const key = slot.dataset.slot;
-        if (slot.dataset.filled === "1") { openSheet(cartaIn(state.rosa, slotByKey.get(key))); return; }
+        const slotObj = slotByKey.get(key);
+
+        if (movingStarter && slot.classList.contains("elig")) {
+          moveStarterTo(key);
+          return;
+        }
+
+        if (slot.dataset.filled === "1") {
+          if (slotObj?.tipo === TITOLARE) {
+            selectStarterMove(key);
+          } else {
+            openSheet(cartaIn(state.rosa, slotObj));
+          }
+          return;
+        }
+
         if (slot.classList.contains("elig")) placeIn(key);
       };
     });

@@ -38,7 +38,16 @@ test("lo storico corrotto o uno storage negato non bloccano l'app", () => {
   assert.deepEqual(leaderboard(s, "imbattuto", "normale"), []);
   const denied = { getItem() { throw new Error("denied"); }, setItem() { throw new Error("denied"); } };
   assert.equal(recordRun(denied, { vittorie: 1 }), false);
-  assert.deepEqual(lifetimeStats(denied), { runs: 0, imbattuti: 0, campioni: 0, migliorStreak: 0 });
+  assert.deepEqual(lifetimeStats(denied), {
+    runs: 0,
+    partite: 0,
+    vittorie: 0,
+    sconfitte: 0,
+    winPct: 0,
+    imbattuti: 0,
+    campioni: 0,
+    migliorStreak: 0,
+  });
 });
 
 test("recordRun + leaderboard: ordina per vittorie desc nel bucket", () => {

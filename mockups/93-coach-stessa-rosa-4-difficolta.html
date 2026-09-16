@@ -1,0 +1,1269 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BUZZER · Coach · stessa rosa</title>
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --bg:#0b0d2c;
+  --cab:#11143a;
+  --panel:#171a49;
+  --panel2:#1d2053;
+  --line:#343875;
+  --line2:#444987;
+  --txt:#f5f0df;
+  --dim:#9999c5;
+  --yellow:#ffcf33;
+  --orange:#ff6533;
+  --blue:#139cff;
+  --green:#56e29a;
+  --red:#ff654d;
+}
+
+body{
+  margin:0;
+  background:#2d2d2d;
+  color:var(--txt);
+  font-family:Arial,sans-serif;
+}
+
+.page{
+  width:min(1480px,100%);
+  margin:auto;
+  padding:28px 18px 70px;
+}
+
+h1{
+  margin:0 0 6px;
+  color:var(--yellow);
+  font-size:24px;
+}
+
+.intro{
+  margin:0 0 24px;
+  color:#b0afd0;
+  line-height:1.45;
+}
+
+.intro b{color:var(--txt)}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:22px;
+}
+
+.demo{
+  overflow:hidden;
+  border:1px solid #373b79;
+  border-radius:20px;
+  background:
+    radial-gradient(circle at 85% 0,rgba(93,46,111,.18),transparent 36%),
+    var(--cab);
+  box-shadow:0 20px 50px rgba(0,0,0,.25);
+}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:17px 20px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.logo{
+  color:var(--yellow);
+  font-size:20px;
+  font-weight:1000;
+  letter-spacing:.03em;
+}
+
+.logo b{color:var(--orange)}
+
+.level{
+  padding:9px 15px;
+  border:1px solid #414580;
+  border-radius:999px;
+  background:#2b1e40;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.08em;
+}
+
+.content{
+  padding:18px;
+}
+
+.draft-done{
+  margin-bottom:14px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:rgba(13,15,48,.65);
+}
+
+.draft-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+  color:var(--dim);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+.five{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+}
+
+.p{
+  padding:8px 3px;
+  border:1px solid #383d7b;
+  border-radius:9px;
+  background:#151842;
+  text-align:center;
+}
+
+.p span{
+  display:block;
+  color:#9597c4;
+  font-size:10px;
+  font-weight:900;
+}
+
+.p b{
+  display:block;
+  margin-top:5px;
+  color:var(--txt);
+  font-family:monospace;
+  font-size:17px;
+}
+
+.section-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin:15px 0 9px;
+  color:#aaaad0;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+}
+
+.scout{
+  padding:11px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(10,12,42,.76);
+}
+
+.scout-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+  color:var(--dim);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+
+.reps{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:5px;
+}
+
+.rep{
+  min-width:0;
+  padding:8px 3px;
+  border:1px solid #3b3f79;
+  border-radius:8px;
+  background:#12143b;
+  text-align:center;
+}
+
+.rep small{
+  display:block;
+  color:#9697bd;
+  font-size:9px;
+  font-weight:900;
+}
+
+.rep strong{
+  display:block;
+  margin-top:6px;
+  color:var(--txt);
+  font-family:monospace;
+  font-size:18px;
+  white-space:nowrap;
+}
+
+.rep strong.up{color:var(--green)}
+.rep strong.down{color:var(--red)}
+
+.easy .rep.best{
+  border-color:rgba(86,226,154,.75);
+  box-shadow:inset 0 0 0 1px rgba(86,226,154,.12);
+}
+
+.easy .rep.weak{
+  border-color:rgba(255,101,77,.8);
+  box-shadow:inset 0 0 0 1px rgba(255,101,77,.12);
+}
+
+.segs{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:2px;
+  margin-top:10px;
+}
+
+.segs i{
+  display:block;
+  height:6px;
+  border-radius:2px;
+  background:#292d63;
+}
+
+.segs i.on{background:var(--yellow)}
+.segs i.up{background:var(--green)}
+.segs i.down{background:var(--red)}
+
+.hidden-scout{
+  padding:18px;
+  border:1px dashed #343873;
+  border-radius:11px;
+  color:#7477a5;
+  text-align:center;
+  font-size:12px;
+}
+
+.coaches{
+  display:grid;
+  gap:7px;
+}
+
+.coach{
+  width:100%;
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  align-items:center;
+  gap:9px;
+  padding:11px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:#181b49;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+
+.coach:hover{
+  border-color:#656bb3;
+}
+
+.coach.on{
+  border-color:var(--yellow);
+  box-shadow:inset 0 0 0 1px var(--yellow);
+  background:#202250;
+}
+
+.arrow{
+  color:#a6a7cf;
+  font-size:24px;
+  text-align:center;
+}
+
+.coach.on .arrow{color:var(--yellow)}
+
+.coach-name{
+  display:block;
+  color:var(--yellow);
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.035em;
+}
+
+.coach.on .coach-name{color:var(--txt)}
+
+.tactic{
+  display:block;
+  margin-top:3px;
+  color:#999ac2;
+  font-size:11px;
+}
+
+.chips{
+  display:flex;
+  gap:3px;
+}
+
+.chip{
+  padding:5px 5px;
+  border:1px solid #3d417b;
+  border-radius:7px;
+  background:#11143a;
+  font-family:monospace;
+  font-size:10px;
+  white-space:nowrap;
+}
+
+.chip.plus{color:var(--green)}
+.chip.minus{color:var(--red)}
+
+.rating{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:14px;
+  padding:12px 14px;
+  border:1px solid #655a2b;
+  border-radius:12px;
+  background:#22223f;
+}
+
+.rating span{
+  color:#a5a5cd;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+}
+
+.rating b{
+  font-family:monospace;
+  font-size:22px;
+}
+
+.rating .after{color:var(--green)}
+
+.note{
+  margin:12px 0 0;
+  color:#9495bc;
+  font-size:11px;
+  line-height:1.5;
+}
+
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr}
+}
+
+@media(max-width:520px){
+  .page{padding:10px 7px 40px}
+  .content{padding:12px 9px}
+  .top{padding:14px 11px}
+  .coach{
+    grid-template-columns:28px minmax(0,1fr);
+  }
+  .chips{
+    grid-column:2;
+    flex-wrap:wrap;
+  }
+}
+</style>
+
+<style id="starting-five-v4">
+.draft-done{
+  padding:12px !important;
+}
+
+.five{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+
+.five .p{
+  position:relative;
+  min-width:0;
+  height:138px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:0 !important;
+  border:1px solid #41488c !important;
+  border-radius:13px !important;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(23,139,255,.15),transparent 34%),
+    linear-gradient(180deg,#20265c 0%,#12153d 100%) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.03);
+  text-align:left !important;
+}
+
+.five .p::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:4px;
+  background:linear-gradient(180deg,#11a3ff 0%,#0d6cff 100%);
+  box-shadow:0 0 12px rgba(17,163,255,.35);
+}
+
+.five .p::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:52px;
+  background:linear-gradient(180deg,rgba(10,12,40,0),rgba(10,12,40,.90) 42%,rgba(10,12,40,.98) 100%);
+  pointer-events:none;
+}
+
+.five .p .r{
+  position:absolute;
+  top:8px;
+  left:10px;
+  z-index:3;
+  min-width:28px;
+  height:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:0 6px;
+  border:1px solid rgba(19,156,255,.44);
+  border-radius:999px;
+  background:rgba(8,42,85,.88);
+  color:#98d7ff;
+  font-size:8px;
+  font-weight:1000;
+  letter-spacing:.05em;
+}
+
+.five .p .face-wrap{
+  position:absolute;
+  inset:24px 8px 44px 10px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.five .p img.face{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center top;
+  display:block;
+  filter:saturate(1.03) contrast(1.03);
+}
+
+.five .p .sil{
+  width:54px;
+  height:54px;
+  margin-bottom:6px;
+  display:none;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 33%,#979abc 0 26%,transparent 27%),
+    radial-gradient(circle at 50% 85%,#767aa0 0 35%,transparent 36%);
+  opacity:.95;
+}
+
+.five .p.no-face .sil{
+  display:block;
+}
+
+.five .p .meta{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:end;
+  gap:8px;
+  padding:9px 9px 8px 11px;
+}
+
+.five .p .txt{
+  min-width:0;
+}
+
+.five .p .nm{
+  display:block;
+  color:#f4efdf;
+  font-size:10px;
+  font-weight:900;
+  line-height:1.04;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.five .p .sub{
+  display:block;
+  margin-top:3px;
+  color:#878cbb;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+
+.five .p .ovr-box{
+  min-width:44px;
+  padding:4px 6px 5px;
+  border:1px solid rgba(255,207,51,.20);
+  border-radius:8px;
+  background:rgba(20,16,37,.72);
+  text-align:right;
+}
+
+.five .p b{
+  display:block;
+  margin:0 !important;
+  color:#ffcf33 !important;
+  font-family:monospace;
+  font-size:21px !important;
+  line-height:1;
+}
+
+.five .p .ovr{
+  display:block;
+  margin-top:2px;
+  color:#7d81ac;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.09em;
+}
+
+@media(max-width:520px){
+  .five{
+    gap:5px !important;
+  }
+
+  .five .p{
+    height:118px;
+    border-radius:11px !important;
+  }
+
+  .five .p .r{
+    top:6px;
+    left:7px;
+    min-width:25px;
+    height:17px;
+    font-size:7px;
+  }
+
+  .five .p .face-wrap{
+    inset:22px 6px 38px 8px;
+  }
+
+  .five .p .meta{
+    padding:7px 6px 7px 8px;
+    gap:6px;
+  }
+
+  .five .p .nm{
+    font-size:8px;
+  }
+
+  .five .p .sub{
+    font-size:7px;
+  }
+
+  .five .p .ovr-box{
+    min-width:36px;
+    padding:3px 4px 4px;
+    border-radius:7px;
+  }
+
+  .five .p b{
+    font-size:17px !important;
+  }
+
+  .five .p .sil{
+    width:44px;
+    height:44px;
+  }
+}
+</style>
+
+<style id="coach-polish-v6">
+
+/* =========================================================
+   QUINTETTO — V6
+   ========================================================= */
+
+.five{
+  gap:9px !important;
+}
+
+.five .p{
+  height:142px !important;
+  border:1px solid #404687 !important;
+  border-radius:12px !important;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(31,119,255,.22),transparent 39%),
+    linear-gradient(180deg,#20265e 0%,#11143a 100%) !important;
+  box-shadow:none !important;
+}
+
+/* filo BUZZER, senza barra gigante */
+.five .p::before{
+  width:3px !important;
+  background:#119cff !important;
+  box-shadow:0 0 10px rgba(17,156,255,.28) !important;
+}
+
+/* footer molto più pulito */
+.five .p::after{
+  height:50px !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(9,11,35,0),
+      rgba(9,11,35,.88) 32%,
+      rgba(9,11,35,.98) 100%
+    ) !important;
+}
+
+.five .p .r{
+  top:8px !important;
+  left:9px !important;
+}
+
+/* zona volto più larga */
+.five .p .face-wrap{
+  inset:23px 6px 46px 8px !important;
+}
+
+.five .p .sil{
+  width:55px !important;
+  height:55px !important;
+  margin-bottom:5px !important;
+}
+
+/* footer: nome sopra, OVR sotto/a destra */
+.five .p .meta{
+  position:relative !important;
+  z-index:3 !important;
+  display:block !important;
+  min-height:49px !important;
+  padding:7px 8px 7px 10px !important;
+  background:transparent !important;
+}
+
+.five .p .txt{
+  display:block !important;
+  min-width:0 !important;
+  padding-right:37px;
+}
+
+.five .p .nm{
+  display:block !important;
+  width:100% !important;
+  color:#f5f0df !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  line-height:1.1 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+.five .p .sub{
+  margin-top:3px !important;
+  color:#777ba9 !important;
+  font-size:7px !important;
+  letter-spacing:.07em !important;
+}
+
+/* OVR non più dentro una scatola pesante */
+.five .p .ovr-box{
+  position:absolute !important;
+  right:8px !important;
+  bottom:7px !important;
+  min-width:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  text-align:right !important;
+}
+
+.five .p b{
+  margin:0 !important;
+  color:#ffcf33 !important;
+  font-family:monospace !important;
+  font-size:24px !important;
+  line-height:.9 !important;
+  letter-spacing:-.06em !important;
+}
+
+.five .p .ovr{
+  margin-top:3px !important;
+  color:#7478a5 !important;
+  font-size:6px !important;
+}
+
+
+/* =========================================================
+   VOTO SQUADRA — V6
+   ========================================================= */
+
+.rating{
+  position:relative !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto !important;
+  align-items:center !important;
+  min-height:76px !important;
+  gap:20px !important;
+
+  margin-top:16px !important;
+  padding:12px 18px !important;
+
+  border:1px solid rgba(255,207,51,.40) !important;
+  border-radius:13px !important;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255,207,51,.035),
+      rgba(255,207,51,.07)
+    ),
+    #1d1f3d !important;
+}
+
+.rating::before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:0;
+  width:4px;
+  border-radius:13px 0 0 13px;
+  background:#ffcf33;
+}
+
+.rating > span{
+  color:#aaaad0 !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  letter-spacing:.11em !important;
+  text-transform:uppercase;
+}
+
+/* tutto il risultato resta su UNA riga */
+.rating b{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:12px !important;
+  color:#8588b1 !important;
+  font-family:Arial,sans-serif !important;
+  font-size:25px !important;
+  line-height:1 !important;
+}
+
+.rating .before,
+.rating .after{
+  position:relative !important;
+  min-width:53px !important;
+  display:inline-block !important;
+  padding:0 0 13px !important;
+  font-family:monospace !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  text-align:center !important;
+}
+
+.rating .before{
+  color:#a5a8cc !important;
+  font-size:30px !important;
+}
+
+.rating .after{
+  color:#ffcf33;
+  font-size:38px !important;
+}
+
+/* etichette sotto i due numeri */
+.rating .before::after,
+.rating .after::after{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  color:#70749e;
+  font-family:Arial,sans-serif;
+  font-size:6px;
+  font-weight:900;
+  letter-spacing:.11em;
+}
+
+.rating .before::after{
+  content:"PRIMA";
+}
+
+.rating .after::after{
+  content:"DOPO";
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media(max-width:520px){
+
+  .five{
+    gap:4px !important;
+  }
+
+  .five .p{
+    height:116px !important;
+  }
+
+  .five .p .face-wrap{
+    inset:21px 4px 39px 6px !important;
+  }
+
+  .five .p .meta{
+    min-height:41px !important;
+    padding:6px 5px 6px 7px !important;
+  }
+
+  .five .p .txt{
+    padding-right:29px;
+  }
+
+  .five .p .nm{
+    font-size:7.5px !important;
+  }
+
+  .five .p b{
+    font-size:18px !important;
+  }
+
+  .five .p .ovr-box{
+    right:5px !important;
+    bottom:6px !important;
+  }
+
+  .rating{
+    min-height:70px !important;
+    gap:8px !important;
+    padding:10px 11px 10px 14px !important;
+  }
+
+  .rating > span{
+    max-width:105px;
+    font-size:8px !important;
+    line-height:1.25;
+  }
+
+  .rating b{
+    gap:6px !important;
+    font-size:18px !important;
+  }
+
+  .rating .before{
+    min-width:40px !important;
+    font-size:24px !important;
+  }
+
+  .rating .after{
+    min-width:44px !important;
+    font-size:30px !important;
+  }
+}
+
+</style>
+
+<style id="rating-labels-v7">
+.rating .before::after{content:"PRIMA" !important}
+.rating .after::after{content:"DOPO" !important}
+
+/* Volti: più protagonisti e meno effetto fototessera */
+.five .p .face-wrap{
+  inset:20px 3px 42px 5px !important;
+}
+
+.five .p img.face{
+  width:100% !important;
+  height:100% !important;
+  object-fit:contain !important;
+  object-position:center bottom !important;
+  filter:saturate(1.05) contrast(1.04) !important;
+}
+
+.five .p:has(img.face:not([style*="display: none"])) .sil{
+  display:none !important;
+}
+</style>
+</head>
+
+<body>
+<main class="page">
+
+<h1>BUZZER · STESSA ROSA, 4 DIFFICOLTÀ</h1>
+
+<p class="intro">
+La rosa è <b>identica in tutti e quattro i casi</b>.
+Valori reali usati per questa demo:
+<b>T3 84 · FIN 88 · DIF 81 · REB 76 · REG 86</b>.
+Clicca gli allenatori per confrontare cosa viene mostrato al giocatore.
+</p>
+
+<div class="grid" id="grid"></div>
+
+</main>
+
+<script>
+const BASE = {
+  t3:84,
+  fin:88,
+  dif:81,
+  reb:76,
+  reg:86
+};
+
+const OVR = 85;
+
+const STARTERS = [
+  {
+    role:"PG",
+    ovr:87,
+    name:"Claxton",
+    face:"../assets/volti/nicolas-claxton.webp"
+  },
+  {
+    role:"SG",
+    ovr:79,
+    name:"Cardinal",
+    face:"../assets/volti/brian-cardinal.webp"
+  },
+  {
+    role:"SF",
+    ovr:97,
+    name:"Durant",
+    face:"../assets/volti/kevin-durant.webp"
+  },
+  {
+    role:"PF",
+    ovr:92,
+    name:"Davis",
+    face:"../assets/volti/anthony-davis.webp"
+  },
+  {
+    role:"C",
+    ovr:93,
+    name:"Kaminsky",
+    face:"../assets/volti/frank-kaminsky.webp"
+  }
+];
+
+const COACHES = [
+  {
+    id:"moe",
+    name:"DOUG MOE",
+    tactic:"Passing game, zero blocchi",
+    arrow:"↗",
+    changes:{reg:4,fin:4,dif:-3}
+  },
+  {
+    id:"wilkens",
+    name:"LENNY WILKENS",
+    tactic:"Squadra prima del talento",
+    arrow:"↔",
+    changes:{dif:4,reg:4,fin:-3}
+  },
+  {
+    id:"spoelstra",
+    name:"ERIK SPOELSTRA",
+    tactic:"Heat culture, pressing",
+    arrow:"⇤",
+    changes:{dif:8,fin:4,reb:-3}
+  }
+];
+
+const CONFIG = [
+  {
+    key:"facile",
+    title:"FACILE",
+    note:"Valori precisi. Il reparto migliore e quello più debole sono evidenziati."
+  },
+  {
+    key:"normale",
+    title:"NORMALE",
+    note:"Valori precisi, ma BUZZER non suggerisce quale reparto conviene correggere."
+  },
+  {
+    key:"difficile",
+    title:"DIFFICILE",
+    note:"Niente numeri: il livello di ogni reparto è leggibile solo per fasce."
+  },
+  {
+    key:"incubo",
+    title:"INCUBO",
+    note:"Nessuna lettura preventiva dei reparti. Rimane la scelta coach attuale."
+  }
+];
+
+const order = ["t3","fin","dif","reb","reg"];
+
+const labels = {
+  t3:"T3",
+  fin:"FIN",
+  dif:"DIF",
+  reb:"REB",
+  reg:"REG"
+};
+
+function changed(base, delta){
+  return Math.max(0,Math.min(99,base+(delta||0)));
+}
+
+function segCount(v){
+  if(v < 70) return 1;
+  if(v < 85) return 2;
+  return 3;
+}
+
+function calcOvr(vals){
+  return Math.round(
+    vals.t3 * .12 +
+    vals.fin * .16 +
+    vals.dif * .40 +
+    vals.reb * .20 +
+    vals.reg * .12
+  );
+}
+
+function starterHTML(){
+  return `
+    <div class="draft-done">
+      <div class="draft-top">
+        <span>Quintetto titolare</span>
+        <span>Rosa completa · 10/10</span>
+      </div>
+
+      <div class="five">
+        ${STARTERS.map(p=>`
+          <span class="p">
+            <span class="r">${p.role}</span>
+
+            <span class="face-wrap">
+              <img
+                class="face"
+                src="${p.face || ''}"
+                alt="${p.name}"
+                onerror="this.style.display='none'; this.closest('.p').classList.add('no-face');"
+              >
+              <span class="sil" aria-hidden="true"></span>
+            </span>
+
+            <span class="meta">
+              <span class="txt">
+                <span class="nm">${p.name}</span>
+                <span class="sub">TITOLARE</span>
+              </span>
+
+              <span class="ovr-box">
+                <b>${p.ovr}</b>
+                <span class="ovr">OVR</span>
+              </span>
+            </span>
+          </span>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function coachesHTML(){
+  return `
+    <div class="coaches">
+      ${COACHES.map(c=>`
+        <button class="coach" data-coach="${c.id}" type="button">
+          <span class="arrow">${c.arrow}</span>
+          <span>
+            <span class="coach-name">${c.name}</span>
+            <span class="tactic">${c.tactic}</span>
+          </span>
+          <span class="chips">
+            ${Object.entries(c.changes).map(([k,v])=>`
+              <span class="chip ${v>0?"plus":"minus"}">
+                ${v>0?"▲":"▼"} ${labels[k]}
+              </span>
+            `).join("")}
+          </span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function repExact(rep,v,after,difficulty,min,max){
+  let cls = "";
+  if(difficulty==="facile"){
+    if(v===max) cls+=" best";
+    if(v===min) cls+=" weak";
+  }
+
+  let value = String(v);
+  let valueClass = "";
+
+  if(after!==null && after!==v){
+    value = `${v}›${after}`;
+    valueClass = after>v ? "up" : "down";
+  }
+
+  return `
+    <span class="rep${cls}">
+      <small>${labels[rep]}</small>
+      <strong class="${valueClass}">${value}</strong>
+    </span>
+  `;
+}
+
+function repSegments(rep,v,after){
+  const show = after ?? v;
+  const beforeN = segCount(v);
+  const afterN = segCount(show);
+
+  return `
+    <span class="rep">
+      <small>${labels[rep]}</small>
+      <span class="segs">
+        ${Array.from({length:3},(_,i)=>{
+          let cls = "";
+          if(i < afterN) cls="on";
+          if(after!==null && afterN>beforeN && i>=beforeN && i<afterN) cls="up";
+          if(after!==null && afterN<beforeN && i>=afterN && i<beforeN) cls="down";
+          return `<i class="${cls}"></i>`;
+        }).join("")}
+      </span>
+    </span>
+  `;
+}
+
+function cardHTML(cfg){
+  return `
+    <section class="demo ${cfg.key==="facile"?"easy":""}" data-level="${cfg.key}">
+      <header class="top">
+        <span class="logo">BUZ<b>Z</b>ER</span>
+        <span class="level">🔥 ${cfg.title}</span>
+      </header>
+
+      <div class="content">
+        ${starterHTML()}
+
+        <div class="section-head">
+          <span>Panchina</span>
+          <span>Ultimo passo: poi si gioca</span>
+        </div>
+
+        <div class="scout-wrap"></div>
+
+        ${coachesHTML()}
+
+        <div class="rating">
+          <span>Il tuo voto squadra</span>
+          <b><span class="before">${OVR}</span> › <span class="after">--</span></b>
+        </div>
+
+        <p class="note">${cfg.note}</p>
+      </div>
+    </section>
+  `;
+}
+
+document.querySelector("#grid").innerHTML =
+  CONFIG.map(cardHTML).join("");
+
+function renderScout(card,coach=null){
+  const level = card.dataset.level;
+  const wrap = card.querySelector(".scout-wrap");
+
+  if(level==="incubo"){
+    wrap.innerHTML = "";
+    return;
+  }
+
+  const after = coach
+    ? Object.fromEntries(
+        order.map(k=>[k,changed(BASE[k],coach.changes[k])])
+      )
+    : null;
+
+  const vals = Object.values(BASE);
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+
+  wrap.innerHTML = `
+    <div class="scout">
+      <div class="scout-title">
+        <span>Reparti squadra</span>
+        <span>${coach ? "ANTEPRIMA COACH" : "PRIMA DEL COACH"}</span>
+      </div>
+
+      <div class="reps">
+        ${order.map(k=>{
+          if(level==="difficile"){
+            return repSegments(k,BASE[k],after ? after[k] : null);
+          }
+          return repExact(
+            k,
+            BASE[k],
+            after ? after[k] : null,
+            level,
+            min,
+            max
+          );
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+document.querySelectorAll(".demo").forEach(card=>{
+  renderScout(card);
+
+  card.querySelectorAll(".coach").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const coach=COACHES.find(c=>c.id===btn.dataset.coach);
+
+      card.querySelectorAll(".coach").forEach(x=>
+        x.classList.toggle("on",x===btn)
+      );
+
+      renderScout(card,coach);
+
+      const afterVals=Object.fromEntries(
+        order.map(k=>[
+          k,
+          changed(BASE[k],coach.changes[k])
+        ])
+      );
+
+      const afterOvr=calcOvr(afterVals);
+
+      card.querySelector(".after").textContent=afterOvr;
+      card.querySelector(".after").style.color=
+        afterOvr>OVR ? "var(--green)" :
+        afterOvr<OVR ? "var(--red)" :
+        "var(--txt)";
+    });
+  });
+});
+</script>
+
+</body>
+</html>

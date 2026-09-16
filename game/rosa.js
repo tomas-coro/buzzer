@@ -113,6 +113,43 @@ export function assegnaRosa(rosa, slot, carta) {
   return { ...rosa, panca: { ...rosa.panca, [slot.posto]: carta } };
 }
 
+
+/**
+ * Sposta un giocatore già titolare da un ruolo titolare a un altro.
+ *
+ * Non firma nessuno, non tocca la panchina e non modifica il salary:
+ * serve solo a riordinare il quintetto durante il draft.
+ */
+export function spostaTitolare(rosa, daRuolo, aRuolo) {
+  const da = { tipo: TITOLARE, ruolo: daRuolo };
+  const a = { tipo: TITOLARE, ruolo: aRuolo };
+
+  checkSlot(da);
+  checkSlot(a);
+
+  if (daRuolo === aRuolo) return rosa;
+
+  const carta = cartaIn(rosa, da);
+  if (!carta) throw new Error(`spostaTitolare: nessun giocatore in ${daRuolo}`);
+
+  if (cartaIn(rosa, a) !== null) {
+    throw new Error(`spostaTitolare: ${aRuolo} già occupato`);
+  }
+
+  if (!canPlay(carta, aRuolo)) {
+    throw new Error(`spostaTitolare: ${carta.name ?? "carta"} incompatibile con ${aRuolo}`);
+  }
+
+  return {
+    ...rosa,
+    titolari: {
+      ...rosa.titolari,
+      [daRuolo]: null,
+      [aRuolo]: carta,
+    },
+  };
+}
+
 // Come si chiama una casella quando bisogna scriverlo: "PG titolare", "6° uomo".
 export function etichettaSlot(slot) {
   checkSlot(slot);
