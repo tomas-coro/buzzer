@@ -13,7 +13,7 @@ export async function mountAccountPanel(host, store = window.localStorage) {
   if (!host) return;
 
   let formOpen = false;
-  let mode = "login";
+  let mode = "register";
   let busy = false;
   let error = "";
   let syncState = "";
@@ -99,13 +99,25 @@ export async function mountAccountPanel(host, store = window.localStorage) {
           </div>
         </div>
 
-        <button
-          type="button"
-          class="settings-account-open"
-          data-account="open"
-        >
-          ACCEDI
-        </button>
+        <div class="settings-account-entry-actions">
+          <button
+            type="button"
+            class="settings-account-open"
+            data-account="open"
+            data-mode="register"
+          >
+            ISCRIVITI
+          </button>
+
+          <button
+            type="button"
+            class="settings-account-open ghost"
+            data-account="open"
+            data-mode="login"
+          >
+            ACCEDI
+          </button>
+        </div>
       </div>
 
       ${formOpen ? `
@@ -173,11 +185,21 @@ export async function mountAccountPanel(host, store = window.localStorage) {
       ` : ""}
     `;
 
-    host.querySelector('[data-account="open"]')?.addEventListener("click", async () => {
-      formOpen = true;
-      error = "";
-      await render();
-      host.querySelector("#settings-account-email")?.focus();
+    host.querySelectorAll('[data-account="open"]').forEach((button) => {
+      button.addEventListener("click", async () => {
+        mode = button.dataset.mode === "login"
+          ? "login"
+          : "register";
+
+        formOpen = true;
+        error = "";
+
+        await render();
+
+        host
+          .querySelector("#settings-account-email")
+          ?.focus();
+      });
     });
 
     host.querySelector('[data-account="close"]')?.addEventListener("click", async () => {

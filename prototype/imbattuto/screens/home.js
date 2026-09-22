@@ -1,4 +1,5 @@
 import { mountAccountPanel } from "../account-panel.js";
+import { allRuns } from "../meta.js";
 // HOME - port fedele del mockup 19-sirena-clutch (splash BUZZER + tiro all'ultimo
 // secondo + home Cabina 90s). Tolta la cornice-telefono del mockup: qui lo schermo
 // E' l'app. Animazioni splash->home e sirena sono CSS puro (checkbox #opn + :has).
@@ -89,6 +90,15 @@ export function render(ctx) {
     playerIcon = savedIcon === "p1" || PLAYER_ICONS[savedIcon] ? savedIcon : "p1";
   } catch {}
   const copy = HOME_COPY[language];
+
+  const bestImbattuto = allRuns(window.localStorage)
+    .filter((run) => run?.formato === "imbattuto")
+    .reduce(
+      (best, run) =>
+        Math.max(best, Number(run?.vittorie) || 0),
+      0
+    );
+
   root.innerHTML = `
     <div class="scr">
       <div class="home" id="home-main-panel">
@@ -143,7 +153,7 @@ export function render(ctx) {
           </div>
 
           <span class="bz-top-actions rise" style="--d:.04s">
-            <span class="bz-best">best <b>9-0</b></span>
+            <span class="bz-best">best <b>${bestImbattuto}-0</b></span>
 
             <button class="bz-settings-btn bz-stats-btn" id="open-stats" type="button" aria-label="Statistiche Cabina" title="Statistiche Cabina">
               <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -276,14 +286,14 @@ export function render(ctx) {
               <input
                 id="player-name-input"
                 type="text"
-                maxlength="12"
+                maxlength="8"
                 value="${playerName}"
                 autocomplete="off"
                 spellcheck="false"
                 aria-label="${copy.playerName}"
               >
 
-              <span class="settings-counter"><b id="player-name-count">${playerName.length}</b>/12</span>
+              <span class="settings-counter"><b id="player-name-count">${playerName.length}</b>/8</span>
             </div>
 
             <p>${copy.playerInfo}</p>
