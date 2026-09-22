@@ -42,10 +42,13 @@ export function wireAppHeader(el, ctx, { onExit } = {}) {
       dlg.className = "exit-confirm";
       document.body.appendChild(dlg);
     }
-    const inDraft = ctx.state?.stato === "draft";
-    const testo = inDraft
-      ? "Vuoi uscire? Il draft in corso andrà perso."
-      : "Vuoi uscire? La partita in corso andrà persa.";
+    const stato = ctx.state?.stato;
+    const testo =
+      stato === "draft"
+        ? "Vuoi uscire? Il draft in corso andrà perso."
+        : stato === "coach"
+          ? "Vuoi uscire? La scelta coach in corso andrà persa."
+          : "Vuoi uscire? La partita in corso andrà persa.";
     dlg.innerHTML = `
       <p class="ec-txt">${testo}</p>
       <div class="ec-actions">
@@ -56,7 +59,7 @@ export function wireAppHeader(el, ctx, { onExit } = {}) {
     dlg.querySelector("#ec-go").onclick = () => {
       dlg.close();
       onExit?.();
-      ctx.dispatch({ type: "exitToDifficolta" });
+      ctx.dispatch({ type: "exitToHome" });
     };
     dlg.onclick = (e) => { if (e.target === dlg) dlg.close(); };
     dlg.showModal();

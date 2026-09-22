@@ -1,3 +1,4 @@
+import { mountAccountPanel } from "../account-panel.js";
 // HOME - port fedele del mockup 19-sirena-clutch (splash BUZZER + tiro all'ultimo
 // secondo + home Cabina 90s). Tolta la cornice-telefono del mockup: qui lo schermo
 // E' l'app. Animazioni splash->home e sirena sono CSS puro (checkbox #opn + :has).
@@ -81,7 +82,7 @@ export function render(ctx) {
       .toUpperCase()
       .replace(/[^A-Z0-9À-ÖØ-Ý ]/g, "")
       .trim()
-      .slice(0, 8) || "PLAYER1";
+      .slice(0, 12) || "PLAYER1";
 
     language = localStorage.getItem("buzzer-language") === "en" ? "en" : "it";
     const savedIcon = localStorage.getItem("buzzer-player-icon");
@@ -90,7 +91,7 @@ export function render(ctx) {
   const copy = HOME_COPY[language];
   root.innerHTML = `
     <div class="scr">
-      <div class="home">
+      <div class="home" id="home-main-panel">
         <div class="bz-top bz-top-upgraded">
           <div class="bz-player rise" aria-label="Giocatore 1">
             <button
@@ -255,7 +256,7 @@ export function render(ctx) {
           </div>
 </div>
       </div>
-      <dialog class="bz-settings-dialog" id="settings-dialog">
+      <section class="home-settings-panel" id="settings-dialog" hidden>
         <div class="bz-settings-panel">
 
           <div class="settings-header">
@@ -266,7 +267,7 @@ export function render(ctx) {
             <button id="close-settings" class="settings-close" type="button" aria-label="${copy.close}">×</button>
           </div>
 
-          <section class="settings-block">
+          <section class="settings-block settings-player-block">
             <span class="settings-title">${copy.player}</span>
 
             <div class="settings-player-row">
@@ -275,20 +276,20 @@ export function render(ctx) {
               <input
                 id="player-name-input"
                 type="text"
-                maxlength="8"
+                maxlength="12"
                 value="${playerName}"
                 autocomplete="off"
                 spellcheck="false"
                 aria-label="${copy.playerName}"
               >
 
-              <span class="settings-counter"><b id="player-name-count">${playerName.length}</b>/8</span>
+              <span class="settings-counter"><b id="player-name-count">${playerName.length}</b>/12</span>
             </div>
 
             <p>${copy.playerInfo}</p>
           </section>
 
-          <section class="settings-block">
+          <section class="settings-block settings-language-block">
             <span class="settings-title">${copy.language}</span>
 
             <div class="language-choice">
@@ -307,6 +308,10 @@ export function render(ctx) {
             </p>
           </section>
 
+          <section class="settings-block settings-account-block">
+            <div id="settings-account"></div>
+          </section>
+
           <section class="settings-block settings-update-block">
             <div>
               <span class="settings-title">${copy.updates}</span>
@@ -323,7 +328,7 @@ export function render(ctx) {
           </button>
 
         </div>
-      </dialog>
+      </section>
 
       ${ctx.showHomeIntro ? `
       <input class="opn" type="checkbox" id="opn-rewind">
@@ -350,6 +355,7 @@ export function render(ctx) {
 
 
   const settingsDialog = root.querySelector("#settings-dialog");
+  const homeMainPanel = root.querySelector("#home-main-panel");
   const nameInput = root.querySelector("#player-name-input");
   const homePlayerName = root.querySelector("#home-player-name");
   const playerCount = root.querySelector("#player-name-count");
@@ -358,16 +364,20 @@ export function render(ctx) {
     nameInput.value = playerName;
     playerCount.textContent = String(playerName.length);
     closePlayerPicker();
-    settingsDialog.showModal();
+
+    homeMainPanel.hidden = true;
+    settingsDialog.hidden = false;
+    root.classList.add("settings-open");
+  };
+
+  const closeSettings = () => {
+    settingsDialog.hidden = true;
+    homeMainPanel.hidden = false;
+    root.classList.remove("settings-open");
   };
 
   root.querySelector("#open-settings").onclick = openSettings;
-
-  root.querySelector("#close-settings").onclick = () => settingsDialog.close();
-
-  settingsDialog.addEventListener("click", (event) => {
-    if (event.target === settingsDialog) settingsDialog.close();
-  });
+  root.querySelector("#close-settings").onclick = closeSettings;
 
   nameInput.addEventListener("input", () => {
     nameInput.value = nameInput.value
@@ -461,8 +471,13 @@ export function render(ctx) {
     } catch {}
 
     homePlayerName.textContent = playerName;
-    settingsDialog.close();
+    closeSettings();
   };
+
+  const settingsAccount = root.querySelector("#settings-account");
+  if (settingsAccount) {
+    mountAccountPanel(settingsAccount, window.localStorage);
+  }
 
   const updateButton = root.querySelector("#check-update");
   const status = ctx.updateState?.() ?? {};

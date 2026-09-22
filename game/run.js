@@ -30,6 +30,14 @@ import { simulaPartita, rngSeed } from "./partita.js";
 import { boxScorePartita } from "./boxscore.js";
 import { playByPlay } from "./playbyplay.js";
 import { teamName } from "./team-names.js";
+import {
+  createPlayoffBracket,
+  recordUserPlayoffGame,
+  simulateOtherPlayoffGames,
+  settleBracketUntilUserReady,
+  currentUserOpponentRef,
+  opponentFromBracketRef,
+} from "./playoff-bracket.js";
 
 // La rotazione dell'avversario storico. Neutra come il suo ritmo, e per lo
 // stesso motivo: non sappiamo chi allenava quella squadra in quella stagione,
@@ -199,10 +207,27 @@ export function startRun(state, pool) {
   const d = DIFFICULTIES[state.difficolta];
   const round = 1;
   const avversario = pickOpponent(pool, round, d, semeAvversario(state.seme, round));
+
+  const playoffBracket = state.formato === "playoff"
+    ? createPlayoffBracket({
+        pool,
+        firstOpponent: avversario,
+        userName: state.squadra,
+        userOvr: voto.ovr,
+        seme: state.seme,
+      })
+    : null;
+
   return {
     ...state, rosaAllenata: rosa, voto, ritmo, rotazione, effetti,
     round, avversario, pool, stato: "run",
-    ...(state.formato === "playoff" ? { gara: 1, serieRecord: { noi: 0, loro: 0 } } : {}),
+    ...(state.formato === "playoff"
+      ? {
+          gara: 1,
+          serieRecord: { noi: 0, loro: 0 },
+          playoffBracket,
+        }
+      : {}),
   };
 }
 
@@ -331,44 +356,164 @@ export function esitoRound(state) {
 }
 
 export function resolveSeriesGame(state) {
-  if (state.stato !== "run") throw new Error("resolveSeriesGame: run non attivo");
+  if (state.stato !== "run") {
+    throw new Error("resolveSeriesGame: run non attivo");
+  }
+
   const partita = partitaRound(state);
   const vinto = partita.vincitore === "casa";
   const vittorie = state.vittorie + (vinto ? 1 : 0);
+
   const serieRecord = {
     noi: state.serieRecord.noi + (vinto ? 1 : 0),
     loro: state.serieRecord.loro + (vinto ? 0 : 1),
   };
+
   const storia = [...state.storia, {
-    round: state.round, gara: state.gara,
-    avversario: state.avversario.team, stagione: state.avversario.season, vinto,
-    tuo: state.voto.ovr, loro: state.avversario.voto.ovr,
-    punti: partita.punti, quarti: partita.quarti, cronaca: partita.cronaca,
+    round: state.round,
+    gara: state.gara,
+    avversario: state.avversario.team,
+    stagione: state.avversario.season,
+    vinto,
+    tuo: state.voto.ovr,
+    loro: state.avversario.voto.ovr,
+    punti: partita.punti,
+    quarti: partita.quarti,
+    cronaca: partita.cronaca,
     box: boxScoreRound(state, partita),
   }];
 
-  if (serieRecord.loro >= PLAYOFF_SERIE_A) {
-    const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
-    return { ...state, storia, vittorie, serieRecord, affrontati, stato: "finito", esito: "sconfitta" };
+  /*
+   * Il bracket è additivo rispetto al motore esistente.
+   * Se manca (fixture vecchio/test minimale), resta disponibile
+   * il comportamento legacy sotto.
+   */
+  let playoffBracket = state.playoffBracket ?? null;
+
+  if (playoffBracket) {
+    playoffBracket = recordUserPlayoffGame(
+      playoffBracket,
+      vinto,
+    );
+
+    // Ogni tua partita fa avanzare di una gara anche
+    // tutte le altre serie che in quel momento sono attive.
+    playoffBracket = simulateOtherPlayoffGames(
+      playoffBracket,
+      state.pool,
+      state.seme,
+      storia.length,
+    );
   }
 
-  if (serieRecord.noi >= PLAYOFF_SERIE_A && state.round >= PLAYOFF_ROUNDS) {
-    const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
-    return { ...state, storia, vittorie, serieRecord, affrontati, stato: "finito", esito: "campione" };
+  if (serieRecord.loro >= PLAYOFF_SERIE_A) {
+    const affrontati = [
+      ...state.affrontati,
+      chiaveAvversario(state.avversario),
+    ];
+
+    return {
+      ...state,
+      storia,
+      vittorie,
+      serieRecord,
+      affrontati,
+      playoffBracket,
+      stato: "finito",
+      esito: "sconfitta",
+    };
+  }
+
+  if (
+    serieRecord.noi >= PLAYOFF_SERIE_A
+    && state.round >= PLAYOFF_ROUNDS
+  ) {
+    const affrontati = [
+      ...state.affrontati,
+      chiaveAvversario(state.avversario),
+    ];
+
+    return {
+      ...state,
+      storia,
+      vittorie,
+      serieRecord,
+      affrontati,
+      playoffBracket,
+      stato: "finito",
+      esito: "campione",
+    };
   }
 
   if (serieRecord.noi >= PLAYOFF_SERIE_A) {
-    const affrontati = [...state.affrontati, chiaveAvversario(state.avversario)];
+    const affrontati = [
+      ...state.affrontati,
+      chiaveAvversario(state.avversario),
+    ];
+
     const round = state.round + 1;
-    const d = { ...DIFFICULTIES[state.difficolta], N: PLAYOFF_ROUNDS };
-    const avversario = pickOpponent(
-      state.pool, round, d, semeAvversario(state.seme, round), new Set(affrontati));
+
+    let avversario;
+
+    if (playoffBracket) {
+      // Se l'altro ramo della conference non ha ancora
+      // terminato la propria serie, viene simulato fino a
+      // conoscere il prossimo avversario del giocatore.
+      playoffBracket = settleBracketUntilUserReady(
+        playoffBracket,
+        state.pool,
+        state.seme,
+        storia.length,
+      );
+
+      const ref = currentUserOpponentRef(playoffBracket);
+
+      avversario = opponentFromBracketRef(
+        state.pool,
+        ref,
+      );
+
+      if (!avversario) {
+        throw new Error(
+          "resolveSeriesGame: prossimo avversario bracket non trovato",
+        );
+      }
+    } else {
+      const d = {
+        ...DIFFICULTIES[state.difficolta],
+        N: PLAYOFF_ROUNDS,
+      };
+
+      avversario = pickOpponent(
+        state.pool,
+        round,
+        d,
+        semeAvversario(state.seme, round),
+        new Set(affrontati),
+      );
+    }
+
     return {
-      ...state, storia, affrontati, vittorie, round, avversario,
-      gara: 1, serieRecord: { noi: 0, loro: 0 },
+      ...state,
+      storia,
+      affrontati,
+      vittorie,
+      round,
+      avversario,
+      gara: 1,
+      serieRecord: { noi: 0, loro: 0 },
+      playoffBracket,
     };
   }
-  return { ...state, storia, vittorie, serieRecord, gara: state.gara + 1 };
+
+  return {
+    ...state,
+    storia,
+    vittorie,
+    serieRecord,
+    gara: state.gara + 1,
+    playoffBracket,
+  };
 }
 
 export function resolveRound(state) {

@@ -3,7 +3,7 @@ import { chiavePersona, medieCarriera } from "../../game/boxscore.js";
 const KEY = "imbattuto:runs";
 const BACKUP_KEY = "imbattuto:runs:backup";
 const CURRENT_KEY = "imbattuto:current";
-const MAX_RUNS = 100;
+const MAX_RUNS = 1000;
 
 export function saveCurrentRun(store, current) {
   try { store.setItem(CURRENT_KEY, JSON.stringify(current)); } catch { /* storage non disponibile */ }
@@ -43,6 +43,17 @@ function writeAll(store, runs) {
 
 export function recordRun(store, run) {
   return writeAll(store, [...readAll(store), { ...run, ts: Date.now() }]);
+}
+
+// Letto/scritto da sync.js per il pull-merge-push: tiene in meta.js l'unica
+// definizione del formato di storage (chiave, backup, cap MAX_RUNS), sync.js
+// non tocca mai localStorage direttamente.
+export function allRuns(store) {
+  return readAll(store);
+}
+
+export function replaceAllRuns(store, runs) {
+  return writeAll(store, runs);
 }
 
 export function leaderboard(store, formato, difficolta) {

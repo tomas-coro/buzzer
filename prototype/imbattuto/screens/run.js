@@ -205,10 +205,31 @@ export function render(ctx) {
     const pausaBtn = azioneIdx >= 0 && !finita()
       ? `<button class="sh-pause" id="pausa" type="button">${inPausa ? "Riprendi" : "Pausa"}</button>`
       : "";
+    // L'azione primaria vive nella stessa barra dei controlli:
+    // prima del via = Gioca, durante = Pausa, a fine gara = Continua.
+    // Così resta sempre visibile senza rubare una fascia verticale alla partita.
+    const primaryAction = azioneIdx < 0 || finita()
+      ? `<div class="sh-inline-cta">${ctaHTML()}</div>`
+      : "";
+
+    const bracketBtn = state.formato === "playoff"
+      ? `<button
+          class="po-bracket-link"
+          id="open-bracket"
+          type="button"
+        >
+          Tabellone
+        </button>`
+      : "";
+
     const speed = `<div class="sh-speed">
-      <span>Velocità</span>
-      <div class="sh-seg" role="group" aria-label="Velocità della simulazione">${seg}</div>
-      ${pausaBtn}
+      ${bracketBtn}
+      <div class="sh-speed-tools">
+        <span>Velocità</span>
+        <div class="sh-seg" role="group" aria-label="Velocità della simulazione">${seg}</div>
+        ${pausaBtn}
+        ${primaryAction}
+      </div>
     </div>`;
 
     if (state.formato === "playoff") {
@@ -463,10 +484,9 @@ export function render(ctx) {
   function ctaHTML() {
     if (azioneIdx < 0) return `<button class="sh-cta" id="via">${PLAY}<span>Gioca la partita</span></button>`;
     if (!finita()) {
-      // Non interattivo: Pausa ora sta in testata (vedi testataHTML). Questa riga
-      // resta solo per tenere l'altezza della fascia CTA, senza saltare quando
-      // parte la simulazione.
-      return `<button class="sh-cta ghost" disabled>${inPausa ? "In pausa" : `Simulazione in corso · ${VELOCITA_NOME[velocita]}`}</button>`;
+      // Durante la simulazione l'azione vive già nella testata:
+      // velocità + Pausa. Nessun CTA fantasma aggiuntivo.
+      return "";
     }
     return `<button class="sh-cta" id="avanti">${state.formato === "playoff" ? "Continua i playoff" : vinto ? "Prossimo turno" : "Vedi come è andata"}</button>`;
   }
@@ -487,7 +507,10 @@ export function render(ctx) {
   function disegna() {
     el.innerHTML = `
       ${appHeader(state)}
-      <div class="sh-hd">${testataHTML()}</div>
+      <div class="sh-hd">
+        ${testataHTML()}
+      </div>
+
       <div class="sh-body">
         <div class="a-top">
           <div class="a-panel">
@@ -515,7 +538,6 @@ export function render(ctx) {
             ${formazioneHTML(loroCarte, loroCarteBox, box.ospite.righe, loroRuoli, loroRuoliBox, "loro")}
           </div>
         </div>
-        ${ctaHTML()}
       </div>`;
     aggancia();
     // La lista scrolla dentro di sé (vedi .sh-log): senza questo resterebbe
@@ -535,6 +557,10 @@ export function render(ctx) {
     wireAppHeader(el, ctx, {
       onExit: () => { fermaTimer(); pausaDaSheet = false; document.getElementById("stat-sheet")?.close(); },
     });
+    el.querySelector("#open-bracket")?.addEventListener(
+      "click",
+      () => ctx.dispatch({ type: "showPlayoffBracket" }),
+    );
     el.querySelector("#via")?.addEventListener("click", via);
     el.querySelector("#pausa")?.addEventListener("click", pausaToggle);
     el.querySelector("#avanti")?.addEventListener("click", () => {

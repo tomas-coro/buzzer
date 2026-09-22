@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BUZZER - Profilo · Account cloud</title>
+<link rel="stylesheet" href="../prototype/imbattuto/fonts.css">
+<link rel="stylesheet" href="../prototype/imbattuto/styles.css">
+<style>
+  body{padding-bottom:80px}
+  .mock-switch{position:sticky;top:0;z-index:20;display:flex;gap:6px;flex-wrap:wrap;
+    padding:10px 14px;background:var(--ink-2);border-bottom:1px solid var(--line)}
+  .mock-switch button{padding:6px 10px;border-radius:8px;border:1px solid var(--line);
+    background:transparent;color:var(--bone-dim);font-family:var(--body);font-weight:700;font-size:.68rem}
+  .mock-switch button.on{background:var(--brass);color:var(--ink);border-color:var(--brass)}
+  .acct.state{display:none}
+  .acct.state.on{display:flex}
+
+  /* ---- Card account, stile coerente con .stats-preview / .c1-* ---- */
+  .acct{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;display:flex;flex-direction:column;gap:14px}
+  .acct-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .acct-head .eyebrow{margin:0}
+  .acct-badge{font-family:var(--body);font-weight:800;font-size:.56rem;letter-spacing:.08em;
+    text-transform:uppercase;padding:4px 9px;border-radius:20px}
+  .acct-badge.off{color:var(--bone-dim);background:rgba(138,139,192,.14)}
+  .acct-badge.on{color:var(--ink);background:var(--green)}
+
+  .acct-copy{font-family:var(--body);font-size:.8rem;line-height:1.5;color:var(--bone-dim);margin:0}
+
+  .acct-form{display:flex;flex-direction:column;gap:10px}
+  .acct-field{display:flex;flex-direction:column;gap:6px}
+  .acct-field label{font-family:var(--body);font-weight:800;font-size:.56rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--bone-dim)}
+  .acct-field input{font-family:var(--body);font-weight:700;font-size:.9rem;color:var(--bone);
+    background:var(--surf,rgba(0,0,0,.2));border:1px solid var(--line);border-radius:10px;
+    padding:11px 12px;outline:none}
+  .acct-field input:focus{border-color:var(--brass)}
+
+  .acct-actions{display:flex;gap:10px;margin-top:2px}
+  .acct-cta{flex:1;font-family:var(--body);font-weight:800;font-size:.8rem;letter-spacing:.01em;
+    padding:12px;border-radius:10px;border:none;background:var(--yellow);color:var(--ink)}
+  .acct-cta.ghost{background:transparent;border:1px solid var(--line);color:var(--bone)}
+  .acct-cta[disabled]{opacity:.55;pointer-events:none}
+
+  .acct-switch{font-family:var(--body);font-size:.72rem;color:var(--bone-dim);background:none;
+    border:none;text-decoration:underline;text-underline-offset:3px;align-self:flex-start;padding:0}
+
+  .acct-error{font-family:var(--body);font-weight:700;font-size:.74rem;color:var(--red);
+    background:rgba(255,80,56,.12);border:1px solid rgba(255,80,56,.3);border-radius:10px;padding:10px 12px}
+
+  .acct-loading{display:flex;align-items:center;gap:10px;font-family:var(--body);
+    font-weight:700;font-size:.78rem;color:var(--bone-dim)}
+  .acct-spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);
+    border-top-color:var(--brass);animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .acct-on{display:flex;align-items:center;gap:12px}
+  .acct-avatar{width:44px;height:44px;border-radius:50%;flex:none;
+    background:linear-gradient(135deg,var(--brass),var(--yellow));
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--arcade);font-size:.9rem;color:var(--ink)}
+  .acct-id{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .acct-id b{font-family:var(--body);font-weight:800;font-size:.86rem;color:var(--bone);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .acct-id small{font-family:var(--body);font-weight:700;font-size:.66rem;color:var(--bone-dim)}
+  .acct-sync{margin-left:auto;text-align:right;display:flex;flex-direction:column;gap:2px}
+  .acct-sync b{font-family:var(--body);font-weight:800;font-size:.62rem;color:var(--green);
+    text-transform:uppercase;letter-spacing:.06em}
+  .acct-sync small{font-family:var(--body);font-weight:700;font-size:.6rem;color:var(--bone-dim)}
+
+  .acct-logout{font-family:var(--body);font-weight:800;font-size:.72rem;color:var(--bone-dim);
+    background:transparent;border:1px solid var(--line);border-radius:10px;padding:9px 14px;
+    align-self:flex-start}
+</style>
+</head>
+<body>
+
+<nav class="mock-switch">
+  <button class="on" data-s="logged-out">1 · Sloggato</button>
+  <button data-s="form">2 · Form email+password</button>
+  <button data-s="loading">3 · Login in corso</button>
+  <button data-s="error">4 · Errore</button>
+  <button data-s="logged-in">5 · Loggato + sync</button>
+</nav>
+
+<div id="app">
+<section class="screen profilo stats-v2">
+
+  <header class="stats-v2-head">
+    <span class="stats-v2-kicker">CABINA P1</span>
+    <h1>Statistiche cabina</h1>
+    <p>Record, giocatori e run salvati su questo dispositivo.</p>
+  </header>
+
+  <!-- STATO 1: sloggato, invito facoltativo -->
+  <div class="acct state on" data-state="logged-out">
+    <div class="acct-head">
+      <span class="eyebrow">Account cloud</span>
+      <span class="acct-badge off">Non collegato</span>
+    </div>
+    <p class="acct-copy">Vuoi ritrovare le tue statistiche anche su un altro telefono? Collega un account: resta facoltativo, l'app funziona benissimo anche senza.</p>
+    <div class="acct-actions">
+      <button class="acct-cta">Collega account</button>
+    </div>
+  </div>
+
+  <!-- STATO 2: form email+password (toggle login/registrati) -->
+  <div class="acct state" data-state="form">
+    <div class="acct-head">
+      <span class="eyebrow">Accedi</span>
+      <span class="acct-badge off">Non collegato</span>
+    </div>
+    <form class="acct-form">
+      <div class="acct-field">
+        <label for="mk-email">Email</label>
+        <input id="mk-email" type="email" placeholder="tuonome@email.com" autocomplete="email">
+      </div>
+      <div class="acct-field">
+        <label for="mk-pw">Password</label>
+        <input id="mk-pw" type="password" placeholder="Almeno 8 caratteri" autocomplete="current-password">
+      </div>
+      <div class="acct-actions">
+        <button type="button" class="acct-cta ghost">Annulla</button>
+        <button type="button" class="acct-cta">Accedi</button>
+      </div>
+      <button type="button" class="acct-switch">Non hai un account? Registrati</button>
+    </form>
+  </div>
+
+  <!-- STATO 3: loading -->
+  <div class="acct state" data-state="loading">
+    <div class="acct-head">
+      <span class="eyebrow">Accedi</span>
+      <span class="acct-badge off">Non collegato</span>
+    </div>
+    <div class="acct-loading">
+      <span class="acct-spin" aria-hidden="true"></span>
+      Verifica in corso…
+    </div>
+  </div>
+
+  <!-- STATO 4: errore -->
+  <div class="acct state" data-state="error">
+    <div class="acct-head">
+      <span class="eyebrow">Accedi</span>
+      <span class="acct-badge off">Non collegato</span>
+    </div>
+    <form class="acct-form">
+      <div class="acct-error">Email o password sbagliate. Riprova.</div>
+      <div class="acct-field">
+        <label for="mk-email2">Email</label>
+        <input id="mk-email2" type="email" value="tomas@esempio.com">
+      </div>
+      <div class="acct-field">
+        <label for="mk-pw2">Password</label>
+        <input id="mk-pw2" type="password" value="••••••••">
+      </div>
+      <div class="acct-actions">
+        <button type="button" class="acct-cta ghost">Annulla</button>
+        <button type="button" class="acct-cta">Riprova</button>
+      </div>
+      <button type="button" class="acct-switch">Non hai un account? Registrati</button>
+    </form>
+  </div>
+
+  <!-- STATO 5: loggato, sync ok -->
+  <div class="acct state" data-state="logged-in">
+    <div class="acct-head">
+      <span class="eyebrow">Account cloud</span>
+      <span class="acct-badge on">Collegato</span>
+    </div>
+    <div class="acct-on">
+      <span class="acct-avatar">T</span>
+      <span class="acct-id">
+        <b>tomas@esempio.com</b>
+        <small>Dati sincronizzati su questo account</small>
+      </span>
+      <span class="acct-sync">
+        <b>Sync ok</b>
+        <small>2 minuti fa</small>
+      </span>
+    </div>
+    <button class="acct-logout">Esci</button>
+  </div>
+
+  <nav class="stats-v2-tabs" aria-label="Sezioni statistiche">
+    <button type="button" class="on">Panoramica</button>
+    <button type="button">Giocatori</button>
+    <button type="button">Run</button>
+  </nav>
+
+  <section class="stats-scoreboard">
+    <div class="stats-score-main">
+      <span><small>VITTORIE</small><b>14</b></span>
+      <span class="stats-score-divider">-</span>
+      <span><small>SCONFITTE</small><b>3</b></span>
+    </div>
+    <div class="stats-winpct"><small>WIN RATE</small><strong>82.4%</strong></div>
+  </section>
+
+</section>
+</div>
+
+<script>
+  document.querySelectorAll(".mock-switch button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".mock-switch button").forEach((b) => b.classList.toggle("on", b === btn));
+      document.querySelectorAll(".state").forEach((s) => s.classList.toggle("on", s.dataset.state === btn.dataset.s));
+    });
+  });
+</script>
+</body>
+</html>

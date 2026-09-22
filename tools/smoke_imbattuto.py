@@ -49,8 +49,17 @@ def play(browser, viewport):
     assert page.locator(".draft").count() == 1, "il refresh ha perso la run in corso"
     assert page.locator("[data-tiktxt]").inner_text() == draft_key
     # Riparti col seme dall'inizio: il reload sopra riavvia il generatore casuale.
+    # La X apre la conferma BUZZER condivisa.
     page.locator("#app-exit").click()
+    page.locator("#ec-go").wait_for()
     page.locator("#ec-go").click()
+
+    # Verifica il contratto UI: uscita confermata -> Home, senza splash.
+    page.locator("#mode-corsa").wait_for()
+    assert page.locator(".draft").count() == 0, "la X del draft non ha chiuso il draft"
+
+    # Rientra nell'Imbattuto per ripartire col seme dall'inizio.
+    page.locator("#mode-corsa").click()
     page.locator('[data-diff="facile"]').click()
     page.locator("#start").click()
     page.locator("#autod-go").click()

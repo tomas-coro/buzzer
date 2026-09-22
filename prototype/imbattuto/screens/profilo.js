@@ -6,6 +6,8 @@
 import { profiloGiocatori, lifetimeStats, leaderboard } from "../meta.js";
 import { teamColors, initials } from "../team-colors.js";
 import { esc } from "./_chrome.js";
+import { getSession, signIn, signUp, signOut } from "../auth.js";
+import { sync } from "../sync.js";
 
 const VOLTI_PATH = "../../assets/volti";
 
@@ -139,7 +141,7 @@ function leaderStat(giocatori, key, source) {
 }
 
 function leaderValue(g, key, source) {
-  if (!g) return "—";
+  if (!g) return "-";
   const value = Number(g?.[source]?.[key]) || 0;
   return source === "medie" ? n1(value) : String(Math.round(value));
 }
@@ -154,13 +156,13 @@ function leaderRow(giocatori, label, key) {
 
       <div class="cab-leader-cell">
         <small>TOTALE</small>
-        <b>${totale ? esc(totale.nome) : "—"}</b>
+        <b>${totale ? esc(totale.nome) : "-"}</b>
         <strong>${leaderValue(totale, key, "totali")}</strong>
       </div>
 
       <div class="cab-leader-cell">
         <small>MEDIA</small>
-        <b>${media ? esc(media.nome) : "—"}</b>
+        <b>${media ? esc(media.nome) : "-"}</b>
         <strong>${leaderValue(media, key, "medie")}</strong>
       </div>
     </div>
@@ -223,10 +225,97 @@ function renderRunRows(runs) {
   `).join("");
 }
 
+// Account cloud opzionale, port fedele del mockup 102-profilo-login (5
+// stati: sloggato/form/loading/errore/loggato+sync). `screenState` guida
+// cosa si vede, `authMode` sceglie login vs registrati dentro lo stato
+// "form". La card e' interamente ridisegnata (innerHTML) ad ogni cambio di
+// stato: piu' semplice che tenere sincronizzati nodi sparsi per 5 stati.
+function relTimeBreve(ts) {
+  if (!ts) return "";
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 10) return "adesso";
+  if (sec < 60) return `${sec} secondi fa`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min} minut${min === 1 ? "o" : "i"} fa`;
+  const ore = Math.floor(min / 60);
+  return `${ore} or${ore === 1 ? "a" : "e"} fa`;
+}
+
+function acctHTML(a) {
+  const badge = a.screenState === "in"
+    ? `<span class="acct-badge on">Collegato</span>`
+    : `<span class="acct-badge off">Non collegato</span>`;
+
+  if (a.screenState === "out") {
+    return `
+      <div class="acct-head"><span class="eyebrow">Account cloud</span>${badge}</div>
+      <p class="acct-copy">Vuoi ritrovare le tue statistiche anche su un altro telefono? Collega un account: resta facoltativo, l'app funziona benissimo anche senza.</p>
+      <div class="acct-actions">
+        <button class="acct-cta" type="button" data-acct="open-form">Collega account</button>
+      </div>`;
+  }
+
+  if (a.screenState === "loading") {
+    return `
+      <div class="acct-head"><span class="eyebrow">${a.authMode === "register" ? "Registrati" : "Accedi"}</span>${badge}</div>
+      <div class="acct-loading"><span class="acct-spin" aria-hidden="true"></span>Verifica in corso...</div>`;
+  }
+
+  if (a.screenState === "form" || a.screenState === "error") {
+    const cta = a.authMode === "register" ? "Registrati" : "Accedi";
+    const switchLabel = a.authMode === "register"
+      ? "Hai gia' un account? Accedi"
+      : "Non hai un account? Registrati";
+    const errore = a.screenState === "error"
+      ? `<div class="acct-error">${esc(a.errorMsg)}</div>`
+      : "";
+
+    return `
+      <div class="acct-head"><span class="eyebrow">${cta}</span>${badge}</div>
+      <form class="acct-form" id="acct-form">
+        ${errore}
+        <div class="acct-field">
+          <label for="acct-email">Email</label>
+          <input id="acct-email" type="email" placeholder="tuonome@email.com" autocomplete="email" value="${esc(a.email)}">
+        </div>
+        <div class="acct-field">
+          <label for="acct-pw">Password</label>
+          <input id="acct-pw" type="password" placeholder="Almeno 6 caratteri" autocomplete="${a.authMode === "register" ? "new-password" : "current-password"}" value="${esc(a.password)}">
+        </div>
+        <div class="acct-actions">
+          <button type="button" class="acct-cta ghost" data-acct="cancel">Annulla</button>
+          <button type="submit" class="acct-cta" data-acct="submit">${a.screenState === "error" ? "Riprova" : cta}</button>
+        </div>
+        <button type="button" class="acct-switch" data-acct="switch-mode">${switchLabel}</button>
+      </form>`;
+  }
+
+  // "in": loggato, con lo stato di sync corrente
+  const syncLabel = { idle: "", syncing: "Sincronizzazione...", ok: "Sync ok", err: "Sync fallita" }[a.syncState] || "";
+  const syncSub = a.syncState === "ok" ? relTimeBreve(a.lastSync)
+    : a.syncState === "err" ? a.syncMsg
+    : "";
+
+  return `
+    <div class="acct-head"><span class="eyebrow">Account cloud</span>${badge}</div>
+    <div class="acct-on">
+      <span class="acct-avatar">${esc((a.email[0] || "?").toUpperCase())}</span>
+      <span class="acct-id">
+        <b>${esc(a.email)}</b>
+        <small>Dati sincronizzati su questo account</small>
+      </span>
+      <span class="acct-sync ${a.syncState === "err" ? "err" : ""}">
+        <b>${esc(syncLabel)}</b>
+        <small>${esc(syncSub)}</small>
+      </span>
+    </div>
+    <button class="acct-logout" type="button" data-acct="logout">Esci</button>`;
+}
+
 export function render(ctx) {
   const store = window.localStorage;
-  const giocatori = profiloGiocatori(store);
-  const stats = lifetimeStats(store);
+  let giocatori = profiloGiocatori(store);
+  let stats = lifetimeStats(store);
 
   let activeTab = "overview";
   let playerMetric = "pts";
@@ -234,23 +323,8 @@ export function render(ctx) {
   let formato = ctx.state?.formato ?? "imbattuto";
   let difficolta = ctx.state?.difficolta ?? "normale";
 
-  const el = document.createElement("section");
-  el.className = "screen profilo stats-v2";
-
-  el.innerHTML = `
-    <header class="stats-v2-head">
-      <span class="stats-v2-kicker">CABINA P1</span>
-      <h1>Statistiche cabina</h1>
-      <p>Record, giocatori e run salvati su questo dispositivo.</p>
-    </header>
-
-    <nav class="stats-v2-tabs" aria-label="Sezioni statistiche">
-      <button type="button" data-stats-tab="overview" class="on">Panoramica</button>
-      <button type="button" data-stats-tab="players">Giocatori</button>
-      <button type="button" data-stats-tab="runs">Run</button>
-    </nav>
-
-    <div class="stats-v2-panel" data-stats-panel="overview">
+  function overviewHTML() {
+    return `
       <section class="stats-scoreboard">
         <div class="stats-score-main">
           <span>
@@ -290,8 +364,28 @@ export function render(ctx) {
         ${leaderRow(giocatori, "ASSIST", "ast")}
         ${leaderRow(giocatori, "RIMBALZI", "reb")}
         ${leaderRow(giocatori, "RUBATE", "stl")}
-      </section>
-    </div>
+      </section>`;
+  }
+
+  const el = document.createElement("section");
+  el.className = "screen profilo stats-v2";
+
+  el.innerHTML = `
+    <header class="stats-v2-head">
+      <span class="stats-v2-kicker">CABINA P1</span>
+      <h1>Statistiche cabina</h1>
+      <p>Record, giocatori e run salvati su questo dispositivo.</p>
+    </header>
+
+    <div class="acct" id="acct-card"></div>
+
+    <nav class="stats-v2-tabs" aria-label="Sezioni statistiche">
+      <button type="button" data-stats-tab="overview" class="on">Panoramica</button>
+      <button type="button" data-stats-tab="players">Giocatori</button>
+      <button type="button" data-stats-tab="runs">Run</button>
+    </nav>
+
+    <div class="stats-v2-panel" data-stats-panel="overview">${overviewHTML()}</div>
 
     <div class="stats-v2-panel" data-stats-panel="players" hidden>
       <div class="stats-section-head stats-players-title">
@@ -526,6 +620,123 @@ export function render(ctx) {
   window.addEventListener("resize", syncToTop, { passive: true });
 
   requestAnimationFrame(syncToTop);
+
+  // --- Account cloud (mockup 102) ---
+  function refreshDatiLocali() {
+    giocatori = profiloGiocatori(store);
+    stats = lifetimeStats(store);
+    el.querySelector('[data-stats-panel="overview"]').innerHTML = overviewHTML();
+    if (activeTab === "players") paintPlayers();
+    if (activeTab === "runs") paintRuns();
+  }
+
+  const acctCard = el.querySelector("#acct-card");
+  const sessioneIniziale = getSession(store);
+  const acct = {
+    screenState: sessioneIniziale ? "in" : "out",
+    authMode: "login",
+    email: sessioneIniziale?.user?.email || "",
+    password: "",
+    errorMsg: "",
+    syncState: "idle",
+    syncMsg: "",
+    lastSync: 0,
+  };
+
+  function paintAcct() {
+    acctCard.innerHTML = acctHTML(acct);
+    wireAcct();
+  }
+
+  function wireAcct() {
+    acctCard.querySelector('[data-acct="open-form"]')?.addEventListener("click", () => {
+      acct.screenState = "form";
+      acct.authMode = "login";
+      acct.errorMsg = "";
+      paintAcct();
+    });
+
+    acctCard.querySelector('[data-acct="cancel"]')?.addEventListener("click", () => {
+      acct.screenState = "out";
+      acct.password = "";
+      paintAcct();
+    });
+
+    acctCard.querySelector('[data-acct="switch-mode"]')?.addEventListener("click", () => {
+      acct.authMode = acct.authMode === "login" ? "register" : "login";
+      acct.errorMsg = "";
+      paintAcct();
+    });
+
+    acctCard.querySelector("#acct-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      acct.email = acctCard.querySelector("#acct-email").value.trim();
+      acct.password = acctCard.querySelector("#acct-pw").value;
+
+      if (!acct.email || !acct.password) {
+        acct.screenState = "error";
+        acct.errorMsg = "Email e password sono obbligatorie.";
+        paintAcct();
+        return;
+      }
+
+      acct.screenState = "loading";
+      paintAcct();
+
+      const metodo = acct.authMode === "register" ? signUp : signIn;
+      const r = await metodo(store, acct.email, acct.password);
+
+      if (!r.ok) {
+        acct.screenState = "error";
+        acct.errorMsg = r.error;
+        paintAcct();
+        return;
+      }
+
+      acct.screenState = "in";
+      acct.password = "";
+      acct.syncState = "idle";
+      paintAcct();
+      avviaSync();
+    });
+
+    acctCard.querySelector('[data-acct="logout"]')?.addEventListener("click", async () => {
+      await signOut(store);
+      acct.screenState = "out";
+      acct.email = "";
+      acct.syncState = "idle";
+      paintAcct();
+    });
+  }
+
+  // Chiamata dopo login/registrazione e all'apertura schermata se gia'
+  // loggato. Se pull-merge porta dati nuovi, ridisegna panoramica/liste: le
+  // costanti giocatori/stats calcolate all'inizio di render() sarebbero
+  // altrimenti stantie dopo un pull da un altro device.
+  async function avviaSync() {
+    acct.syncState = "syncing";
+    paintAcct();
+
+    const r = await sync(store);
+
+    if (!r.ok) {
+      acct.syncState = "err";
+      acct.syncMsg = r.error;
+      paintAcct();
+      return;
+    }
+
+    acct.syncState = "ok";
+    acct.lastSync = Date.now();
+    paintAcct();
+
+    if (r.runs.pull > 0 || r.profilo.direzione === "pull") {
+      refreshDatiLocali();
+    }
+  }
+
+  paintAcct();
+  if (sessioneIniziale) avviaSync();
 
   paintPlayers();
   paintRuns();

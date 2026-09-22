@@ -11,6 +11,7 @@ import { render as difficolta } from "./screens/difficolta.js";
 import { render as draft } from "./screens/draft.js";
 import { render as coach } from "./screens/coach.js";
 import { render as run } from "./screens/run.js";
+import { render as playoffBracket } from "./screens/playoff-bracket.js";
 import { render as esito } from "./screens/esito.js";
 import { render as leaderboard } from "./screens/leaderboard.js";
 import { render as profilo } from "./screens/profilo.js";
@@ -21,9 +22,10 @@ let swRegistration = null;
 let updateWorker = null;
 let updateChecking = false;
 
-// Intro Home: deve essere mostrata solo alla prima apertura reale
-// dell'app. La navigazione interna verso Home non deve riattivarla.
-let showHomeIntro = true;
+// Intro Home: una sola volta per sessione reale dell'app.
+// Anche se history/PWA ricrea il documento, un ritorno interno alla Home
+// non deve rilanciare la splash.
+let showHomeIntro = sessionStorage.getItem("buzzer:home-intro-seen") !== "1";
 
 function updateState() {
   return {
@@ -85,7 +87,9 @@ const pool = opponentPool(cards); // pool avversari, calcolato una volta
 // Registry di render: chiave = fase UI o state.stato.
 const screens = {
   home, difficolta, "difficolta-playoff": difficolta,
-  draft, coach, run, finito: esito, leaderboard, profilo,
+  draft, coach, run,
+  "playoff-bracket": playoffBracket,
+  finito: esito, leaderboard, profilo,
 };
 
 function ctx() {
@@ -255,10 +259,28 @@ function dispatch(action) {
     }
     case "chooseCoach":
       state = chooseCoach(state, action.coach);
-      state = startRun(state, pool);   // entra nel run: calcola voto + primo avversario
+      state = startRun(state, pool);
+
+      // Nel Playoff il tabellone è parte dell'ingresso nel torneo:
+      // prima di Gara 1 il giocatore vede seed, conference e percorso.
+      if (state.formato === "playoff") {
+        ui = "playoff-bracket";
+      }
+
       break;
-    case "resolveRound":
-      state = state.formato === "playoff" ? resolveSeriesGame(state) : resolveRound(state);
+    case "resolveRound": {
+      const eraPlayoff = state.formato === "playoff";
+
+      state = eraPlayoff
+        ? resolveSeriesGame(state)
+        : resolveRound(state);
+
+      // Dopo OGNI gara playoff il giocatore vede
+      // l'avanzamento del tabellone prima di continuare.
+      if (eraPlayoff && state.stato === "run") {
+        ui = "playoff-bracket";
+      }
+
       if (state.stato === "finito") {
         // roster = nome -> identità (per l'avatar del Profilo), perRound = una
         // riga box per round (solo il tuo lato, solo nome+tot): la storia
@@ -276,14 +298,56 @@ function dispatch(action) {
         });
       }
       break;
+    }
+
+    case "continuePlayoff":
+      if (!state || state.formato !== "playoff") {
+        throw new Error("continuePlayoff: playoff non attivo");
+      }
+      ui = null;
+      break;
+
+    case "showPlayoffBracket":
+      if (!state || state.formato !== "playoff") {
+        throw new Error("showPlayoffBracket: playoff non attivo");
+      }
+      ui = "playoff-bracket";
+      break;
+
     case "reset":
       state = null; ui = "home"; draftView = null;
       break;
+    case "exitDraftToHome": {
+      state = null;
+      ui = "home";
+      draftView = null;
+      break;
+    }
+
+    case "exitToHome": {
+      state = null;
+      draftView = null;
+      ui = "home";
+      break;
+    }
+
     case "exitToDifficolta": {
-      // Uscita volontaria da draft/coach/run: torna alla difficoltà dello
-      // stesso formato, senza trasformare un playoff in una corsa 16-0.
-      const formato = state.formato;
-      state = null; ui = formato === "playoff" ? "difficolta-playoff" : "difficolta"; draftView = null;
+      // Nel Draft la X annulla la costruzione e torna direttamente alla Home.
+      // Coach/Run mantengono invece il ritorno alla difficoltà dello stesso formato.
+      const statoPrimaUscita = state?.stato;
+      const formato = state?.formato;
+
+      state = null;
+      draftView = null;
+
+      if (statoPrimaUscita === "draft") {
+        ui = "home";
+      } else {
+        ui = formato === "playoff"
+          ? "difficolta-playoff"
+          : "difficolta";
+      }
+
       break;
     }
     default:
@@ -292,7 +356,12 @@ function dispatch(action) {
   if (state && state.stato !== "finito") saveCurrentRun(window.localStorage, { state, ui, draftView });
   else clearCurrentRun(window.localStorage);
   if (!wasActive && state) history.pushState({ ui: "active" }, "");
-  else if (action.type === "reset" || action.type === "exitToDifficolta") history.replaceState({ ui }, "");
+  else if (
+    action.type === "reset"
+    || action.type === "exitToDifficolta"
+    || action.type === "exitToHome"
+    || action.type === "exitDraftToHome"
+  ) history.replaceState({ ui }, "");
   else if (state) history.replaceState({ ui: "active" }, "");
   render();
 }
@@ -310,22 +379,167 @@ function render() {
       { textContent: `Schermata non ancora implementata: ${name}` }));
     return;
   }
+  app.dataset.ui = name;
   app.replaceChildren(screen(ctx()));
 
   // Consumiamo l'intro dopo il primo render della Home.
   // Da questo momento ogni ritorno interno mostra subito la Home.
-  if (name === "home") showHomeIntro = false;
+  if (name === "home") {
+    showHomeIntro = false;
+    try { sessionStorage.setItem("buzzer:home-intro-seen", "1"); } catch {}
+  }
 }
 
 history.replaceState({ ui: state ? "guard" : ui }, "");
 if (state) history.pushState({ ui: "active" }, "");
+
+
+function closeOverlayBeforeBack() {
+  const settingsClose = document.querySelector(
+    '#settings-dialog:not([hidden]) #close-settings'
+  );
+
+  if (settingsClose) {
+    settingsClose.click();
+    return true;
+  }
+
+  const loginClose = document.querySelector(
+    '#settings-dialog:not([hidden]) [data-account="close"]'
+  );
+
+  if (loginClose) {
+    loginClose.click();
+    return true;
+  }
+
+  const dialog = document.querySelector("dialog[open]");
+
+  if (dialog) {
+    dialog.close();
+    return true;
+  }
+
+  return false;
+}
+
+// BUZZER EDGE SWIPE BACK
+// Mobile/PWA: swipe dal bordo sinistro verso destra.
+// Usa la stessa history già gestita da go()/popstate, quindi durante
+// draft/coach/run resta attivo anche il guard di uscita esistente.
+let backSwipe = null;
+
+window.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse") return;
+  if (event.clientX > 28) return;
+  const target = event.target;
+  if (target?.closest?.("input, textarea, select, [contenteditable='true']")) return;
+
+  backSwipe = {
+    id: event.pointerId,
+    x: event.clientX,
+    y: event.clientY,
+  };
+}, { passive: true });
+
+window.addEventListener("pointerup", (event) => {
+  if (!backSwipe || backSwipe.id !== event.pointerId) return;
+
+  const dx = event.clientX - backSwipe.x;
+  const dy = Math.abs(event.clientY - backSwipe.y);
+
+  backSwipe = null;
+
+  if (dx < 72) return;
+  if (dy > 55) return;
+  if (dx <= dy * 1.35) return;
+
+  if (closeOverlayBeforeBack()) return;
+  history.back();
+}, { passive: true });
+
+window.addEventListener("pointercancel", () => {
+  backSwipe = null;
+}, { passive: true });
+
+
+// BUZZER TRACKPAD BACK FALLBACK
+// In PWA / app window il gesto indietro del browser non sempre arriva come
+// popstate. Questo fallback intercetta uno swipe orizzontale deciso da
+// trackpad e richiama history.back() senza toccare la logica di gioco.
+let trackpadBackGesture = {
+  sumX: 0,
+  sumY: 0,
+  lastTs: 0,
+  locked: false,
+};
+
+function resetTrackpadBackGesture() {
+  trackpadBackGesture.sumX = 0;
+  trackpadBackGesture.sumY = 0;
+  trackpadBackGesture.lastTs = 0;
+  trackpadBackGesture.locked = false;
+}
+
+function canHorizontallyScroll(el) {
+  let node = el;
+  while (node && node !== document.body) {
+    if (node instanceof HTMLElement) {
+      const cs = getComputedStyle(node);
+      const scrollable =
+        node.scrollWidth > node.clientWidth + 4 &&
+        /(auto|scroll)/.test(cs.overflowX);
+      if (scrollable) return true;
+    }
+    node = node.parentElement;
+  }
+  return false;
+}
+
+window.addEventListener("wheel", (event) => {
+  if (event.ctrlKey) return;
+  if (event.deltaMode !== 0) return;
+  const target = event.target;
+  if (target?.closest?.("input, textarea, select, [contenteditable='true']")) return;
+  if (canHorizontallyScroll(target)) return;
+
+  const now = Date.now();
+  if (trackpadBackGesture.lastTs && now - trackpadBackGesture.lastTs > 260) {
+    resetTrackpadBackGesture();
+  }
+
+  trackpadBackGesture.lastTs = now;
+  trackpadBackGesture.sumX += event.deltaX;
+  trackpadBackGesture.sumY += event.deltaY;
+
+  const ax = Math.abs(trackpadBackGesture.sumX);
+  const ay = Math.abs(trackpadBackGesture.sumY);
+
+  if (ax < 70) return;
+  if (ax < ay * 1.8) return;
+  if (trackpadBackGesture.locked) return;
+
+  trackpadBackGesture.locked = true;
+  event.preventDefault();
+
+  if (!closeOverlayBeforeBack()) {
+    history.back();
+  }
+
+  setTimeout(() => {
+    resetTrackpadBackGesture();
+  }, 250);
+}, { passive: false });
+
+window.addEventListener("blur", resetTrackpadBackGesture);
+window.addEventListener("pagehide", resetTrackpadBackGesture);
 
 window.addEventListener("popstate", (event) => {
   if (state) {
     history.pushState({ ui: "active" }, "");
     if (state.stato === "finito") dispatch({ type: "reset" });
     else if (document.querySelector("#app-exit")) document.querySelector("#app-exit").click();
-    else if (confirm("Vuoi uscire? La partita in corso andrà persa.")) dispatch({ type: "exitToDifficolta" });
+    else dispatch({ type: "exitToHome" });
     return;
   }
   if (screens[event.state?.ui]) go(event.state.ui, true);
