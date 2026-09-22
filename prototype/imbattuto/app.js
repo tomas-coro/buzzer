@@ -21,6 +21,7 @@ let installPrompt = null;
 let swRegistration = null;
 let updateWorker = null;
 let updateChecking = false;
+let publishedUpdateAvailable = false;
 
 // Intro Home: una sola volta per sessione reale dell'app.
 // Anche se history/PWA ricrea il documento, un ritorno interno alla Home
@@ -29,7 +30,11 @@ let showHomeIntro = sessionStorage.getItem("buzzer:home-intro-seen") !== "1";
 
 function updateState() {
   return {
-    available: Boolean(updateWorker || swRegistration?.waiting),
+    available: Boolean(
+      updateWorker
+      || swRegistration?.waiting
+      || publishedUpdateAvailable
+    ),
     checking: updateChecking,
   };
 }
@@ -37,10 +42,45 @@ function updateState() {
 function syncUpdateControls() {
   const button = document.getElementById("check-update");
   if (!button) return;
+
   const status = updateState();
-  button.classList.toggle("has-update", status.available);
-  button.classList.toggle("checking", status.checking);
-  button.setAttribute("aria-label", status.available ? "Aggiornamento disponibile" : "Controlla aggiornamenti");
+
+  button.classList.toggle(
+    "has-update",
+    status.available
+  );
+
+  button.classList.toggle(
+    "checking",
+    status.checking
+  );
+
+  button.setAttribute(
+    "aria-label",
+    status.available
+      ? "Aggiornamento disponibile"
+      : "Controlla aggiornamenti"
+  );
+
+  button.textContent =
+    status.available
+      ? "Aggiorna"
+      : status.checking
+        ? "Controllo…"
+        : "Verifica";
+
+  const copy = document.getElementById(
+    "update-status-copy"
+  );
+
+  if (copy) {
+    copy.textContent =
+      status.available
+        ? "Una nuova versione di Buzzer è disponibile."
+        : status.checking
+          ? "Controllo aggiornamenti…"
+          : "Buzzer è aggiornato.";
+  }
 }
 
 const installed = () => matchMedia("(display-mode: standalone)").matches
@@ -566,6 +606,7 @@ function toastUpdate(message, kind = "ok") {
 
 function offerUpdate(worker) {
   updateWorker = worker;
+  publishedUpdateAvailable = true;
   let button = document.getElementById("app-update");
   if (!button) {
     button = document.createElement("button");
@@ -632,8 +673,15 @@ async function checkForUpdates({ silent = false } = {}) {
     return false;
   }
 
-  if (swRegistration.waiting || updateWorker) {
-    const worker = swRegistration.waiting || updateWorker;
+  if (
+    swRegistration.waiting
+    || updateWorker
+  ) {
+    const worker =
+      swRegistration.waiting
+      || updateWorker;
+
+    publishedUpdateAvailable = true;
 
     if (silent) {
       offerUpdate(worker);
@@ -675,10 +723,75 @@ async function checkForUpdates({ silent = false } = {}) {
       return true;
     }
 
-    if (publishedVersion && activeVersion && publishedVersion !== activeVersion) {
-      // Alcune versioni di Safari non espongono subito il worker in waiting.
-      // L'utente riceve comunque un esito corretto anziché un falso "aggiornato".
-      if (!silent) toastUpdate("Nuova versione online. Chiudi e riapri Buzzer.", "update");
+    if (
+      publishedVersion
+      && activeVersion
+      && publishedVersion !== activeVersion
+    ) {
+      /*
+       * Safari/iOS a volte vede correttamente la versione online
+       * ma non porta il nuovo worker in waiting.
+       *
+       * Cambiando la URL dello script con la versione pubblicata,
+       * forziamo un ciclo di update reale mantenendo lo stesso scope.
+       */
+      publishedUpdateAvailable = true;
+      syncUpdateControls();
+
+      try {
+        const forcedUrl = new URL(
+          "./sw.js",
+          location.href
+        );
+
+        forcedUrl.searchParams.set(
+          "v",
+          publishedVersion
+        );
+
+        swRegistration =
+          await navigator.serviceWorker.register(
+            forcedUrl,
+            {
+              updateViaCache: "none",
+              scope: "./",
+            }
+          );
+
+        await waitForWorker(
+          swRegistration.installing
+        );
+
+        const forcedWorker =
+          swRegistration.waiting;
+
+        if (forcedWorker) {
+          updateWorker = forcedWorker;
+          syncUpdateControls();
+
+          if (!silent) {
+            toastUpdate(
+              "Nuova versione pronta · Aggiorna",
+              "update"
+            );
+          }
+
+          return true;
+        }
+      } catch (error) {
+        console.warn(
+          "Fallback aggiornamento PWA fallito",
+          error
+        );
+      }
+
+      if (!silent) {
+        toastUpdate(
+          "Nuova versione online. Premi Aggiorna.",
+          "update"
+        );
+      }
+
       return true;
     }
 
@@ -718,6 +831,11 @@ if ("serviceWorker" in navigator) {
   let reloading = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => {
     updateWorker = null;
-    if (controlledAtLoad && !reloading) { reloading = true; location.reload(); }
+    publishedUpdateAvailable = false;
+
+    if (controlledAtLoad && !reloading) {
+      reloading = true;
+      location.reload();
+    }
   });
 }
