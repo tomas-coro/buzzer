@@ -286,14 +286,14 @@ export function render(ctx) {
               <input
                 id="player-name-input"
                 type="text"
-                maxlength="8"
+                maxlength="12"
                 value="${playerName}"
                 autocomplete="off"
                 spellcheck="false"
                 aria-label="${copy.playerName}"
               >
 
-              <span class="settings-counter"><b id="player-name-count">${playerName.length}</b>/8</span>
+              <span class="settings-counter"><b id="player-name-count">${playerName.length}</b>/12</span>
             </div>
 
             <p>${copy.playerInfo}</p>
@@ -393,7 +393,7 @@ export function render(ctx) {
     nameInput.value = nameInput.value
       .toUpperCase()
       .replace(/[^A-Z0-9À-ÖØ-Ý ]/g, "")
-      .slice(0, 8);
+      .slice(0, 12);
 
     playerCount.textContent = String(nameInput.value.length);
   });

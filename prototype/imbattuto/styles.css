@@ -14254,3 +14254,463 @@ html body dialog#player-icon-picker .player-pick.active{
 }
 
 /* === SETTINGS MOBILE + ACCOUNT POLISH V2 END === */
+
+
+/* === MOBILE REAL DEVICE FIXES V3 START === */
+
+@media (max-width:900px){
+
+  /* -------------------------------------------------------
+     iOS: nessuno zoom automatico sugli input.
+     Non limitiamo l'accessibilità/zoom del viewport.
+  ------------------------------------------------------- */
+
+  #app input:not([type="checkbox"]):not([type="radio"]),
+  #app textarea,
+  #app select,
+  dialog input:not([type="checkbox"]):not([type="radio"]),
+  dialog textarea,
+  dialog select{
+    font-size:16px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     DRAFT COMPLETATO
+     10/10 resta una schermata reale prima del Coach.
+  ------------------------------------------------------- */
+
+  .draft.draft-final{
+    width:100%;
+    max-width:none;
+
+    gap:10px;
+    align-content:start;
+  }
+
+  .draft.draft-final .draft-final-shell{
+    box-sizing:border-box;
+
+    width:100%;
+    max-width:560px;
+
+    margin:0 auto;
+    padding:
+      4px
+      12px
+      calc(20px + env(safe-area-inset-bottom));
+  }
+
+
+  /* testata */
+
+  .draft.draft-final .df-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+
+    margin:0 0 10px;
+  }
+
+  .draft.draft-final .df-head span{
+    display:grid;
+    gap:2px;
+  }
+
+  .draft.draft-final .df-head small{
+    color:rgba(220,225,255,.52);
+
+    font-size:9px;
+    font-weight:850;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+
+  .draft.draft-final .df-head b{
+    color:var(--bone);
+
+    font-size:20px;
+    line-height:1;
+  }
+
+  .draft.draft-final .df-head > strong{
+    color:var(--yellow);
+
+    font-family:var(--led);
+    font-size:27px;
+    line-height:1;
+  }
+
+
+  /* budget */
+
+  .draft.draft-final .df-cap{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:6px;
+
+    margin-bottom:14px;
+  }
+
+  .draft.draft-final .df-cap > span{
+    min-width:0;
+
+    padding:8px;
+
+    border:1px solid rgba(93,126,214,.18);
+    border-radius:9px;
+
+    background:rgba(8,17,48,.72);
+  }
+
+  .draft.draft-final .df-cap small{
+    display:block;
+
+    margin-bottom:2px;
+
+    color:rgba(210,216,244,.45);
+
+    font-size:8px;
+    font-weight:850;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+
+  .draft.draft-final .df-cap b{
+    display:block;
+
+    overflow:hidden;
+
+    color:var(--bone);
+
+    font-size:12px;
+
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .draft.draft-final .df-cap .resta b{
+    color:var(--yellow);
+  }
+
+  .draft.draft-final .df-cap .over b{
+    color:var(--orange);
+  }
+
+
+  /* sezioni */
+
+  .draft.draft-final .df-section{
+    margin:0 0 14px;
+  }
+
+  .draft.draft-final .df-section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    margin:0 1px 7px;
+  }
+
+  .draft.draft-final .df-section-head span{
+    color:var(--bone);
+
+    font-size:12px;
+    font-weight:950;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+
+  .draft.draft-final .df-section-head small{
+    color:rgba(214,220,248,.42);
+
+    font-size:9px;
+    font-weight:850;
+  }
+
+
+  /* titolari: 2 + 2 + 1 */
+
+  .draft.draft-final .df-five{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+
+  .draft.draft-final .df-starter{
+    display:grid !important;
+    grid-template-columns:34px minmax(0,1fr) auto !important;
+    grid-template-areas:
+      "face name ovr"
+      "face role ovr" !important;
+
+    align-items:center;
+
+    min-width:0;
+    min-height:62px;
+
+    padding:7px 8px !important;
+
+    border:1px solid rgba(72,114,216,.24) !important;
+    border-radius:10px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(17,34,78,.98),
+        rgba(7,15,43,.98)
+      ) !important;
+
+    color:var(--bone) !important;
+
+    box-shadow:none !important;
+  }
+
+  .draft.draft-final .df-starter:nth-child(5){
+    grid-column:1 / -1;
+
+    width:calc(50% - 3.5px);
+
+    justify-self:center;
+  }
+
+  .draft.draft-final .df-face{
+    grid-area:face;
+
+    display:block;
+  }
+
+  .draft.draft-final .df-face .face{
+    width:34px;
+    height:34px;
+  }
+
+  .draft.draft-final .df-starter-foot{
+    display:contents !important;
+  }
+
+  .draft.draft-final .df-name{
+    grid-area:name;
+
+    overflow:hidden;
+    min-width:0;
+
+    color:var(--bone) !important;
+
+    font-size:11px !important;
+    font-weight:900 !important;
+
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .draft.draft-final .df-role{
+    grid-area:role;
+
+    color:rgba(218,224,252,.52) !important;
+
+    font-size:8px !important;
+    font-weight:900;
+    letter-spacing:.08em;
+  }
+
+  .draft.draft-final .df-ovr{
+    grid-area:ovr;
+
+    color:var(--yellow) !important;
+
+    font-family:var(--led);
+    font-size:18px !important;
+  }
+
+
+  /* panchina */
+
+  .draft.draft-final .df-bench-grid{
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:7px !important;
+  }
+
+  .draft.draft-final .df-bench{
+    display:grid !important;
+    grid-template-columns:32px minmax(0,1fr) auto !important;
+    align-items:center;
+    gap:7px;
+
+    min-width:0;
+    min-height:54px;
+
+    padding:6px 8px !important;
+
+    border:1px solid rgba(72,114,216,.18) !important;
+    border-radius:10px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(14,29,68,.96),
+        rgba(7,14,40,.98)
+      ) !important;
+
+    color:var(--bone) !important;
+  }
+
+  .draft.draft-final .df-bench:nth-child(5){
+    grid-column:1 / -1;
+
+    width:calc(50% - 3.5px);
+
+    justify-self:center;
+  }
+
+  .draft.draft-final .df-bench-face .face{
+    width:32px;
+    height:32px;
+  }
+
+  .draft.draft-final .df-bench-copy{
+    overflow:hidden;
+    min-width:0;
+  }
+
+  .draft.draft-final .df-bench-copy strong{
+    display:block;
+
+    overflow:hidden;
+
+    color:var(--bone) !important;
+
+    font-size:10px !important;
+    font-weight:900;
+
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .draft.draft-final .df-bench-copy small{
+    display:block;
+
+    margin-top:1px;
+
+    color:rgba(210,216,244,.42) !important;
+
+    font-size:8px !important;
+  }
+
+  .draft.draft-final .df-bench-ovr{
+    color:var(--yellow) !important;
+
+    font-family:var(--led);
+    font-size:16px !important;
+  }
+
+
+  /* CTA coach */
+
+  .draft.draft-final .df-cta{
+    width:100%;
+    min-height:54px;
+
+    margin:4px 0 0 !important;
+
+    border-radius:12px !important;
+
+    font-size:12px !important;
+  }
+
+
+  /* -------------------------------------------------------
+     PLAYOFF WEST MOBILE
+     Desktop rimane specchiato, mobile torna cronologico.
+  ------------------------------------------------------- */
+
+  .playoff-bracket .pb-west .pb-conf-grid{
+    display:flex;
+    flex-direction:column-reverse;
+    gap:18px;
+  }
+
+  /* niente overlay sulle ultime squadre */
+
+  .playoff-bracket .pb-continue{
+    position:static !important;
+    bottom:auto !important;
+
+    width:min(420px,100%);
+    min-height:56px;
+
+    margin:22px auto 0 !important;
+  }
+}
+
+
+@media (max-width:700px){
+
+  /* -------------------------------------------------------
+     PARTITA: CTA primaria mobile
+  ------------------------------------------------------- */
+
+  .screen.run .sh-inline-cta{
+    margin-left:4px;
+  }
+
+  .screen.run .sh-inline-cta .sh-cta{
+    min-width:124px !important;
+
+    height:48px !important;
+    min-height:48px !important;
+
+    padding:0 14px !important;
+
+    border-radius:9px !important;
+
+    font-size:11px !important;
+    line-height:1 !important;
+    letter-spacing:.02em !important;
+
+    box-shadow:none !important;
+  }
+
+  .screen.run .sh-inline-cta .sh-cta svg{
+    width:17px;
+    height:17px;
+  }
+
+  /*
+   * Su <=430 la CTA prende una riga propria:
+   * non viene schiacciata da velocità + Tabellone.
+   */
+  .screen.run .sh-speed{
+    display:grid;
+
+    grid-template-columns:auto minmax(0,1fr);
+    gap:6px;
+  }
+
+  .screen.run .sh-speed-tools{
+    display:grid;
+
+    grid-column:2;
+
+    grid-template-columns:minmax(0,1fr);
+    gap:6px;
+  }
+
+  .screen.run .sh-inline-cta{
+    width:100%;
+  }
+
+  .screen.run .sh-inline-cta .sh-cta{
+    width:100% !important;
+  }
+
+  .screen.run .sh-body{
+    padding-bottom:
+      calc(72px + env(safe-area-inset-bottom))
+      !important;
+  }
+}
+
+/* === MOBILE REAL DEVICE FIXES V3 END === */
