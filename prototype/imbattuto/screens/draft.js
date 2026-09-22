@@ -839,7 +839,21 @@ export function render(ctx) {
     el.querySelectorAll(".dslot").forEach((s) => s.classList.remove("elig", "dim"));
     el.querySelectorAll(".crd").forEach((r) => r.classList.remove("sel"));
 
-    const commit = () => ctx.dispatch({ type: "assign", slot: slotObj, card, ...(draftView.auto ? { auto: { malusMax: draftView.auto.malusMax } } : {}) });
+    const commit = () => {
+      // Se nel frattempo Auto-draft è stato fermato o saltato, questo render
+      // non è più autorizzato a piazzare la carta che stava animando.
+      // Evita un assign tardivo dopo "Salta" / "Ferma".
+      if (!el.isConnected || stoppedAuto) return;
+
+      ctx.dispatch({
+        type: "assign",
+        slot: slotObj,
+        card,
+        ...(draftView.auto
+          ? { auto: { malusMax: draftView.auto.malusMax } }
+          : {}),
+      });
+    };
 
     if (reduceMotion() || !row || !slotEl) { commit(); return; }
     flyMirino(card, row, slotEl, commit);
@@ -941,13 +955,16 @@ export function render(ctx) {
   };
   const autodSkip = el.querySelector("#autod-skip");
   if (autodSkip) autodSkip.onclick = () => {
-    // Stessa guardia di #autod-go/.aid: se una carta sta volando (flyMirino,
-    // ~620ms/mul) il suo `commit()` pendente farebbe un dispatch "assign" su
-    // uno stato che il salto ha già superato. Bloccato qui, non lì, perché
-    // il bottone stesso deve restare cliccabile appena la carta si posa.
-    if (busy) return;
-    stoppedAuto = true; // blocca l'eventuale setTimeout di afterReveal ancora in attesa
-    ctx.dispatch({ type: "autoDraftSkip", malusMax: draftView.auto.malusMax });
+    // "Salta" è immediato anche durante ticker/volo:
+    // blocca ogni callback dell'autoplay di questo render e completa in un
+    // unico passaggio tutte le caselle ancora vuote.
+    stoppedAuto = true;
+    autodSkip.disabled = true;
+
+    ctx.dispatch({
+      type: "autoDraftSkip",
+      malusMax: draftView.auto.malusMax,
+    });
   };
 
   // ---- Glossario: si apre col "?" del tabellone ----
