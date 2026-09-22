@@ -283,7 +283,10 @@ function dispatch(action) {
         giri = 0;
         state = draftPick(state, scelta.slot, scelta.carta);
       }
+      // "Salta" completa istantaneamente la rosa, ma deve terminare
+      // nello stesso riepilogo 10/10 del draft manuale/autoplay.
       draftView = null;
+      ui = "draft";
       break;
     }
     case "aid": {
