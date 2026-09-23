@@ -117,13 +117,16 @@ export function render(ctx) {
 <div class="bz-stage">
           <div class="emblem">
             <svg class="hoop hoop-back" viewBox="0 0 120 96" aria-hidden="true">
-              <rect x="35" y="3" width="50" height="38" rx="4" fill="rgba(253,242,221,.06)" stroke="var(--netc)" stroke-width="1.6" opacity=".45"/>
-              <rect x="50" y="13" width="20" height="15" rx="2" fill="none" stroke="var(--rim)" stroke-width="2"/>
-              <path class="rim-back-case" d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ink)" stroke-width="9" stroke-linecap="round"/>
-              <path class="rim-back" d="M27 46 Q60 38.5 93 46" fill="none" stroke="var(--ball2)" stroke-width="4.5" stroke-linecap="round" opacity=".95"/>
-              <g class="net net-back" stroke="var(--netc)" stroke-width="1.5" opacity=".5" fill="none">
-                <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
-                <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+              <rect class="board" x="10" y="2" width="100" height="44" rx="3"/>
+              <rect class="board-target" x="43" y="15" width="34" height="22" rx="1.5"/>
+              <path class="board-mount" d="M48 37 L42 47 M72 37 L78 47"/>
+              <path class="rim-back-case" d="M27 48 Q60 39 93 48" fill="none"/>
+              <path class="rim-back" d="M27 48 Q60 39 93 48" fill="none"/>
+              <g class="net net-back" fill="none">
+                <path d="M30 49 L40 87 M44 46 L48 88 M60 44 L60 89 M76 46 L72 88 M90 49 L80 87"/>
+                <path d="M30 49 L48 88 M44 46 L60 89 M60 44 L72 88 M76 46 L80 87"/>
+                <path d="M90 49 L72 88 M76 46 L60 89 M60 44 L48 88 M44 46 L40 87"/>
+                <path d="M34 61 Q60 69 86 61 M39 75 Q60 83 81 75"/>
               </g>
             </svg>
             <svg class="bz-ball" viewBox="0 0 64 64" aria-hidden="true">
@@ -131,12 +134,14 @@ export function render(ctx) {
               <g class="seam"><path d="M3 32H61"/><path d="M32 3V61"/><path d="M13 7C25 22 25 42 13 57"/><path d="M51 7C39 22 39 42 51 57"/></g>
             </svg>
             <svg class="hoop hoop-front" viewBox="0 0 120 96" aria-hidden="true">
-              <g class="net net-front" stroke="var(--netc)" stroke-width="2.2" opacity="0" fill="none">
-                <path d="M30 47 L40 86 M90 47 L80 86 M44 47 L48 87 M76 47 L72 87 M60 47 L60 88"/>
-                <path d="M34 60 Q60 67 86 60 M40 75 Q60 82 80 75"/>
+              <g class="net net-front" fill="none">
+                <path d="M30 49 L40 87 M44 46 L48 88 M60 44 L60 89 M76 46 L72 88 M90 49 L80 87"/>
+                <path d="M30 49 L48 88 M44 46 L60 89 M60 44 L72 88 M76 46 L80 87"/>
+                <path d="M90 49 L72 88 M76 46 L60 89 M60 44 L48 88 M44 46 L40 87"/>
+                <path d="M34 61 Q60 69 86 61 M39 75 Q60 83 81 75"/>
               </g>
-              <path class="rim-front-case" d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--ink)" stroke-width="10" stroke-linecap="round"/>
-              <path class="rim-front" d="M27 46 Q60 53.5 93 46" fill="none" stroke="var(--pop2)" stroke-width="5.5" stroke-linecap="round"/>
+              <path class="rim-front-case" d="M27 48 Q60 56 93 48" fill="none"/>
+              <path class="rim-front" d="M27 48 Q60 56 93 48" fill="none"/>
             </svg>
             <span class="flash" aria-hidden="true"></span>
           </div>
@@ -299,6 +304,50 @@ export function render(ctx) {
       ` : ""}
     </div>
   `;
+
+  // Durante l'intro la Home esiste già nel DOM, ma non deve essere
+  // interattiva finché il tiro non è realmente terminato.
+  const introToggle = root.querySelector("#opn-rewind");
+  const introHome = root.querySelector("#home-main-panel");
+
+  if (introToggle && introHome) {
+    introHome.setAttribute("inert", "");
+
+    let introFallback = 0;
+
+    const unlockHomeIntro = () => {
+      if (introFallback) {
+        window.clearTimeout(introFallback);
+        introFallback = 0;
+      }
+
+      introHome.removeAttribute("inert");
+      root.classList.remove("intro-running");
+      root.classList.add("intro-complete");
+    };
+
+    introToggle.addEventListener("change", () => {
+      if (!introToggle.checked) return;
+
+      root.classList.add("intro-running");
+
+      const introBall = root.querySelector(".bz-ball");
+
+      if (introBall) {
+        const onIntroEnd = (event) => {
+          if (event.target !== introBall) return;
+          introBall.removeEventListener("animationend", onIntroEnd);
+          unlockHomeIntro();
+        };
+
+        introBall.addEventListener("animationend", onIntroEnd);
+      }
+
+      // Fallback di sicurezza: non lascia mai la Home bloccata se il browser
+      // non emette animationend. La coreografia normale termina prima.
+      introFallback = window.setTimeout(unlockHomeIntro, 1800);
+    });
+  }
 
   // Corsa = L'IMBATTUTO: "Gioca" o la modalita Corsa portano alla scelta difficolta.
   const vai = () => ctx.go("difficolta");

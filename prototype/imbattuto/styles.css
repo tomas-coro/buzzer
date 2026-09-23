@@ -121,8 +121,29 @@ button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
   background:
     radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 1.6px) 0 0/13px 13px,
     radial-gradient(130% 80% at 50% 12%, #2a2b72 0, var(--bg) 50%, var(--bg2) 100%)}
-.a-buzz:has(.opn:checked) .splash{opacity:0;transform:scale(1.06);pointer-events:none}
-.home{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;opacity:1;pointer-events:auto;transition:opacity .3s ease .04s}
+.a-buzz:has(.opn:checked) .splash{
+  opacity:0;
+  transform:scale(1.035);
+  pointer-events:none;
+  transition-duration:.28s;
+}
+
+.home{
+  position:relative;
+  z-index:1;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  opacity:1;
+  pointer-events:auto;
+  transition:opacity .3s ease .04s;
+}
+
+/* Nessun tap/click/focus può attraversare l'intro. */
+.a-buzz.intro-running .home{
+  pointer-events:none !important;
+  user-select:none;
+}
 
 /* Alla prima apertura la splash copre la Home; quando viene chiusa,
    la rise animation parte come prima. Nei ritorni interni, senza splash,
@@ -217,17 +238,225 @@ button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
 .bz-best b{color:var(--win)}
 
-.bz-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 18px}
-.emblem{position:relative;width:188px;height:196px;display:flex;align-items:flex-end;justify-content:center}
-.hoop{position:absolute;top:2px;left:50%;transform:translateX(-50%);width:120px;height:96px}
-.hoop-back{z-index:1}
-.hoop-front{z-index:3}
-.bz-ball{position:relative;z-index:2;width:116px;height:116px;margin-bottom:2px;filter:drop-shadow(0 6px 0 rgba(0,0,0,.15))}
-.net-back,.net-front{transform-box:fill-box;transform-origin:50% 0%}
-.flash{position:absolute;left:50%;top:48px;width:172px;height:172px;border-radius:50%;
-  transform:translate(-50%,-50%) scale(.6);
-  background:radial-gradient(circle, rgba(255,207,51,0) 24%, rgba(255,176,46,.55) 45%, rgba(255,91,30,.32) 60%, transparent 74%);
-  z-index:4;opacity:0;pointer-events:none;mix-blend-mode:screen}
+.bz-stage{
+  position:relative;
+  z-index:2;
+  flex:1;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+
+  gap:2px;
+  padding:0 18px;
+}
+
+
+/* ==================================================
+   CANESTRO HOME
+   ================================================== */
+
+.emblem{
+  position:relative;
+
+  width:204px;
+  height:204px;
+
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+}
+
+.hoop{
+  position:absolute;
+
+  top:0;
+  left:50%;
+
+  width:140px;
+  height:112px;
+
+  transform:translateX(-50%);
+
+  filter:
+    drop-shadow(0 4px 0 rgba(6,7,26,.22))
+    drop-shadow(0 9px 13px rgba(6,7,26,.22));
+}
+
+.hoop-back{
+  z-index:1;
+}
+
+.hoop-front{
+  z-index:3;
+}
+
+
+/* TABELLONE */
+
+.hoop .board{
+  fill:rgba(23,25,70,.34);
+
+  stroke:rgba(183,190,255,.72);
+  stroke-width:1.8;
+}
+
+.hoop .board-target{
+  fill:none;
+
+  stroke:var(--pop2);
+  stroke-width:1.9;
+
+  opacity:.94;
+}
+
+.hoop .board-mount{
+  fill:none;
+
+  stroke:rgba(253,242,221,.42);
+  stroke-width:1.6;
+  stroke-linecap:round;
+}
+
+
+/* FERRO */
+
+.rim-back-case,
+.rim-front-case{
+  stroke:var(--ink);
+  stroke-width:10;
+  stroke-linecap:round;
+}
+
+.rim-back{
+  stroke:#bd3d10;
+  stroke-width:5.4;
+  stroke-linecap:round;
+}
+
+.rim-front{
+  stroke:var(--pop);
+  stroke-width:6.3;
+  stroke-linecap:round;
+
+  filter:
+    drop-shadow(0 1px 0 rgba(255,207,51,.18))
+    drop-shadow(0 2px 0 rgba(10,10,24,.62));
+}
+
+
+/* RETE */
+
+.net{
+  stroke:rgba(253,242,221,.78);
+
+  stroke-linecap:round;
+  stroke-linejoin:round;
+
+  transform-box:fill-box;
+  transform-origin:50% 0%;
+}
+
+.net-back{
+  stroke-width:1.25;
+  opacity:.52;
+}
+
+.net-front{
+  stroke-width:1.55;
+  opacity:0;
+}
+
+
+/* PALLA */
+
+.bz-ball{
+  position:relative;
+  z-index:2;
+
+  width:116px;
+  height:116px;
+
+  margin-bottom:0;
+
+  filter:
+    drop-shadow(0 6px 0 rgba(0,0,0,.13))
+    drop-shadow(0 12px 17px rgba(0,0,0,.12));
+}
+
+
+/* BUZZER FLASH */
+
+.flash{
+  position:absolute;
+
+  left:50%;
+  top:54px;
+
+  width:158px;
+  height:158px;
+
+  border-radius:50%;
+
+  transform:translate(-50%,-50%) scale(.55);
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,207,51,0) 21%,
+      rgba(255,207,51,.48) 41%,
+      rgba(255,91,30,.27) 58%,
+      transparent 74%
+    );
+
+  z-index:4;
+
+  opacity:0;
+
+  pointer-events:none;
+  mix-blend-mode:screen;
+}
+
+
+/* DESKTOP */
+
+@media (min-width:900px){
+  .cabhome .emblem{
+    width:216px;
+    height:214px;
+  }
+
+  .cabhome .hoop{
+    width:150px;
+    height:120px;
+  }
+
+  .cabhome .bz-ball{
+    width:122px;
+    height:122px;
+  }
+}
+
+
+/* MOBILE */
+
+@media (max-width:480px){
+  .cabhome .emblem{
+    width:198px;
+    height:200px;
+  }
+
+  .cabhome .hoop{
+    width:138px;
+    height:110px;
+  }
+
+  .cabhome .bz-ball{
+    width:112px;
+    height:112px;
+  }
+}
 
 .bz-wm{font-family:"Bungee";font-size:2.4rem;line-height:.9;letter-spacing:.012em;text-transform:uppercase;text-align:center;
   color:var(--wm-fill);-webkit-text-stroke:2px var(--wm-stroke);paint-order:stroke fill;text-shadow:3px 3px 0 var(--wm-sh)}
@@ -266,43 +495,194 @@ button.bz-mode{cursor:pointer}
 @keyframes spinBall{to{transform:rotate(360deg)}}
 
 /* il marchio si "stampa" nell'istante del buzzer */
-.a-buzz:has(.opn:checked) .home .bz-wm{animation:stamp .5s 1.18s cubic-bezier(.2,1.6,.4,1) both}
+.a-buzz:has(.opn:checked) .home .bz-wm{
+  animation:stamp .42s .94s cubic-bezier(.2,1.6,.4,1) both;
+}
 @keyframes stamp{0%{transform:scale(1.5);opacity:0}70%{transform:scale(.96);opacity:1}100%{transform:scale(1)}}
 
-/* ═══ SIRENA CLUTCH - buzzer-beater (parabola + swish + lampo), tutto CSS ═══ */
-.a-buzz:has(.opn:checked) .bz-ball{animation:shotBuzz 1.7s linear both}
+/* ═══ SIRENA CLUTCH — parabola + ferro + swish + buzzer ═══ */
+
+.a-buzz:has(.opn:checked) .bz-ball{
+  animation:shotBuzz 1.45s linear both;
+}
+
 @keyframes shotBuzz{
-  0%  {transform:translate(-160px,-30px) scale(.42) rotate(0deg);opacity:0;animation-timing-function:cubic-bezier(.3,.7,.6,1)}
-  7%  {transform:translate(-138px,-66px) scale(.41) rotate(-26deg);opacity:1;animation-timing-function:cubic-bezier(.18,.62,.4,1)}
-  44% {transform:translate(-52px,-146px) scale(.34) rotate(-150deg);animation-timing-function:cubic-bezier(.5,.05,.85,.5)}
-  64% {transform:translate(0px,-84px) scale(.5) rotate(-214deg);animation-timing-function:cubic-bezier(.3,.25,.5,1)}
-  78% {transform:translate(0px,-36px) scale(.66) rotate(-272deg);animation-timing-function:cubic-bezier(.3,.5,.5,1)}
-  90% {transform:translate(0,5px) scaleX(1.15) scaleY(.84) rotate(-308deg);animation-timing-function:cubic-bezier(.3,1.4,.5,1)}
-  96% {transform:translate(0,-6px) scale(1.03) rotate(-322deg)}
-  100%{transform:translate(0,0) scale(1) rotate(-330deg)}
+  0%{
+    transform:translate(-148px,68px) scale(.45) rotate(0deg);
+    opacity:0;
+    animation-timing-function:cubic-bezier(.20,.72,.42,1);
+  }
+
+  7%{
+    transform:translate(-136px,42px) scale(.44) rotate(-28deg);
+    opacity:1;
+    animation-timing-function:cubic-bezier(.16,.65,.34,1);
+  }
+
+  38%{
+    transform:translate(-62px,-142px) scale(.36) rotate(-150deg);
+    animation-timing-function:cubic-bezier(.38,.06,.72,.43);
+  }
+
+  57%{
+    transform:translate(-20px,-126px) scale(.36) rotate(-210deg);
+    animation-timing-function:cubic-bezier(.25,.30,.42,1);
+  }
+
+  67%{
+    transform:translate(-4px,-102px) scale(.38) rotate(-242deg);
+  }
+
+  73%{
+    transform:translate(0,-86px) scale(.42) rotate(-264deg);
+  }
+
+  79%{
+    transform:translate(0,-61px) scale(.50) rotate(-286deg);
+    animation-timing-function:cubic-bezier(.22,.55,.40,1);
+  }
+
+  87%{
+    transform:translate(0,-31px) scale(.68) rotate(-312deg);
+  }
+
+  95%{
+    transform:translate(0,-7px) scale(.93) rotate(-334deg);
+  }
+
+  100%{
+    transform:translate(0,0) scale(1) rotate(-342deg);
+    opacity:1;
+  }
 }
-.a-buzz:has(.opn:checked) .net-back{animation:swishNetB 1.7s linear both}
-.a-buzz:has(.opn:checked) .net-front{animation:swishNetB 1.7s linear both, netShowB 1.7s linear both}
+
+
+/* piccolo contraccolpo del ferro */
+
+.a-buzz:has(.opn:checked) .hoop-front{
+  animation:rimBuzz 1.45s linear both;
+}
+
+@keyframes rimBuzz{
+  0%,68%,100%{
+    transform:translateX(-50%) translateY(0) rotate(0);
+  }
+
+  73%{
+    transform:translateX(-50%) translateY(1.3px) rotate(.45deg);
+  }
+
+  78%{
+    transform:translateX(-50%) translateY(-.5px) rotate(-.25deg);
+  }
+
+  84%{
+    transform:translateX(-50%) translateY(.25px) rotate(.12deg);
+  }
+}
+
+
+/* rete */
+
+.a-buzz:has(.opn:checked) .net-back{
+  animation:swishNetB 1.45s linear both;
+}
+
+.a-buzz:has(.opn:checked) .net-front{
+  animation:
+    swishNetB 1.45s linear both,
+    netShowB 1.45s linear both;
+}
+
 @keyframes swishNetB{
-  0%,63%{transform:scaleY(1) scaleX(1);animation-timing-function:cubic-bezier(.15,.7,.4,1)}
-  71%   {transform:scaleY(1.5) scaleX(.84);animation-timing-function:cubic-bezier(.3,0,.35,1)}
-  78%   {transform:scaleY(.95) scaleX(1.06);animation-timing-function:cubic-bezier(.3,0,.35,1)}
-  85%   {transform:scaleY(1.14) scaleX(.97);animation-timing-function:cubic-bezier(.3,0,.35,1)}
-  91%   {transform:scaleY(.98) scaleX(1.02);animation-timing-function:cubic-bezier(.3,0,.35,1)}
-  96%   {transform:scaleY(1.04) scaleX(.99)}
-  100%  {transform:scaleY(1) scaleX(1)}
+  0%,66%{
+    transform:scaleY(1) scaleX(1);
+  }
+
+  73%{
+    transform:scaleY(1.50) scaleX(.81);
+  }
+
+  79%{
+    transform:scaleY(.91) scaleX(1.09);
+  }
+
+  86%{
+    transform:scaleY(1.13) scaleX(.96);
+  }
+
+  93%{
+    transform:scaleY(.98) scaleX(1.02);
+  }
+
+  100%{
+    transform:scaleY(1) scaleX(1);
+  }
 }
-@keyframes netShowB{0%,62%{opacity:0}68%{opacity:.95}82%{opacity:.7}92%{opacity:0}100%{opacity:0}}
-.a-buzz:has(.opn:checked) .flash{animation:buzzFlash 1.7s linear both}
+
+@keyframes netShowB{
+  0%,65%{opacity:0}
+  70%{opacity:.92}
+  82%{opacity:.62}
+  94%,100%{opacity:0}
+}
+
+
+/* lampo */
+
+.a-buzz:has(.opn:checked) .flash{
+  animation:buzzFlash 1.45s linear both;
+}
+
 @keyframes buzzFlash{
-  0%,62%{opacity:0;transform:translate(-50%,-50%) scale(.55)}
-  70%{opacity:.95;transform:translate(-50%,-50%) scale(1)}
-  80%{opacity:.42;transform:translate(-50%,-50%) scale(1.18)}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(1.34)}
+  0%,65%{
+    opacity:0;
+    transform:translate(-50%,-50%) scale(.52);
+  }
+
+  71%{
+    opacity:.86;
+    transform:translate(-50%,-50%) scale(.94);
+  }
+
+  80%{
+    opacity:.31;
+    transform:translate(-50%,-50%) scale(1.12);
+  }
+
+  100%{
+    opacity:0;
+    transform:translate(-50%,-50%) scale(1.27);
+  }
 }
-.a-buzz:has(.opn:checked) .scr::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
-  box-shadow:inset 0 0 0 3px var(--pop), inset 0 0 30px rgba(255,91,30,.45);opacity:0;animation:buzzEdge 1.7s linear both}
-@keyframes buzzEdge{0%,63%{opacity:0}70%{opacity:1}83%{opacity:.2}100%{opacity:0}}
+
+
+/* lampo cornice */
+
+.a-buzz:has(.opn:checked) .scr::after{
+  content:"";
+
+  position:absolute;
+  inset:0;
+  z-index:5;
+
+  pointer-events:none;
+
+  box-shadow:
+    inset 0 0 0 3px var(--pop),
+    inset 0 0 27px rgba(255,91,30,.38);
+
+  opacity:0;
+
+  animation:buzzEdge 1.45s linear both;
+}
+
+@keyframes buzzEdge{
+  0%,66%{opacity:0}
+  71%{opacity:.88}
+  82%{opacity:.13}
+  100%{opacity:0}
+}
 
 /* Reduced-motion: niente parabola ampia (il grande spostamento e' cio' che da'
    fastidio vestibolare), ma la home NON resta spenta. Teniamo un beat-sirena calmo:
@@ -313,12 +693,12 @@ button.bz-mode{cursor:pointer}
   .cabhome .sp-ball{animation:none!important}          /* stop spin infinito splash */
   .cabhome .bz-open{animation:none!important}          /* stop blink infinito */
   .a-buzz:has(.opn:checked) .rise{animation:fadeInRM .45s var(--d,0s) ease both!important}
-  .a-buzz:has(.opn:checked) .bz-ball{animation:ballSettleRM 1.1s ease both!important}
+  .a-buzz:has(.opn:checked) .bz-ball{animation:ballSettleRM .72s ease both!important}
   .a-buzz:has(.opn:checked) .net-back{animation:none!important}
-  .a-buzz:has(.opn:checked) .net-front{animation:netShowRM 1.1s ease both!important}
-  .a-buzz:has(.opn:checked) .flash{animation:buzzFlash 1.1s ease both!important}
-  .a-buzz:has(.opn:checked) .scr::after{animation:buzzEdge 1.1s ease both!important}
-  .a-buzz:has(.opn:checked) .home .bz-wm{animation:stampRM .5s .62s ease both!important}
+  .a-buzz:has(.opn:checked) .net-front{animation:netShowRM .72s ease both!important}
+  .a-buzz:has(.opn:checked) .flash{animation:buzzFlash .72s ease both!important}
+  .a-buzz:has(.opn:checked) .scr::after{animation:buzzEdge .72s ease both!important}
+  .a-buzz:has(.opn:checked) .home .bz-wm{animation:stampRM .32s .34s ease both!important}
 }
 @keyframes fadeInRM{from{opacity:0}to{opacity:1}}
 @keyframes ballSettleRM{0%{opacity:0;transform:translateY(-14px) scale(.9)}55%{opacity:1;transform:translateY(0) scale(1.06)}78%{transform:scale(.98)}100%{transform:scale(1)}}
@@ -16124,3 +16504,254 @@ html body dialog#player-icon-picker .player-pick.active{
 }
 
 /* === DRAFT FINAL NO SCROLL MOBILE END === */
+
+/* === HOME PROPORTIONS V4 START === */
+
+
+/* =========================================================
+   MOBILE — CANESTRO PIÙ PRESENTE
+   ========================================================= */
+
+@media (max-width:899px){
+
+  .cabhome .emblem{
+    width:218px;
+    height:212px;
+  }
+
+  .cabhome .hoop{
+    width:158px;
+    height:126px;
+    top:-3px;
+  }
+
+  .cabhome .bz-ball{
+    width:112px;
+    height:112px;
+  }
+
+  .cabhome .net-back{
+    stroke-width:1.45;
+    opacity:.62;
+  }
+
+  .cabhome .net-front{
+    stroke-width:1.75;
+  }
+
+  .cabhome .rim-front{
+    stroke-width:6.6;
+  }
+
+  .cabhome .rim-back{
+    stroke-width:5.7;
+  }
+
+  .cabhome .hoop .board{
+    stroke-width:2;
+  }
+
+  .cabhome .hoop .board-target{
+    stroke-width:2.1;
+  }
+}
+
+
+/* =========================================================
+   DESKTOP — HERO PIÙ FORTE, MENO SPAZIO MORTO
+   ========================================================= */
+
+@media (min-width:900px){
+
+  .cabhome{
+    max-width:1180px;
+  }
+
+  .cabhome .scr{
+    min-height:min(860px, calc(100dvh - 40px));
+  }
+
+
+  /* topbar resta larga e indipendente */
+
+  .cabhome .bz-top{
+    max-width:none;
+    width:100%;
+    margin-inline:0;
+    padding-left:40px;
+    padding-right:40px;
+  }
+
+
+  /* hero */
+
+  .cabhome .bz-stage{
+    flex:0 0 auto;
+
+    width:100%;
+    max-width:none;
+
+    margin:0 auto;
+    padding:8px 18px 10px;
+
+    justify-content:flex-start;
+  }
+
+  .cabhome .emblem{
+    width:250px;
+    height:242px;
+  }
+
+  .cabhome .hoop{
+    width:188px;
+    height:150px;
+
+    top:-5px;
+  }
+
+  .cabhome .bz-ball{
+    width:128px;
+    height:128px;
+  }
+
+  .cabhome .net-back{
+    stroke-width:1.5;
+    opacity:.64;
+  }
+
+  .cabhome .net-front{
+    stroke-width:1.8;
+  }
+
+  .cabhome .rim-front{
+    stroke-width:6.8;
+  }
+
+  .cabhome .rim-back{
+    stroke-width:5.9;
+  }
+
+  .cabhome .hoop .board{
+    stroke-width:2;
+  }
+
+  .cabhome .hoop .board-target{
+    stroke-width:2.2;
+  }
+
+
+  /* logo */
+
+  .cabhome .bz-wm{
+    font-size:2.7rem;
+  }
+
+  .cabhome .bz-sub{
+    margin-top:6px;
+  }
+
+
+  /* footer/modalità: sale verso il hero */
+
+  .cabhome .bz-foot{
+    width:100%;
+    max-width:none;
+
+    margin:0;
+    padding:6px 40px 18px;
+  }
+
+
+  /* principali */
+
+  .cabhome .bz-modes-main{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+
+    gap:18px;
+
+    width:100%;
+    max-width:none;
+
+    margin:0;
+  }
+
+  .cabhome .bz-mode--primary{
+    position:relative;
+
+    min-height:188px;
+
+    align-items:flex-start;
+
+    padding:24px 26px;
+
+    text-align:left;
+  }
+
+  .cabhome .bz-mode--primary .mode-icon{
+    margin-bottom:5px;
+  }
+
+  .cabhome .bz-mode--primary .n{
+    font-size:.85rem;
+  }
+
+  .cabhome .bz-mode--primary > b{
+    font-size:1.12rem;
+    line-height:1.05;
+  }
+
+  .cabhome .bz-mode--primary .desc{
+    max-width:360px;
+
+    margin-top:7px;
+
+    font-size:.78rem;
+    line-height:1.45;
+  }
+
+  .cabhome .bz-mode--primary .mode-action{
+    position:absolute;
+
+    right:22px;
+    bottom:20px;
+  }
+
+
+  /* secondarie */
+
+  .cabhome .bz-modes-sub{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+
+    gap:18px;
+
+    width:100%;
+    max-width:none;
+
+    margin-top:12px;
+  }
+
+  .cabhome .bz-mode--secondary{
+    min-height:76px;
+
+    padding:12px 20px;
+  }
+}
+
+
+/* =========================================================
+   DESKTOP ALTO — evita che tutto resti schiacciato in cima
+   senza introdurre vuoto enorme
+   ========================================================= */
+
+@media (min-width:900px) and (min-height:850px){
+
+  .cabhome .bz-stage{
+    padding-top:16px;
+  }
+
+}
+
+
+/* === HOME PROPORTIONS V4 END === */
