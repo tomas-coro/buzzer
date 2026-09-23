@@ -325,6 +325,56 @@ export function render(ctx) {
           </div>
 
           <div class="df-five">
+            <svg class="df-court-lines"
+                 viewBox="0 0 360 340"
+                 preserveAspectRatio="none"
+                 aria-hidden="true">
+
+              <rect class="court-bound"
+                    x="10" y="10"
+                    width="340" height="320"
+                    rx="14"/>
+
+              <line class="court-line"
+                    x1="126" y1="10"
+                    x2="126" y2="102"/>
+
+              <line class="court-line"
+                    x1="234" y1="10"
+                    x2="234" y2="102"/>
+
+              <line class="court-line"
+                    x1="126" y1="102"
+                    x2="234" y2="102"/>
+
+              <circle class="court-line"
+                      cx="180" cy="102"
+                      r="42"/>
+
+              <path class="court-line"
+                    d="M38 10
+                       C42 182 93 272 180 272
+                       C267 272 318 182 322 10"/>
+
+              <line class="court-board"
+                    x1="156" y1="31"
+                    x2="204" y2="31"/>
+
+              <circle class="court-rim"
+                      cx="180" cy="43"
+                      r="8"/>
+
+              <line class="court-rim-support"
+                    x1="180" y1="31"
+                    x2="180" y2="35"/>
+
+              <path class="court-net"
+                    d="M174 48 L177 61
+                       M180 51 L180 63
+                       M186 48 L183 61"/>
+
+            </svg>
+
             ${titolariSlots.map(starterHTML).join("")}
           </div>
         </section>

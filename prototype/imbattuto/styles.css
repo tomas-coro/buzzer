@@ -14714,3 +14714,542 @@ html body dialog#player-icon-picker .player-pick.active{
 }
 
 /* === MOBILE REAL DEVICE FIXES V3 END === */
+
+/* === DRAFT FINAL REAL COURT MOBILE V2 START === */
+
+@media (max-width:520px) and (hover:none) and (pointer:coarse){
+
+  .draft.draft-final{
+    width:100%;
+    max-width:none;
+    align-content:start;
+  }
+
+  .draft.draft-final .draft-final-shell{
+    box-sizing:border-box;
+
+    display:flex;
+    flex-direction:column;
+
+    width:100%;
+    max-width:none;
+
+    min-height:calc(100dvh - 82px);
+
+    margin:0 auto;
+
+    padding:
+      4px
+      12px
+      calc(14px + env(safe-area-inset-bottom));
+  }
+
+
+  /* ============================================
+     TESTATA
+     ============================================ */
+
+  .draft.draft-final .df-head{
+    margin:0 0 9px;
+  }
+
+  .draft.draft-final .df-head small{
+    font-size:8px;
+    letter-spacing:.13em;
+  }
+
+  .draft.draft-final .df-head b{
+    font-size:21px;
+  }
+
+  .draft.draft-final .df-head > strong{
+    font-size:28px;
+  }
+
+
+  /* ============================================
+     BUDGET
+     ============================================ */
+
+  .draft.draft-final .df-cap{
+    gap:6px;
+    margin-bottom:13px;
+  }
+
+  .draft.draft-final .df-cap > span{
+    padding:8px 9px 7px;
+  }
+
+  .draft.draft-final .df-cap small{
+    font-size:7px;
+  }
+
+  .draft.draft-final .df-cap b{
+    font-size:13px;
+  }
+
+
+  /* ============================================
+     SEZIONI
+     ============================================ */
+
+  .draft.draft-final .df-section{
+    margin:0 0 13px;
+  }
+
+  /*
+   * La sezione titolari assorbe lo spazio verticale disponibile:
+   * sui telefoni alti cresce il campo, non il vuoto sotto la CTA.
+   */
+  .draft.draft-final .df-section:first-of-type{
+    display:flex;
+    flex-direction:column;
+
+    flex:1 1 auto;
+
+    min-height:430px;
+  }
+
+  .draft.draft-final .df-section:first-of-type .df-five{
+    flex:1 1 auto;
+  }
+
+  .draft.draft-final .df-section-head{
+    margin:0 1px 7px;
+  }
+
+  .draft.draft-final .df-section-head span{
+    font-size:10px;
+  }
+
+  .draft.draft-final .df-section-head small{
+    font-size:8px;
+  }
+
+
+  /* ============================================
+     VERO MEZZO CAMPO
+     ============================================ */
+
+  .draft.draft-final .df-five{
+    position:relative;
+
+    display:block !important;
+
+    height:auto;
+    min-height:410px;
+
+    padding:0 !important;
+
+    overflow:hidden;
+
+    border:1px solid rgba(62,88,180,.72);
+    border-radius:18px;
+
+    background:
+      radial-gradient(
+        circle at 50% 8%,
+        rgba(255,115,36,.09),
+        transparent 24%
+      ),
+      radial-gradient(
+        circle at 50% 65%,
+        rgba(17,156,255,.08),
+        transparent 52%
+      ),
+      linear-gradient(
+        180deg,
+        #111c50,
+        #081139
+      );
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.025),
+      0 12px 32px rgba(0,0,0,.12);
+  }
+
+
+  /* SVG campo */
+
+  .draft.draft-final .df-court-lines{
+    position:absolute;
+    z-index:0;
+
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    overflow:visible;
+
+    pointer-events:none;
+  }
+
+  .draft.draft-final .court-bound,
+  .draft.draft-final .court-line{
+    fill:none;
+
+    stroke:rgba(86,126,232,.30);
+    stroke-width:1.5;
+
+    vector-effect:non-scaling-stroke;
+  }
+
+  .draft.draft-final .court-board{
+    stroke:rgba(233,238,255,.58);
+    stroke-width:3;
+
+    vector-effect:non-scaling-stroke;
+  }
+
+  .draft.draft-final .court-rim,
+  .draft.draft-final .court-rim-support{
+    fill:none;
+
+    stroke:var(--orange);
+    stroke-width:2.5;
+
+    vector-effect:non-scaling-stroke;
+
+    filter:
+      drop-shadow(
+        0 0 3px rgba(255,110,35,.24)
+      );
+  }
+
+  .draft.draft-final .court-net{
+    fill:none;
+
+    stroke:rgba(238,240,255,.34);
+    stroke-width:1;
+
+    vector-effect:non-scaling-stroke;
+  }
+
+
+  /* ============================================
+     PLAYER TILE
+     ============================================ */
+
+  .draft.draft-final .df-starter{
+    position:absolute;
+    z-index:2;
+
+    display:grid !important;
+
+    grid-template-columns:
+      40px
+      minmax(0,1fr)
+      24px
+      !important;
+
+    grid-template-areas:
+      "face role ovr"
+      "face name ovr"
+      !important;
+
+    align-items:center;
+
+    box-sizing:border-box;
+    grid-column:auto !important;
+    justify-self:auto !important;
+
+    width:40% !important;
+    height:64px;
+    min-width:0;
+    min-height:0;
+
+    padding:6px 7px 6px 6px !important;
+
+    overflow:hidden;
+
+    border:1px solid rgba(77,101,204,.88) !important;
+    border-radius:13px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(22,43,110,.96),
+        rgba(8,19,64,.97)
+      )
+      !important;
+
+    box-shadow:
+      0 7px 18px rgba(0,0,0,.15),
+      inset 0 1px 0 rgba(255,255,255,.025)
+      !important;
+  }
+
+  .draft.draft-final .df-starter::before{
+    content:"";
+
+    position:absolute;
+
+    top:0;
+    bottom:0;
+    left:0;
+
+    width:3px;
+
+    background:var(--blue);
+  }
+
+
+  /*
+   * Posizione in campo:
+   *
+   *          CANESTRO
+   *
+   *       PF          C
+   *
+   *       SG          SF
+   *
+   *           PG
+   */
+
+  .draft.draft-final .df-starter:nth-of-type(1){
+    /* PG */
+    left:50%;
+    bottom:4%;
+
+    transform:translateX(-50%);
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(2){
+    /* SG */
+    left:3.5%;
+    top:50%;
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(3){
+    /* SF */
+    right:3.5%;
+    top:50%;
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(4){
+    /* PF */
+    left:3.5%;
+    top:18%;
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(5){
+    /* C */
+    right:3.5%;
+    top:18%;
+  }
+
+
+  /* faccia */
+
+  .draft.draft-final .df-face{
+    grid-area:face;
+
+    display:block;
+
+    width:38px;
+    height:50px;
+  }
+
+  .draft.draft-final .df-face .face{
+    width:38px !important;
+    height:50px !important;
+
+    border-radius:8px !important;
+  }
+
+  .draft.draft-final .df-face .ph{
+    width:100%;
+    height:100%;
+
+    object-fit:contain;
+    object-position:center bottom;
+  }
+
+
+  /* ruolo */
+
+  .draft.draft-final .df-role{
+    grid-area:role;
+
+    align-self:end;
+
+    color:#9097c4 !important;
+
+    font-size:8px !important;
+    font-weight:950;
+    line-height:1;
+    letter-spacing:.10em;
+
+    text-align:left;
+  }
+
+
+  /* nome */
+
+  .draft.draft-final .df-starter-foot{
+    display:contents !important;
+  }
+
+  .draft.draft-final .df-name{
+    grid-area:name;
+
+    align-self:start;
+
+    min-width:0;
+
+    display:-webkit-box;
+    overflow:hidden;
+
+    color:var(--bone) !important;
+
+    font-size:9px !important;
+    font-weight:950 !important;
+    line-height:1.05;
+
+    text-align:left;
+    white-space:normal;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+  }
+
+
+  /* OVR */
+
+  .draft.draft-final .df-ovr{
+    grid-area:ovr;
+
+    margin-left:2px;
+
+    color:var(--yellow) !important;
+
+    font-size:16px !important;
+    line-height:1;
+  }
+
+
+  /* ============================================
+     PANCHINA — UNA SOLA RIGA
+     ============================================ */
+
+  .draft.draft-final .df-bench-grid{
+    display:grid !important;
+
+    grid-template-columns:
+      repeat(5,minmax(0,1fr))
+      !important;
+
+    gap:5px !important;
+  }
+
+  .draft.draft-final .df-bench,
+  .draft.draft-final .df-bench:nth-child(5){
+    display:grid !important;
+
+    grid-template-columns:
+      1fr
+      auto
+      !important;
+
+    grid-template-areas:
+      "face ovr"
+      "name name"
+      "order order";
+
+    align-items:center;
+
+    grid-column:auto !important;
+
+    width:auto !important;
+    min-width:0;
+    min-height:64px;
+
+    justify-self:stretch !important;
+
+    gap:2px;
+
+    padding:5px !important;
+
+    border:1px solid rgba(56,76,157,.70) !important;
+    border-radius:9px !important;
+
+    background:
+      linear-gradient(
+        145deg,
+        rgba(16,31,78,.96),
+        rgba(7,16,49,.98)
+      )
+      !important;
+  }
+
+  .draft.draft-final .df-bench-face{
+    grid-area:face;
+  }
+
+  .draft.draft-final .df-bench-face .face{
+    width:30px !important;
+    height:30px !important;
+
+    border-radius:7px !important;
+  }
+
+  .draft.draft-final .df-bench-copy{
+    display:contents;
+  }
+
+  .draft.draft-final .df-bench-copy strong{
+    grid-area:name;
+
+    min-width:0;
+
+    overflow:hidden;
+
+    font-size:7px !important;
+    line-height:1;
+
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .draft.draft-final .df-bench-copy small{
+    grid-area:order;
+
+    margin:1px 0 0;
+
+    font-size:6px !important;
+    line-height:1;
+
+    color:#777ea8 !important;
+  }
+
+  .draft.draft-final .df-bench-ovr{
+    grid-area:ovr;
+
+    font-size:13px !important;
+    line-height:1;
+
+    color:var(--yellow) !important;
+  }
+
+
+  /* ============================================
+     CTA
+     ============================================ */
+
+  .draft.draft-final .df-cta{
+    width:100%;
+    min-height:56px;
+
+    margin:4px 0 0 !important;
+
+    border-radius:11px !important;
+
+    font-size:13px !important;
+
+    box-shadow:
+      0 9px 24px rgba(255,198,39,.14)
+      !important;
+  }
+}
+
+/* === DRAFT FINAL REAL COURT MOBILE V2 END === */
