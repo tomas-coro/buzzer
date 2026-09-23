@@ -244,7 +244,7 @@ export function render(ctx) {
 
           <span class="df-face">
             ${faceHTML(c, {
-              ovr: rv.ovr ? c.ovr : null,
+              ovr: null,
               role: null,
             })}
           </span>
@@ -355,23 +355,6 @@ export function render(ctx) {
                     d="M38 10
                        C42 182 93 272 180 272
                        C267 272 318 182 322 10"/>
-
-              <line class="court-board"
-                    x1="156" y1="31"
-                    x2="204" y2="31"/>
-
-              <circle class="court-rim"
-                      cx="180" cy="43"
-                      r="8"/>
-
-              <line class="court-rim-support"
-                    x1="180" y1="31"
-                    x2="180" y2="35"/>
-
-              <path class="court-net"
-                    d="M174 48 L177 61
-                       M180 51 L180 63
-                       M186 48 L183 61"/>
 
             </svg>
 
