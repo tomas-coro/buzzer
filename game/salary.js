@@ -2,6 +2,7 @@
 // Dove manca il dato resta esplicitamente null; il gioco usa allora l'OVR.
 
 import { SALARI_STORICI } from "./salary-data.js";
+import { SALARY_CAREER } from "./salary-career-data.js";
 
 // Contratto minimo e max contract, in dollari veri. La NBA 2025-26 sta sui 2,1
 // milioni di minimo e sui 55 di supermax: numeri tondi che chiunque riconosce.
@@ -11,7 +12,9 @@ export const SALARIO_MAX = 55_000_000;
 // Sotto VOTO_MIN si firma al minimo, a VOTO_MAX si paga il max contract: la
 // curva vive fra questi due estremi. La base è l'OVR 2K mostrato sulla carta,
 // che nel dataset può arrivare a 99.
-const VOTO_MIN = 20;
+// Sotto 60 OVR il giocatore è nella fascia minimum-contract.
+// Da 60 a 99 la curva cresce rapidamente fino al max contract.
+const VOTO_MIN = 60;
 const VOTO_MAX = 99;
 
 // L'esponente della convessità. Mantiene molto più costosi gli OVR d'élite
@@ -50,21 +53,71 @@ export function salarioStorico(carta) {
 // stesso spin) che con 0.5 il più forte restava comunque più economico - il
 // pavimento doveva salire abbastanza da chiudere anche quel gap, non solo
 // stringerlo.
-export const BANDA_STORICO_MIN = 0.6;
-export const BANDA_STORICO_MAX = 1.5;
+export const BANDA_STORICO_MIN = 0.72;
+export const BANDA_STORICO_MAX = 1.28;
 
-/** Il salario storico, tenuto dentro la banda attorno alla formula OVR. */
+/**
+ * Segnale economico della stagione reale.
+ *
+ * Non replichiamo direttamente il contratto NBA:
+ * lo storico può muovere il valore, ma solo entro ±28% dalla base OVR.
+ */
 export function clampStorico(formula, storico) {
-  const min = Math.round((formula * BANDA_STORICO_MIN) / PASSO) * PASSO;
-  const max = Math.round((formula * BANDA_STORICO_MAX) / PASSO) * PASSO;
+  const min = Math.max(
+    SALARIO_MIN,
+    Math.round((formula * BANDA_STORICO_MIN) / PASSO) * PASSO,
+  );
+
+  const max = Math.min(
+    SALARIO_MAX,
+    Math.round((formula * BANDA_STORICO_MAX) / PASSO) * PASSO,
+  );
+
   return Math.min(max, Math.max(min, storico));
 }
 
-/** Salario reale quando disponibile (dentro la banda), altrimenti costo dall'OVR. */
+/** Contesto carriera della specifica carta. */
+export function contestoCarriera(carta) {
+  return SALARY_CAREER[`${carta?.player_id}|${carta?.season}`] ?? {
+    phase: "stable",
+    factor: 1,
+    peak: Number(carta?.ovr) || 0,
+  };
+}
+
+/**
+ * Contratto BUZZER.
+ *
+ * 65%: valore indicato dall'OVR visibile.
+ * 25%: segnale del contratto reale della specifica stagione, compresso.
+ * 10%: fase della carriera ricavata dalla sequenza OVR del giocatore.
+ *
+ * In questo modo due carte con lo stesso OVR possono avere prezzi diversi,
+ * senza permettere alle anomalie contrattuali NBA di dominare il gameplay.
+ */
 export function salarioCarta(carta) {
   const formula = salarioDaVoto(carta?.ovr);
   const storico = salarioStorico(carta);
-  return storico === null ? formula : clampStorico(formula, storico);
+  const carriera = contestoCarriera(carta);
+
+  const storicoNormalizzato =
+    storico === null
+      ? formula
+      : clampStorico(formula, storico);
+
+  const valoreCarriera = formula * carriera.factor;
+
+  const grezzo =
+    formula * 0.65 +
+    storicoNormalizzato * 0.25 +
+    valoreCarriera * 0.10;
+
+  const tondo = Math.round(grezzo / PASSO) * PASSO;
+
+  return Math.min(
+    SALARIO_MAX,
+    Math.max(SALARIO_MIN, tondo),
+  );
 }
 
 export function etichettaSalarioCarta(carta) {

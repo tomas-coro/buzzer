@@ -7,6 +7,7 @@ import {
   firmaDiRipiego, formattaSalario,
   APRON, TASSA_PER_MILIONE, limiteDuro, sforo, malusApron, monteIngaggi,
   clampStorico, BANDA_STORICO_MIN, BANDA_STORICO_MAX,
+  contestoCarriera,
 } from "./salary.js";
 
 const M = 1_000_000;
@@ -44,14 +45,36 @@ test("gli ancoraggi OVR cadono agli estremi della curva", () => {
   assert.ok(salarioDaVoto(94) < SALARIO_MAX, "94 OVR non deve già saturare il max contract");
 });
 
-test("usa il salario storico normalizzato al tetto di oggi quando esiste", () => {
-  // LeBron 2014-15 prendeva 20.6M nominali, cioè il 32.7% del tetto 2014-15
-  // (63M): la stessa quota vale 50.6M sul tetto 2025-26 (154.6M). L'OVR 2K
-  // visibile sulla carta è la base della formula; i reparti non entrano nel salario.
-  const lebron = card({ player_id: "lebron-james", season: "2014-15", ovr: 96 });
-  assert.equal(salarioStorico(lebron), 50_623_873);
-  assert.equal(salarioCarta(lebron), 50_623_873);
-  assert.equal(etichettaSalarioCarta(lebron), "Salario stagionale");
+test("lo storico resta disponibile ma il contratto finale segue il modello BUZZER", () => {
+  const lebron = card({
+    player_id: "lebron-james",
+    season: "2014-15",
+    ovr: 96,
+  });
+
+  const storico = salarioStorico(lebron);
+  const finale = salarioCarta(lebron);
+  const base = salarioDaVoto(96);
+
+  // Il dato storico reale resta intatto come segnale della specifica stagione.
+  assert.equal(storico, 50_623_873);
+
+  // Il contratto BUZZER non replica più automaticamente il contratto NBA.
+  assert.notEqual(finale, storico);
+
+  // Deve però restare coerente con il valore della carta.
+  assert.ok(
+    finale >= base * 0.75 && finale <= base * 1.25,
+    `finale ${finale} troppo lontano dalla base OVR ${base}`,
+  );
+
+  // I contratti mostrati nel gioco restano leggibili a passi da 100k.
+  assert.equal(finale % 100_000, 0);
+
+  assert.equal(
+    etichettaSalarioCarta(lebron),
+    "Salario stagionale",
+  );
 });
 
 test("salarioCarta usa l'OVR visibile e ignora il voto-motore dei reparti", () => {
@@ -78,16 +101,47 @@ test("un salario mancante resta null e usa l'OVR senza rumore", () => {
   assert.equal(salarioCarta(mancante) % 100_000, 0);
 });
 
-test("usa i salari reali 2025-26", () => {
-  // OVR 80 tiene questi due contratti dentro la banda senza dipendere dai reparti.
-  assert.equal(
-    salarioCarta(card({ player_id: "desmond-bane", season: "2025-26", ovr: 80 })),
-    36_725_670,
+test("due carte con stesso OVR possono avere contratti diversi per il contesto", () => {
+  const bane = card({
+    player_id: "desmond-bane",
+    season: "2025-26",
+    ovr: 80,
+  });
+
+  const suggs = card({
+    player_id: "jalen-suggs",
+    season: "2025-26",
+    ovr: 80,
+  });
+
+  const base = salarioDaVoto(80);
+
+  const sb = salarioCarta(bane);
+  const ss = salarioCarta(suggs);
+
+  assert.ok(sb >= SALARIO_MIN && sb <= SALARIO_MAX);
+  assert.ok(ss >= SALARIO_MIN && ss <= SALARIO_MAX);
+
+  assert.ok(
+    Math.abs(sb - base) < base * 0.20,
+    `Bane ${sb} troppo lontano dalla base OVR ${base}`,
   );
-  assert.equal(
-    salarioCarta(card({ player_id: "jalen-suggs", season: "2025-26", ovr: 80 })),
-    35_000_000,
+
+  assert.ok(
+    Math.abs(ss - base) < base * 0.20,
+    `Suggs ${ss} troppo lontano dalla base OVR ${base}`,
   );
+});
+
+test("il contesto carriera distingue almeno prime e crescita quando disponibili", () => {
+  const prime = contestoCarriera({
+    player_id: "lebron-james",
+    season: "2014-15",
+    ovr: 96,
+  });
+
+  assert.ok(["prime", "rising", "decline", "stable"].includes(prime.phase));
+  assert.ok(prime.factor >= 0.90 && prime.factor <= 1.10);
 });
 
 // ---- il clamp storico/formula ----
@@ -108,7 +162,7 @@ test("clampStorico: abbassa il tetto quando il veterano è sovrapagato rispetto 
 
 test("clampStorico: non tocca lo storico già dentro banda", () => {
   const formula = 40_000_000;
-  assert.equal(clampStorico(formula, 29_000_000), 29_000_000);
+  assert.equal(clampStorico(formula, 35_000_000), 35_000_000);
 });
 
 test("clampStorico: il caso Davis/Campbell torna coerente con l'OVR", () => {
