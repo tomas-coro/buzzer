@@ -500,164 +500,521 @@ button.bz-mode{cursor:pointer}
 }
 @keyframes stamp{0%{transform:scale(1.5);opacity:0}70%{transform:scale(.96);opacity:1}100%{transform:scale(1)}}
 
-/* ═══ SIRENA CLUTCH — parabola + ferro + swish + buzzer ═══ */
+/* ═══ SIRENA CLUTCH — buzzer beater V5 ═══ */
+
+/*
+   Le dimensioni del canestro NON vengono toccate qui.
+   Cambiano solo traiettoria, profondità e reazioni.
+
+   Coordinate calibrate separatamente per desktop/mobile perché
+   il canestro V4 ha proporzioni diverse nei due layout.
+*/
+
+.cabhome{
+  --shot-start-x:-175px;
+  --shot-start-y:72px;
+
+  --shot-apex-x:-72px;
+  --shot-apex-y:-172px;
+
+  --shot-rim-y:-104px;
+  --shot-net-y:-72px;
+
+  --rim-impact-y:76px;
+}
+
+@media (max-width:899px){
+  .cabhome{
+    --shot-start-x:-150px;
+    --shot-start-y:64px;
+
+    --shot-apex-x:-62px;
+    --shot-apex-y:-150px;
+
+    --shot-rim-y:-91px;
+    --shot-net-y:-61px;
+
+    --rim-impact-y:62px;
+  }
+}
+
+
+/* =========================================================
+   SCIA
+   ========================================================= */
+
+.emblem::before{
+  content:"";
+
+  position:absolute;
+  z-index:0;
+
+  left:50%;
+  top:50%;
+
+  width:92px;
+  height:18px;
+
+  border-radius:999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,91,30,.08) 22%,
+      rgba(255,91,30,.44) 72%,
+      rgba(255,207,51,.72)
+    );
+
+  filter:blur(5px);
+
+  opacity:0;
+
+  pointer-events:none;
+}
+
+
+/* =========================================================
+   SHOCKWAVE SUL FERRO
+   ========================================================= */
+
+.emblem::after{
+  content:"";
+
+  position:absolute;
+  z-index:4;
+
+  left:50%;
+  top:var(--rim-impact-y);
+
+  width:70px;
+  height:24px;
+
+  border:2px solid rgba(255,207,51,.88);
+  border-radius:50%;
+
+  transform:translate(-50%,-50%) scale(.35);
+
+  box-shadow:
+    0 0 12px rgba(255,207,51,.30),
+    0 0 24px rgba(255,91,30,.18);
+
+  opacity:0;
+
+  pointer-events:none;
+}
+
+
+/* =========================================================
+   PALLA
+   ========================================================= */
 
 .a-buzz:has(.opn:checked) .bz-ball{
-  animation:shotBuzz 1.45s linear both;
+  animation:shotBuzz 1.52s linear both;
 }
 
 @keyframes shotBuzz{
+
   0%{
-    transform:translate(-148px,68px) scale(.45) rotate(0deg);
+    transform:
+      translate(var(--shot-start-x),var(--shot-start-y))
+      scale(.43)
+      rotate(0deg);
+
     opacity:0;
-    animation-timing-function:cubic-bezier(.20,.72,.42,1);
+
+    animation-timing-function:
+      cubic-bezier(.18,.76,.38,1);
   }
 
-  7%{
-    transform:translate(-136px,42px) scale(.44) rotate(-28deg);
+  6%{
     opacity:1;
-    animation-timing-function:cubic-bezier(.16,.65,.34,1);
   }
 
-  38%{
-    transform:translate(-62px,-142px) scale(.36) rotate(-150deg);
-    animation-timing-function:cubic-bezier(.38,.06,.72,.43);
+  14%{
+    transform:
+      translate(
+        calc(var(--shot-start-x) * .82),
+        20px
+      )
+      scale(.40)
+      rotate(-50deg);
+
+    animation-timing-function:
+      cubic-bezier(.15,.60,.32,1);
   }
 
-  57%{
-    transform:translate(-20px,-126px) scale(.36) rotate(-210deg);
-    animation-timing-function:cubic-bezier(.25,.30,.42,1);
+  /* apice della parabola */
+
+  40%{
+    transform:
+      translate(
+        var(--shot-apex-x),
+        var(--shot-apex-y)
+      )
+      scale(.34)
+      rotate(-168deg);
+
+    animation-timing-function:
+      cubic-bezier(.45,.04,.72,.42);
   }
 
-  67%{
-    transform:translate(-4px,-102px) scale(.38) rotate(-242deg);
+  /* discesa */
+
+  58%{
+    transform:
+      translate(-22px,-142px)
+      scale(.33)
+      rotate(-224deg);
+
+    animation-timing-function:
+      cubic-bezier(.22,.38,.40,1);
   }
 
-  73%{
-    transform:translate(0,-86px) scale(.42) rotate(-264deg);
+  68%{
+    transform:
+      translate(-5px,-118px)
+      scale(.32)
+      rotate(-256deg);
   }
+
+  /* centro palla esattamente sul ferro */
+
+  74%{
+    transform:
+      translate(0,var(--shot-rim-y))
+      scale(.32)
+      rotate(-278deg);
+
+    animation-timing-function:
+      cubic-bezier(.20,.60,.36,1);
+  }
+
+  /* entra nel ferro:
+     hoop-front è sopra la palla grazie allo z-index */
 
   79%{
-    transform:translate(0,-61px) scale(.50) rotate(-286deg);
-    animation-timing-function:cubic-bezier(.22,.55,.40,1);
+    transform:
+      translate(0,var(--shot-net-y))
+      scaleX(.30)
+      scaleY(.35)
+      rotate(-296deg);
   }
 
-  87%{
-    transform:translate(0,-31px) scale(.68) rotate(-312deg);
+  /* attraversa la rete */
+
+  84%{
+    transform:
+      translate(0,-45px)
+      scaleX(.38)
+      scaleY(.34)
+      rotate(-312deg);
+
+    animation-timing-function:
+      cubic-bezier(.18,.64,.40,1);
   }
 
-  95%{
-    transform:translate(0,-7px) scale(.93) rotate(-334deg);
+  /* torna verso la posizione-logo */
+
+  91%{
+    transform:
+      translate(0,-24px)
+      scale(.67)
+      rotate(-334deg);
+  }
+
+  96%{
+    transform:
+      translate(0,3px)
+      scaleX(1.04)
+      scaleY(.96)
+      rotate(-348deg);
   }
 
   100%{
-    transform:translate(0,0) scale(1) rotate(-342deg);
+    transform:
+      translate(0,0)
+      scale(1)
+      rotate(-352deg);
+
     opacity:1;
   }
 }
 
 
-/* piccolo contraccolpo del ferro */
+/* =========================================================
+   SCIA PALLA
+   ========================================================= */
+
+.a-buzz:has(.opn:checked) .emblem::before{
+  animation:shotTrail 1.52s linear both;
+}
+
+@keyframes shotTrail{
+
+  0%,5%{
+    opacity:0;
+
+    transform:
+      translate(-175px,45px)
+      rotate(-34deg)
+      scaleX(.55);
+  }
+
+  13%{
+    opacity:.72;
+
+    transform:
+      translate(-138px,-6px)
+      rotate(-39deg)
+      scaleX(1);
+  }
+
+  30%{
+    opacity:.36;
+
+    transform:
+      translate(-96px,-74px)
+      rotate(-52deg)
+      scaleX(.75);
+  }
+
+  43%{
+    opacity:.08;
+
+    transform:
+      translate(-62px,-116px)
+      rotate(-62deg)
+      scaleX(.55);
+  }
+
+  48%,100%{
+    opacity:0;
+  }
+}
+
+
+/* =========================================================
+   FERRO
+   ========================================================= */
 
 .a-buzz:has(.opn:checked) .hoop-front{
-  animation:rimBuzz 1.45s linear both;
+  animation:rimBuzz 1.52s linear both;
 }
 
 @keyframes rimBuzz{
-  0%,68%,100%{
-    transform:translateX(-50%) translateY(0) rotate(0);
+
+  0%,71%,100%{
+    transform:
+      translateX(-50%)
+      translateY(0)
+      rotate(0deg);
   }
 
-  73%{
-    transform:translateX(-50%) translateY(1.3px) rotate(.45deg);
+  76%{
+    transform:
+      translateX(-50%)
+      translateY(2px)
+      rotate(.7deg);
   }
 
-  78%{
-    transform:translateX(-50%) translateY(-.5px) rotate(-.25deg);
+  80%{
+    transform:
+      translateX(-50%)
+      translateY(-1px)
+      rotate(-.4deg);
   }
 
   84%{
-    transform:translateX(-50%) translateY(.25px) rotate(.12deg);
+    transform:
+      translateX(-50%)
+      translateY(.55px)
+      rotate(.22deg);
+  }
+
+  89%{
+    transform:
+      translateX(-50%)
+      translateY(-.2px)
+      rotate(-.08deg);
   }
 }
 
 
-/* rete */
+/* =========================================================
+   RETE
+   ========================================================= */
 
 .a-buzz:has(.opn:checked) .net-back{
-  animation:swishNetB 1.45s linear both;
+  animation:swishNetB 1.52s linear both;
 }
 
 .a-buzz:has(.opn:checked) .net-front{
   animation:
-    swishNetB 1.45s linear both,
-    netShowB 1.45s linear both;
+    swishNetB 1.52s linear both,
+    netShowB 1.52s linear both;
 }
 
 @keyframes swishNetB{
-  0%,66%{
-    transform:scaleY(1) scaleX(1);
+
+  0%,70%{
+    transform:
+      translateY(0)
+      scaleY(1)
+      scaleX(1);
   }
 
-  73%{
-    transform:scaleY(1.50) scaleX(.81);
+  /* la palla trascina la rete giù */
+
+  77%{
+    transform:
+      translateY(5px)
+      scaleY(1.56)
+      scaleX(.76);
   }
 
-  79%{
-    transform:scaleY(.91) scaleX(1.09);
+  82%{
+    transform:
+      translateY(8px)
+      scaleY(1.26)
+      scaleX(.86);
   }
 
-  86%{
-    transform:scaleY(1.13) scaleX(.96);
+  /* rimbalzo */
+
+  87%{
+    transform:
+      translateY(-2px)
+      scaleY(.88)
+      scaleX(1.10);
   }
 
-  93%{
-    transform:scaleY(.98) scaleX(1.02);
+  92%{
+    transform:
+      translateY(1px)
+      scaleY(1.10)
+      scaleX(.96);
+  }
+
+  96%{
+    transform:
+      translateY(0)
+      scaleY(.97)
+      scaleX(1.02);
   }
 
   100%{
-    transform:scaleY(1) scaleX(1);
+    transform:none;
   }
 }
 
 @keyframes netShowB{
-  0%,65%{opacity:0}
-  70%{opacity:.92}
-  82%{opacity:.62}
-  94%,100%{opacity:0}
+  0%,69%{opacity:0}
+
+  74%{opacity:.98}
+
+  84%{opacity:.82}
+
+  93%{opacity:.32}
+
+  100%{opacity:0}
 }
 
 
-/* lampo */
+/* =========================================================
+   SHOCKWAVE
+   ========================================================= */
 
-.a-buzz:has(.opn:checked) .flash{
-  animation:buzzFlash 1.45s linear both;
+.a-buzz:has(.opn:checked) .emblem::after{
+  animation:rimShock 1.52s linear both;
 }
 
-@keyframes buzzFlash{
-  0%,65%{
+@keyframes rimShock{
+
+  0%,72%{
     opacity:0;
-    transform:translate(-50%,-50%) scale(.52);
+    transform:
+      translate(-50%,-50%)
+      scale(.35);
   }
 
-  71%{
-    opacity:.86;
-    transform:translate(-50%,-50%) scale(.94);
+  76%{
+    opacity:.88;
   }
 
-  80%{
-    opacity:.31;
-    transform:translate(-50%,-50%) scale(1.12);
+  82%{
+    opacity:.48;
+
+    transform:
+      translate(-50%,-50%)
+      scale(1.45);
+  }
+
+  89%{
+    opacity:0;
+
+    transform:
+      translate(-50%,-50%)
+      scale(2.05);
   }
 
   100%{
     opacity:0;
-    transform:translate(-50%,-50%) scale(1.27);
   }
 }
 
 
-/* lampo cornice */
+/* =========================================================
+   FLASH CENTRALE
+   ========================================================= */
+
+.a-buzz:has(.opn:checked) .flash{
+  animation:buzzFlash 1.52s linear both;
+}
+
+@keyframes buzzFlash{
+
+  0%,71%{
+    opacity:0;
+
+    transform:
+      translate(-50%,-50%)
+      scale(.52);
+  }
+
+  76%{
+    opacity:.92;
+
+    transform:
+      translate(-50%,-50%)
+      scale(.88);
+  }
+
+  82%{
+    opacity:.34;
+
+    transform:
+      translate(-50%,-50%)
+      scale(1.12);
+  }
+
+  90%{
+    opacity:.08;
+
+    transform:
+      translate(-50%,-50%)
+      scale(1.31);
+  }
+
+  100%{
+    opacity:0;
+  }
+}
+
+
+/* =========================================================
+   BORDO CABINA
+   ========================================================= */
 
 .a-buzz:has(.opn:checked) .scr::after{
   content:"";
@@ -670,18 +1027,67 @@ button.bz-mode{cursor:pointer}
 
   box-shadow:
     inset 0 0 0 3px var(--pop),
-    inset 0 0 27px rgba(255,91,30,.38);
+    inset 0 0 30px rgba(255,91,30,.43),
+    inset 0 0 55px rgba(255,207,51,.08);
 
   opacity:0;
 
-  animation:buzzEdge 1.45s linear both;
+  animation:buzzEdge 1.52s linear both;
 }
 
 @keyframes buzzEdge{
-  0%,66%{opacity:0}
-  71%{opacity:.88}
-  82%{opacity:.13}
-  100%{opacity:0}
+
+  0%,73%{
+    opacity:0;
+  }
+
+  77%{
+    opacity:.95;
+  }
+
+  81%{
+    opacity:.32;
+  }
+
+  87%{
+    opacity:.08;
+  }
+
+  100%{
+    opacity:0;
+  }
+}
+
+
+/* =========================================================
+   LOGO: colpo sincronizzato allo swish
+   ========================================================= */
+
+.a-buzz:has(.opn:checked) .home .bz-wm{
+  animation:
+    logoBuzzer .46s 1.12s cubic-bezier(.18,1.55,.32,1) both;
+}
+
+@keyframes logoBuzzer{
+
+  0%{
+    opacity:0;
+    transform:scale(1.28);
+  }
+
+  56%{
+    opacity:1;
+    transform:scale(.965);
+  }
+
+  78%{
+    transform:scale(1.025);
+  }
+
+  100%{
+    opacity:1;
+    transform:scale(1);
+  }
 }
 
 /* Reduced-motion: niente parabola ampia (il grande spostamento e' cio' che da'
