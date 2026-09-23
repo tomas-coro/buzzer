@@ -29,7 +29,7 @@ import { appHeader, wireAppHeader } from "./_chrome.js";
 // del numero riassuntivo: a difficile leggi solo il box, a incubo scommetti sul nome.
 const REVEAL = {
   facile:    { ovr: true,  stats: "full" }, // OVR + box score completo (nello sheet)
-  normale:   { ovr: true,  stats: "sig"  }, // OVR + stat-firma (PT/RB/AS)
+  normale:   { ovr: true,  stats: "full" }, // OVR + box score completo
   difficile: { ovr: false, stats: "sig"  }, // stat-firma, OVR nascosto
   incubo:    { ovr: false, stats: "none" }, // al buio
 };
@@ -172,7 +172,7 @@ function denseSheetHTML(card, rv) {
   const two = card.pos.secondary;
   const posTxt = `${esc(card.pos.primary)}${two ? " · " + esc(two) : ""}`;
   const arch = rv.stats === "none" ? "" : ` · ${esc(archetype(card.stats_real).label)}`;
-  const ovrLabel = card.ovr_stimato ? "OVR stimato" : "Overall 2K";
+  const ovrLabel = "Overall";
   const ovrHTML = rv.ovr
     ? `<b>${card.ovr}</b><small>${ovrLabel}</small>`
     : `<b class="q">?</b><small>${ovrLabel}</small>`;
@@ -204,7 +204,7 @@ function denseSheetHTML(card, rv) {
         <span class="cell"><b>${fmt1(s.blk)}</b><small>Stop.</small></span>
         <span class="cell"><b>${fmt1(s.tov)}</b><small>Persi</small></span>
       </div>`
-    : `<p class="blindnote">Box score completo scoperto solo in Facile.</p>`;
+    : `<p class="blindnote">Box score completo non disponibile a questa difficoltà.</p>`;
   const gpLo = s.gp < 15;
   const footTxt = `${gpLo ? `<span class="gp-lo">solo ${s.gp} partite</span>` : `${s.gp} partite`} · ${fmt1(s.min)} min`;
 

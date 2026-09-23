@@ -139,6 +139,82 @@ button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 .bz-top{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:28px 16px 0;font-family:"Bungee"}
 .bz-credit{font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--pop2)}
 .bz-best{font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);display:flex;align-items:center;gap:6px}
+
+.bz-records{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  height:32px;
+  padding:0 8px;
+  flex:0 0 auto;
+
+  border:1px solid rgba(92,109,255,.32);
+  border-radius:9px;
+
+  background:
+    linear-gradient(180deg, rgba(25,29,76,.72), rgba(10,13,44,.72));
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+.bz-record{
+  display:flex;
+  align-items:baseline;
+  gap:4px;
+  white-space:nowrap;
+  line-height:1;
+}
+
+.bz-record-label{
+  font-family:"Doto", monospace;
+  font-size:.54rem;
+  font-weight:900;
+  letter-spacing:.09em;
+  color:rgba(238,241,255,.62);
+}
+
+.bz-record b{
+  font-family:"Doto", monospace;
+  font-size:.76rem;
+  font-weight:900;
+  letter-spacing:.02em;
+}
+
+.bz-record--imb b{
+  color:#ffcf32;
+}
+
+.bz-record--po b{
+  color:#5f78ff;
+}
+
+.bz-record-sep{
+  width:1px;
+  height:14px;
+  background:rgba(255,255,255,.13);
+}
+
+@media (max-width:480px){
+  .bz-records{
+    gap:5px;
+    height:30px;
+    padding:0 6px;
+  }
+
+  .bz-record{
+    gap:3px;
+  }
+
+  .bz-record-label{
+    font-size:.48rem;
+  }
+
+  .bz-record b{
+    font-size:.69rem;
+  }
+}
+
 .bz-best b{color:var(--win)}
 
 .bz-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0 18px}
@@ -5470,6 +5546,50 @@ html body dialog#player-icon-picker .player-pick.active{
   stroke:none;
 }
 
+
+
+/* Identità locale Cabina 90 */
+.bz-player-id{
+  width:auto;
+  min-width:54px;
+  max-width:112px;
+  height:36px;
+  padding:0 11px;
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  border-radius:10px !important;
+
+  font-family:"Doto", monospace;
+  font-size:.84rem;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+
+  color:#ffcf32;
+  background:
+    linear-gradient(180deg, rgba(30,33,88,.98), rgba(12,15,51,.98));
+  border:2px solid rgba(78,98,236,.65);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.07),
+    3px 3px 0 #ff642d;
+}
+
+@media (max-width:480px){
+  .bz-player-id{
+    min-width:48px;
+    max-width:92px;
+    height:34px;
+    padding:0 8px;
+    font-size:.76rem;
+    letter-spacing:.045em;
+  }
+}
 
 /* =========================================================
    PLAYER NAME -> STATISTICHE CABINA
@@ -14715,6 +14835,681 @@ html body dialog#player-icon-picker .player-pick.active{
 
 /* === MOBILE REAL DEVICE FIXES V3 END === */
 
+
+
+
+
+
+
+/* === DRAFT FINAL REAL COURT DESKTOP V3 START === */
+
+@media (min-width:901px){
+
+  .screen.draft.draft-final{
+    box-sizing:border-box;
+    width:100%;
+    max-width:none;
+    min-height:100dvh;
+    align-content:start;
+    padding-bottom:28px;
+  }
+
+  .draft.draft-final .draft-final-shell{
+    box-sizing:border-box;
+
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 320px;
+    grid-template-areas:
+      "head head"
+      "cap cap"
+      "starters bench"
+      "starters cta";
+
+    grid-template-rows:auto auto auto auto;
+
+    column-gap:20px;
+    row-gap:14px;
+
+    width:min(1180px, calc(100% - 64px));
+
+    margin:10px auto 0;
+    padding:0 0 20px;
+  }
+
+
+  /* ======================================================
+     HEADER
+     ====================================================== */
+
+  .draft.draft-final .df-head{
+    grid-area:head;
+
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+
+    gap:24px;
+    margin:0;
+  }
+
+  .draft.draft-final .df-head > span{
+    display:grid;
+    gap:3px;
+  }
+
+  .draft.draft-final .df-head small{
+    color:rgba(211,216,244,.50);
+
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+
+  .draft.draft-final .df-head b{
+    color:var(--bone);
+
+    font-size:31px;
+    line-height:1;
+  }
+
+  .draft.draft-final .df-head > strong{
+    color:var(--yellow);
+
+    font-family:var(--led);
+    font-size:39px;
+    line-height:1;
+  }
+
+
+  /* ======================================================
+     BUDGET — BARRA HUD UNICA
+     ====================================================== */
+
+  .draft.draft-final .df-cap{
+    grid-area:cap;
+
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+
+    gap:0;
+
+    overflow:hidden;
+
+    border:1px solid rgba(71,111,211,.24);
+    border-radius:10px;
+
+    background:rgba(7,16,47,.76);
+
+    margin:0;
+  }
+
+  .draft.draft-final .df-cap > span{
+    box-sizing:border-box;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    gap:14px;
+
+    min-width:0;
+    height:48px;
+
+    padding:0 15px;
+
+    border:0;
+    border-right:1px solid rgba(90,116,197,.18);
+    border-radius:0;
+
+    background:transparent;
+  }
+
+  .draft.draft-final .df-cap > span:last-child{
+    border-right:0;
+  }
+
+  .draft.draft-final .df-cap small{
+    display:block;
+
+    margin:0;
+
+    color:rgba(210,216,244,.46);
+
+    font-size:8px;
+    font-weight:900;
+    line-height:1;
+    letter-spacing:.10em;
+
+    text-transform:uppercase;
+  }
+
+  .draft.draft-final .df-cap b{
+    display:block;
+
+    color:var(--bone);
+
+    font-size:15px;
+    line-height:1;
+
+    text-align:right;
+    white-space:nowrap;
+  }
+
+  .draft.draft-final .df-cap .resta b{
+    color:var(--yellow);
+  }
+
+  .draft.draft-final .df-cap .over b{
+    color:var(--orange);
+  }
+
+
+  /* ======================================================
+     SEZIONI
+     ====================================================== */
+
+  .draft.draft-final .df-section{
+    min-width:0;
+    margin:0;
+  }
+
+  .draft.draft-final .draft-final-shell > .df-section:first-of-type{
+    grid-area:starters;
+  }
+
+  .draft.draft-final .draft-final-shell > .df-section:last-of-type{
+    grid-area:bench;
+  }
+
+  .draft.draft-final .df-section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    min-height:24px;
+
+    margin:0 2px 7px;
+  }
+
+  .draft.draft-final .df-section-head span{
+    color:var(--bone);
+
+    font-size:11px;
+    font-weight:950;
+    letter-spacing:.07em;
+    text-transform:uppercase;
+  }
+
+  .draft.draft-final .df-section-head small{
+    color:rgba(210,216,244,.42);
+
+    font-size:8px;
+    font-weight:900;
+  }
+
+
+  /* ======================================================
+     CAMPO
+     ====================================================== */
+
+  .draft.draft-final .df-five{
+    position:relative;
+
+    display:block !important;
+
+    box-sizing:border-box;
+
+    width:100%;
+    height:440px;
+    min-height:440px;
+
+    padding:0 !important;
+    overflow:hidden;
+
+    border:1px solid rgba(91,96,171,.56);
+    border-radius:20px;
+
+    background:
+      radial-gradient(
+        circle at 50% 5%,
+        rgba(255,91,30,.085),
+        transparent 27%
+      ),
+      linear-gradient(
+        180deg,
+        #17183f,
+        #0f1232
+      );
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.04),
+      inset 0 -80px 110px rgba(5,6,25,.16);
+  }
+
+  .draft.draft-final .df-court-lines{
+    display:block !important;
+
+    position:absolute;
+    z-index:0;
+    inset:0;
+
+    width:100%;
+    height:100%;
+
+    pointer-events:none;
+  }
+
+  .draft.draft-final .court-bound,
+  .draft.draft-final .court-line{
+    fill:none;
+
+    stroke:rgba(138,139,192,.36);
+    stroke-width:1.5;
+
+    vector-effect:non-scaling-stroke;
+  }
+
+
+  /* ======================================================
+     TITOLARI
+     ====================================================== */
+
+  .draft.draft-final .df-starter,
+  .draft.draft-final .df-starter:nth-child(5){
+    position:absolute;
+    z-index:2;
+
+    display:grid !important;
+
+    grid-template-columns:58px minmax(0,1fr) 42px !important;
+    grid-template-areas:
+      "face role ovr"
+      "face name ovr"
+      !important;
+
+    column-gap:9px;
+    align-items:center;
+
+    box-sizing:border-box;
+
+    grid-column:auto !important;
+
+    width:250px !important;
+    height:78px;
+
+    min-width:0;
+    min-height:0;
+
+    justify-self:auto !important;
+
+    padding:6px !important;
+
+    overflow:hidden;
+
+    border:1px solid rgba(151,153,205,.68) !important;
+    border-radius:11px !important;
+
+    background:
+      linear-gradient(
+        105deg,
+        rgba(29,32,82,.985),
+        rgba(9,11,42,.995)
+      )
+      !important;
+
+    box-shadow:
+      0 8px 18px rgba(0,0,0,.24),
+      inset 0 1px 0 rgba(255,255,255,.055)
+      !important;
+  }
+
+
+  /* posizioni */
+
+  .draft.draft-final .df-starter:nth-of-type(1){
+    left:50%;
+    bottom:16px;
+
+    transform:translateX(-50%);
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(2){
+    right:22px;
+    top:224px;
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(3){
+    left:22px;
+    top:224px;
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(4){
+    left:52px;
+    top:52px;
+  }
+
+  .draft.draft-final .df-starter:nth-of-type(5){
+    right:52px;
+    top:52px;
+  }
+
+
+  /* foto */
+
+  .draft.draft-final .df-face{
+    grid-area:face;
+
+    display:block;
+
+    width:58px;
+    height:64px;
+  }
+
+  .draft.draft-final .df-face .face{
+    width:58px !important;
+    height:64px !important;
+
+    border:1px solid rgba(255,255,255,.19) !important;
+    border-radius:8px !important;
+
+    box-shadow:0 4px 10px rgba(0,0,0,.28);
+  }
+
+  .draft.draft-final .df-face .ph{
+    width:100%;
+    height:100%;
+
+    object-fit:contain;
+    object-position:center bottom;
+  }
+
+
+  /* ruolo */
+
+  .draft.draft-final .df-role{
+    grid-area:role;
+
+    align-self:end;
+    justify-self:start;
+
+    padding:2px 6px;
+
+    border-radius:4px;
+
+    background:var(--brass);
+    color:#fff !important;
+
+    font-size:8px !important;
+    font-weight:950;
+    line-height:1;
+  }
+
+
+  /* nome */
+
+  .draft.draft-final .df-starter-foot{
+    display:contents !important;
+  }
+
+  .draft.draft-final .df-name{
+    grid-area:name;
+
+    align-self:start;
+
+    min-width:0;
+
+    display:-webkit-box;
+    overflow:hidden;
+
+    color:var(--bone) !important;
+
+    font-size:12px !important;
+    font-weight:950 !important;
+    line-height:1.05;
+
+    text-align:left;
+    white-space:normal;
+
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+  }
+
+
+  /* OVR */
+
+  .draft.draft-final .df-ovr{
+    grid-area:ovr;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    width:42px;
+    min-height:56px;
+
+    border:1px solid rgba(255,207,51,.58);
+    border-radius:8px;
+
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,207,51,.12),
+        rgba(255,207,51,.045)
+      );
+
+    color:var(--yellow) !important;
+
+    font-family:var(--led);
+    font-size:21px !important;
+    line-height:.9;
+  }
+
+  .draft.draft-final .df-ovr::before{
+    content:"OVR";
+
+    margin-bottom:5px;
+
+    color:rgba(255,225,129,.68);
+
+    font-family:var(--body);
+    font-size:6px;
+    font-weight:950;
+    letter-spacing:.07em;
+  }
+
+
+  /* ======================================================
+     PANCHINA
+     ====================================================== */
+
+  .draft.draft-final .df-bench-grid{
+    display:grid !important;
+
+    grid-template-columns:1fr !important;
+    grid-template-rows:repeat(5,64px);
+
+    gap:7px !important;
+
+    height:auto;
+  }
+
+  .draft.draft-final .df-bench,
+  .draft.draft-final .df-bench:first-child,
+  .draft.draft-final .df-bench:nth-child(5){
+    display:grid !important;
+
+    grid-template-columns:50px minmax(0,1fr) 38px !important;
+    grid-template-areas:"face copy ovr";
+
+    column-gap:9px;
+    align-items:center;
+
+    box-sizing:border-box;
+
+    grid-column:auto !important;
+
+    width:100% !important;
+    height:64px !important;
+
+    min-width:0;
+    min-height:64px;
+
+    justify-self:stretch !important;
+
+    padding:5px 7px 5px 5px !important;
+
+    overflow:hidden;
+
+    border:1px solid rgba(125,132,197,.52) !important;
+    border-radius:10px !important;
+
+    background:
+      linear-gradient(
+        105deg,
+        rgba(25,29,72,.985),
+        rgba(8,10,39,.995)
+      )
+      !important;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.045)
+      !important;
+  }
+
+  .draft.draft-final .df-bench-face{
+    grid-area:face;
+  }
+
+  .draft.draft-final .df-bench-face .face{
+    width:50px !important;
+    height:54px !important;
+
+    border:1px solid rgba(255,255,255,.17) !important;
+    border-radius:8px !important;
+  }
+
+  .draft.draft-final .df-bench-copy{
+    grid-area:copy;
+
+    display:flex !important;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+
+    gap:4px;
+
+    min-width:0;
+  }
+
+  .draft.draft-final .df-bench-copy small{
+    order:1;
+
+    height:15px;
+
+    display:inline-flex;
+    align-items:center;
+
+    padding:0 5px;
+    margin:0;
+
+    border-radius:4px;
+
+    background:var(--brass);
+    color:#fff !important;
+
+    font-size:7px !important;
+    font-weight:950;
+    line-height:1;
+
+    text-transform:uppercase;
+  }
+
+  .draft.draft-final .df-bench-copy strong{
+    order:2;
+
+    display:block;
+
+    width:100%;
+    min-width:0;
+
+    margin:0;
+
+    overflow:hidden;
+
+    color:var(--bone) !important;
+
+    font-size:10px !important;
+    font-weight:950 !important;
+    line-height:1.05;
+
+    text-align:left;
+
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+
+  .draft.draft-final .df-bench-ovr{
+    grid-area:ovr;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    width:38px;
+    min-height:48px;
+
+    border:1px solid rgba(255,207,51,.50);
+    border-radius:7px;
+
+    background:rgba(255,207,51,.045);
+
+    color:var(--yellow) !important;
+
+    font-family:var(--led);
+    font-size:18px !important;
+    line-height:.9;
+  }
+
+  .draft.draft-final .df-bench-ovr::before{
+    content:"OVR";
+
+    margin-bottom:4px;
+
+    color:rgba(255,225,129,.64);
+
+    font-family:var(--body);
+    font-size:5px;
+    font-weight:950;
+  }
+
+
+  /* ======================================================
+     CTA
+     ====================================================== */
+
+  .draft.draft-final .df-cta{
+    grid-area:cta;
+
+    width:100%;
+    min-height:56px;
+
+    margin:0 !important;
+
+    border-radius:11px !important;
+
+    font-size:12px !important;
+
+    box-shadow:
+      0 8px 20px rgba(255,198,39,.11)
+      !important;
+  }
+}
+
+/* === DRAFT FINAL REAL COURT DESKTOP V3 END === */
+
 /* === DRAFT FINAL REAL COURT MOBILE V2 START === */
 
 .draft.draft-final .df-court-lines{
@@ -15276,3 +16071,56 @@ html body dialog#player-icon-picker .player-pick.active{
 }
 
 /* === DRAFT FINAL REAL COURT MOBILE V2 END === */
+
+/* === DRAFT FINAL NO SCROLL MOBILE START === */
+
+@media (max-width:520px){
+
+  /*
+   * Il riepilogo 10/10 è già progettato per stare in una viewport.
+   * Lo trattiamo quindi come schermata-app, non come pagina scrollabile.
+   */
+
+  #app:has(.draft.draft-final){
+    width:100%;
+    height:100dvh;
+    min-height:100dvh;
+
+    overflow:hidden;
+  }
+
+  .screen.draft.draft-final{
+    box-sizing:border-box;
+
+    width:100%;
+    height:100dvh;
+    min-height:0;
+    max-height:100dvh;
+
+    overflow:hidden;
+
+    padding:
+      calc(12px + env(safe-area-inset-top))
+      calc(20px + env(safe-area-inset-right))
+      calc(10px + env(safe-area-inset-bottom))
+      calc(20px + env(safe-area-inset-left));
+
+    gap:8px;
+  }
+
+  .draft.draft-final .draft-final-shell{
+    flex:1 1 auto;
+
+    width:100%;
+    min-height:0;
+
+    overflow:hidden;
+
+    padding:
+      2px
+      12px
+      0;
+  }
+}
+
+/* === DRAFT FINAL NO SCROLL MOBILE END === */
